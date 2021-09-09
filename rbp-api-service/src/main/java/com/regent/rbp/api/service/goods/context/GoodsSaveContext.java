@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * 货品保存上下文对象
  * @author xuxing
  */
 @Data

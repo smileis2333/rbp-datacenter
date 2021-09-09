@@ -1,26 +1,35 @@
 package com.regent.rbp.api.service.bean;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.netflix.discovery.converters.Auto;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.*;
 import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.api.core.supplier.Supplier;
 import com.regent.rbp.api.dao.base.*;
 import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.supplier.SupplierDao;
+import com.regent.rbp.api.dto.core.DataResponse;
+import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.goods.GoodsQueryParam;
 import com.regent.rbp.api.dto.goods.GoodsQueryResult;
 import com.regent.rbp.api.dto.goods.GoodsSaveParam;
 import com.regent.rbp.api.dto.goods.GoodsSaveResult;
 import com.regent.rbp.api.service.goods.GoodsService;
+import com.regent.rbp.api.service.goods.context.GoodsQueryContext;
 import com.regent.rbp.api.service.goods.context.GoodsSaveContext;
 import com.regent.rbp.infrastructure.exception.BusinessException;
+import com.regent.rbp.infrastructure.util.DateUtil;
+import com.regent.rbp.infrastructure.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
-import org.h2.api.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 货品档案服务
@@ -83,12 +92,151 @@ public class GoodsServiceBean implements GoodsService {
     AgeRangeDao ageRangeDao;
 
     @Override
-    public GoodsQueryResult query(GoodsQueryParam param) {
-        return null;
+    public PageDataResponse<GoodsQueryResult> query(GoodsQueryParam param) {
+        PageDataResponse<GoodsQueryResult> response = new PageDataResponse<>();
+
+        GoodsQueryContext context = new GoodsQueryContext();
+        //将入参转换成查询的上下文对象
+        convertGoodsQueryContext(param, context);
+
+
+        return response;
+    }
+
+    private void searchGoods(GoodsQueryContext context) {
+
+        Page<Goods> pageModel = new Page<Goods>(context.getPageNo(), context.getPageSize());
+        QueryWrapper queryWrapper = new QueryWrapper<Goods>();
+
+        IPage<Goods> goodsPageData = goodsDao.selectPage(pageModel, queryWrapper);
+        List<Long> goodsIds = goodsPageData.getRecords().stream().map(Goods::getId).collect(Collectors.toList());
+
+    }
+
+    /**
+     * 处理查询结果的属性
+     * 1.读取相同的属性
+     * 2.将内部编码id转换成名称name
+     */
+    private void processGoodsQueryResultProperty(List<Goods> goodsList) {
+        
+    }
+
+    /**
+     * 将查询参数转换成 查询的上下文
+     * @param param
+     * @param context
+     */
+    private void convertGoodsQueryContext(GoodsQueryParam param, GoodsQueryContext context) {
+        context.setPageNo(param.getPageNo());
+        context.setPageSize(param.getPageSize());
+
+        context.setGoodsCode(param.getGoodsCode());
+        context.setGoodsName(param.getGoodsName());
+        context.setMnemonicCode(param.getMnemonicCode());
+        context.setType(param.getType());
+        context.setStatus(param.getStatus());
+        //品牌
+        if(param.getBrand() != null && param.getBrand().length > 0) {
+            List<Brand> list = brandDao.selectList(new QueryWrapper<Brand>().in("name", param.getBrand()));
+            if(list!=null && list.size()>0) {
+                long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
+                context.setBrandIds(ids);
+            }
+        }
+        //类别
+        if(param.getCategory() != null && param.getCategory().length > 0) {
+            List<Category> list = categoryDao.selectList(new QueryWrapper<Category>().in("name", param.getCategory()));
+            if(list!=null && list.size()>0) {
+                long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
+                context.setCategoryIds(ids);
+            }
+        }
+        //系列
+        if(param.getSeries() != null && param.getSeries().length > 0) {
+            List<Series> list = seriesDao.selectList(new QueryWrapper<Series>().in("name", param.getSeries()));
+            if(list!=null && list.size()>0) {
+                long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
+                context.setSeriesIds(ids);
+            }
+        }
+        //款型
+        if(param.getPattern() != null && param.getPattern().length > 0) {
+            List<Pattern> list = patternDao.selectList(new QueryWrapper<Pattern>().in("name", param.getPattern()));
+            if(list!=null && list.size()>0) {
+                long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
+                context.setPatternIds(ids);
+            }
+        }
+        //性别
+        if(param.getSex() != null && param.getSex().length > 0) {
+            List<Sex> list = sexDao.selectList(new QueryWrapper<Sex>().in("name", param.getSex()));
+            if(list!=null && list.size()>0) {
+                long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
+                context.setSexIds(ids);
+            }
+        }
+        //波段
+        if(param.getBand() != null && param.getBand().length > 0) {
+            List<Band> list = bandDao.selectList(new QueryWrapper<Band>().in("name", param.getBand()));
+            if(list!=null && list.size()>0) {
+                long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
+                context.setBandIds(ids);
+            }
+        }
+        //年份
+        if(param.getYear() != null && param.getYear().length > 0) {
+            List<Year> list = yearDao.selectList(new QueryWrapper<Year>().in("name", param.getYear()));
+            if(list!=null && list.size()>0) {
+                long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
+                context.setYearIds(ids);
+            }
+        }
+        //季节
+        if(param.getSeason() != null && param.getSeason().length > 0) {
+            List<Season> list = seasonDao.selectList(new QueryWrapper<Season>().in("name", param.getSeason()));
+            if(list!=null && list.size()>0) {
+                long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
+                context.setSeasonIds(ids);
+            }
+        }
+        //风格
+        if(param.getStyle() != null && param.getStyle().length > 0) {
+            List<Style> list = styleDao.selectList(new QueryWrapper<Style>().in("name", param.getStyle()));
+            if(list!=null && list.size()>0) {
+                long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
+                context.setStyleIds(ids);
+            }
+        }
+        if(StringUtil.isNotBlank(param.getCreatedDateStart())) {
+            Date createdDateStart = DateUtil.getDate(param.getCreatedDateStart(), DateUtil.FULL_DATE_FORMAT);
+            context.setCreatedDateStart(createdDateStart);
+        }
+        if(StringUtil.isNotBlank(param.getCreatedDateEnd())) {
+            Date createdDateEnd = DateUtil.getDate(param.getCreatedDateEnd(), DateUtil.FULL_DATE_FORMAT);
+            context.setCreatedDateEnd(createdDateEnd);
+        }
+        if(StringUtil.isNotBlank(param.getUpdatedDateStart())) {
+            Date updatedDateStart = DateUtil.getDate(param.getUpdatedDateStart(), DateUtil.FULL_DATE_FORMAT);
+            context.setUpdatedDateStart(updatedDateStart);
+        }
+        if(StringUtil.isNotBlank(param.getUpdatedDateEnd())) {
+            Date updatedDateEnd = DateUtil.getDate(param.getUpdatedDateEnd(), DateUtil.FULL_DATE_FORMAT);
+            context.setUpdatedDateEnd(updatedDateEnd);
+        }
+        if(StringUtil.isNotBlank(param.getCheckDateStart())) {
+            Date checkDateStart = DateUtil.getDate(param.getCheckDateStart(), DateUtil.FULL_DATE_FORMAT);
+            context.setCheckDateStart(checkDateStart);
+        }
+        if(StringUtil.isNotBlank(param.getCheckDateEnd())) {
+            Date checkDateEnd = DateUtil.getDate(param.getCheckDateEnd(), DateUtil.FULL_DATE_FORMAT);
+            context.setCheckDateEnd(checkDateEnd);
+        }
     }
 
     @Override
-    public GoodsSaveResult save(GoodsSaveParam param) {
+    @Transactional
+    public DataResponse save(GoodsSaveParam param) {
         boolean createFlag = true;
         GoodsSaveContext context = new GoodsSaveContext(param);
         //判断是新增还是更新
@@ -101,6 +249,8 @@ public class GoodsServiceBean implements GoodsService {
         //验证货品数据有效性
         List<String> errorMsgList = verificationProperty(param, context);
         if(errorMsgList.size() > 0 ) {
+            String message = StringUtil.join(errorMsgList, ",");
+
             //throw new BusinessException(ErrorC, "");
         }
         //自动补充不存在的数据字典
