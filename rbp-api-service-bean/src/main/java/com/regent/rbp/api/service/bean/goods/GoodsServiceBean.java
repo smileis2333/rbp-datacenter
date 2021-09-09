@@ -1,4 +1,4 @@
-package com.regent.rbp.api.service.bean;
+package com.regent.rbp.api.service.bean.goods;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -25,10 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -38,58 +35,58 @@ import java.util.stream.Collectors;
 public class GoodsServiceBean implements GoodsService {
 
     @Autowired
-    GoodsDao goodsDao;
+    private GoodsDao goodsDao;
 
     @Autowired
-    CategoryDao categoryDao;
+    private CategoryDao categoryDao;
 
     @Autowired
-    SeriesDao seriesDao;
+    private SeriesDao seriesDao;
 
     @Autowired
-    PatternDao patternDao;
+    private PatternDao patternDao;
 
     @Autowired
-    StyleDao styleDao;
+    private StyleDao styleDao;
 
     @Autowired
-    SaleClassDao saleClassDao;
+    private SaleClassDao saleClassDao;
 
     @Autowired
-    YearDao yearDao;
+    private YearDao yearDao;
 
     @Autowired
-    SeasonDao seasonDao;
+    private SeasonDao seasonDao;
 
     @Autowired
-    BandDao bandDao;
+    private BandDao bandDao;
 
     @Autowired
-    MaterialDao materialDao;
+    private MaterialDao materialDao;
 
     @Autowired
-    SexDao sexDao;
+    private SexDao sexDao;
 
     @Autowired
-    ExchangeCategoryDao exchangeCategoryDao;
+    private ExchangeCategoryDao exchangeCategoryDao;
 
     @Autowired
-    DiscountCategoryDao discountCategoryDao;
+    private DiscountCategoryDao discountCategoryDao;
 
     @Autowired
-    SupplierDao supplierDao;
+    private SupplierDao supplierDao;
 
     @Autowired
-    SizeClassDao sizeClassDao;
+    private SizeClassDao sizeClassDao;
 
     @Autowired
-    ModelClassDao modelClassDao;
+    private ModelClassDao modelClassDao;
 
     @Autowired
-    BrandDao brandDao;
+    private BrandDao brandDao;
 
     @Autowired
-    AgeRangeDao ageRangeDao;
+    private AgeRangeDao ageRangeDao;
 
     @Override
     public PageDataResponse<GoodsQueryResult> query(GoodsQueryParam param) {
@@ -102,14 +99,25 @@ public class GoodsServiceBean implements GoodsService {
         return response;
     }
 
+    /**
+     * 查询货品数据
+     * @param context
+     * @return
+     */
     private PageDataResponse<GoodsQueryResult> searchGoods(GoodsQueryContext context) {
+
+        PageDataResponse<GoodsQueryResult> result = new PageDataResponse<GoodsQueryResult>();
 
         Page<Goods> pageModel = new Page<Goods>(context.getPageNo(), context.getPageSize());
         QueryWrapper queryWrapper = new QueryWrapper<Goods>();
 
         IPage<Goods> goodsPageData = goodsDao.selectPage(pageModel, queryWrapper);
         List<GoodsQueryResult> list = convertGoodsQueryResult(goodsPageData.getRecords());
-        
+
+        result.setTotalCount(goodsPageData.getTotal());
+        result.setData(list);
+
+        return result;
     }
 
     /**
@@ -118,8 +126,153 @@ public class GoodsServiceBean implements GoodsService {
      * 2.将内部编码id转换成名称name
      */
     private List<GoodsQueryResult> convertGoodsQueryResult(List<Goods> goodsList) {
-        List<Long> goodsIds = goodsList.stream().map(Goods::getId).collect(Collectors.toList());
+        List<GoodsQueryResult> queryResults = new ArrayList<>(goodsList.size());
 
+        List<Long> goodsIds = goodsList.stream().map(Goods::getId).collect(Collectors.toList());
+        for(Goods goods : goodsList) {
+            GoodsQueryResult queryResult = new GoodsQueryResult();
+            queryResult.setGoodsCode(goods.getCode());
+            queryResult.setGoodsName(goods.getName());
+            queryResult.setMnemonicCode(goods.getMnemonicCode());
+            queryResult.setType(goods.getType());
+            queryResult.setQrcodeLink(goods.getQrcodeLink());
+            queryResult.setUniqueCodeFlag(goods.getUniqueCodeFlag());
+            queryResult.setSupplierGoodsNo(goods.getSupplierGoodsNo());
+            queryResult.setMetricFlag(goods.getMetricFlag());
+            queryResult.setNotes(goods.getNotes());
+            String buildDateStr = DateUtil.getDateStr(goods.getBuildDate(), DateUtil.SHORT_DATE_FORMAT);
+            queryResult.setBuildDate(buildDateStr);
+
+            queryResults.add(queryResult);
+        }
+
+        processGoodsQueryResultProperty(queryResults, goodsList);
+
+        return queryResults;
+    }
+
+    /**
+     * 处理货品查询结果，将id转换成name
+     * @param queryResults
+     * @param goodsList
+     */
+    private void processGoodsQueryResultProperty(List<GoodsQueryResult> queryResults, List<Goods> goodsList) {
+        {
+            List<SizeClass> list = sizeClassDao.selectList(new QueryWrapper<SizeClass>().select("id","name"));
+            list.stream().collect(Collectors.toMap())
+        }
+        goodsList.forEach(Goods->{
+
+        });
+        for (Goods goods : goodsList) {
+            hashSetSizeClass.add(goods.getSizeClassId());
+            hashSetBrand.add(goods.getBrandId());
+            hashSetCategory.add(goods.getCategoryId());
+
+        }
+        if(goods.getSizeClassId() != null) {
+            SizeClass  sizeClass = sizeClassDao.selectById(goods.getSizeClassId());
+            if(sizeClass == null) {
+                queryResult.setSizeClassName(sizeClass.getName());
+            }
+        }
+        if (goods.getBrandId() != null) {
+            Brand brand = brandDao.selectById(goods.getBrandId());
+            if(brand != null) {
+                queryResult.setBrand(brand.getName());
+            }
+        }
+        if (goods.getCategoryId() != null) {
+            Category category = categoryDao.selectById(goods.getCategoryId());
+            if(category != null) {
+                queryResult.setCategory(category.getName());
+            }
+        }
+        if (goods.getSeriesId() != null) {
+            Series series = seriesDao.selectById(goods.getSeriesId());
+            if(series == null) {
+                queryResult.setSeries(series.getName());
+            }
+        }
+        if (goods.getPatternId() != null) {
+            Pattern pattern = patternDao.selectById(goods.getPatternId());
+            if(pattern == null) {
+                queryResult.setPattern(pattern.getName());
+            }
+        }
+        if (goods.getStyleId() != null) {
+            Style style = styleDao.selectById(goods.getStyleId());
+            if(style == null) {
+                queryResult.setStyle(style.getName());
+            }
+        }
+        if (goods.getSaleClassId() != null) {
+            SaleClass saleClass = saleClassDao.selectById(goods.getSaleClassId());
+            if(saleClass == null) {
+                queryResult.setSaleClass(saleClass.getName());
+            }
+        }
+        if (goods.getYearId() != null) {
+            Year year = yearDao.selectById(goods.getYearId());
+            if(year == null) {
+                queryResult.setYear(year.getName());
+            }
+        }
+        if (goods.getSeasonId() != null) {
+            Season season = seasonDao.selectById(goods.getSeasonId());
+            if(season == null) {
+                queryResult.setSeason(season.getName());
+            }
+        }
+        if (goods.getBandId() != null) {
+            Band band = bandDao.selectById(goods.getBandId());
+            if(band == null) {
+                queryResult.setBand(band.getName());
+            }
+        }
+        if (goods.getMaterialId() != null) {
+            Material material = materialDao.selectById(goods.getMaterialId());
+            if(material == null) {
+                queryResult.setMaterial(material.getName());
+            }
+        }
+        if(goods.getSexId() != null) {
+            Sex sex = sexDao.selectById(goods.getSexId());
+            if(sex == null) {
+                queryResult.setSex(sex.getName());
+            }
+        }
+        if(goods.getExchangeCategoryId() != null) {
+            ExchangeCategory  exchangeCategory = exchangeCategoryDao.selectById(goods.getExchangeCategoryId());
+            if(exchangeCategory == null) {
+                queryResult.setExchangeCategory(exchangeCategory.getName());
+            }
+        }
+        if(goods.getDiscountCategoryId() != null) {
+            DiscountCategory  discountCategory = discountCategoryDao.selectById(goods.getDiscountCategoryId());
+            if(discountCategory == null) {
+                queryResult.setDiscountCategory(discountCategory.getName());
+            }
+        }
+        if(goods.getModelClassId() != null) {
+            ModelClass  modelClass = modelClassDao.selectById(goods.getModelClassId());
+            if(modelClass == null) {
+                queryResult.setModelClass(modelClass.getName());
+            }
+        }
+        if(goods.getAgeRangeId() != null) {
+            AgeRange  ageRange = ageRangeDao.selectById(goods.getAgeRangeId());
+            if(ageRange == null) {
+                queryResult.setMinAge(ageRange.getMinAge());
+                queryResult.setMaxAge(ageRange.getMaxAge());
+            }
+        }
+        if(goods.getSupplierId() != null) {
+            Supplier  supplier = supplierDao.selectById(goods.getSupplierId());
+            if(supplier == null) {
+                queryResult.setSupplierCode(supplier.getCode());
+            }
+        }
     }
 
     /**
@@ -264,6 +417,7 @@ public class GoodsServiceBean implements GoodsService {
         saveGoodsTagPrice(createFlag);
         saveGoodsBarcode(createFlag);
 
+
         return null;
     }
 
@@ -377,7 +531,6 @@ public class GoodsServiceBean implements GoodsService {
                 goods.setSupplierId(brand.getId());
             }
         }
-
         //验证供应商
         if (StringUtils.isNotBlank(param.getSupplierCode())) {
             Supplier supplier = supplierDao.selectOne(new QueryWrapper<Supplier>().eq("code", param.getSupplierCode()));

@@ -27,6 +27,12 @@
 			<version>1.0.0.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.regent.rbp.api.dto</groupId>
+			<artifactId>rbp-api-dto</artifactId>
+			<version>1.0.0.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

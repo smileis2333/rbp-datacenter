@@ -7,4 +7,5 @@ import com.regent.rbp.api.core.goods.Goods;
  * @author xuxing
  */
 public interface GoodsDao extends BaseMapper<Goods> {
+
 }
