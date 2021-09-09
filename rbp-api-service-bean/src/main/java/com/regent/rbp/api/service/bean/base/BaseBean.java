@@ -76,9 +76,9 @@ public class BaseBean implements BaseService {
         List<String> existList = new ArrayList<>();
         Boolean codeFlag = BaseDataEnum.isCodeFlag(context.getType());
         if (codeFlag) {
-            this.findExists(tableName, "code", existList, context.getData());
+            this.findExists(tableName, codeFlag, existList, context.getData());
         } else {
-            this.findExists(tableName, "name", existList, context.getData());
+            this.findExists(tableName, codeFlag, existList, context.getData());
         }
         if (CollUtil.isNotEmpty(existList)) {
             return new PageDataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataRepeated", new String[]{String.join(StrUtil.COMMA, existList)}));
@@ -127,19 +127,21 @@ public class BaseBean implements BaseService {
      * 查询已存在数据
      *
      * @param tableName
-     * @param columnName
+     * @param codeFlag
      * @param existList
      * @param baseDataList
      */
-    private void findExists(String tableName, String columnName, List<String> existList, List<BaseData> baseDataList) {
+    private void findExists(String tableName, Boolean codeFlag, List<String> existList, List<BaseData> baseDataList) {
         Set<String> stringSet = new HashSet<>();
         for (BaseData item : baseDataList) {
-            if (!stringSet.add(item.getCode())) {
+            if (codeFlag && !stringSet.add(item.getCode())) {
                 existList.add(item.getCode());
+            } else if (!codeFlag && !stringSet.add(item.getName())) {
+                existList.add(item.getName());
             }
         }
         if (CollUtil.isEmpty(existList)) {
-            List<String> list = brandDao.getExistBaseDataList(tableName, columnName, StreamUtil.toList(baseDataList, BaseData::getCode));
+            List<String> list = brandDao.getExistBaseDataList(tableName, codeFlag ? "code" : "name", StreamUtil.toList(baseDataList, BaseData::getCode));
             if (CollUtil.isNotEmpty(list)) {
                 existList.addAll(list);
             }
