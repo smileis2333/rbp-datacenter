@@ -3,59 +3,29 @@ package com.regent.rbp.api.service.bean.goods;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.regent.rbp.api.core.base.AgeRange;
-import com.regent.rbp.api.core.base.Band;
-import com.regent.rbp.api.core.base.Brand;
-import com.regent.rbp.api.core.base.Category;
-import com.regent.rbp.api.core.base.DiscountCategory;
-import com.regent.rbp.api.core.base.ExchangeCategory;
-import com.regent.rbp.api.core.base.Material;
-import com.regent.rbp.api.core.base.ModelClass;
-import com.regent.rbp.api.core.base.Pattern;
-import com.regent.rbp.api.core.base.SaleClass;
-import com.regent.rbp.api.core.base.Season;
-import com.regent.rbp.api.core.base.Series;
-import com.regent.rbp.api.core.base.Sex;
-import com.regent.rbp.api.core.base.SizeClass;
-import com.regent.rbp.api.core.base.Style;
-import com.regent.rbp.api.core.base.Year;
-import com.regent.rbp.api.core.goods.Goods;
+import com.regent.rbp.api.core.base.*;
+import com.regent.rbp.api.core.goods.*;
 import com.regent.rbp.api.core.supplier.Supplier;
-import com.regent.rbp.api.dao.base.AgeRangeDao;
-import com.regent.rbp.api.dao.base.BandDao;
-import com.regent.rbp.api.dao.base.BrandDao;
-import com.regent.rbp.api.dao.base.CategoryDao;
-import com.regent.rbp.api.dao.base.DiscountCategoryDao;
-import com.regent.rbp.api.dao.base.ExchangeCategoryDao;
-import com.regent.rbp.api.dao.base.MaterialDao;
-import com.regent.rbp.api.dao.base.ModelClassDao;
-import com.regent.rbp.api.dao.base.PatternDao;
-import com.regent.rbp.api.dao.base.SaleClassDao;
-import com.regent.rbp.api.dao.base.SeasonDao;
-import com.regent.rbp.api.dao.base.SeriesDao;
-import com.regent.rbp.api.dao.base.SexDao;
-import com.regent.rbp.api.dao.base.SizeClassDao;
-import com.regent.rbp.api.dao.base.StyleDao;
-import com.regent.rbp.api.dao.base.YearDao;
-import com.regent.rbp.api.dao.goods.GoodsDao;
+import com.regent.rbp.api.dao.base.*;
+import com.regent.rbp.api.dao.goods.*;
 import com.regent.rbp.api.dao.supplier.SupplierDao;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.goods.GoodsQueryParam;
 import com.regent.rbp.api.dto.goods.GoodsQueryResult;
 import com.regent.rbp.api.dto.goods.GoodsSaveParam;
+import com.regent.rbp.api.dto.goods.GoodsSaveResult;
 import com.regent.rbp.api.service.goods.GoodsService;
 import com.regent.rbp.api.service.goods.context.GoodsQueryContext;
 import com.regent.rbp.api.service.goods.context.GoodsSaveContext;
+import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -118,6 +88,18 @@ public class GoodsServiceBean implements GoodsService {
     @Autowired
     private AgeRangeDao ageRangeDao;
 
+    @Autowired
+    private GoodsColorDao goodsColorDao;
+
+    @Autowired
+    private GoodsLongDao goodsLongDao;
+
+    @Autowired
+    private GoodsTagPriceDao goodsTagPriceDao;
+
+    @Autowired
+    private SizeDisableDao sizeDisableDao;
+
     @Override
     public PageDataResponse<GoodsQueryResult> query(GoodsQueryParam param) {
         GoodsQueryContext context = new GoodsQueryContext();
@@ -157,10 +139,11 @@ public class GoodsServiceBean implements GoodsService {
      */
     private List<GoodsQueryResult> convertGoodsQueryResult(List<Goods> goodsList) {
         List<GoodsQueryResult> queryResults = new ArrayList<>(goodsList.size());
+        List<Long> goodsIds = new ArrayList<>(goodsList.size());
 
-        List<Long> goodsIds = goodsList.stream().map(Goods::getId).collect(Collectors.toList());
         for(Goods goods : goodsList) {
             GoodsQueryResult queryResult = new GoodsQueryResult();
+            queryResult.setGoodsId(goods.getId());
             queryResult.setGoodsCode(goods.getCode());
             queryResult.setGoodsName(goods.getName());
             queryResult.setMnemonicCode(goods.getMnemonicCode());
@@ -174,9 +157,20 @@ public class GoodsServiceBean implements GoodsService {
             queryResult.setBuildDate(buildDateStr);
 
             queryResults.add(queryResult);
+            goodsIds.add(goods.getId());
         }
 
+        //处理货品属性
         processGoodsQueryResultProperty(queryResults, goodsList);
+
+        List<GoodsColor> goodsColorList = goodsColorDao.selectList(new QueryWrapper<GoodsColor>().in("goods_id", goodsIds));
+
+        List<GoodsLong> goodsLongList = goodsLongDao.selectList(new QueryWrapper<GoodsLong>().in("goods_id", goodsIds));
+
+        List<GoodsTagPrice> goodsTagPriceList = goodsTagPriceDao.selectList(new QueryWrapper<GoodsTagPrice>().in("goods_id", goodsIds));
+
+        List<SizeDisable> sizeDisableList = sizeDisableDao.selectList(new QueryWrapper<SizeDisable>().in("goods_id", goodsIds));
+
 
         return queryResults;
     }
@@ -187,122 +181,122 @@ public class GoodsServiceBean implements GoodsService {
      * @param goodsList
      */
     private void processGoodsQueryResultProperty(List<GoodsQueryResult> queryResults, List<Goods> goodsList) {
-//        {
-//            List<SizeClass> list = sizeClassDao.selectList(new QueryWrapper<SizeClass>().select("id","name"));
-//            list.stream().collect(Collectors.toMap())
-//        }
-//        goodsList.forEach(Goods->{
-//
-//        });
-//        for (Goods goods : goodsList) {
-//            hashSetSizeClass.add(goods.getSizeClassId());
-//            hashSetBrand.add(goods.getBrandId());
-//            hashSetCategory.add(goods.getCategoryId());
-//
-//        }
-//        if(goods.getSizeClassId() != null) {
-//            SizeClass  sizeClass = sizeClassDao.selectById(goods.getSizeClassId());
-//            if(sizeClass == null) {
-//                queryResult.setSizeClassName(sizeClass.getName());
-//            }
-//        }
-//        if (goods.getBrandId() != null) {
-//            Brand brand = brandDao.selectById(goods.getBrandId());
-//            if(brand != null) {
-//                queryResult.setBrand(brand.getName());
-//            }
-//        }
-//        if (goods.getCategoryId() != null) {
-//            Category category = categoryDao.selectById(goods.getCategoryId());
-//            if(category != null) {
-//                queryResult.setCategory(category.getName());
-//            }
-//        }
-//        if (goods.getSeriesId() != null) {
-//            Series series = seriesDao.selectById(goods.getSeriesId());
-//            if(series == null) {
-//                queryResult.setSeries(series.getName());
-//            }
-//        }
-//        if (goods.getPatternId() != null) {
-//            Pattern pattern = patternDao.selectById(goods.getPatternId());
-//            if(pattern == null) {
-//                queryResult.setPattern(pattern.getName());
-//            }
-//        }
-//        if (goods.getStyleId() != null) {
-//            Style style = styleDao.selectById(goods.getStyleId());
-//            if(style == null) {
-//                queryResult.setStyle(style.getName());
-//            }
-//        }
-//        if (goods.getSaleClassId() != null) {
-//            SaleClass saleClass = saleClassDao.selectById(goods.getSaleClassId());
-//            if(saleClass == null) {
-//                queryResult.setSaleClass(saleClass.getName());
-//            }
-//        }
-//        if (goods.getYearId() != null) {
-//            Year year = yearDao.selectById(goods.getYearId());
-//            if(year == null) {
-//                queryResult.setYear(year.getName());
-//            }
-//        }
-//        if (goods.getSeasonId() != null) {
-//            Season season = seasonDao.selectById(goods.getSeasonId());
-//            if(season == null) {
-//                queryResult.setSeason(season.getName());
-//            }
-//        }
-//        if (goods.getBandId() != null) {
-//            Band band = bandDao.selectById(goods.getBandId());
-//            if(band == null) {
-//                queryResult.setBand(band.getName());
-//            }
-//        }
-//        if (goods.getMaterialId() != null) {
-//            Material material = materialDao.selectById(goods.getMaterialId());
-//            if(material == null) {
-//                queryResult.setMaterial(material.getName());
-//            }
-//        }
-//        if(goods.getSexId() != null) {
-//            Sex sex = sexDao.selectById(goods.getSexId());
-//            if(sex == null) {
-//                queryResult.setSex(sex.getName());
-//            }
-//        }
-//        if(goods.getExchangeCategoryId() != null) {
-//            ExchangeCategory  exchangeCategory = exchangeCategoryDao.selectById(goods.getExchangeCategoryId());
-//            if(exchangeCategory == null) {
-//                queryResult.setExchangeCategory(exchangeCategory.getName());
-//            }
-//        }
-//        if(goods.getDiscountCategoryId() != null) {
-//            DiscountCategory  discountCategory = discountCategoryDao.selectById(goods.getDiscountCategoryId());
-//            if(discountCategory == null) {
-//                queryResult.setDiscountCategory(discountCategory.getName());
-//            }
-//        }
-//        if(goods.getModelClassId() != null) {
-//            ModelClass  modelClass = modelClassDao.selectById(goods.getModelClassId());
-//            if(modelClass == null) {
-//                queryResult.setModelClass(modelClass.getName());
-//            }
-//        }
-//        if(goods.getAgeRangeId() != null) {
-//            AgeRange  ageRange = ageRangeDao.selectById(goods.getAgeRangeId());
-//            if(ageRange == null) {
-//                queryResult.setMinAge(ageRange.getMinAge());
-//                queryResult.setMaxAge(ageRange.getMaxAge());
-//            }
-//        }
-//        if(goods.getSupplierId() != null) {
-//            Supplier  supplier = supplierDao.selectById(goods.getSupplierId());
-//            if(supplier == null) {
-//                queryResult.setSupplierCode(supplier.getCode());
-//            }
-//        }
+
+        List<SizeClass> listSizeClass = sizeClassDao.selectList(new QueryWrapper<SizeClass>().select("id","name"));
+        Map<Long, String> mapSizeClass = listSizeClass.stream().collect(Collectors.toMap(SizeClass::getId, SizeClass::getName));
+
+        List<Brand> listBrand = brandDao.selectList(new QueryWrapper<Brand>().select("id","name"));
+        Map<Long, String> mapBrand = listBrand.stream().collect(Collectors.toMap(Brand::getId, Brand::getName));
+
+        List<Category> listCategory = categoryDao.selectList(new QueryWrapper<Category>().select("id","name"));
+        Map<Long, String> mapCategory = listCategory.stream().collect(Collectors.toMap(Category::getId, Category::getName));
+
+        List<Series> listSeries = seriesDao.selectList(new QueryWrapper<Series>().select("id","name"));
+        Map<Long, String> mapSeries = listSeries.stream().collect(Collectors.toMap(Series::getId, Series::getName));
+
+        List<Pattern> listPattern = patternDao.selectList(new QueryWrapper<Pattern>().select("id","name"));
+        Map<Long, String> mapPattern = listPattern.stream().collect(Collectors.toMap(Pattern::getId, Pattern::getName));
+
+        List<Style> listStyle = styleDao.selectList(new QueryWrapper<Style>().select("id","name"));
+        Map<Long, String> mapStyle = listStyle.stream().collect(Collectors.toMap(Style::getId, Style::getName));
+
+        List<SaleClass> listSaleClass = saleClassDao.selectList(new QueryWrapper<SaleClass>().select("id","name"));
+        Map<Long, String> mapSaleClass = listSaleClass.stream().collect(Collectors.toMap(SaleClass::getId, SaleClass::getName));
+
+        List<Year> listYear = yearDao.selectList(new QueryWrapper<Year>().select("id","name"));
+        Map<Long, String> mapYear = listYear.stream().collect(Collectors.toMap(Year::getId, Year::getName));
+
+        List<Season> listSeason = seasonDao.selectList(new QueryWrapper<Season>().select("id","name"));
+        Map<Long, String> mapSeason = listSeason.stream().collect(Collectors.toMap(Season::getId, Season::getName));
+
+        List<Band> listBand = bandDao.selectList(new QueryWrapper<Band>().select("id","name"));
+        Map<Long, String> mapBand = listBand.stream().collect(Collectors.toMap(Band::getId, Band::getName));
+
+        List<Material> listMaterial = materialDao.selectList(new QueryWrapper<Material>().select("id","name"));
+        Map<Long, String> mapMaterial = listMaterial.stream().collect(Collectors.toMap(Material::getId, Material::getName));
+
+        List<Sex> listSex = sexDao.selectList(new QueryWrapper<Sex>().select("id","name"));
+        Map<Long, String> mapSex = listSex.stream().collect(Collectors.toMap(Sex::getId, Sex::getName));
+
+        List<DiscountCategory> listDiscountCategory = discountCategoryDao.selectList(new QueryWrapper<DiscountCategory>().select("id","name"));
+        Map<Long, String> mapDiscountCategory = listDiscountCategory.stream().collect(Collectors.toMap(DiscountCategory::getId, DiscountCategory::getName));
+
+        List<ExchangeCategory> listExchangeCategory = exchangeCategoryDao.selectList(new QueryWrapper<ExchangeCategory>().select("id","name"));
+        Map<Long, String> mapExchangeCategory = listExchangeCategory.stream().collect(Collectors.toMap(ExchangeCategory::getId, ExchangeCategory::getName));
+
+        List<ModelClass> listModelClass = modelClassDao.selectList(new QueryWrapper<ModelClass>().select("id","name"));
+        Map<Long, String> mapModelClass = listModelClass.stream().collect(Collectors.toMap(ModelClass::getId, ModelClass::getName));
+
+        List<Supplier> listSupplier = supplierDao.selectList(new QueryWrapper<Supplier>().select("id","code"));
+        Map<Long, String> mapSupplier = listSupplier.stream().collect(Collectors.toMap(Supplier::getId, Supplier::getCode));
+
+        List<AgeRange> listAgeRange = ageRangeDao.selectList(new QueryWrapper<AgeRange>().select("id","code"));
+        Map<Long, AgeRange> mapAgeRange = listAgeRange.stream().collect(Collectors.toMap(AgeRange::getId, t -> t));
+
+        HashMap<Long, GoodsQueryResult> hashMapQueryResult = new HashMap<>(queryResults.size());
+        queryResults.forEach(queryResult -> { hashMapQueryResult.put(queryResult.getGoodsId(), queryResult); });
+        for(Goods goods : goodsList ) {
+            GoodsQueryResult queryResult = null;
+            if(hashMapQueryResult.containsKey(goods.getId())){
+                queryResult = hashMapQueryResult.get(goods.getId());
+            }
+            if(queryResult==null) {
+                continue;
+            }
+            if(goods.getSizeClassId() != null && mapSizeClass.containsKey(goods.getSizeClassId())) {
+                queryResult.setSizeClassName(mapSizeClass.get(goods.getSizeClassId()));
+            }
+            if(goods.getBrandId() != null && mapBrand.containsKey(goods.getBrandId())) {
+                queryResult.setBrand(mapBrand.get(goods.getBrandId()));
+            }
+            if(goods.getCategoryId() != null && mapCategory.containsKey(goods.getCategoryId())) {
+                queryResult.setCategory(mapCategory.get(goods.getCategoryId()));
+            }
+            if(goods.getSeriesId() != null && mapSeries.containsKey(goods.getSeriesId())) {
+                queryResult.setSeries(mapSeries.get(goods.getSeriesId()));
+            }
+            if(goods.getPatternId() != null && mapPattern.containsKey(goods.getPatternId())) {
+                queryResult.setPattern(mapPattern.get(goods.getPatternId()));
+            }
+            if(goods.getStyleId() != null && mapStyle.containsKey(goods.getStyleId())) {
+                queryResult.setStyle(mapStyle.get(goods.getStyleId()));
+            }
+            if(goods.getSaleClassId() != null && mapSaleClass.containsKey(goods.getSaleClassId())) {
+                queryResult.setSaleClass(mapSaleClass.get(goods.getSaleClassId()));
+            }
+            if(goods.getYearId() != null && mapYear.containsKey(goods.getYearId())) {
+                queryResult.setYear(mapYear.get(goods.getYearId()));
+            }
+            if(goods.getSeasonId() != null && mapSeason.containsKey(goods.getSeasonId())) {
+                queryResult.setSeason(mapSeason.get(goods.getSeasonId()));
+            }
+            if(goods.getBandId() != null && mapBand.containsKey(goods.getBandId())) {
+                queryResult.setBand(mapBand.get(goods.getBandId()));
+            }
+            if(goods.getMaterialId() != null && mapMaterial.containsKey(goods.getMaterialId())) {
+                queryResult.setMaterial(mapMaterial.get(goods.getMaterialId()));
+            }
+            if(goods.getSexId() != null && mapSex.containsKey(goods.getSexId())) {
+                queryResult.setSex(mapSex.get(goods.getSexId()));
+            }
+            if(goods.getDiscountCategoryId() != null && mapDiscountCategory.containsKey(goods.getDiscountCategoryId())) {
+                queryResult.setDiscountCategory(mapDiscountCategory.get(goods.getDiscountCategoryId()));
+            }
+            if(goods.getExchangeCategoryId() != null && mapExchangeCategory.containsKey(goods.getExchangeCategoryId())) {
+                queryResult.setExchangeCategory(mapExchangeCategory.get(goods.getExchangeCategoryId()));
+            }
+            if(goods.getModelClassId() != null && mapModelClass.containsKey(goods.getModelClassId())) {
+                queryResult.setModelClass(mapModelClass.get(goods.getModelClassId()));
+            }
+
+            if(goods.getSupplierId() != null && mapSupplier.containsKey(goods.getSupplierId())) {
+                queryResult.setSupplierCode(mapSupplier.get(goods.getSupplierId()));
+            }
+            if(goods.getAgeRangeId() != null && mapAgeRange.containsKey(goods.getAgeRangeId())) {
+                queryResult.setMinAge(mapAgeRange.get(goods.getAgeRangeId()).getMinAge());
+                queryResult.setMaxAge(mapAgeRange.get(goods.getAgeRangeId()).getMaxAge());
+            }
+        }
     }
 
     /**
@@ -704,7 +698,7 @@ public class GoodsServiceBean implements GoodsService {
         if(param.getMinAge() != null && param.getMaxAge() != null) {
             AgeRange ageRange = ageRangeDao.selectOne(new QueryWrapper<AgeRange>()
                     .eq("min_age", param.getMinAge())
-                            .eq("max_age", param.getMinAge()));
+                    .eq("max_age", param.getMinAge()));
             if(ageRange == null) {
                 ageRangeDao.insert(ageRange);
             }
