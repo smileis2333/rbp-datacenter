@@ -7,7 +7,7 @@ import lombok.Data;
  * @author xuxing
  */
 @Data
-public class CustomizeData {
+public class CustomizeDataDto {
     private String code;
     private String value;
 }

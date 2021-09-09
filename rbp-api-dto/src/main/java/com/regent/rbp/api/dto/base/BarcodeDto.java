@@ -6,7 +6,7 @@ import lombok.Data;
  * @author xuxing
  */
 @Data
-public class Barcode {
+public class BarcodeDto {
     private String goodsCode;
     private String colorCode;
     private String longName;

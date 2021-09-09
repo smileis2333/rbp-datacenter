@@ -2,7 +2,7 @@ package com.regent.rbp.api.service.goods.context;
 
 import com.regent.rbp.api.core.base.Barcode;
 import com.regent.rbp.api.core.goods.*;
-import com.regent.rbp.api.dto.goods.GoodsPriceData;
+import com.regent.rbp.api.dto.goods.GoodsPriceDto;
 import com.regent.rbp.api.dto.goods.GoodsSaveParam;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
@@ -64,7 +64,7 @@ public class GoodsSaveContext {
         this.goods.setStatus(0);
         this.goods.setSupplierGoodsNo(param.getSupplierGoodsNo());
         this.goods.setMetricFlag(param.isMetricFlag());
-        GoodsPriceData priceData = param.getPriceData();
+        GoodsPriceDto priceData = param.getPriceData();
         if(priceData != null) {
             this.goods.setMachiningPrice(priceData.getMachiningPrice());
             this.goods.setPlanCostPrice(priceData.getPlanCostPrice());

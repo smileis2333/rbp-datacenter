@@ -8,7 +8,7 @@ import java.math.BigDecimal;
  * @author xuxing
  */
 @Data
-public class GoodsTagPriceData {
+public class GoodsTagPriceDto {
     private String id;
     private BigDecimal value;
 }

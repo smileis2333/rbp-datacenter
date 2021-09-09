@@ -9,11 +9,11 @@ import java.util.List;
  * @author xuxing
  */
 @Data
-public class GoodsPriceData {
+public class GoodsPriceDto {
     private BigDecimal machiningPrice;
     private BigDecimal materialPrice;
     private BigDecimal planCostPrice;
     private BigDecimal purchasePrice;
 
-    private List<GoodsTagPriceData> tagPrice;
+    private List<GoodsTagPriceDto> tagPrice;
 }
