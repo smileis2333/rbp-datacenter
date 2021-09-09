@@ -157,122 +157,122 @@ public class GoodsServiceBean implements GoodsService {
      * @param goodsList
      */
     private void processGoodsQueryResultProperty(List<GoodsQueryResult> queryResults, List<Goods> goodsList) {
-        {
-            List<SizeClass> list = sizeClassDao.selectList(new QueryWrapper<SizeClass>().select("id","name"));
-            list.stream().collect(Collectors.toMap())
-        }
-        goodsList.forEach(Goods->{
-
-        });
-        for (Goods goods : goodsList) {
-            hashSetSizeClass.add(goods.getSizeClassId());
-            hashSetBrand.add(goods.getBrandId());
-            hashSetCategory.add(goods.getCategoryId());
-
-        }
-        if(goods.getSizeClassId() != null) {
-            SizeClass  sizeClass = sizeClassDao.selectById(goods.getSizeClassId());
-            if(sizeClass == null) {
-                queryResult.setSizeClassName(sizeClass.getName());
-            }
-        }
-        if (goods.getBrandId() != null) {
-            Brand brand = brandDao.selectById(goods.getBrandId());
-            if(brand != null) {
-                queryResult.setBrand(brand.getName());
-            }
-        }
-        if (goods.getCategoryId() != null) {
-            Category category = categoryDao.selectById(goods.getCategoryId());
-            if(category != null) {
-                queryResult.setCategory(category.getName());
-            }
-        }
-        if (goods.getSeriesId() != null) {
-            Series series = seriesDao.selectById(goods.getSeriesId());
-            if(series == null) {
-                queryResult.setSeries(series.getName());
-            }
-        }
-        if (goods.getPatternId() != null) {
-            Pattern pattern = patternDao.selectById(goods.getPatternId());
-            if(pattern == null) {
-                queryResult.setPattern(pattern.getName());
-            }
-        }
-        if (goods.getStyleId() != null) {
-            Style style = styleDao.selectById(goods.getStyleId());
-            if(style == null) {
-                queryResult.setStyle(style.getName());
-            }
-        }
-        if (goods.getSaleClassId() != null) {
-            SaleClass saleClass = saleClassDao.selectById(goods.getSaleClassId());
-            if(saleClass == null) {
-                queryResult.setSaleClass(saleClass.getName());
-            }
-        }
-        if (goods.getYearId() != null) {
-            Year year = yearDao.selectById(goods.getYearId());
-            if(year == null) {
-                queryResult.setYear(year.getName());
-            }
-        }
-        if (goods.getSeasonId() != null) {
-            Season season = seasonDao.selectById(goods.getSeasonId());
-            if(season == null) {
-                queryResult.setSeason(season.getName());
-            }
-        }
-        if (goods.getBandId() != null) {
-            Band band = bandDao.selectById(goods.getBandId());
-            if(band == null) {
-                queryResult.setBand(band.getName());
-            }
-        }
-        if (goods.getMaterialId() != null) {
-            Material material = materialDao.selectById(goods.getMaterialId());
-            if(material == null) {
-                queryResult.setMaterial(material.getName());
-            }
-        }
-        if(goods.getSexId() != null) {
-            Sex sex = sexDao.selectById(goods.getSexId());
-            if(sex == null) {
-                queryResult.setSex(sex.getName());
-            }
-        }
-        if(goods.getExchangeCategoryId() != null) {
-            ExchangeCategory  exchangeCategory = exchangeCategoryDao.selectById(goods.getExchangeCategoryId());
-            if(exchangeCategory == null) {
-                queryResult.setExchangeCategory(exchangeCategory.getName());
-            }
-        }
-        if(goods.getDiscountCategoryId() != null) {
-            DiscountCategory  discountCategory = discountCategoryDao.selectById(goods.getDiscountCategoryId());
-            if(discountCategory == null) {
-                queryResult.setDiscountCategory(discountCategory.getName());
-            }
-        }
-        if(goods.getModelClassId() != null) {
-            ModelClass  modelClass = modelClassDao.selectById(goods.getModelClassId());
-            if(modelClass == null) {
-                queryResult.setModelClass(modelClass.getName());
-            }
-        }
-        if(goods.getAgeRangeId() != null) {
-            AgeRange  ageRange = ageRangeDao.selectById(goods.getAgeRangeId());
-            if(ageRange == null) {
-                queryResult.setMinAge(ageRange.getMinAge());
-                queryResult.setMaxAge(ageRange.getMaxAge());
-            }
-        }
-        if(goods.getSupplierId() != null) {
-            Supplier  supplier = supplierDao.selectById(goods.getSupplierId());
-            if(supplier == null) {
-                queryResult.setSupplierCode(supplier.getCode());
-            }
-        }
+//        {
+//            List<SizeClass> list = sizeClassDao.selectList(new QueryWrapper<SizeClass>().select("id","name"));
+//            list.stream().collect(Collectors.toMap())
+//        }
+//        goodsList.forEach(Goods->{
+//
+//        });
+//        for (Goods goods : goodsList) {
+//            hashSetSizeClass.add(goods.getSizeClassId());
+//            hashSetBrand.add(goods.getBrandId());
+//            hashSetCategory.add(goods.getCategoryId());
+//
+//        }
+//        if(goods.getSizeClassId() != null) {
+//            SizeClass  sizeClass = sizeClassDao.selectById(goods.getSizeClassId());
+//            if(sizeClass == null) {
+//                queryResult.setSizeClassName(sizeClass.getName());
+//            }
+//        }
+//        if (goods.getBrandId() != null) {
+//            Brand brand = brandDao.selectById(goods.getBrandId());
+//            if(brand != null) {
+//                queryResult.setBrand(brand.getName());
+//            }
+//        }
+//        if (goods.getCategoryId() != null) {
+//            Category category = categoryDao.selectById(goods.getCategoryId());
+//            if(category != null) {
+//                queryResult.setCategory(category.getName());
+//            }
+//        }
+//        if (goods.getSeriesId() != null) {
+//            Series series = seriesDao.selectById(goods.getSeriesId());
+//            if(series == null) {
+//                queryResult.setSeries(series.getName());
+//            }
+//        }
+//        if (goods.getPatternId() != null) {
+//            Pattern pattern = patternDao.selectById(goods.getPatternId());
+//            if(pattern == null) {
+//                queryResult.setPattern(pattern.getName());
+//            }
+//        }
+//        if (goods.getStyleId() != null) {
+//            Style style = styleDao.selectById(goods.getStyleId());
+//            if(style == null) {
+//                queryResult.setStyle(style.getName());
+//            }
+//        }
+//        if (goods.getSaleClassId() != null) {
+//            SaleClass saleClass = saleClassDao.selectById(goods.getSaleClassId());
+//            if(saleClass == null) {
+//                queryResult.setSaleClass(saleClass.getName());
+//            }
+//        }
+//        if (goods.getYearId() != null) {
+//            Year year = yearDao.selectById(goods.getYearId());
+//            if(year == null) {
+//                queryResult.setYear(year.getName());
+//            }
+//        }
+//        if (goods.getSeasonId() != null) {
+//            Season season = seasonDao.selectById(goods.getSeasonId());
+//            if(season == null) {
+//                queryResult.setSeason(season.getName());
+//            }
+//        }
+//        if (goods.getBandId() != null) {
+//            Band band = bandDao.selectById(goods.getBandId());
+//            if(band == null) {
+//                queryResult.setBand(band.getName());
+//            }
+//        }
+//        if (goods.getMaterialId() != null) {
+//            Material material = materialDao.selectById(goods.getMaterialId());
+//            if(material == null) {
+//                queryResult.setMaterial(material.getName());
+//            }
+//        }
+//        if(goods.getSexId() != null) {
+//            Sex sex = sexDao.selectById(goods.getSexId());
+//            if(sex == null) {
+//                queryResult.setSex(sex.getName());
+//            }
+//        }
+//        if(goods.getExchangeCategoryId() != null) {
+//            ExchangeCategory  exchangeCategory = exchangeCategoryDao.selectById(goods.getExchangeCategoryId());
+//            if(exchangeCategory == null) {
+//                queryResult.setExchangeCategory(exchangeCategory.getName());
+//            }
+//        }
+//        if(goods.getDiscountCategoryId() != null) {
+//            DiscountCategory  discountCategory = discountCategoryDao.selectById(goods.getDiscountCategoryId());
+//            if(discountCategory == null) {
+//                queryResult.setDiscountCategory(discountCategory.getName());
+//            }
+//        }
+//        if(goods.getModelClassId() != null) {
+//            ModelClass  modelClass = modelClassDao.selectById(goods.getModelClassId());
+//            if(modelClass == null) {
+//                queryResult.setModelClass(modelClass.getName());
+//            }
+//        }
+//        if(goods.getAgeRangeId() != null) {
+//            AgeRange  ageRange = ageRangeDao.selectById(goods.getAgeRangeId());
+//            if(ageRange == null) {
+//                queryResult.setMinAge(ageRange.getMinAge());
+//                queryResult.setMaxAge(ageRange.getMaxAge());
+//            }
+//        }
+//        if(goods.getSupplierId() != null) {
+//            Supplier  supplier = supplierDao.selectById(goods.getSupplierId());
+//            if(supplier == null) {
+//                queryResult.setSupplierCode(supplier.getCode());
+//            }
+//        }
     }
 
     /**
