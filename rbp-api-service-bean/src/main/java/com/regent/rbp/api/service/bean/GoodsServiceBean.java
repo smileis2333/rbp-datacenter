@@ -93,24 +93,23 @@ public class GoodsServiceBean implements GoodsService {
 
     @Override
     public PageDataResponse<GoodsQueryResult> query(GoodsQueryParam param) {
-        PageDataResponse<GoodsQueryResult> response = new PageDataResponse<>();
-
         GoodsQueryContext context = new GoodsQueryContext();
         //将入参转换成查询的上下文对象
         convertGoodsQueryContext(param, context);
-
+        //查询数据
+        PageDataResponse<GoodsQueryResult> response = searchGoods(context);
 
         return response;
     }
 
-    private void searchGoods(GoodsQueryContext context) {
+    private PageDataResponse<GoodsQueryResult> searchGoods(GoodsQueryContext context) {
 
         Page<Goods> pageModel = new Page<Goods>(context.getPageNo(), context.getPageSize());
         QueryWrapper queryWrapper = new QueryWrapper<Goods>();
 
         IPage<Goods> goodsPageData = goodsDao.selectPage(pageModel, queryWrapper);
-        List<Long> goodsIds = goodsPageData.getRecords().stream().map(Goods::getId).collect(Collectors.toList());
-
+        List<GoodsQueryResult> list = convertGoodsQueryResult(goodsPageData.getRecords());
+        
     }
 
     /**
@@ -118,8 +117,9 @@ public class GoodsServiceBean implements GoodsService {
      * 1.读取相同的属性
      * 2.将内部编码id转换成名称name
      */
-    private void processGoodsQueryResultProperty(List<Goods> goodsList) {
-        
+    private List<GoodsQueryResult> convertGoodsQueryResult(List<Goods> goodsList) {
+        List<Long> goodsIds = goodsList.stream().map(Goods::getId).collect(Collectors.toList());
+
     }
 
     /**
