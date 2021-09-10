@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.base.BarcodeDao">
+
+    <select id="selectBarcodeByGoodsIds" resultType="com.regent.rbp.api.dto.base.BarcodeDto">
+        SELECT a.goods_id goodsId, b.`code` goodsCode, d.`code` colorCode, f.`name` longName, f.`name` size, a.barcode, a.rule_id ruleId
+        FROM rbp_barcode a
+            INNER JOIN rbp_goods b on a.goods_id = b.id
+            INNER JOIN rbp_goods_color c on a.goods_id = c.goods_id
+            INNER JOIN rbp_color d on c.color_id = d.id
+            INNER JOIN rbp_goods_long e on a.goods_id = e.goods_id
+            INNER JOIN rbp_long f on e.long_id = f.id
+            INNER JOIN rbp_size_detail g on a.size_id = g.id
+        WHERE a.goods_id IN (
+        <foreach item="id" collection="goodsIds" open="" separator="," close="">
+            #{id}
+        </foreach>
+        )
+    </select>
+
+</mapper>

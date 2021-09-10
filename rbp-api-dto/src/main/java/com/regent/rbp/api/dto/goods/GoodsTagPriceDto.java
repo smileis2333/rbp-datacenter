@@ -1,5 +1,6 @@
 package com.regent.rbp.api.dto.goods;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -9,6 +10,8 @@ import java.math.BigDecimal;
  */
 @Data
 public class GoodsTagPriceDto {
-    private String id;
+    @JsonIgnore
+    private Long goodsId;
+    private String name;
     private BigDecimal value;
 }

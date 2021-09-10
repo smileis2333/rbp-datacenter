@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.goods.SizeDisableDao">
+
+    <select id="selectGoodsDisableSizeByGoodsIds" resultType="com.regent.rbp.api.dto.goods.DisableSizeDto">
+        SELECT a.goods_id goodsId, d.`code` colorCode, f.`name` longName, f.`name` size
+        FROM rbp_size_disable a
+            INNER JOIN rbp_goods_color c on a.goods_id = c.goods_id
+            INNER JOIN rbp_color d on c.color_id = d.id
+            INNER JOIN rbp_goods_long e on a.goods_id = e.goods_id
+            INNER JOIN rbp_long f on e.long_id = f.id
+            INNER JOIN rbp_size_detail g on a.size_id = g.id
+        WHERE a.goods_id IN (
+        <foreach item="id" collection="goodsIds" open="" separator="," close="">
+            #{id}
+        </foreach>
+        )
+    </select>
+
+</mapper>

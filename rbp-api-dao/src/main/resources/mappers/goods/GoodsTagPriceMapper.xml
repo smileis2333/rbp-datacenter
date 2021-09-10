@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.goods.GoodsTagPriceDao">
+
+    <select id="selectGoodsTagPriceByGoodsIds" resultType="com.regent.rbp.api.dto.goods.GoodsTagPriceDto">
+        SELECT a.goods_id goodsId, b.`name`, a.tag_price `value`
+        FROM rbp_goods_tag_price a
+            LEFT JOIN rbp_price_type b ON a.price_type_id = b.id
+        WHERE a.goods_id IN (
+        <foreach item="id" collection="goodsIds" open="" separator="," close="">
+            #{id}
+        </foreach>
+        )
+    </select>
+
+</mapper>

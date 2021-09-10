@@ -2,7 +2,6 @@ package com.regent.rbp.api.dto.goods;
 
 import com.regent.rbp.api.dto.base.BarcodeDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
-import com.regent.rbp.api.dto.base.DisableSizeDto;
 import lombok.Data;
 
 import java.util.List;
