@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * @author chenchungui
  * @date 2021/9/9
- * @description
+ * @description 基础资料
  */
 @Service
 public class BaseBean implements BaseService {
@@ -64,7 +64,7 @@ public class BaseBean implements BaseService {
         // 过滤不需要code基础资料模块
         if (!BaseDataEnum.isCodeFlag(context.getType()) && CollUtil.isNotEmpty(pages.getRecords())) {
             FieldFilterTool<BaseData> tool = new FieldFilterTool();
-            pages.setRecords(tool.getFieldFilterList(pages.getRecords(), "code", BaseData.class));
+            pages.setRecords(tool.getFieldFilterList(pages.getRecords(), "name", BaseData.class));
         }
 
         return new PageDataResponse<>(pages.getTotal(), pages.getRecords());

@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 /**
  * @author chenchungui
  * @date 2021/9/10
- * @description
+ * @description 颜色
  */
 @Service
 public class ColorBean extends ServiceImpl<ColorDao, Color> implements ColorService {

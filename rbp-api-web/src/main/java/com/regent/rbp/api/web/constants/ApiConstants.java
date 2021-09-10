@@ -13,5 +13,7 @@ public class ApiConstants {
 
     public static final String API_COLOR_DATA = "api/color";
 
+    public static final String API_SIZE_CLASS_DATA = "api/size";
+
 
 }
