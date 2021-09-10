@@ -16,6 +16,7 @@ import com.regent.rbp.api.service.base.context.BaseQueryContext;
 import com.regent.rbp.api.service.base.context.BaseSaveContext;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.api.service.enums.BaseDataEnum;
+import com.regent.rbp.api.service.utils.FieldFilterTool;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
@@ -60,6 +61,11 @@ public class BaseBean implements BaseService {
         // 查询
         Page<BaseData> pageModel = new Page<>(context.getPageNo(), context.getPageSize());
         IPage<BaseData> pages = brandDao.searchPageData(pageModel, tableName, context.getKeyword());
+        // 过滤不需要code基础资料模块
+        if (!BaseDataEnum.isCodeFlag(context.getType()) && CollUtil.isNotEmpty(pages.getRecords())) {
+            FieldFilterTool<BaseData> tool = new FieldFilterTool();
+            pages.setRecords(tool.getFieldFilterList(pages.getRecords(), "code", BaseData.class));
+        }
 
         return new PageDataResponse<>(pages.getTotal(), pages.getRecords());
     }

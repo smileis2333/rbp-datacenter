@@ -18,6 +18,6 @@ public class BaseSaveContext {
     private String type;
 
     @ApiModelProperty("数据列表")
-    private List<BaseData> data;
+    private List<BaseData> list;
 
 }
