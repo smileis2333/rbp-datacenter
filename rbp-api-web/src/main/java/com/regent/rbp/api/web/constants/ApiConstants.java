@@ -15,5 +15,7 @@ public class ApiConstants {
 
     public static final String API_SIZE_CLASS_DATA = "api/size";
 
+    public static final String API_LONG_DATA = "api/long";
+
 
 }

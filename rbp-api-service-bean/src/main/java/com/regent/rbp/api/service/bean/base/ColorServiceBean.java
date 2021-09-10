@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
  * @description 颜色
  */
 @Service
-public class ColorBean extends ServiceImpl<ColorDao, Color> implements ColorService {
+public class ColorServiceBean extends ServiceImpl<ColorDao, Color> implements ColorService {
 
     @Autowired
     private ColorDao colorDao;

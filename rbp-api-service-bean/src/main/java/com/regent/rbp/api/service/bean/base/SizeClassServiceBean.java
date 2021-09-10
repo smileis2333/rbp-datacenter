@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
  * @description 尺码
  */
 @Service
-public class SizeClassBean extends ServiceImpl<SizeClassDao, SizeClass> implements SizeClassService {
+public class SizeClassServiceBean extends ServiceImpl<SizeClassDao, SizeClass> implements SizeClassService {
 
     @Autowired
     private SizeClassDao sizeClassDao;

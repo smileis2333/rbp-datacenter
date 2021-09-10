@@ -37,7 +37,7 @@ import java.util.Set;
  * @description 基础资料
  */
 @Service
-public class BaseBean implements BaseService {
+public class BaseServiceBean implements BaseService {
 
     @Autowired
     private BrandDao brandDao;
