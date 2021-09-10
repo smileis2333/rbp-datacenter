@@ -11,4 +11,7 @@ public class ApiConstants {
 
     public static final String API_BASIC_DATA = "api/basicData";
 
+    public static final String API_COLOR_DATA = "api/color";
+
+
 }

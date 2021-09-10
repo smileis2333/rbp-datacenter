@@ -41,6 +41,12 @@ public class BaseBean implements BaseService {
     @Autowired
     private BrandDao brandDao;
 
+    /**
+     * 分页查询
+     *
+     * @param param
+     * @return
+     */
     @Override
     public PageDataResponse<BaseData> searchPageData(BaseQueryParam param) {
         BaseQueryContext context = new BaseQueryContext();
@@ -58,6 +64,12 @@ public class BaseBean implements BaseService {
         return new PageDataResponse<>(pages.getTotal(), pages.getRecords());
     }
 
+    /**
+     * 创建
+     *
+     * @param param
+     * @return
+     */
     @Transactional
     @Override
     public DataResponse batchCreate(BaseSaveParam param) {
@@ -67,29 +79,29 @@ public class BaseBean implements BaseService {
         // 获取基础资料表名
         String tableName = BaseDataEnum.getTableName(context.getType());
         if (StringUtils.isEmpty(tableName)) {
-            return new PageDataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotExist", new String[]{LanguageUtil.getMessage("baseDataType")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotExist", new String[]{LanguageUtil.getMessage("baseDataType")}));
         }
-        if (CollUtil.isEmpty(context.getData())) {
-            return new PageDataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("baseDataList")}));
+        if (CollUtil.isEmpty(context.getList())) {
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("baseDataList")}));
         }
         // 判断是否重复
         List<String> existList = new ArrayList<>();
         Boolean codeFlag = BaseDataEnum.isCodeFlag(context.getType());
         if (codeFlag) {
-            this.findExists(tableName, codeFlag, existList, context.getData());
+            this.findExists(tableName, codeFlag, existList, context.getList());
         } else {
-            this.findExists(tableName, codeFlag, existList, context.getData());
+            this.findExists(tableName, codeFlag, existList, context.getList());
         }
         if (CollUtil.isNotEmpty(existList)) {
-            return new PageDataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataRepeated", new String[]{String.join(StrUtil.COMMA, existList)}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataRepeated", new String[]{String.join(StrUtil.COMMA, existList)}));
         }
         // 批量新增
         List<Brand> list = new ArrayList<>();
         int i = 1;
-        for (BaseData baseData : context.getData()) {
+        for (BaseData baseData : context.getList()) {
             i++;
             list.add(Brand.build(codeFlag ? baseData.getCode() : StrUtil.EMPTY, baseData.getName()));
-            if (i % SystemConstants.BATCH_SIZE == 0 || i == context.getData().size()) {
+            if (i % SystemConstants.BATCH_SIZE == 0 || i == context.getList().size()) {
                 brandDao.batchInsert(tableName, list);
                 list.clear();
             }
@@ -120,7 +132,7 @@ public class BaseBean implements BaseService {
      */
     private void convertSaveContext(BaseSaveParam param, BaseSaveContext context) {
         context.setType(param.getType());
-        context.setData(OptionalUtil.ofNullable(context, BaseSaveContext::getData, new ArrayList<>()));
+        context.setList(OptionalUtil.ofNullable(param, BaseSaveParam::getData, new ArrayList<>()));
     }
 
     /**

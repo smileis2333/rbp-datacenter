@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.base.BrandDao">
+
+    <select id="searchPageData" resultType="com.regent.rbp.api.dto.base.BaseData">
+        SELECT id, code, `name` FROM ${tableName}
+        <if test="keyword != '' and keyword != null">
+            WHERE `name` LIKE concat('%', #{keyword}, '%') OR code LIKE concat('%', #{keyword}, '%')
+        </if>
+        ORDER BY updated_time DESC;
+    </select>
+
+    <select id="getExistBaseDataList" resultType="java.lang.String">
+        SELECT ${columnName} FROM ${tableName}
+        WHERE ${columnName} IN (
+        <foreach item="id" collection="list" open="" separator="," close="">
+            #{id}
+        </foreach>
+        )
+    </select>
+
+    <insert id="batchInsert">
+        INSERT INTO ${tableName} (id,code,`name`,created_by,updated_by)
+        VALUES
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.id}, #{item.code}, #{item.name},#{item.createdBy},#{item.updatedBy})
+        </foreach>
+    </insert>
+
+
+</mapper>
