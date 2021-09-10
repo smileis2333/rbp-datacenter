@@ -3,7 +3,6 @@ package com.regent.rbp.api.dto.goods;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.regent.rbp.api.dto.base.BarcodeDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
-import com.regent.rbp.api.dto.base.DisableSizeDto;
 import lombok.Data;
 
 import java.util.List;
@@ -45,10 +44,10 @@ public class GoodsQueryResult {
     private String modelClass;
     private String notes;
     private String buildDate;
-    private String[] colorList;
     private String[] longList;
     private GoodsPriceDto priceData;
+    private List<GoodsColorDto> colorData;
     private List<CustomizeDataDto> customizeDatumDtos;
-    private List<BarcodeDto> barcodeDtoData;
-    private List<DisableSizeDto> disableSizeDtoData;
+    private List<BarcodeDto> barcodeData;
+    private List<DisableSizeDto> disableSizeData;
 }

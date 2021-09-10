@@ -1,5 +1,6 @@
 package com.regent.rbp.api.dto.base;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 /**
@@ -7,6 +8,8 @@ import lombok.Data;
  */
 @Data
 public class BarcodeDto {
+    @JsonIgnore
+    private Long goodsId;
     private String goodsCode;
     private String colorCode;
     private String longName;

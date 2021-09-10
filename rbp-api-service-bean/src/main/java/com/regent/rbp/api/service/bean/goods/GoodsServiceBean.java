@@ -9,12 +9,10 @@ import com.regent.rbp.api.core.supplier.Supplier;
 import com.regent.rbp.api.dao.base.*;
 import com.regent.rbp.api.dao.goods.*;
 import com.regent.rbp.api.dao.supplier.SupplierDao;
+import com.regent.rbp.api.dto.base.BarcodeDto;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
-import com.regent.rbp.api.dto.goods.GoodsQueryParam;
-import com.regent.rbp.api.dto.goods.GoodsQueryResult;
-import com.regent.rbp.api.dto.goods.GoodsSaveParam;
-import com.regent.rbp.api.dto.goods.GoodsSaveResult;
+import com.regent.rbp.api.dto.goods.*;
 import com.regent.rbp.api.service.goods.GoodsService;
 import com.regent.rbp.api.service.goods.context.GoodsQueryContext;
 import com.regent.rbp.api.service.goods.context.GoodsSaveContext;
@@ -100,6 +98,9 @@ public class GoodsServiceBean implements GoodsService {
     @Autowired
     private SizeDisableDao sizeDisableDao;
 
+    @Autowired
+    private BarcodeDao barcodeDao;
+
     @Override
     public PageDataResponse<GoodsQueryResult> query(GoodsQueryParam param) {
         GoodsQueryContext context = new GoodsQueryContext();
@@ -139,7 +140,27 @@ public class GoodsServiceBean implements GoodsService {
      */
     private List<GoodsQueryResult> convertGoodsQueryResult(List<Goods> goodsList) {
         List<GoodsQueryResult> queryResults = new ArrayList<>(goodsList.size());
-        List<Long> goodsIds = new ArrayList<>(goodsList.size());
+        List<Long> goodsIds = goodsList.stream().map(Goods::getId).collect(Collectors.toList());
+        //加载所有货号的吊牌价列表
+        List<GoodsTagPriceDto> goodsTagPriceList = goodsTagPriceDao.selectGoodsTagPriceByGoodsIds(goodsIds);
+        Map<Long, List<GoodsTagPriceDto>> hashMapGoodsTagPrice = goodsTagPriceList.stream().collect(Collectors.groupingBy(GoodsTagPriceDto::getGoodsId));
+        //加载所有货号的内长列表
+        List<GoodsLongDto> goodsLongList = goodsLongDao.selectGoodsLongByGoodsIds(goodsIds);
+        Map<Long, List<GoodsLongDto>> hashMapGoodsLong = goodsLongList.stream().collect(Collectors.groupingBy(GoodsLongDto::getGoodsId));
+
+        //加载所有货号的颜色列表
+        List<GoodsColorDto> goodsColorList = goodsColorDao.selectGoodsColorByGoodsIds(goodsIds);
+        Map<Long, List<GoodsColorDto>> hashMapGoodsColor = goodsColorList.stream().collect(Collectors.groupingBy(GoodsColorDto::getGoodsId));
+
+        //加载所有货号的条形码列表
+        List<BarcodeDto> barcodeList = barcodeDao.selectBarcodeByGoodsIds(goodsIds);
+        Map<Long, List<BarcodeDto>> hashMapBarcode = barcodeList.stream().collect(Collectors.groupingBy(BarcodeDto::getGoodsId));
+
+        //加载所有货号的自定义字段列表
+
+        //尺码停用
+        List<DisableSizeDto> disableSizeList = sizeDisableDao.selectGoodsDisableSizeByGoodsIds(goodsIds);
+        Map<Long, List<DisableSizeDto>> hashMapDisableSize = disableSizeList.stream().collect(Collectors.groupingBy(DisableSizeDto::getGoodsId));
 
         for(Goods goods : goodsList) {
             GoodsQueryResult queryResult = new GoodsQueryResult();
@@ -154,7 +175,38 @@ public class GoodsServiceBean implements GoodsService {
             queryResult.setMetricFlag(goods.getMetricFlag());
             queryResult.setNotes(goods.getNotes());
             String buildDateStr = DateUtil.getDateStr(goods.getBuildDate(), DateUtil.SHORT_DATE_FORMAT);
-            queryResult.setBuildDate(buildDateStr);
+
+            GoodsPriceDto goodsPriceDto = new GoodsPriceDto();
+            goodsPriceDto.setMachiningPrice(goods.getMachiningPrice());
+            goodsPriceDto.setMaterialPrice(goods.getMaterialPrice());
+            goodsPriceDto.setPlanCostPrice(goods.getPlanCostPrice());
+            goodsPriceDto.setPurchasePrice(goods.getPurchasePrice());
+
+            //吊牌价
+            if(hashMapGoodsTagPrice.containsKey(goods.getId())) {
+                goodsPriceDto.setTagPrice(hashMapGoodsTagPrice.get(goods.getId()));
+            }
+            //颜色
+            if(hashMapGoodsColor.containsKey(goods.getId())) {
+                queryResult.setColorData(hashMapGoodsColor.get(goods.getId()));
+            }
+            //内长
+            if(hashMapGoodsLong.containsKey(goods.getId())) {
+                List<String> longList = hashMapGoodsLong.get(goods.getId()).stream().map(GoodsLongDto::getLongName).collect(Collectors.toList());
+                if(longList.size() > 0) {
+                    queryResult.setLongList(longList.toArray(new String[longList.size()]));
+                }
+            }
+            //条形码
+            if(hashMapBarcode.containsKey(goods.getId())) {
+                queryResult.setBarcodeData(hashMapBarcode.get(goods.getId()));
+            }
+            //尺码停用
+            if(hashMapDisableSize.containsKey(goods.getId())) {
+                queryResult.setDisableSizeData(hashMapDisableSize.get(goods.getId()));
+            }
+
+            queryResult.setPriceData(goodsPriceDto);
 
             queryResults.add(queryResult);
             goodsIds.add(goods.getId());
@@ -162,15 +214,6 @@ public class GoodsServiceBean implements GoodsService {
 
         //处理货品属性
         processGoodsQueryResultProperty(queryResults, goodsList);
-
-        List<GoodsColor> goodsColorList = goodsColorDao.selectList(new QueryWrapper<GoodsColor>().in("goods_id", goodsIds));
-
-        List<GoodsLong> goodsLongList = goodsLongDao.selectList(new QueryWrapper<GoodsLong>().in("goods_id", goodsIds));
-
-        List<GoodsTagPrice> goodsTagPriceList = goodsTagPriceDao.selectList(new QueryWrapper<GoodsTagPrice>().in("goods_id", goodsIds));
-
-        List<SizeDisable> sizeDisableList = sizeDisableDao.selectList(new QueryWrapper<SizeDisable>().in("goods_id", goodsIds));
-
 
         return queryResults;
     }

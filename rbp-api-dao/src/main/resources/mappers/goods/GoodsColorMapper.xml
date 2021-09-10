@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.goods.GoodsColorDao">
+
+    <select id="selectGoodsColorByGoodsIds" resultType="com.regent.rbp.api.dto.goods.GoodsColorDto">
+        SELECT a.goods_id goodsId, b.`code` colorCode, IFNULL(a.`color_name`, b.`name`) colorName
+        FROM rbp_goods_color a
+            INNER JOIN rbp_color b on a.color_id = b.id
+        WHERE a.goods_id IN (
+        <foreach item="id" collection="goodsIds" open="" separator="," close="">
+            #{id}
+        </foreach>
+        )
+    </select>
+
+</mapper>

@@ -1,4 +1,4 @@
-package com.regent.rbp.api.dto.base;
+package com.regent.rbp.api.dto.goods;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class DisableSizeDto {
     @JsonIgnore
-    private String goodsId;
+    private Long goodsId;
     private String colorCode;
     private String longName;
     private String size;

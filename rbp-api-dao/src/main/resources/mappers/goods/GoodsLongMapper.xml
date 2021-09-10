@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.goods.GoodsLongDao">
+
+    <select id="selectGoodsLongByGoodsIds" resultType="com.regent.rbp.api.dto.goods.GoodsLongDto">
+        SELECT a.goods_id goodsId, b.`name` longName
+        FROM rbp_goods_long a
+            LEFT JOIN rbp_long b ON a.long_id = b.id
+        WHERE a.goods_id IN (
+        <foreach item="id" collection="goodsIds" open="" separator="," close="">
+            #{id}
+        </foreach>
+        )
+    </select>
+
+</mapper>
