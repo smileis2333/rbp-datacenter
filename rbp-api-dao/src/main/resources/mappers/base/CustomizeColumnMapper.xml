@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.base.CustomizeColumnDao">
+
+    <select id="selectCustomizeColumnByModuleId" resultType="com.regent.rbp.api.dto.base.CustomizeColumnDto">
+        SELECT a.module_id moduleId, c.`code`, c.`name`, c.type
+        FROM rbp_module_customize_group a
+            INNER JOIN rbp_module_customize_column b on a.id = b.module_group_id
+            INNER JOIN rbp_customize_column c on b.customize_column_id = c.id
+        WHERE a.module_id = #{moduleId} and b.user_flag = 1
+    </select>
+
+    <select id="selectCustomizeColumnCodeByModuleId" resultType="java.lang.String">
+        SELECT distinct c.`code`
+        FROM rbp_module_customize_group a
+            INNER JOIN rbp_module_customize_column b on a.id = b.module_group_id
+            INNER JOIN rbp_customize_column c on b.customize_column_id = c.id
+        WHERE a.module_id = #{moduleId} and b.user_flag = 1
+    </select>
+
+</mapper>

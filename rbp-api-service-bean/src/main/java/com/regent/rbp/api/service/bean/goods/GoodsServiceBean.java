@@ -10,9 +10,13 @@ import com.regent.rbp.api.dao.base.*;
 import com.regent.rbp.api.dao.goods.*;
 import com.regent.rbp.api.dao.supplier.SupplierDao;
 import com.regent.rbp.api.dto.base.BarcodeDto;
+import com.regent.rbp.api.dto.base.CustomizeColumnDto;
+import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.goods.*;
+import com.regent.rbp.api.service.constants.TableConstants;
+import com.regent.rbp.api.service.enums.BaseModuleEnum;
 import com.regent.rbp.api.service.goods.GoodsService;
 import com.regent.rbp.api.service.goods.context.GoodsQueryContext;
 import com.regent.rbp.api.service.goods.context.GoodsSaveContext;
@@ -21,6 +25,7 @@ import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -30,6 +35,7 @@ import java.util.stream.Collectors;
  * 货品档案服务
  * @author xuxing
  */
+@Service
 public class GoodsServiceBean implements GoodsService {
 
     @Autowired
@@ -101,6 +107,12 @@ public class GoodsServiceBean implements GoodsService {
     @Autowired
     private BarcodeDao barcodeDao;
 
+    @Autowired
+    private CustomizeColumnDao customizeColumnDao;
+
+    @Autowired
+    private DbDao dbDao;
+
     @Override
     public PageDataResponse<GoodsQueryResult> query(GoodsQueryParam param) {
         GoodsQueryContext context = new GoodsQueryContext();
@@ -157,6 +169,19 @@ public class GoodsServiceBean implements GoodsService {
         Map<Long, List<BarcodeDto>> hashMapBarcode = barcodeList.stream().collect(Collectors.groupingBy(BarcodeDto::getGoodsId));
 
         //加载所有货号的自定义字段列表
+        List<String> listCustomizeColumn = customizeColumnDao.selectCustomizeColumnCodeByModuleId(BaseModuleEnum.GOODS.getBaseModuleId());
+        List<Map> goodsCustomData = goodsDao.selectGoodsCustomByGoodsIds(goodsIds, listCustomizeColumn);
+        Map<Long, List<CustomizeDataDto>> hashMapCustomizeData = new HashMap<Long, List<CustomizeDataDto>>(goodsCustomData.size());
+        goodsCustomData.forEach(item -> {
+            ArrayList<CustomizeDataDto> details = new ArrayList<>(item.size());
+            item.keySet().forEach(key->{
+                if(!"goods_id".equalsIgnoreCase(key.toString())) {
+                    CustomizeDataDto data = new CustomizeDataDto(key.toString(), item.get(key).toString());
+                    details.add(data);
+                }
+            });
+            hashMapCustomizeData.put(Long.parseLong(item.get("goods_id").toString()), details);
+        });
 
         //尺码停用
         List<DisableSizeDto> disableSizeList = sizeDisableDao.selectGoodsDisableSizeByGoodsIds(goodsIds);
@@ -175,6 +200,7 @@ public class GoodsServiceBean implements GoodsService {
             queryResult.setMetricFlag(goods.getMetricFlag());
             queryResult.setNotes(goods.getNotes());
             String buildDateStr = DateUtil.getDateStr(goods.getBuildDate(), DateUtil.SHORT_DATE_FORMAT);
+            queryResult.setBuildDate(buildDateStr);
 
             GoodsPriceDto goodsPriceDto = new GoodsPriceDto();
             goodsPriceDto.setMachiningPrice(goods.getMachiningPrice());
@@ -204,6 +230,9 @@ public class GoodsServiceBean implements GoodsService {
             //尺码停用
             if(hashMapDisableSize.containsKey(goods.getId())) {
                 queryResult.setDisableSizeData(hashMapDisableSize.get(goods.getId()));
+            }
+            if(hashMapCustomizeData.containsKey(goods.getId())) {
+                queryResult.setCustomizeData(hashMapCustomizeData.get(goods.getId()));
             }
 
             queryResult.setPriceData(goodsPriceDto);
@@ -483,7 +512,6 @@ public class GoodsServiceBean implements GoodsService {
         saveDisableSizeData(createFlag);
         saveGoodsTagPrice(createFlag);
         saveGoodsBarcode(createFlag);
-
 
         return null;
     }

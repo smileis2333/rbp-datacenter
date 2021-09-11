@@ -28,6 +28,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.regent.rbp.infrastructure</groupId>
+			<artifactId>rbp-infrastructure</artifactId>
+			<version>0.0.0.3</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.regent.rbp.api.core</groupId>
 			<artifactId>rbp-api-core</artifactId>
 			<version>1.0.0.0</version>
@@ -54,6 +60,12 @@
 		<dependency>
 			<groupId>com.regent.rbp.api.web</groupId>
 			<artifactId>rbp-api-web</artifactId>
+			<version>1.0.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.regent.rbp.task.inno</groupId>
+			<artifactId>rbp-task-inno</artifactId>
 			<version>1.0.0.0</version>
 		</dependency>
 

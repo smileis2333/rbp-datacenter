@@ -1,6 +1,6 @@
 spring:
   application:
-    name: DATACENTER-SERVER
+    name: datacenter-server
   profiles:
     active: dev
   cloud:

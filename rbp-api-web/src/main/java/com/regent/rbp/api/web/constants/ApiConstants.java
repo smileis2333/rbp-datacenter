@@ -19,5 +19,5 @@ public class ApiConstants {
 
     public static final String API_CHANNEL = "api/channel";
 
-
+    public static final String API_STOCK_QUERY = "api/stockQuery";
 }

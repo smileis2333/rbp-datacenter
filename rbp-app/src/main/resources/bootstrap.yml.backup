@@ -128,3 +128,8 @@ plumelog:
 
 logging:
   config: classpath:logback-rbp.xml
+
+inno:
+  url: https://innoadmin.innourl.com/ERPApi/
+  appkey: JN_53_USER
+  appsecret: JN_53_USER_USER_1qaz@WSX

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.stock.StockQueryDao">
+
+    <select id="searchPageData" resultType="com.regent.rbp.api.core.stock.StockDetail">
+        <choose>
+            <when test="queryParam.merge = 1">
+                SELECT a.goods_id goodsId, a.color_id colorId,
+                a.long_id colorId, a.size_id sizeId, sum(a.quantity) quantity
+            </when>
+            <otherwise>
+                SELECT a.channel_id channelId, a.goods_id goodsId, a.color_id colorId,
+                a.long_id colorId, a.size_id sizeId, a.quantity
+            </otherwise>
+        </choose>
+
+        FROM ${tableName} a
+        <where>
+            <if test="queryParam.channelCodeList != null and queryParam.channelCodeList.length > 0">
+                and exists (select 1 from rbp_channel b where a.channel_id = b.id and b.code in
+                <foreach collection="queryParam.channelCodeList" item="code" open="(" separator="," close=")">
+                    #{code}
+                </foreach>
+                )
+            </if>
+            <if test="queryParam.warehouseCodeList != null and queryParam.warehouseCodeList.length > 0">
+                and exists (select 1 from rbp_channel c
+                inner join rbp_warehourse_channel_range d on c.id = d.channel_id
+                inner join rbp_warehouse e on d.warehouse_id = e.id
+                where a.channel_id = c.id and e.code in
+                <foreach collection="queryParam.warehouseCodeList" item="code" open="(" separator="," close=")">
+                    #{code}
+                </foreach>
+                )
+            </if>
+            <!--有条形码就不查货号-->
+            <choose>
+                <when test="queryParam.barcodeList != null and queryParam.barcodeList.length > 0">
+                    and exists (select 1 from rbp_barcode bc where a.goods_id = bc.goods_id and a.color_id = bc.color_id
+                    and a.long_id = bc.long_id and a.size_id = bc.size_id and bc.barcode in
+                    <foreach collection="queryParam.barcodeList" item="code" open="(" separator="," close=")">
+                        #{code}
+                    </foreach>
+                    )
+                </when>
+                <otherwise>
+                    <if test="queryParam.goodsCodeList != null and queryParam.goodsCodeList.length > 0">
+                        and exists (select 1 from rbp_goods g where a.goods_id = g.id and g.code in
+                        <foreach collection="queryParam.goodsCodeList" item="code" open="(" separator="," close=")">
+                            #{code}
+                        </foreach>
+                        )
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+        <if test="queryParam.merge = 1">
+            group by a.goods_id, a.color_id, a.long_id, a.size_id
+        </if>
+        ORDER BY goods_id
+    </select>
+
+</mapper>

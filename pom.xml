@@ -207,6 +207,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.regent.rbp.app.config</groupId>
+			<artifactId>rbp-app-config</artifactId>
+			<version>0.0.0.3</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.regent.rbp.infrastructure</groupId>
 			<artifactId>rbp-infrastructure</artifactId>
 			<version>0.0.0.3</version>
@@ -252,6 +258,7 @@
 		<module>rbp-api-dto</module>
 		<module>rbp-api-service</module>
 		<module>rbp-api-service-bean</module>
+		<module>rbp-task-inno</module>
 	</modules>
 
 </project>

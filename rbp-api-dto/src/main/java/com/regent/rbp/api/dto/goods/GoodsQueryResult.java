@@ -47,7 +47,7 @@ public class GoodsQueryResult {
     private String[] longList;
     private GoodsPriceDto priceData;
     private List<GoodsColorDto> colorData;
-    private List<CustomizeDataDto> customizeDatumDtos;
+    private List<CustomizeDataDto> customizeData;
     private List<BarcodeDto> barcodeData;
     private List<DisableSizeDto> disableSizeData;
 }
