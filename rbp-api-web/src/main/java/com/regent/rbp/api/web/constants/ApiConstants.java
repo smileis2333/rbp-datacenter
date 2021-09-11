@@ -17,5 +17,5 @@ public class ApiConstants {
 
     public static final String API_LONG_DATA = "api/long";
 
-
+    public static final String API_STOCK_QUERY = "api/stockQuery";
 }
