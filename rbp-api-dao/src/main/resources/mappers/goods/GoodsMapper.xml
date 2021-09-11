@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.goods.GoodsDao">
+
+    <select id="selectGoodsCustomByGoodsIds" resultType="java.util.Map">
+        SELECT a.goods_id
+        <foreach item="customizeColumn" collection="customizeColumns" open="" separator="" close="">
+            , `${customizeColumn}`
+        </foreach>
+        FROM rbp_goods_custom a
+        WHERE a.goods_id IN (
+        <foreach item="id" collection="goodsIds" open="" separator="," close="">
+            #{id}
+        </foreach>
+        )
+    </select>
+
+</mapper>
