@@ -13,6 +13,7 @@ import com.regent.rbp.api.core.base.Color;
 import com.regent.rbp.api.core.base.LongInfo;
 import com.regent.rbp.api.core.base.SizeClass;
 import com.regent.rbp.api.core.base.SizeDetail;
+import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.api.core.stock.StockDetail;
 import com.regent.rbp.api.core.warehouse.Warehouse;
@@ -21,6 +22,7 @@ import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.base.ColorDao;
 import com.regent.rbp.api.dao.base.LongDao;
 import com.regent.rbp.api.dao.base.SizeDetailDao;
+import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.stock.StockQueryDao;
 import com.regent.rbp.api.dao.warehouse.WarehouseChannelRangeDao;
@@ -86,6 +88,9 @@ public class StockQueryServiceBean implements StockQueryService {
 
     @Autowired
     private WarehouseChannelRangeDao warehouseChannelRangeDao;
+
+    @Autowired
+    private ChannelDao channelDao;
 
     @Override
     public PageDataResponse<StockQueryResult> query(StockQueryParam param) {
@@ -170,10 +175,13 @@ public class StockQueryServiceBean implements StockQueryService {
 
         List<Long> channelIdList = StreamUtil.toNoNullDistinctList(stockDetailList, StockDetail::getChannelId);
         Map<Long, String> channelMap = new HashMap<>();
-        //云仓
         Map<Long, String> warehouseMap = new HashMap<>();
         Map<Long, List<WarehouseChannelRange>> warehouseChannelRangeMap = new HashMap<>();
         if (CollUtil.isNotEmpty(channelIdList)) {
+            //渠道
+            List<Channel> channelList = channelDao.selectList(new QueryWrapper<Channel>().select("id", "code") .in("id", channelIdList));
+            channelMap = channelList.stream().collect(Collectors.toMap(Channel::getId, Channel::getCode, (v1, v2) -> v1));
+            //云仓
             if (CollUtil.isNotEmpty(warehouseList)) {
                 warehouseMap = warehouseList.stream().collect(Collectors.toMap(Warehouse::getId, Warehouse::getCode, (v1, v2) -> v1));
                 List<WarehouseChannelRange> warehouseChannelRangeList = warehouseChannelRangeDao.selectList(new LambdaQueryWrapper<WarehouseChannelRange>()
@@ -182,6 +190,7 @@ public class StockQueryServiceBean implements StockQueryService {
                 warehouseChannelRangeMap = warehouseChannelRangeList.stream().collect(Collectors.groupingBy(WarehouseChannelRange::getChannelId));
             }
         }
+
 
         for(StockDetail stockDetail : stockDetailList) {
             String skuKey = MD5Util.shortenKeyString(stockDetail.getGoodsId(), stockDetail.getColorId(), stockDetail.getLongId(), stockDetail.getLongId());
@@ -197,6 +206,7 @@ public class StockQueryServiceBean implements StockQueryService {
                     queryResult.setLongName(longInfoMap.get(stockDetail.getLongId()));
                     queryResult.setSize(sizeDetailMap.get(stockDetail.getSizeId()));
                     queryResult.setBarcode(barcodeMap.get(skuKey));
+                    queryResult.setChannelCode(channelMap.get(stockDetail.getChannelId()));
                     queryResult.setWarehouseCode(warehouseMap.get(warehouseChannelRange.getWarehouseId()));
 
                     queryResults.add(queryResult);
@@ -209,6 +219,7 @@ public class StockQueryServiceBean implements StockQueryService {
                 queryResult.setLongName(longInfoMap.get(stockDetail.getLongId()));
                 queryResult.setSize(sizeDetailMap.get(stockDetail.getSizeId()));
                 queryResult.setBarcode(barcodeMap.get(skuKey));
+                queryResult.setChannelCode(channelMap.get(stockDetail.getChannelId()));
 
                 queryResults.add(queryResult);
             }
