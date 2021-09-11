@@ -38,19 +38,19 @@ public class Channel {
     private Date buildDate;
 
     @ApiModelProperty(notes = "国家")
-    private Long nation;
+    private String nation;
 
     @ApiModelProperty(notes = "省份")
-    private Long province;
+    private String province;
 
     @ApiModelProperty(notes = "城市")
-    private Long city;
+    private String city;
 
     @ApiModelProperty(notes = "区域")
-    private Long region;
+    private String region;
 
     @ApiModelProperty(notes = "区/县")
-    private Long county;
+    private String county;
 
     @ApiModelProperty(notes = "地址")
     private String address;

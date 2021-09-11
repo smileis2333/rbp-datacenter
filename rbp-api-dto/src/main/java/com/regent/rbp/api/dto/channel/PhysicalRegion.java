@@ -11,6 +11,14 @@ import lombok.Data;
 @Data
 public class PhysicalRegion {
 
+    public PhysicalRegion(String nation, String region, String province, String city, String county) {
+        this.nation = nation;
+        this.region = region;
+        this.province = province;
+        this.city = city;
+        this.county = county;
+    }
+
     private String nation;
     private String region;
     private String province;

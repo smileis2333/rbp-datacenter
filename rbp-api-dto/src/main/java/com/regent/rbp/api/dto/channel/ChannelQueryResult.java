@@ -32,7 +32,7 @@ public class ChannelQueryResult {
     private String saleTagPriceType;
     private String saleRange;
     private String linkMan;
-    private Integer linkManMobile;
+    private String linkManMobile;
     private String fundAccount;
     private BigDecimal minPrice;
     private BigDecimal maxPrice;

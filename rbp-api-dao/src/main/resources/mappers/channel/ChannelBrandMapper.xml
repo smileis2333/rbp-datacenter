@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.channel.ChannelBrandDao">
+
+    <select id="selectChannelBrandDtoByChannelIds" resultType="com.regent.rbp.api.dto.channel.ChannelBrandDto">
+        SELECT a.channel_id as channelId, a.brand_id as brandId, b.`code` as brandCode, b.`name` as brandName
+        FROM rbp_channel_brand a
+        INNER JOIN rbp_brand b on a.brand_id = b.id
+        WHERE a.channel_id IN (
+        <foreach item="id" collection="channelIds" open="" separator="," close="">
+            #{id}
+        </foreach>
+        )
+    </select>
+
+</mapper>
