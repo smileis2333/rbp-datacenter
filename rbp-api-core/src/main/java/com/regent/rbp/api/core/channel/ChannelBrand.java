@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.core.base.Brand;
+import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -21,6 +22,12 @@ import java.util.Date;
 @ApiModel(description = "渠道品牌关系")
 @TableName(value = "rbp_channel_brand")
 public class ChannelBrand {
+
+    public ChannelBrand(Long channelId, Long brandId) {
+        this.id = SnowFlakeUtil.getDefaultSnowFlakeId();
+        this.channelId = channelId;
+        this.brandId = brandId;
+    }
 
     @ApiModelProperty(notes = "ID")
     @TableId("id")

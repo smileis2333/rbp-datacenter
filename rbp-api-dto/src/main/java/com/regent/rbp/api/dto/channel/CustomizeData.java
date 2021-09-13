@@ -9,7 +9,7 @@ import lombok.Data;
  * @create: 2021-09-11 13:24
  */
 @Data
-public class CustomizeDataDto {
+public class CustomizeData {
 
     private String code;
     private String name;

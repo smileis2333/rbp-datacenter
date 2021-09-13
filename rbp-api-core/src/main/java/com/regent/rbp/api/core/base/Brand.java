@@ -17,6 +17,7 @@ import java.util.Date;
 @ApiModel(description = "品牌")
 @TableName(value = "rbp_brand")
 public class Brand {
+
     @TableId("id")
     @ApiModelProperty(notes = "编码")
     private Long id;

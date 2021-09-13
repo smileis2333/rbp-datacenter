@@ -3,6 +3,9 @@ package com.regent.rbp.api.core.channel;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.regent.rbp.api.core.base.Category;
+import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -19,6 +22,22 @@ import java.util.Date;
 @ApiModel(description = "渠道区域")
 @TableName(value = "rbp_channel_area")
 public class ChannelArea {
+
+    public ChannelArea(){}
+
+    public ChannelArea(Long parentId, Integer depth, String name, String columnName, String orderNumber) {
+        this.id = SnowFlakeUtil.getDefaultSnowFlakeId();
+        this.parentId = parentId;
+        this.depth = depth;
+        this.name = name;
+        this.columnName = columnName;
+        this.orderNumber = orderNumber;
+        long userId = ThreadLocalGroup.getUserId();
+        this.setCreatedBy(userId);
+        this.setCreatedTime(new Date());
+        this.setUpdatedBy(userId);
+        this.setUpdatedTime(new Date());
+    }
 
     @ApiModelProperty(notes = "ID")
     @TableId("id")

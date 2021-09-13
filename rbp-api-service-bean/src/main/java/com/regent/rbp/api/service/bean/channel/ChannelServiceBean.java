@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.*;
 import com.regent.rbp.api.core.channel.*;
 import com.regent.rbp.api.core.fundAccount.FundAccount;
+import com.regent.rbp.api.core.goods.Goods;
+import com.regent.rbp.api.core.supplier.Supplier;
 import com.regent.rbp.api.dao.base.BranchCompanyDao;
 import com.regent.rbp.api.dao.base.BrandDao;
 import com.regent.rbp.api.dao.base.SaleRangeDao;
@@ -13,13 +15,18 @@ import com.regent.rbp.api.dao.base.TagPriceTypeDao;
 import com.regent.rbp.api.dao.channel.*;
 import com.regent.rbp.api.dao.fundAccount.FundAccountDao;
 import com.regent.rbp.api.dto.channel.*;
+import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
+import com.regent.rbp.api.dto.goods.GoodsSaveParam;
 import com.regent.rbp.api.service.channel.ChannelService;
 import com.regent.rbp.api.service.channel.context.ChannelQueryContext;
-import com.regent.rbp.api.service.goods.context.GoodsQueryContext;
+import com.regent.rbp.api.service.channel.context.ChannelSaveContext;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,6 +40,7 @@ import java.util.stream.Collectors;
  * @author: HaiFeng
  * @create: 2021-09-11 13:37
  */
+@Service
 public class ChannelServiceBean implements ChannelService {
 
     @Autowired
@@ -61,7 +69,8 @@ public class ChannelServiceBean implements ChannelService {
     ChannelAreaDao channelAreaDao;
     @Autowired
     ChannelOrganizationDao channelOrganizationDao;
-
+    @Autowired
+    ChannelReceiveInfoDao channelReceiveInfoDao;
 
     @Override
     public PageDataResponse<ChannelQueryResult> query(ChannelQueryParam param) {
@@ -200,10 +209,6 @@ public class ChannelServiceBean implements ChannelService {
             Date checkDateEnd = DateUtil.getDate(param.getCheckDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setCheckDateEnd(checkDateEnd);
         }
-
-
-
-
     }
 
     /**
@@ -211,7 +216,7 @@ public class ChannelServiceBean implements ChannelService {
      * @param context
      * @return
      */
-    private PageDataResponse<ChannelQueryResult> searchPage(GoodsQueryContext context) {
+    private PageDataResponse<ChannelQueryResult> searchPage(ChannelQueryContext context) {
 
         PageDataResponse<ChannelQueryResult> result = new PageDataResponse<ChannelQueryResult>();
 
@@ -239,6 +244,10 @@ public class ChannelServiceBean implements ChannelService {
         // 加载所有 渠道品牌
         List<ChannelBrandDto> channelBrandList = channelBrandDao.selectChannelBrandDtoByChannelIds(channelIds);
         Map<Long, List<ChannelBrandDto>> hashMapChannelBrand = channelBrandList.stream().collect(Collectors.groupingBy(ChannelBrandDto::getChannelId));
+
+        // 加载所有 渠道收货信息
+        List<AddressData> addressDataList = channelReceiveInfoDao.selectChannelReceiveInfoByChannelIds(channelIds);
+        Map<Long, List<AddressData>> hashMapAddress = addressDataList.stream().collect(Collectors.groupingBy(AddressData::getChannelId));
 
         // 加载所有 渠道分公司
         List<Long> branchCompanyIds = channelList.stream().map(Channel::getBranchCompanyId).distinct().collect(Collectors.toList());
@@ -344,6 +353,14 @@ public class ChannelServiceBean implements ChannelService {
             queryResult.setChannelorganization(channelorganization);
 
             // 渠道收货信息
+            if (hashMapAddress.containsKey(channel.getId())) {
+                List<AddressData> addressList = hashMapAddress.get(channel.getId());
+                if (addressList.size() > 0) {
+                    queryResult.setAddressData(addressList);
+                }
+            }
+
+            // 自定义字段
 
             // 品牌
             if(hashMapChannelBrand.containsKey(channel.getId())) {
@@ -389,8 +406,275 @@ public class ChannelServiceBean implements ChannelService {
                 queryResult.setFundAccount(mapFundAccount.get(channel.getFundAccountId()));
             }
         }
-
         return queryResults;
     }
 
+    @Override
+    @Transactional
+    public DataResponse save(ChannelSaveParam param) {
+        boolean createFlag = true;
+        ChannelSaveContext context = new ChannelSaveContext(param);
+        //判断是新增还是更新
+        Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getChannelCode()));
+        if(item != null) {
+            context.getChannel().setId(item.getId());
+            createFlag = false;
+        }
+
+        //验证渠道数据有效性
+        List<String> errorMsgList = verificationProperty(param, context);
+        if(errorMsgList.size() > 0 ) {
+            String message = StringUtil.join(errorMsgList, ",");
+            //throw new BusinessException(ErrorC, "");
+        }
+        // 自动补充不存在的数据字典
+        processAutoCompleteDictionary(param, context);
+        // 写入渠道表
+        saveChannel(createFlag, context.getChannel());
+        // 写入渠道品牌关系表
+        saveChannelBrand(context.getChannel().getId(), context.getChannelBrandList());
+        // 写入渠道收货信息
+        saveChannelReceiveInfo(context.getChannel().getId(), context.getChannelReceiveInfoList());
+
+        return null;
+    }
+
+    /**
+     * 验证渠道属性
+     * @param param
+     */
+    private List<String> verificationProperty(ChannelSaveParam param, ChannelSaveContext context) {
+        List<String> errorMsgList = new ArrayList<>();
+        Channel channel = context.getChannel();
+
+        if(StringUtils.isBlank(param.getChannelCode())) {
+            errorMsgList.add("渠道编号(channelCode)不能为空");
+        } else {
+            Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getChannelCode()));
+            if(item != null) {
+                channel.setId(item.getId());
+            }
+        }
+
+        if (StringUtils.isBlank(param.getChannelName())) {
+            errorMsgList.add("渠道简称(channelName)不能为空");
+        }
+        if (StringUtils.isBlank(param.getChannelFullName())) {
+            errorMsgList.add("渠道名称(channelFullName)不能为空");
+        }
+        //验证 渠道业态
+        if (StringUtils.isBlank(param.getBusinessFormat())) {
+            errorMsgList.add("渠道业态(businessFormat)不能为空");
+        } else {
+            ChannelBusinessFormat item = channelBusinessFormatDao.selectOne(new QueryWrapper<ChannelBusinessFormat>().eq("name", param.getBusinessFormat()));
+            if (item != null) {
+                channel.setBusinessFormatId(item.getId());
+            }
+        }
+        //验证 经营性质
+        if (StringUtils.isBlank(param.getBusinessNature())) {
+            errorMsgList.add("经营性质(businessNature)不能为空");
+        } else {
+            ChannelBusinessNature item = channelBusinessNatureDao.selectOne(new QueryWrapper<ChannelBusinessNature>().eq("name", param.getBusinessNature()));
+            if (item != null) {
+                channel.setBusinessNatureId(item.getId());
+            }
+        }
+        //验证 渠道收货信息
+        if (param.getAddressData() != null && param.getAddressData().size() > 0) {
+            for (AddressData addressData : param.getAddressData()) {
+                if (StringUtils.isBlank(addressData.getNation())) {
+                    errorMsgList.add("国家/地区(nation)不能为空");
+                }
+                if (StringUtils.isBlank(addressData.getProvince())) {
+                    errorMsgList.add("州/省/地区(province)不能为空");
+                }
+                if (StringUtils.isBlank(addressData.getCity())) {
+                    errorMsgList.add("市(city)不能为空");
+                }
+                if (StringUtils.isBlank(addressData.getCity())) {
+                    errorMsgList.add("县/区(county)不能为空");
+                }
+                if (StringUtils.isBlank(addressData.getAddress())) {
+                    errorMsgList.add("详细地址(address)不能为空");
+                }
+                if (StringUtils.isBlank(addressData.getContactsPerson())) {
+                    errorMsgList.add("联系人(contactsPerson)不能为空");
+                }
+                if (StringUtils.isBlank(addressData.getMobile())) {
+                    errorMsgList.add("手机号码(mobile)不能为空");
+                }
+            }
+        }
+        // 资金号
+        if (StringUtils.isNotBlank(param.getFundAccount())) {
+            FundAccount fundAccount = fundAccountDao.selectOne(new QueryWrapper<FundAccount>().eq("name", param.getFundAccount()));
+            if (fundAccount == null) {
+                errorMsgList.add("资金号(fundAccount)不存在");
+            } else {
+                channel.setFundAccountId(fundAccount.getId());
+            }
+        }
+
+        return errorMsgList;
+    }
+
+    /**
+     * 自动补充不存在的数据字典
+     * @param param
+     */
+    private void processAutoCompleteDictionary(ChannelSaveParam param, ChannelSaveContext context) {
+        Channel channel = context.getChannel();
+        List<ChannelBrand> channelBrandList = context.getChannelBrandList();
+        // 行政区域
+        if (param.getChannelBarrio() != null) {
+            // 行政区域1
+            if (StringUtils.isNotBlank(param.getChannelBarrio().getBarrio1())) {
+                Long barrio1 = this.saveChannelArea(new Long(0), 1, param.getChannelBarrio().getBarrio1(), "nation", "1");
+                channel.setBarrio1(barrio1);
+                // 行政区域2
+                if (StringUtils.isNotBlank(param.getChannelBarrio().getBarrio2())) {
+                    Long barrio2 = this.saveChannelArea(barrio1, 2, param.getChannelBarrio().getBarrio2(), "province", "2");
+                    channel.setBarrio2(barrio2);
+                    // 行政区域3
+                    if (StringUtils.isNotBlank(param.getChannelBarrio().getBarrio3())) {
+                        Long barrio3 = this.saveChannelArea(barrio2, 3, param.getChannelBarrio().getBarrio3(), "city", "3");
+                        channel.setBarrio3(barrio3);
+                        // 行政区域4
+                        if (StringUtils.isNotBlank(param.getChannelBarrio().getBarrio4())) {
+                            Long barrio4 = this.saveChannelArea(barrio3, 4, param.getChannelBarrio().getBarrio4(), "county", "4");
+                            channel.setBarrio4(barrio4);
+                            // 行政区域5
+                            if (StringUtils.isNotBlank(param.getChannelBarrio().getBarrio5())) {
+                                Long barrio5 = this.saveChannelArea(barrio4, 5, param.getChannelBarrio().getBarrio5(), "county", "5");
+                                channel.setBarrio5(barrio5);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // 品牌
+        if (param.getBrand() != null && param.getBrand().length > 0) {
+            for (String str : param.getBrand()) {
+                Brand brand = brandDao.selectOne(new QueryWrapper<Brand>().eq("name", str));
+                if (brand == null) {
+                    Brand.build("", str);
+                    brandDao.insert(brand);
+                }
+                channelBrandList.add(new ChannelBrand(channel.getId(), brand.getId()));
+            }
+        }
+        // 分公司
+        if (StringUtils.isNotBlank(param.getBranchCompany())) {
+            BranchCompany branchCompany = branchCompanyDao.selectOne(new QueryWrapper<BranchCompany>().eq("name", param.getBranchCompany()));
+            if (branchCompany == null) {
+                branchCompany = new BranchCompany("", param.getBranchCompany());
+                branchCompanyDao.insert(branchCompany);
+            }
+            channel.setBranchCompanyId(branchCompany.getId());
+        }
+        // 渠道等级
+        if (StringUtils.isNotBlank(param.getGrade())) {
+            ChannelGrade channelGrade = channelGradeDao.selectOne(new QueryWrapper<ChannelGrade>().eq("name", param.getGrade()));
+            if (channelGrade == null) {
+                channelGrade = new ChannelGrade("", param.getGrade());
+                channelGradeDao.insert(channelGrade);
+            }
+            channel.setGradeId(channelGrade.getId());
+        }
+        // 结算方式
+        if (StringUtils.isNotBlank(param.getBalanceType())) {
+            ChannelBalanceType balanceType = channelBalanceTypeDao.selectOne(new QueryWrapper<ChannelBalanceType>().eq("name", param.getBalanceType()));
+            if (balanceType == null) {
+                balanceType = new ChannelBalanceType("", param.getBalanceType());
+                channelBalanceTypeDao.insert(balanceType);
+            }
+            channel.setBalanceTypeId(balanceType.getId());
+        }
+        // 零售吊牌类型
+        if (StringUtils.isNotBlank(param.getRetailTagPriceType())) {
+            TagPriceType tagPriceType = tagPriceTypeDao.selectOne(new QueryWrapper<TagPriceType>().eq("name", param.getRetailTagPriceType()));
+            if (tagPriceType == null) {
+                tagPriceType = new TagPriceType("", param.getRetailTagPriceType());
+                tagPriceTypeDao.insert(tagPriceType);
+            }
+            channel.setRetailTagPriceTypeId(tagPriceType.getId());
+        }
+        // 分销吊牌价类型
+        if (StringUtils.isNotBlank(param.getSaleTagPriceType())) {
+            TagPriceType tagPriceType = tagPriceTypeDao.selectOne(new QueryWrapper<TagPriceType>().eq("name", param.getSaleTagPriceType()));
+            if (tagPriceType == null) {
+                tagPriceType = new TagPriceType("", param.getSaleTagPriceType());
+                tagPriceTypeDao.insert(tagPriceType);
+            }
+            channel.setSaleTagPriceTypeId(tagPriceType.getId());
+        }
+        // 销售范围
+        if (StringUtils.isNotBlank(param.getSaleRange())) {
+            SaleRange saleRange = saleRangeDao.selectOne(new QueryWrapper<SaleRange>().eq("name", param.getSaleRange()));
+            if (saleRange == null) {
+                saleRange = new SaleRange("", param.getSaleRange());
+                saleRangeDao.insert(saleRange);
+            }
+            channel.setSaleRangeId(saleRange.getId());
+        }
+
+    }
+
+    /**
+     * 行政区域
+     * @param parentId
+     * @param depth
+     * @param name
+     * @param columnName
+     * @param orderNumber
+     * @return
+     */
+    private Long saveChannelArea(Long parentId, Integer depth, String name, String columnName, String orderNumber) {
+        ChannelArea channelArea = channelAreaDao.selectOne(new QueryWrapper<ChannelArea>()
+                .eq("parent_id", parentId).eq("depth", depth).eq("name", name));
+        if (channelArea == null) {
+            channelArea = new ChannelArea(parentId, depth, name, columnName, orderNumber);
+            channelAreaDao.insert(channelArea);
+        }
+        return channelArea.getId();
+    }
+
+    /**
+     * 写入渠道
+     * @param createFlag
+     * @param channel
+     */
+    private void saveChannel(Boolean createFlag, Channel channel) {
+        if (createFlag) {
+            channelDao.insert(channel);
+        } else {
+            channelDao.updateById(channel);
+        }
+    }
+
+    /**
+     * 写入渠道品牌关系表
+     * @param channelId
+     * @param channelBrandList
+     */
+    private void saveChannelBrand(Long channelId, List<ChannelBrand> channelBrandList) {
+        channelBrandDao.delete(new QueryWrapper<ChannelBrand>().eq("channel_id", channelId));
+        for (ChannelBrand channelBrand : channelBrandList) {
+            channelBrandDao.insert(channelBrand);
+        }
+    }
+
+    /**
+     * 写入渠道收货信息
+     * @param channelId
+     * @param channelReceiveInfoList
+     */
+    private void saveChannelReceiveInfo(Long channelId, List<ChannelReceiveInfo> channelReceiveInfoList) {
+        channelReceiveInfoDao.delete(new QueryWrapper<ChannelReceiveInfo>().eq("channel_id", channelId));
+        for (ChannelReceiveInfo receiveInfo : channelReceiveInfoList) {
+            channelReceiveInfoDao.insert(receiveInfo);
+        }
+    }
 }

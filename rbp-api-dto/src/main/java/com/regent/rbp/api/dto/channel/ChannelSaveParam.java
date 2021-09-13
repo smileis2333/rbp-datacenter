@@ -1,26 +1,24 @@
 package com.regent.rbp.api.dto.channel;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.apache.commons.math3.analysis.function.Add;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 /**
  * @program: rbp-datacenter
- * @description: 渠道资料查询返回
+ * @description: 渠道档案 新增/修改
  * @author: HaiFeng
- * @create: 2021-09-11 11:32
+ * @create: 2021-09-13 13:23
  */
 @Data
-public class ChannelQueryResult {
-    @JsonIgnore
-    private Long channelId;
+public class ChannelSaveParam {
+
     private String channelCode;
     private String channelName;
     private String channelFullName;
-    private Date channelBuildDate;
+    private String channelBuildDate;
     private String channelAddress;
     private String[] brand;
     private String branchCompany;
@@ -42,4 +40,5 @@ public class ChannelQueryResult {
     private Channelorganization channelorganization;
     private List<AddressData> addressData;
     private List<CustomizeData> customizeData;
+
 }

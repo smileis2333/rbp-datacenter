@@ -1,5 +1,6 @@
 package com.regent.rbp.api.dto.channel;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 /**
@@ -9,8 +10,10 @@ import lombok.Data;
  * @create: 2021-09-11 13:22
  */
 @Data
-public class AddressDataDto {
+public class AddressData {
 
+    @JsonIgnore
+    private Long channelId;
     private String nation;
     private String province;
     private String city;

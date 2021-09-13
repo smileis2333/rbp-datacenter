@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.core.base.Brand;
+import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -21,6 +22,19 @@ import java.util.Date;
 @ApiModel(description = "渠道等级")
 @TableName(value = "rbp_channel_grade")
 public class ChannelGrade {
+
+    public ChannelGrade() {}
+
+    public ChannelGrade(String code, String name) {
+        this.id = SnowFlakeUtil.getDefaultSnowFlakeId();
+        this.code = code;
+        this.name = name;
+        long userId = ThreadLocalGroup.getUserId();
+        this.setCreatedBy(userId);
+        this.setCreatedTime(new Date());
+        this.setUpdatedBy(userId);
+        this.setUpdatedTime(new Date());
+    }
 
     @ApiModelProperty(notes = "ID")
     @TableId("id")
