@@ -3,23 +3,44 @@ package com.regent.rbp.api.service.bean.channel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.regent.rbp.api.core.base.*;
-import com.regent.rbp.api.core.channel.*;
+import com.regent.rbp.api.core.base.BranchCompany;
+import com.regent.rbp.api.core.base.Brand;
+import com.regent.rbp.api.core.base.SaleRange;
+import com.regent.rbp.api.core.base.TagPriceType;
+import com.regent.rbp.api.core.channel.Channel;
+import com.regent.rbp.api.core.channel.ChannelArea;
+import com.regent.rbp.api.core.channel.ChannelBalanceType;
+import com.regent.rbp.api.core.channel.ChannelBusinessFormat;
+import com.regent.rbp.api.core.channel.ChannelBusinessNature;
+import com.regent.rbp.api.core.channel.ChannelGrade;
+import com.regent.rbp.api.core.channel.ChannelOrganization;
 import com.regent.rbp.api.core.fundAccount.FundAccount;
 import com.regent.rbp.api.dao.base.BranchCompanyDao;
 import com.regent.rbp.api.dao.base.BrandDao;
 import com.regent.rbp.api.dao.base.SaleRangeDao;
 import com.regent.rbp.api.dao.base.TagPriceTypeDao;
-import com.regent.rbp.api.dao.channel.*;
+import com.regent.rbp.api.dao.channel.ChannelAreaDao;
+import com.regent.rbp.api.dao.channel.ChannelBalanceTypeDao;
+import com.regent.rbp.api.dao.channel.ChannelBrandDao;
+import com.regent.rbp.api.dao.channel.ChannelBusinessFormatDao;
+import com.regent.rbp.api.dao.channel.ChannelBusinessNatureDao;
+import com.regent.rbp.api.dao.channel.ChannelDao;
+import com.regent.rbp.api.dao.channel.ChannelGradeDao;
+import com.regent.rbp.api.dao.channel.ChannelOrganizationDao;
 import com.regent.rbp.api.dao.fundAccount.FundAccountDao;
-import com.regent.rbp.api.dto.channel.*;
+import com.regent.rbp.api.dto.channel.ChannelBarrio;
+import com.regent.rbp.api.dto.channel.ChannelBrandDto;
+import com.regent.rbp.api.dto.channel.ChannelQueryParam;
+import com.regent.rbp.api.dto.channel.ChannelQueryResult;
+import com.regent.rbp.api.dto.channel.Channelorganization;
+import com.regent.rbp.api.dto.channel.PhysicalRegion;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.service.channel.ChannelService;
 import com.regent.rbp.api.service.channel.context.ChannelQueryContext;
-import com.regent.rbp.api.service.goods.context.GoodsQueryContext;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,6 +54,7 @@ import java.util.stream.Collectors;
  * @author: HaiFeng
  * @create: 2021-09-11 13:37
  */
+@Service
 public class ChannelServiceBean implements ChannelService {
 
     @Autowired
@@ -211,7 +233,7 @@ public class ChannelServiceBean implements ChannelService {
      * @param context
      * @return
      */
-    private PageDataResponse<ChannelQueryResult> searchPage(GoodsQueryContext context) {
+    private PageDataResponse<ChannelQueryResult> searchPage(ChannelQueryContext context) {
 
         PageDataResponse<ChannelQueryResult> result = new PageDataResponse<ChannelQueryResult>();
 

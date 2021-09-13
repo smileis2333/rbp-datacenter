@@ -9,7 +9,7 @@
         <if test="keyword != '' and keyword != null">
             WHERE `name` LIKE concat('%', #{keyword}, '%') OR code LIKE concat('%', #{keyword}, '%')
         </if>
-        ORDER BY updated_time DESC;
+        ORDER BY updated_time DESC
     </select>
 
     <select id="getExistBaseDataList" resultType="java.lang.String">
