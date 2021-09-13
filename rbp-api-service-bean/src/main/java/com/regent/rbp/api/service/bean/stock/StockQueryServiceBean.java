@@ -8,10 +8,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.Barcode;
-import com.regent.rbp.api.core.base.Brand;
 import com.regent.rbp.api.core.base.Color;
 import com.regent.rbp.api.core.base.LongInfo;
-import com.regent.rbp.api.core.base.SizeClass;
 import com.regent.rbp.api.core.base.SizeDetail;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.goods.Goods;
@@ -27,35 +25,23 @@ import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.stock.StockQueryDao;
 import com.regent.rbp.api.dao.warehouse.WarehouseChannelRangeDao;
 import com.regent.rbp.api.dao.warehouse.WarehouseDao;
-import com.regent.rbp.api.dto.base.BarcodeDto;
 import com.regent.rbp.api.dto.core.PageDataResponse;
-import com.regent.rbp.api.dto.goods.DisableSizeDto;
-import com.regent.rbp.api.dto.goods.GoodsColorDto;
-import com.regent.rbp.api.dto.goods.GoodsLongDto;
-import com.regent.rbp.api.dto.goods.GoodsPriceDto;
-import com.regent.rbp.api.dto.goods.GoodsQueryParam;
-import com.regent.rbp.api.dto.goods.GoodsQueryResult;
-import com.regent.rbp.api.dto.goods.GoodsTagPriceDto;
 import com.regent.rbp.api.dto.stock.StockQueryParam;
 import com.regent.rbp.api.dto.stock.StockQueryResult;
 import com.regent.rbp.api.service.enums.StockTypeEnum;
-import com.regent.rbp.api.service.goods.context.GoodsQueryContext;
 import com.regent.rbp.api.service.stock.StockQueryService;
-import com.regent.rbp.api.service.stock.context.StockQueryContext;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
-import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.MD5Util;
 import com.regent.rbp.infrastructure.util.NumberUtil;
-import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.StreamUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -63,6 +49,7 @@ import java.util.stream.Collectors;
  * @createTime 2021-09-11
  * @Description
  */
+@Service
 public class StockQueryServiceBean implements StockQueryService {
 
     @Autowired
