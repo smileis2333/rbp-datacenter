@@ -56,7 +56,7 @@ public class BaseServiceBean implements BaseService {
         // 获取基础资料表名
         String tableName = BaseDataEnum.getTableName(context.getType());
         if (StringUtils.isEmpty(tableName)) {
-            return new PageDataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotExist", new String[]{LanguageUtil.getMessage("baseDataType")}));
+            return new PageDataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotExist", new String[]{LanguageUtil.getMessage("baseDataType")}));
         }
         // 查询
         Page<BaseData> pageModel = new Page<>(context.getPageNo(), context.getPageSize());
@@ -85,25 +85,22 @@ public class BaseServiceBean implements BaseService {
         // 获取基础资料表名
         String tableName = BaseDataEnum.getTableName(context.getType());
         if (StringUtils.isEmpty(tableName)) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotExist", new String[]{LanguageUtil.getMessage("baseDataType")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotExist", new String[]{LanguageUtil.getMessage("baseDataType")}));
         }
         if (CollUtil.isEmpty(context.getList())) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("baseDataList")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("baseDataList")}));
         }
         // 判断是否重复
         List<String> existList = new ArrayList<>();
         Boolean codeFlag = BaseDataEnum.isCodeFlag(context.getType());
-        if (codeFlag) {
-            this.findExists(tableName, codeFlag, existList, context.getList());
-        } else {
-            this.findExists(tableName, codeFlag, existList, context.getList());
-        }
+        this.findExists(tableName, codeFlag, existList, context.getList());
+
         if (CollUtil.isNotEmpty(existList)) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataRepeated", new String[]{String.join(StrUtil.COMMA, existList)}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataRepeated", new Object[]{String.join(StrUtil.COMMA, existList)}));
         }
         // 批量新增
         List<Brand> list = new ArrayList<>();
-        int i = 1;
+        int i = 0;
         for (BaseData baseData : context.getList()) {
             i++;
             list.add(Brand.build(codeFlag ? baseData.getCode() : StrUtil.EMPTY, baseData.getName()));
@@ -159,7 +156,7 @@ public class BaseServiceBean implements BaseService {
             }
         }
         if (CollUtil.isEmpty(existList)) {
-            List<String> list = brandDao.getExistBaseDataList(tableName, codeFlag ? "code" : "name", StreamUtil.toList(baseDataList, BaseData::getCode));
+            List<String> list = brandDao.getExistBaseDataList(tableName, codeFlag ? "code" : "name", codeFlag ? StreamUtil.toList(baseDataList, BaseData::getCode) : StreamUtil.toList(baseDataList, BaseData::getName));
             if (CollUtil.isNotEmpty(list)) {
                 existList.addAll(list);
             }

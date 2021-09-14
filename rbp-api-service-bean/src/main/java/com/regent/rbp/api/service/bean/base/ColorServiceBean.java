@@ -122,23 +122,23 @@ public class ColorServiceBean extends ServiceImpl<ColorDao, Color> implements Co
         this.convertSaveContext(param, context);
         // 参数验证
         if (CollUtil.isEmpty(context.getList())) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("colorData")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("colorData")}));
         }
         // 判断颜色编号/说明/颜组不能为空
         for (ColorData data : context.getList()) {
             if (StringUtil.isEmpty(data.getColorCode())) {
-                return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("colorCode")}));
+                return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("colorCode")}));
             } else if (StringUtil.isEmpty(data.getColorName())) {
-                return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("colorName")}));
+                return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("colorName")}));
             } else if (StringUtil.isEmpty(data.getColorGroup())) {
-                return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("colorGroup")}));
+                return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("colorGroup")}));
             }
         }
         // 判断颜色编号是否重复
         List<String> existList = new ArrayList<>();
         this.findInsertExists(existList, context.getList());
         if (CollUtil.isNotEmpty(existList)) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataRepeated", new String[]{String.join(StrUtil.COMMA, existList)}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataRepeated", new String[]{String.join(StrUtil.COMMA, existList)}));
         }
         // 获取或新增颜色组
         Map<String, Long> groupMap = this.queryAndInsertColorGroupList(context.getList());
@@ -164,14 +164,14 @@ public class ColorServiceBean extends ServiceImpl<ColorDao, Color> implements Co
         this.convertUpdateContext(param, context);
         // 参数验证
         if (CollUtil.isEmpty(context.getList())) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("colorData")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("colorData")}));
         }
         // 判断颜色编号/说明不能为空
         for (ColorData data : context.getList()) {
             if (StringUtil.isEmpty(data.getColorCode())) {
-                return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("colorCode")}));
+                return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("colorCode")}));
             } else if (StringUtil.isEmpty(data.getColorName())) {
-                return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("colorName")}));
+                return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("colorName")}));
             }
         }
         // 判断颜色编号是否重复
@@ -180,19 +180,19 @@ public class ColorServiceBean extends ServiceImpl<ColorDao, Color> implements Co
         Set<String> stringSet = new HashSet<>();
         context.getList().stream().filter(f -> !stringSet.add(f.getColorCode())).forEach(item -> existStr.append(item.getColorCode()).append(StrUtil.COMMA));
         if (existStr.length() > 0) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataRepeated", new String[]{existStr.toString()}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataRepeated", new String[]{existStr.toString()}));
         }
         // 判断颜色编号是否存在
         List<Color> list = colorDao.selectList(new QueryWrapper<Color>().select("id,code").in("code", StreamUtil.toList(context.getList(), ColorData::getColorCode)));
         if (CollUtil.isEmpty(list)) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotExist",
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotExist",
                     new String[]{LanguageUtil.getMessage("colorCode").concat(": ").concat(String.join(StrUtil.COMMA, dataMap.keySet()))}));
         }
         List<String> codeList = list.stream().map(Color::getCode).collect(Collectors.toList());
         existStr.setLength(0);
         context.getList().stream().filter(f -> !codeList.contains(f.getColorCode())).forEach(item -> existStr.append(item.getColorCode()).append(StrUtil.COMMA));
         if (existStr.length() > 0) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataRepeated", new String[]{existStr.toString()}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataRepeated", new String[]{existStr.toString()}));
         }
         // 获取或新增颜色组
         Map<String, Long> groupMap = this.queryAndInsertColorGroupList(context.getList());
@@ -221,7 +221,7 @@ public class ColorServiceBean extends ServiceImpl<ColorDao, Color> implements Co
         this.convertDeleteContext(param, context);
         // 参数验证
         if (CollUtil.isEmpty(context.getCodeList())) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("colorCode")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("colorCode")}));
         }
         // 批量删除
         colorDao.delete(new QueryWrapper<Color>().in("code", context.getCodeList()));
