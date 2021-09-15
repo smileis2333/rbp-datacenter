@@ -26,5 +26,5 @@ public interface DbDao {
      * @param baseBusinessTypeId 基础业务类型编码
      * @return
      */
-    ModuleBusinessType getOneModuleBusineeType(@Param("baseModuleId") String baseModuleId, @Param("baseBusinessTypeId") Long baseBusinessTypeId);
+    ModuleBusinessType getOneModuleBusinessType(@Param("baseModuleId") String baseModuleId, @Param("baseBusinessTypeId") Long baseBusinessTypeId);
 }

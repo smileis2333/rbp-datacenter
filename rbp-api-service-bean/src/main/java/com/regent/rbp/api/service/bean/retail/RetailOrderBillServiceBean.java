@@ -125,7 +125,7 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         bill.setDistributionStatus(StatusEnum.NONE.getStatus());
         bill.setRefundStatus(StatusEnum.NONE.getStatus());
         // 获取模块业务类型
-        ModuleBusinessType moduleBusinessType = dbDao.getOneModuleBusineeType(BaseModuleEnum.RETAIL_ORDER_BILL.getBaseModuleId(), SystemConstants.DEFAULT_RETAIL_ORDER_BASE_BUSINESS_TYPE_ID);
+        ModuleBusinessType moduleBusinessType = dbDao.getOneModuleBusinessType(BaseModuleEnum.RETAIL_ORDER_BILL.getBaseModuleId(), SystemConstants.DEFAULT_RETAIL_ORDER_BASE_BUSINESS_TYPE_ID);
         bill.setModuleId(OptionalUtil.ofNullable(moduleBusinessType, ModuleBusinessType::getModuleId));
         bill.setBusinessTypeId(OptionalUtil.ofNullable(moduleBusinessType, ModuleBusinessType::getBusinessTypeId));
         bill.setBillDate(param.getBillDate());

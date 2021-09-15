@@ -25,7 +25,7 @@
         ${sql}
     </select>
 
-    <select id="getOneModuleBusineeType" resultType="com.regent.rbp.api.core.base.ModuleBusinessType">
+    <select id="getOneModuleBusinessType" resultType="com.regent.rbp.api.core.base.ModuleBusinessType">
          SELECT a.id, a.module_id, a.business_type_id FROM rbp_module_business_type a
             INNER JOIN rbp_module rm ON rm.status = 100 AND rm.base_module_id = #{baseModuleId} AND rm.id = a.module_id
             WHERE
