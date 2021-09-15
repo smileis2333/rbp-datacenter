@@ -13,4 +13,24 @@
         </foreach>
     </select>
 
+    <select id="getLongDataBySql" resultType="java.lang.Long">
+        ${sql}
+    </select>
+
+    <select id="getIntegerDataBySql" resultType="java.lang.Integer">
+        ${sql}
+    </select>
+
+    <select id="getStringDataBySql" resultType="java.lang.String">
+        ${sql}
+    </select>
+
+    <select id="getOneModuleBusineeType" resultType="com.regent.rbp.api.core.base.ModuleBusinessType">
+         SELECT a.id, a.module_id, a.business_type_id FROM rbp_module_business_type a
+            INNER JOIN rbp_module rm ON rm.status = 100 AND rm.base_module_id = #{baseModuleId} AND rm.id = a.module_id
+            WHERE
+                 EXISTS(SELECT 1 FROM rbp_business_type rby WHERE rby.base_business_type_id = #{baseBusinessTypeId} AND rby.id = a.business_type_id)
+            LIMIT 1;
+    </select>
+
 </mapper>

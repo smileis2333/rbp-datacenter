@@ -5,7 +5,11 @@ package com.regent.rbp.api.service.enums;
  */
 
 public enum BaseModuleEnum {
+
     GOODS("120003"),
+
+    RETAIL_ORDER_BILL("700050"),
+
     ;
 
     private String baseModuleId;

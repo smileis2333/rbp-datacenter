@@ -23,7 +23,6 @@ import com.regent.rbp.api.service.base.context.ColorQueryContext;
 import com.regent.rbp.api.service.base.context.ColorSaveContext;
 import com.regent.rbp.api.service.base.context.ColorUpdateContext;
 import com.regent.rbp.api.service.constants.SystemConstants;
-import com.regent.rbp.api.service.utils.FieldFilterTool;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
@@ -97,13 +96,10 @@ public class ColorServiceBean extends ServiceImpl<ColorDao, Color> implements Co
                 data.setColorGroup(groupMap.get(entity.getGroupId()));
                 list.add(data);
             }
-            // 过滤字段
+            // TODO 过滤字段
             if (StringUtil.isNotEmpty(context.getFields())) {
-                FieldFilterTool<ColorData> tool = new FieldFilterTool();
-                resultList.setData(tool.getFieldFilterList(list, context.getFields(), ColorData.class));
-            } else {
-                resultList.setData(list);
             }
+            resultList.setData(list);
         }
 
         return resultList;
