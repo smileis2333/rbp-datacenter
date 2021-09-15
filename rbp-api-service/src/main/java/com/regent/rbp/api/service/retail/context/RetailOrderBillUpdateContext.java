@@ -1,13 +1,7 @@
 package com.regent.rbp.api.service.retail.context;
 
-import com.regent.rbp.api.core.retail.RetailOrderBill;
-import com.regent.rbp.api.core.retail.RetailOrderBillCustomerInfo;
-import com.regent.rbp.api.core.retail.RetailOrderBillGoods;
-import com.regent.rbp.api.core.retail.RetailOrderBillPaymentInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
-import java.util.List;
 
 /**
  * 全渠道订单 修改上下文对象
@@ -18,16 +12,13 @@ import java.util.List;
 @Data
 public class RetailOrderBillUpdateContext {
 
-    @ApiModelProperty(notes = "单据")
-    private RetailOrderBill bill;
+    @ApiModelProperty(notes = "全渠道订单号")
+    private String billNo;
 
-    @ApiModelProperty(notes = "单据货品明细")
-    private List<RetailOrderBillGoods> billGoodsList;
+    @ApiModelProperty(notes = "单据状态")
+    private Integer status;
 
-    @ApiModelProperty(notes = "全渠道订单付款信息")
-    private List<RetailOrderBillPaymentInfo> billPaymentInfoList;
-
-    @ApiModelProperty(notes = "全渠道订单顾客信息")
-    private RetailOrderBillCustomerInfo billCustomerInfo;
+    @ApiModelProperty(notes = "线上状态")
+    private Integer onlineStatus;
 
 }

@@ -21,8 +21,8 @@ public class RetailOrderBillSaveParam {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date billDate;
 
-    @ApiModelProperty(notes = "外部单号，唯一。")
-    private String manualId;
+    @ApiModelProperty(notes = "外部单号，唯一")
+    private String manualNo;
 
     @ApiModelProperty(notes = "线上订单号")
     private String onlineOrderCode;
@@ -73,8 +73,8 @@ public class RetailOrderBillSaveParam {
     @ApiModelProperty(notes = "买家邮箱")
     private String buyerEmail;
 
-    @ApiModelProperty(notes = "物流公司名称")
-    private String logisticsCompanyName;
+    @ApiModelProperty(notes = "物流公司编号")
+    private String logisticsCompanyCode;
 
     @ApiModelProperty(notes = "国家")
     private String nation;

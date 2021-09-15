@@ -32,9 +32,9 @@ public class RetailOrderBillController {
         return result;
     }
 
-    @PutMapping("/update")
+    @PutMapping("/updateStatus")
     public DataResponse update(@RequestBody RetailOrderBillUpdateParam param) {
-        DataResponse result = retailOrderBillService.update(param);
+        DataResponse result = retailOrderBillService.updateStatus(param);
         return result;
     }
 

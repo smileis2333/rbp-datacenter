@@ -14,5 +14,5 @@ public interface RetailOrderBillService {
 
     ModelDataResponse<String> save(RetailOrderBillSaveParam param);
 
-    DataResponse update(RetailOrderBillUpdateParam param);
+    DataResponse updateStatus(RetailOrderBillUpdateParam param);
 }

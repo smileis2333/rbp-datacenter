@@ -55,7 +55,7 @@ public class BaseServiceBean implements BaseService {
         // 获取基础资料表名
         String tableName = BaseDataEnum.getTableName(context.getType());
         if (StringUtils.isEmpty(tableName)) {
-            return new PageDataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotExist", new String[]{LanguageUtil.getMessage("baseDataType")}));
+            return new PageDataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataNotExist", new String[]{LanguageUtil.getMessage("baseDataType")}));
         }
         // 查询
         Page<BaseData> pageModel = new Page<>(context.getPageNo(), context.getPageSize());
@@ -83,10 +83,10 @@ public class BaseServiceBean implements BaseService {
         // 获取基础资料表名
         String tableName = BaseDataEnum.getTableName(context.getType());
         if (StringUtils.isEmpty(tableName)) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotExist", new String[]{LanguageUtil.getMessage("baseDataType")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataNotExist", new String[]{LanguageUtil.getMessage("baseDataType")}));
         }
         if (CollUtil.isEmpty(context.getList())) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("baseDataList")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("baseDataList")}));
         }
         // 判断是否重复
         List<String> existList = new ArrayList<>();
@@ -94,7 +94,7 @@ public class BaseServiceBean implements BaseService {
         this.findExists(tableName, codeFlag, existList, context.getList());
 
         if (CollUtil.isNotEmpty(existList)) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataRepeated", new Object[]{String.join(StrUtil.COMMA, existList)}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataRepeated", new Object[]{String.join(StrUtil.COMMA, existList)}));
         }
         // 批量新增
         List<Brand> list = new ArrayList<>();
@@ -159,6 +159,10 @@ public class BaseServiceBean implements BaseService {
                 existList.addAll(list);
             }
         }
+    }
+
+    public static String getMessageByParams(String languageKey, Object[] params) {
+        return LanguageUtil.getMessage(LanguageUtil.ZH, languageKey, params);
     }
 
 }

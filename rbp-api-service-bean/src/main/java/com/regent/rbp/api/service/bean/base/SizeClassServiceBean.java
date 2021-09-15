@@ -103,21 +103,21 @@ public class SizeClassServiceBean extends ServiceImpl<SizeClassDao, SizeClass> i
         this.convertSaveContext(param, context);
         // 参数验证
         if (StringUtil.isEmpty(context.getSizeClassName())) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("sizeClassName")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("sizeClassName")}));
         }
         if (CollUtil.isEmpty(context.getSizeList())) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("size")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("size")}));
         }
         SizeClass sizeClass = sizeClassDao.selectOne(new QueryWrapper<SizeClass>().eq("name", context.getSizeClassName()).last("limit 1"));
         if (null == sizeClass) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataExist", new String[]{LanguageUtil.getMessage("sizeClassName")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataExist", new String[]{LanguageUtil.getMessage("sizeClassName")}));
         }
         // 判断尺码是否重复
         Set<String> set = new HashSet<>();
         StringBuilder existStr = new StringBuilder();
         context.getSizeList().stream().filter(f -> !set.add(f)).forEach(v -> existStr.append(v).append(StrUtil.COMMA));
         if (existStr.length() > 0) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataRepeated", new String[]{existStr.toString()}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataRepeated", new String[]{existStr.toString()}));
         }
         // 新建尺码类别
         SizeClass entity = SizeClass.build(context.getSizeClassName());
@@ -141,21 +141,21 @@ public class SizeClassServiceBean extends ServiceImpl<SizeClassDao, SizeClass> i
         this.convertUpdateContext(param, context);
         // 参数验证
         if (StringUtil.isEmpty(context.getSizeClassName())) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("sizeClassName")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("sizeClassName")}));
         }
         if (CollUtil.isEmpty(context.getSizeList())) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("size")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("size")}));
         }
         SizeClass sizeClass = sizeClassDao.selectOne(new QueryWrapper<SizeClass>().eq("name", context.getSizeClassName()).last("limit 1"));
         if (null == sizeClass) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataExist", new String[]{LanguageUtil.getMessage("sizeClassName")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataExist", new String[]{LanguageUtil.getMessage("sizeClassName")}));
         }
         // 判断尺码是否重复
         Set<String> set = new HashSet<>();
         StringBuilder existStr = new StringBuilder();
         context.getSizeList().stream().filter(f -> !set.add(f)).forEach(v -> existStr.append(v).append(StrUtil.COMMA));
         if (existStr.length() > 0) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataRepeated", new String[]{existStr.toString()}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataRepeated", new String[]{existStr.toString()}));
         }
         // 更新尺码类别
         sizeClass.preUpdate();
@@ -178,11 +178,11 @@ public class SizeClassServiceBean extends ServiceImpl<SizeClassDao, SizeClass> i
         this.convertDeleteContext(param, context);
         // 参数验证
         if (StringUtil.isEmpty(context.getSizeClassName())) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotNull", new String[]{LanguageUtil.getMessage("sizeClassName")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("sizeClassName")}));
         }
         SizeClass sizeClass = sizeClassDao.selectOne(new QueryWrapper<SizeClass>().eq("name", context.getSizeClassName()));
         if (null == sizeClass) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage(LanguageUtil.ZH, "dataNotExist", new String[]{LanguageUtil.getMessage("sizeClassName")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataNotExist", new String[]{LanguageUtil.getMessage("sizeClassName")}));
         }
         // 批量删除
         sizeDetailDao.delete(new QueryWrapper<SizeDetail>().in("size_class_id", sizeClass.getId()));
@@ -259,4 +259,7 @@ public class SizeClassServiceBean extends ServiceImpl<SizeClassDao, SizeClass> i
         sizeClassDao.batchInsertSizeDetail(details);
     }
 
+    public static String getMessageByParams(String languageKey, Object[] params) {
+        return LanguageUtil.getMessage(LanguageUtil.ZH, languageKey, params);
+    }
 }

@@ -11,5 +11,7 @@ import java.util.Map;
  * @author xuxing
  */
 public interface GoodsDao extends BaseMapper<Goods> {
-    List<Map> selectGoodsCustomByGoodsIds(@Param("goodsIds") List<Long> goodsIds, @Param("customizeColumns")List<String> customizeColumns);
+
+    List<Map> selectGoodsCustomByGoodsIds(@Param("goodsIds") List<Long> goodsIds, @Param("customizeColumns") List<String> customizeColumns);
+
 }

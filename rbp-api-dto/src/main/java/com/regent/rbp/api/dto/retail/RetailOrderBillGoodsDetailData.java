@@ -31,5 +31,8 @@ public class RetailOrderBillGoodsDetailData {
     @ApiModelProperty(notes = "数量")
     private BigDecimal quantity;
 
+    @ApiModelProperty(notes = "备注")
+    private String remark;
+
 
 }
