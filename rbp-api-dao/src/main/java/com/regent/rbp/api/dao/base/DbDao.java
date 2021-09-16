@@ -11,7 +11,11 @@ import java.util.Map;
  */
 public interface DbDao {
 
-    List<Map> selectTableDataByMap(@Param("tableName") String tableName, @Param("conditionMap") Map conditionMap);
+    List<Map> selectTableDataByMap(@Param("tableName") String tableName, @Param("conditionMap")Map conditionMap);
+
+    void insertMap(@Param("tableName") String tableName, @Param("map")Map<String, Object> map);
+
+    void updateMapById(@Param("tableName") String tableName, @Param("map")Map<String, Object> map);
 
     Long getLongDataBySql(@Param("sql") String sql);
 

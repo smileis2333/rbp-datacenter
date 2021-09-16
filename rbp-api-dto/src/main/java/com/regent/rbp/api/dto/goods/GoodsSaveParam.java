@@ -44,7 +44,7 @@ public class GoodsSaveParam {
     private String[] colorList;
     private String[] longList;
     private GoodsPriceDto priceData;
-    private List<CustomizeDataDto> customizeDatumDtos;
-    private List<BarcodeDto> barcodeDtoData;
-    private List<DisableSizeDto> disableSizeDtoData;
+    private List<CustomizeDataDto> customizeData;
+    private List<BarcodeDto> barcodeData;
+    private List<DisableSizeDto> disableSizeData;
 }

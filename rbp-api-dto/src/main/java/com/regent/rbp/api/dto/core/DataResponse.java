@@ -1,5 +1,6 @@
 package com.regent.rbp.api.dto.core;
 
+import com.regent.rbp.api.dto.constants.ApiResponseCode;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -24,8 +25,11 @@ public class DataResponse {
         this.message = message;
     }
 
-    public static DataResponse Success() {
+    public static DataResponse success() {
         return new DataResponse();
     }
 
+    public static DataResponse errorParameter(String message) {
+        return new DataResponse(ApiResponseCode.API_PARAMETER_ERROR, message);
+    }
 }

@@ -4,14 +4,36 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.regent.rbp.api.dao.base.DbDao">
 
+
     <select id="selectTableDataByMap" resultType="java.util.Map">
         SELECT *
         FROM `${tableName}`
         WHERE 1 = 1
         <foreach collection="conditionMap.entrySet()"  index="key" item="value" >
-            and ${key}= #{value}
+            and `${key}`=#{value}
         </foreach>
     </select>
+
+    <insert id="insertMap">
+        INSERT INTO `${tableName}` (
+        <foreach collection="map.entrySet()"  index="key" item="value" >
+            `${key}`
+        </foreach>
+        )
+        VALUES(
+        <foreach collection="map.entrySet()"  index="key" item="value" >
+            #{value}
+        </foreach>
+        )
+    </insert>
+
+    <update id="updateMapById">
+        UPDATE `${tableName}` SET
+        <foreach collection="map.entrySet()"  index="key" item="value" >
+            `${key}`= #{value}
+        </foreach>
+        WHERE `id` = #{id}
+    </update>
 
     <select id="getLongDataBySql" resultType="java.lang.Long">
         ${sql}

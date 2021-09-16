@@ -11,6 +11,7 @@ import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 货品保存上下文对象
@@ -25,6 +26,7 @@ public class GoodsSaveContext {
     private List<Barcode> barcodeList;
     private List<SizeDisable> sizeDisableList;
     private List<GoodsTagPrice> goodsTagPriceList;
+    private Map customizeData;
 
     public GoodsSaveContext() {
         this(null);
