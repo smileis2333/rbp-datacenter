@@ -82,20 +82,20 @@ public class LongServiceBean extends ServiceImpl<LongDao, LongInfo> implements L
         this.convertSaveContext(param, context);
         // 参数验证
         if (CollUtil.isEmpty(context.getLongNameList())) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("longName")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("longName")}));
         }
         // 判断内长是否重复
         Set<String> set = new HashSet<>();
         StringBuilder existStr = new StringBuilder();
         context.getLongNameList().stream().filter(f -> !set.add(f)).forEach(v -> existStr.append(v).append(StrUtil.COMMA));
         if (existStr.length() > 0) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataRepeated", new String[]{existStr.toString()}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessageByParams("dataRepeated", new String[]{existStr.toString()}));
         }
         existStr.setLength(0);
         List<LongInfo> list = longDao.selectList(new QueryWrapper<LongInfo>().select("name").in("name", context.getLongNameList()));
         if (CollUtil.isNotEmpty(list)) {
             list.forEach(v -> existStr.append(v).append(StrUtil.COMMA));
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataRepeated", new String[]{existStr.toString()}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessageByParams("dataRepeated", new String[]{existStr.toString()}));
         }
         // 批量新增内长
         List<LongInfo> insertList = new ArrayList<>();
@@ -121,33 +121,33 @@ public class LongServiceBean extends ServiceImpl<LongDao, LongInfo> implements L
         this.convertUpdateContext(param, context);
         // 参数验证
         if (CollUtil.isEmpty(context.getLongList())) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("longName")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("longName")}));
         }
         // 判断内长是否重复
         Set<String> set = new HashSet<>();
         StringBuilder existStr = new StringBuilder();
         context.getLongList().stream().filter(f -> !set.add(f.getOriginalLongName())).forEach(v -> existStr.append(v.getOriginalLongName()).append(StrUtil.COMMA));
         if (existStr.length() > 0) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataRepeated", new String[]{existStr.toString()}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessageByParams("dataRepeated", new String[]{existStr.toString()}));
         }
         set.clear();
         existStr.setLength(0);
         context.getLongList().stream().filter(f -> !set.add(f.getLongName())).forEach(v -> existStr.append(v.getLongName()).append(StrUtil.COMMA));
         if (existStr.length() > 0) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataRepeated", new String[]{existStr.toString()}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessageByParams("dataRepeated", new String[]{existStr.toString()}));
         }
         // 判断原始内长是否存在
         List<LongInfo> list = longDao.selectList(new QueryWrapper<LongInfo>().select("id,name").in("name", StreamUtil.toList(context.getLongList(), LongData::getOriginalLongName)));
         if (CollUtil.isEmpty(list)) {
             existStr.setLength(0);
             context.getLongList().stream().forEach(v -> existStr.append(v.getOriginalLongName()).append(StrUtil.COMMA));
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotExist", new String[]{existStr.toString()}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessageByParams("dataNotExist", new String[]{existStr.toString()}));
         }
         if (context.getLongList().size() > list.size()) {
             existStr.setLength(0);
             List<String> nameList = list.stream().map(LongInfo::getName).collect(Collectors.toList());
             context.getLongList().stream().filter(f -> !nameList.contains(f.getOriginalLongName())).forEach(v -> existStr.append(v.getOriginalLongName()).append(StrUtil.COMMA));
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataRepeated", new String[]{existStr.toString()}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessageByParams("dataRepeated", new String[]{existStr.toString()}));
         }
         // 批量修改内长
         Map<String, String> longMap = context.getLongList().stream().collect(Collectors.toMap(LongData::getOriginalLongName, v -> v.getLongName(), (x1, x2) -> x1));
@@ -173,7 +173,7 @@ public class LongServiceBean extends ServiceImpl<LongDao, LongInfo> implements L
         this.convertDeleteContext(param, context);
         // 参数验证
         if (CollUtil.isEmpty(context.getLongNameList())) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("longName")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("longName")}));
         }
         // 批量删除
         longDao.delete(new QueryWrapper<LongInfo>().in("name", context.getLongNameList()));
@@ -221,5 +221,8 @@ public class LongServiceBean extends ServiceImpl<LongDao, LongInfo> implements L
         context.setLongNameList((OptionalUtil.ofNullable(param.getLongName(), data -> Arrays.asList(data))));
     }
 
+    public static String getMessageByParams(String languageKey, Object[] params) {
+        return LanguageUtil.getMessage(LanguageUtil.ZH, languageKey, params);
+    }
 
 }

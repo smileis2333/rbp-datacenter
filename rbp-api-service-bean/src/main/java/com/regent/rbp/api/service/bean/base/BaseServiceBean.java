@@ -16,7 +16,6 @@ import com.regent.rbp.api.service.base.context.BaseQueryContext;
 import com.regent.rbp.api.service.base.context.BaseSaveContext;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.api.service.enums.BaseDataEnum;
-import com.regent.rbp.api.service.utils.FieldFilterTool;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
@@ -56,15 +55,14 @@ public class BaseServiceBean implements BaseService {
         // 获取基础资料表名
         String tableName = BaseDataEnum.getTableName(context.getType());
         if (StringUtils.isEmpty(tableName)) {
-            return new PageDataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotExist", new String[]{LanguageUtil.getMessage("baseDataType")}));
+            return new PageDataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataNotExist", new String[]{LanguageUtil.getMessage("baseDataType")}));
         }
         // 查询
         Page<BaseData> pageModel = new Page<>(context.getPageNo(), context.getPageSize());
         IPage<BaseData> pages = brandDao.searchPageData(pageModel, tableName, context.getKeyword());
-        // 过滤不需要code基础资料模块
+        // TODO 过滤不需要code基础资料模块
         if (!BaseDataEnum.isCodeFlag(context.getType()) && CollUtil.isNotEmpty(pages.getRecords())) {
-            FieldFilterTool<BaseData> tool = new FieldFilterTool();
-            pages.setRecords(tool.getFieldFilterList(pages.getRecords(), "name", BaseData.class));
+
         }
 
         return new PageDataResponse<>(pages.getTotal(), pages.getRecords());
@@ -85,25 +83,22 @@ public class BaseServiceBean implements BaseService {
         // 获取基础资料表名
         String tableName = BaseDataEnum.getTableName(context.getType());
         if (StringUtils.isEmpty(tableName)) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotExist", new String[]{LanguageUtil.getMessage("baseDataType")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataNotExist", new String[]{LanguageUtil.getMessage("baseDataType")}));
         }
         if (CollUtil.isEmpty(context.getList())) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataNotNull", new String[]{LanguageUtil.getMessage("baseDataList")}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("baseDataList")}));
         }
         // 判断是否重复
         List<String> existList = new ArrayList<>();
         Boolean codeFlag = BaseDataEnum.isCodeFlag(context.getType());
-        if (codeFlag) {
-            this.findExists(tableName, codeFlag, existList, context.getList());
-        } else {
-            this.findExists(tableName, codeFlag, existList, context.getList());
-        }
+        this.findExists(tableName, codeFlag, existList, context.getList());
+
         if (CollUtil.isNotEmpty(existList)) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, LanguageUtil.getMessage("dataRepeated", new String[]{String.join(StrUtil.COMMA, existList)}));
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataRepeated", new Object[]{String.join(StrUtil.COMMA, existList)}));
         }
         // 批量新增
         List<Brand> list = new ArrayList<>();
-        int i = 1;
+        int i = 0;
         for (BaseData baseData : context.getList()) {
             i++;
             list.add(Brand.build(codeFlag ? baseData.getCode() : StrUtil.EMPTY, baseData.getName()));
@@ -159,11 +154,15 @@ public class BaseServiceBean implements BaseService {
             }
         }
         if (CollUtil.isEmpty(existList)) {
-            List<String> list = brandDao.getExistBaseDataList(tableName, codeFlag ? "code" : "name", StreamUtil.toList(baseDataList, BaseData::getCode));
+            List<String> list = brandDao.getExistBaseDataList(tableName, codeFlag ? "code" : "name", codeFlag ? StreamUtil.toList(baseDataList, BaseData::getCode) : StreamUtil.toList(baseDataList, BaseData::getName));
             if (CollUtil.isNotEmpty(list)) {
                 existList.addAll(list);
             }
         }
+    }
+
+    public static String getMessageByParams(String languageKey, Object[] params) {
+        return LanguageUtil.getMessage(LanguageUtil.ZH, languageKey, params);
     }
 
 }

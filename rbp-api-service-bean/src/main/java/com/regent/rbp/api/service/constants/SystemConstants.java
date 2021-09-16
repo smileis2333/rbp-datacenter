@@ -13,4 +13,6 @@ public class SystemConstants {
 
     public static final Integer BATCH_SIZE = 500;
 
+    public static final Long DEFAULT_RETAIL_ORDER_BASE_BUSINESS_TYPE_ID = 1100000000000052L;
+
 }

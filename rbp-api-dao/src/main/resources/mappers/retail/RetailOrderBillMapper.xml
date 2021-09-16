@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.retail.RetailOrderBillDao">
+
+    <insert id="batchInsertGoodsList">
+        INSERT INTO rbp_retail_order_bill_goods (id,bill_id,sales_order_bill_goods_id,sale_type,retail_goods_type,process_status,online_status,
+        refund_status,after_sale_process_status,return_status,tag_price,balance_price,discount,barcode,goods_id,color_id,long_id,
+        size_id,quantity,remark,created_by,updated_by)
+        VALUES
+        <foreach item="item" index="index" collection="billGoodsList" separator=",">
+            (#{item.id}, #{item.billId},#{item.salesOrderBillGoodsId},#{item.saleType},#{item.retailGoodsType},#{item.processStatus},#{item.onlineStatus},
+            #{item.refundStatus},#{item.afterSaleProcessStatus},#{item.returnStatus},#{item.tagPrice},#{item.balancePrice},#{item.discount},#{item.barcode},#{item.goodsId},#{item.colorId},#{item.longId},
+            #{item.sizeId},#{item.remark},#{item.quantity},#{item.createdBy},#{item.updatedBy})
+        </foreach>
+    </insert>
+
+
+</mapper>
