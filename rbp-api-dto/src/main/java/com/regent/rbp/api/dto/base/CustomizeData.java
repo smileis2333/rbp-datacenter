@@ -1,4 +1,4 @@
-package com.regent.rbp.api.dto.channel;
+package com.regent.rbp.api.dto.base;
 
 import lombok.Data;
 

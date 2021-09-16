@@ -1,7 +1,7 @@
 package com.regent.rbp.api.dto.channel;
 
+import com.regent.rbp.api.dto.base.CustomizeData;
 import lombok.Data;
-import org.apache.commons.math3.analysis.function.Add;
 
 import java.math.BigDecimal;
 import java.util.List;

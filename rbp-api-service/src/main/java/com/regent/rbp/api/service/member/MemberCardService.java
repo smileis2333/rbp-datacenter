@@ -1,0 +1,31 @@
+package com.regent.rbp.api.service.member;
+
+import com.regent.rbp.api.dto.channel.ChannelSaveParam;
+import com.regent.rbp.api.dto.core.DataResponse;
+import com.regent.rbp.api.dto.core.PageDataResponse;
+import com.regent.rbp.api.dto.member.MemberCardQueryParam;
+import com.regent.rbp.api.dto.member.MemberCardQueryResult;
+import com.regent.rbp.api.dto.member.MemberCardSaveParam;
+
+/**
+ * @program: rbp-datacenter
+ * @description: 会员档案 Service
+ * @author: HaiFeng
+ * @create: 2021-09-14 11:44
+ */
+public interface MemberCardService  {
+
+    /**
+     * 查询
+     * @param param
+     * @return
+     */
+    PageDataResponse<MemberCardQueryResult> query(MemberCardQueryParam param);
+
+    /**
+     * 新增/修改
+     * @param param
+     * @return
+     */
+    DataResponse save(MemberCardSaveParam param);
+}

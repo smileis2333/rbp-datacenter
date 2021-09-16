@@ -1,6 +1,7 @@
 package com.regent.rbp.api.dto.channel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.regent.rbp.api.dto.base.CustomizeData;
 import lombok.Data;
 
 import java.math.BigDecimal;

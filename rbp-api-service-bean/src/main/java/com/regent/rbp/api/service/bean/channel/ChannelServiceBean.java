@@ -224,7 +224,7 @@ public class ChannelServiceBean implements ChannelService {
         QueryWrapper queryWrapper = new QueryWrapper<Channel>();
 
         IPage<Channel> channelPageData = channelDao.selectPage(pageModel, queryWrapper);
-        List<ChannelQueryResult> list = convertGoodsQueryResult(channelPageData.getRecords());
+        List<ChannelQueryResult> list = convertQueryResult(channelPageData.getRecords());
 
         result.setTotalCount(channelPageData.getTotal());
         result.setData(list);
@@ -237,7 +237,7 @@ public class ChannelServiceBean implements ChannelService {
      * 1.读取相同的属性
      * 2.将内部编码id转换成名称name
      */
-    private List<ChannelQueryResult> convertGoodsQueryResult(List<Channel> channelList) {
+    private List<ChannelQueryResult> convertQueryResult(List<Channel> channelList) {
         List<ChannelQueryResult> queryResults = new ArrayList<>(channelList.size());
         List<Long> channelIds = channelList.stream().map(Channel::getId).collect(Collectors.toList());
 
