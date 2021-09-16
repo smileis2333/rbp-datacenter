@@ -27,12 +27,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.regent.rbp.api.dao</groupId>
-			<artifactId>rbp-api-dao</artifactId>
-			<version>1.0.0.0</version>
-		</dependency>
-
-		<dependency>
 			<groupId>com.regent.rbp.api.dto</groupId>
 			<artifactId>rbp-api-dto</artifactId>
 			<version>1.0.0.0</version>
@@ -41,6 +35,12 @@
 		<dependency>
 			<groupId>com.regent.rbp.api.service</groupId>
 			<artifactId>rbp-api-service</artifactId>
+			<version>1.0.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.regent.rbp.api.service.bean</groupId>
+			<artifactId>rbp-api-service-bean</artifactId>
 			<version>1.0.0.0</version>
 		</dependency>
 
@@ -56,18 +56,30 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<encoding>${project.build.sourceEncoding}</encoding>
 				</configuration>
 			</plugin>
 		</plugins>
+		<resources>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</resource>
+		</resources>
 	</build>
 
 </project>

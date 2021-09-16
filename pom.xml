@@ -256,6 +256,7 @@
 		<module>rbp-api-web</module>
 		<module>rbp-api-core</module>
 		<module>rbp-api-dto</module>
+		<module>rbp-api-dao</module>
 		<module>rbp-api-service</module>
 		<module>rbp-api-service-bean</module>
 		<module>rbp-task-inno</module>

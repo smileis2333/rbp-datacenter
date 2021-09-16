@@ -105,7 +105,7 @@ public class LongServiceBean extends ServiceImpl<LongDao, LongInfo> implements L
         });
         this.saveBatch(insertList);
 
-        return DataResponse.Success();
+        return DataResponse.success();
     }
 
     /**
@@ -157,7 +157,7 @@ public class LongServiceBean extends ServiceImpl<LongDao, LongInfo> implements L
         });
         this.updateBatchById(list);
 
-        return DataResponse.Success();
+        return DataResponse.success();
     }
 
     /**
@@ -177,7 +177,7 @@ public class LongServiceBean extends ServiceImpl<LongDao, LongInfo> implements L
         }
         // 批量删除
         longDao.delete(new QueryWrapper<LongInfo>().in("name", context.getLongNameList()));
-        return DataResponse.Success();
+        return DataResponse.success();
     }
 
     /**

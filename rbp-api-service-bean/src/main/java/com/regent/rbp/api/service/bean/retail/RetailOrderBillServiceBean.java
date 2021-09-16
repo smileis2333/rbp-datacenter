@@ -133,7 +133,7 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         bill.setStatus(context.getStatus());
         bill.setOnlineStatus(context.getOnlineStatus());
         retailOrderBillDao.updateById(bill);
-        return DataResponse.Success();
+        return DataResponse.success();
     }
 
     /**

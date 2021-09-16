@@ -144,7 +144,7 @@ public class ColorServiceBean extends ServiceImpl<ColorDao, Color> implements Co
             colorList.add(Color.build(entity.getColorCode(), entity.getColorName(), groupMap.get(entity.getColorGroup())));
         }
         this.saveBatch(colorList);
-        return DataResponse.Success();
+        return DataResponse.success();
     }
 
     /**
@@ -201,7 +201,7 @@ public class ColorServiceBean extends ServiceImpl<ColorDao, Color> implements Co
         });
         this.updateBatchById(list);
 
-        return DataResponse.Success();
+        return DataResponse.success();
     }
 
     /**
@@ -221,7 +221,7 @@ public class ColorServiceBean extends ServiceImpl<ColorDao, Color> implements Co
         }
         // 批量删除
         colorDao.delete(new QueryWrapper<Color>().in("code", context.getCodeList()));
-        return DataResponse.Success();
+        return DataResponse.success();
     }
 
     /**

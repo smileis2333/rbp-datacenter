@@ -108,7 +108,7 @@ public class BaseServiceBean implements BaseService {
             }
         }
 
-        return DataResponse.Success();
+        return DataResponse.success();
     }
 
     /**

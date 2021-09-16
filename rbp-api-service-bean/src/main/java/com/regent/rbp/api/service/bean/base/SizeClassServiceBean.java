@@ -125,7 +125,7 @@ public class SizeClassServiceBean extends ServiceImpl<SizeClassDao, SizeClass> i
         // 批量新建尺码
         this.fillSizeDetailList(entity.getId(), context.getSizeList(), false);
 
-        return DataResponse.Success();
+        return DataResponse.success();
     }
 
     /**
@@ -162,7 +162,7 @@ public class SizeClassServiceBean extends ServiceImpl<SizeClassDao, SizeClass> i
         sizeClassDao.updateById(sizeClass);
         // 批量新建尺码
         this.fillSizeDetailList(sizeClass.getId(), context.getSizeList(), false);
-        return DataResponse.Success();
+        return DataResponse.success();
     }
 
     /**
@@ -187,7 +187,7 @@ public class SizeClassServiceBean extends ServiceImpl<SizeClassDao, SizeClass> i
         // 批量删除
         sizeDetailDao.delete(new QueryWrapper<SizeDetail>().in("size_class_id", sizeClass.getId()));
         sizeClassDao.deleteById(sizeClass.getId());
-        return DataResponse.Success();
+        return DataResponse.success();
     }
 
     /**
