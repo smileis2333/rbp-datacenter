@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class GoodsServiceBean implements GoodsService {
+    //条形码生成规则
     public static final Set<Long> SET_RULES = new HashSet<>(Arrays.asList(
             new Long[] { 6888783191082240L, 6888783191082241L, 6888783191082242L, 6888783191082243L }
     ));

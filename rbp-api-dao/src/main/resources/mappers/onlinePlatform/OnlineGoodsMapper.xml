@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.onlinePlatform.OnlineGoodsDao">
+
+    <insert id="insertBatch">
+        INSERT INTO rbp_online_goods(id, online_platform_id, barcode, heavy, online_barcode, online_goods_id, online_goods_code,
+        online_goods_name, online_quantity, online_goods_status, online_onsale_flag, online_onsale_date, online_price,
+        abnormal_flag, abnormal_message)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            ( #{item.id}, #{item.onlinePlatformId}, #{item.barcode}, #{item.heavy}, #{item.onlineBarcode},
+            #{item.onlineGoodsId}, #{item.onlineGoodsCode}, #{item.onlineGoodsName}, #{item.onlineQuantity}, #{item.onlineGoodsStatus},
+            #{item.onlineOnsaleFlag}, #{item.onlineOnsaleDate}, #{item.onlinePrice}, #{item.abnormalFlag}, #{item.abnormalMessage} )
+        </foreach>
+    </insert>
+
+    <update id="updateBatch">
+        UPDATE rbp_online_goods SET
+        online_platform_id = #{item.onlinePlatformId}, barcode = #{item.barcode}, heavy = #{item.heavy},
+        online_barcode = #{item.onlineBarcode}, online_goods_id = #{item.onlineGoodsId}, online_goods_code = #{item.onlineGoodsCode},
+        online_goods_name = #{item.onlineGoodsName}, online_quantity = #{item.onlineQuantity}, online_goods_status = #{item.onlineGoodsStatus},
+        online_onsale_flag = #{item.onlineOnsaleFlag}, online_onsale_date = #{item.onlineOnsaleDate}, online_price = #{item.onlinePrice},
+        abnormal_flag = #{item.abnormalFlag}, abnormal_message = #{item.abnormalMessage}
+        WHERE id = #{item.id}
+    </update>
+</mapper>
