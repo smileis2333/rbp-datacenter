@@ -1,15 +1,12 @@
 package com.regent.rbp.task.inno.model.resp;
 
-import com.regent.rbp.task.inno.model.dto.GoodsDto;
+import com.regent.rbp.task.inno.model.dto.GoodsSearchPageDto;
 import lombok.Data;
-
-import java.util.List;
 
 /**
  * @author xuxing
  */
 @Data
 public class GoodsSearchRespDto extends BaseResponseDto {
-    private String totalPages;
-    private List<GoodsDto> data;
+    private GoodsSearchPageDto data;
 }

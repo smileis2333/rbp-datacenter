@@ -1,34 +1,12 @@
 package com.regent.rbp.task.inno.job;
 
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.regent.rbp.api.core.base.Barcode;
-import com.regent.rbp.api.core.omiChannel.OnlineGoods;
-import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
-import com.regent.rbp.api.dao.base.BarcodeDao;
-import com.regent.rbp.api.dao.onlinePlatform.OnlineGoodsDao;
-import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformDao;
-import com.regent.rbp.api.service.onlinePlatform.OnlineGoodsService;
-import com.regent.rbp.infrastructure.util.DateUtil;
-import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
-import com.regent.rbp.task.inno.config.InnoConfig;
-import com.regent.rbp.task.inno.model.dto.GoodsDto;
-import com.regent.rbp.task.inno.model.dto.GoodsSearchDto;
-import com.regent.rbp.task.inno.model.dto.SkuDto;
 import com.regent.rbp.task.inno.model.param.GoodsDownloadOnlineGoodsParam;
-import com.regent.rbp.task.inno.model.req.GoodsSearchReqDto;
-import com.regent.rbp.task.inno.model.resp.GoodsSearchRespDto;
 import com.regent.rbp.task.inno.service.GoodsService;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author xuxing

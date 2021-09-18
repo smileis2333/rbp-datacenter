@@ -10,7 +10,7 @@ import java.util.List;
  * @author xuxing
  */
 @Data
-public class GoodsDto {
+public class GoodsItemDto {
     /**
      * 商品ID
      */
@@ -102,5 +102,5 @@ public class GoodsDto {
     /**
      * 商品sku相关属性
      */
-    private List<SkuDto> list_sku_VO_property;
+    private List<SkuDto> list_sku_property;
 }
