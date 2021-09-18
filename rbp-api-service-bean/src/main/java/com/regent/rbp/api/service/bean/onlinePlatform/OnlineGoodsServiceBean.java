@@ -22,7 +22,9 @@ public class OnlineGoodsServiceBean extends ServiceImpl<OnlineGoodsDao, OnlineGo
     @Override
     @Transactional
     public void saveOrUpdateList(List<OnlineGoods> updateOnlineGoodsList, List<OnlineGoods> insertOnlineGoodsList) {
-        onlineGoodsDao.insertBatch(insertOnlineGoodsList);
+        if(insertOnlineGoodsList.size() > 0) {
+            onlineGoodsDao.insertBatch(insertOnlineGoodsList);
+        }
         for(OnlineGoods item : updateOnlineGoodsList) {
             onlineGoodsDao.updateById(item);
         }
