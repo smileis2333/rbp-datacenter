@@ -21,4 +21,10 @@ public class SystemConstants {
 
     public static final String DOWNLOAD_ONLINE_ORDER_LIST_JOB = "inno.downloadOnlineOrderListJobHandler";
 
+    public static final String POST_ERP_STORE = "inno.PostErpStore";
+
+    public static final String POST_ERP_WAREHOUSE = "inno.PostErpWarehouse";
+
+
+
 }

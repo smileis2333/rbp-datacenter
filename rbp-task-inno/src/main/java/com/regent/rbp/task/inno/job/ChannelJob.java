@@ -2,6 +2,7 @@ package com.regent.rbp.task.inno.job;
 
 import com.alibaba.fastjson.JSON;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
+import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.task.inno.config.InnoConfig;
 import com.regent.rbp.task.inno.model.param.ChannelUploadingParam;
 import com.regent.rbp.task.inno.model.param.GoodsDownloadOnlineGoodsParam;
@@ -42,7 +43,7 @@ public class ChannelJob {
      * 同步渠道
      * 请求Json：{ "onlinePlatformCode": "RBP" }
      */
-    @XxlJob("inno.PostErpStore")
+    @XxlJob(SystemConstants.POST_ERP_STORE)
     public void uploadingChannel() {
         try {
             //读取参数(电商平台编号)
@@ -58,8 +59,11 @@ public class ChannelJob {
             }
             //开始推送云仓
             if (onlinePlatform.getWarehouseId() != null) {
-                ChannelRespDto resp = channelService.uploadingChannel(onlinePlatform.getChannelId());
-                if (resp.getCode().equals("-1")) {
+                ChannelRespDto resp = channelService.uploadingChannel(onlinePlatform.getId(), onlinePlatform.getChannelId());
+                if (resp == null) {
+                    XxlJobHelper.log(ERROR_CHANNEL_List);
+                }
+                else if (resp.getCode().equals("-1")) {
                     new Exception(resp.getMsg());
                 }
                 XxlJobHelper.log("请求成功：" + JSON.toJSONString(resp));
@@ -78,7 +82,7 @@ public class ChannelJob {
      * 同步渠道
      * 请求Json：{ "onlinePlatformCode": "RBP" }
      */
-    @XxlJob("inno.PostErpWarehouse")
+    @XxlJob(SystemConstants.POST_ERP_WAREHOUSE)
     public void uploadingWarehouse() {
         try {
             //读取参数(电商平台编号)
@@ -93,9 +97,12 @@ public class ChannelJob {
                 return;
             }
             //开始推送门店
-            if (onlinePlatform.getChannelId() != null) {
-                ChannelRespDto resp = channelService.uploadingChannel(onlinePlatform.getChannelId());
-                if (resp.getCode().equals("-1")) {
+            if (onlinePlatform.getWarehouseId() != null) {
+                ChannelRespDto resp = channelService.uploadingWarehouse(onlinePlatform.getId(), onlinePlatform.getWarehouseId());
+                if (resp == null) {
+                    XxlJobHelper.log(ERROR_WAREHOUSE_LIST);
+                }
+                else if (resp.getCode().equals("-1")) {
                     new Exception(resp.getMsg());
                 }
                 XxlJobHelper.log("请求成功：" + JSON.toJSONString(resp));
