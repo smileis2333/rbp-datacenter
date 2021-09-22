@@ -33,9 +33,6 @@ public class RetailOrderBillSaveParam {
     @ApiModelProperty(notes = "销售渠道编号")
     private String retailChannelNo;
 
-    @ApiModelProperty(notes = "发货渠道编号")
-    private String sendChannelNo;
-
     @ApiModelProperty(notes = "单据状态;(0.未审核,1.已审核,2.反审核,3.已作废,4.已配货,5.已发货)")
     private Integer status;
 
