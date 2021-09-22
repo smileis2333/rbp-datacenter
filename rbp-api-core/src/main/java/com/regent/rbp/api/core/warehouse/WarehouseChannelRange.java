@@ -17,7 +17,7 @@ import java.math.BigDecimal;
  */
 @Data
 @ApiModel(description = "云仓渠道范围")
-@TableName(value = "rbp_warehouse_channel_range")
+@TableName(value = "rbp_warehourse_channel_range")
 public class WarehouseChannelRange extends Model<WarehouseChannelRange> {
 
     @TableId("id")
