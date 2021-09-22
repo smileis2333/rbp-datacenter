@@ -14,7 +14,7 @@ import java.util.List;
 public class ChannelQueryParam {
 
     private String[] channelCode;
-    private String[] channelName;
+    private String channelName;
     private String channelFullName;
     private String[] channelAddress;
     private String[] brand;
@@ -27,7 +27,7 @@ public class ChannelQueryParam {
     private String[] saleTagPriceType;
     private String[] saleRange;
     private String[] linkMan;
-    private int[] linkManMobile;
+    private String[] linkManMobile;
     private String[] fundAccount;
     private int[] status;
     private String createdDateStart;

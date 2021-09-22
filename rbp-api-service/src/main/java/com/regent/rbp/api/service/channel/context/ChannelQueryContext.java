@@ -18,7 +18,7 @@ import java.util.List;
 public class ChannelQueryContext {
 
     private String[] channelCode;
-    private String[] channelName;
+    private String channelName;
     private String channelFullName;
     private String[] channelAddress;
     private long[] brand;
@@ -31,7 +31,7 @@ public class ChannelQueryContext {
     private long[] saleTagPriceType;
     private long[] saleRange;
     private String[] linkMan;
-    private int[] linkManMobile;
+    private String[] linkManMobile;
     private long[] fundAccount;
     private int[] status;
     private Date createdDateStart;

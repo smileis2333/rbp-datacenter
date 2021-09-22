@@ -7,7 +7,6 @@ import com.regent.rbp.api.core.base.*;
 import com.regent.rbp.api.core.channel.*;
 import com.regent.rbp.api.core.fundAccount.FundAccount;
 import com.regent.rbp.api.core.goods.Goods;
-import com.regent.rbp.api.core.supplier.Supplier;
 import com.regent.rbp.api.dao.base.BranchCompanyDao;
 import com.regent.rbp.api.dao.base.BrandDao;
 import com.regent.rbp.api.dao.base.SaleRangeDao;
@@ -17,7 +16,6 @@ import com.regent.rbp.api.dao.fundAccount.FundAccountDao;
 import com.regent.rbp.api.dto.channel.*;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
-import com.regent.rbp.api.dto.goods.GoodsSaveParam;
 import com.regent.rbp.api.service.channel.ChannelService;
 import com.regent.rbp.api.service.channel.context.ChannelQueryContext;
 import com.regent.rbp.api.service.channel.context.ChannelSaveContext;
@@ -221,7 +219,7 @@ public class ChannelServiceBean implements ChannelService {
         PageDataResponse<ChannelQueryResult> result = new PageDataResponse<ChannelQueryResult>();
 
         Page<Channel> pageModel = new Page<Channel>(context.getPageNo(), context.getPageSize());
-        QueryWrapper queryWrapper = new QueryWrapper<Channel>();
+        QueryWrapper queryWrapper = this.processQueryWrapper(context);
 
         IPage<Channel> channelPageData = channelDao.selectPage(pageModel, queryWrapper);
         List<ChannelQueryResult> list = convertQueryResult(channelPageData.getRecords());
@@ -407,6 +405,86 @@ public class ChannelServiceBean implements ChannelService {
             }
         }
         return queryResults;
+    }
+
+    /**
+     * 整理查询条件构造器
+     * @return
+     */
+    private QueryWrapper processQueryWrapper(ChannelQueryContext context) {
+        QueryWrapper queryWrapper = new QueryWrapper<Channel>();
+        if (context.getChannelCode() != null && context.getChannelCode().length > 0)
+            queryWrapper.in("code", context.getChannelCode());
+        if (StringUtils.isNotBlank(context.getChannelName()))
+            queryWrapper.eq("name", context.getChannelName());
+        if (StringUtils.isNotBlank(context.getChannelFullName()))
+            queryWrapper.eq("full_name", context.getChannelFullName());
+        if (context.getChannelAddress() != null && context.getChannelAddress().length > 0)
+            queryWrapper.in("address", context.getChannelAddress());
+        if (context.getBrand() != null && context.getBrand().length > 0) {
+            List<ChannelBrand> channelBrandList = channelBrandDao.selectList(new QueryWrapper<ChannelBrand>().in("brand_id", context.getBrand()));
+            List<Long> channelIds = channelBrandList.stream().map(ChannelBrand::getChannelId).collect(Collectors.toList());
+            queryWrapper.in("id", channelIds);
+        }
+        if (context.getBranchCompany() != null && context.getBranchCompany().length > 0)
+            queryWrapper.in("branch_company_id", context.getBranchCompany());
+        if (context.getGrade() != null && context.getGrade().length > 0)
+            queryWrapper.in("grade_id", context.getGrade());
+        if (context.getBusinessFormat() != null && context.getBusinessFormat().length > 0)
+            queryWrapper.in("business_format_id", context.getBusinessFormat());
+        if (context.getBusinessNature() != null && context.getBusinessNature().length > 0)
+            queryWrapper.in("business_nature_id", context.getBusinessNature());
+        if (context.getBalanceType() != null && context.getBalanceType().length > 0)
+            queryWrapper.in("balance_type_id", context.getBalanceType());
+        if (context.getRetailTagPriceType() != null && context.getRetailTagPriceType().length > 0)
+            queryWrapper.in("retail_tag_price_type_id", context.getRetailTagPriceType());
+        if (context.getSaleTagPriceType() != null && context.getSaleTagPriceType().length > 0)
+            queryWrapper.in("sale_tag_price_type_id", context.getSaleTagPriceType());
+        if (context.getSaleRange() != null && context.getSaleRange().length > 0)
+            queryWrapper.in("sale_range_id", context.getSaleRange());
+        if (context.getLinkMan() != null && context.getLinkMan().length > 0)
+            queryWrapper.in("link_man", context.getLinkMan());
+        if (context.getLinkManMobile() != null && context.getLinkManMobile().length > 0)
+            queryWrapper.in("link_man_mobile", context.getLinkManMobile());
+        if (context.getFundAccount() != null && context.getFundAccount().length > 0)
+            queryWrapper.in("fund_account_id", context.getFundAccount());
+        if (context.getStatus() != null && context.getStatus().length > 0)
+            queryWrapper.in("status", context.getStatus());
+
+        if (context.getPhysicalRegion() != null) {
+            PhysicalRegion physicalRegion = context.getPhysicalRegion();
+            if (StringUtils.isNotBlank(physicalRegion.getNation()))
+                queryWrapper.eq("nation", physicalRegion.getNation());
+            if (StringUtils.isNotBlank(physicalRegion.getRegion()))
+                queryWrapper.eq("region", physicalRegion.getRegion());
+            if (StringUtils.isNotBlank(physicalRegion.getProvince()))
+                queryWrapper.eq("province", physicalRegion.getProvince());
+            if (StringUtils.isNotBlank(physicalRegion.getCity()))
+                queryWrapper.eq("city", physicalRegion.getCity());
+            if (StringUtils.isNotBlank(physicalRegion.getCounty()))
+                queryWrapper.eq("county", physicalRegion.getCounty());
+        }
+
+        if(context.getCreatedDateStart() != null) {
+            queryWrapper.ge("created_time", context.getCreatedDateStart());
+        }
+        if(context.getCreatedDateEnd() != null) {
+            queryWrapper.le("created_time", context.getCreatedDateEnd());
+        }
+        if(context.getUpdatedDateStart() != null) {
+            queryWrapper.ge("updated_time", context.getUpdatedDateStart());
+        }
+        if(context.getUpdatedDateEnd() != null) {
+            queryWrapper.le("updated_time", context.getUpdatedDateEnd());
+        }
+        if(context.getCheckDateStart() != null) {
+            queryWrapper.ge("check_time", context.getCheckDateStart());
+        }
+        if(context.getCheckDateEnd() != null) {
+            queryWrapper.le("check_time", context.getCheckDateEnd());
+        }
+
+        return  queryWrapper;
     }
 
     @Override
