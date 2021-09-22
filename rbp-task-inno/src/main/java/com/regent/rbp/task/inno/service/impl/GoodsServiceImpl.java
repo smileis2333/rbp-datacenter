@@ -118,8 +118,7 @@ public class GoodsServiceImpl implements GoodsService {
                     item.setBarcode(skuDto.getSku());
                     item.setOnlineQuantity(new BigDecimal(skuDto.getProduct_number()));
                     item.setOnlinePrice(new BigDecimal(skuDto.getSku_sale_price()));
-                    item.setCreatedTime(null);
-                    item.setUpdatedTime(null);
+
                     /** abnormalFlag 异常标记;0.无异常;1.有异常 */
                     int count = barcodeDao.selectCount(new QueryWrapper<Barcode>().eq("barcode", skuDto.getSku()));
                     if(count > 0) {
