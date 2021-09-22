@@ -343,6 +343,13 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
                 messageList.add(getNotNullMessage(i, "barcode"));
             }
         }
+        // 判断手工单号是否重复
+        if (messageList.size() == 0) {
+            Integer count = retailOrderBillDao.selectCount(new QueryWrapper<RetailOrderBill>().eq("manual_id", bill.getManualId()));
+            if (null != count && count > 0) {
+                messageList.add(getMessageByParams("dataExist", new String[]{LanguageUtil.getMessage("manualNo")}));
+            }
+        }
         return String.join(StrUtil.COMMA, messageList);
     }
 

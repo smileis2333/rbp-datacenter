@@ -15,4 +15,10 @@ public class SystemConstants {
 
     public static final Long DEFAULT_RETAIL_ORDER_BASE_BUSINESS_TYPE_ID = 1100000000000052L;
 
+    public static final String NATION = "中国";
+
+    public static final Long DEFAULT_TEN_MINUTES = 10 * 60 * 1000L;
+
+    public static final String DOWNLOAD_ONLINE_ORDER_LIST_JOB = "inno.downloadOnlineOrderListJobHandler";
+
 }
