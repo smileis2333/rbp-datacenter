@@ -12,6 +12,7 @@ import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
+import com.regent.rbp.infrastructure.util.StringUtil;
 import com.regent.rbp.task.inno.model.param.RetailOrderDownloadOnlineOrderParam;
 import com.regent.rbp.task.inno.service.RetailOrderService;
 import com.xxl.job.core.context.XxlJobHelper;
@@ -70,22 +71,22 @@ public class RetailOrderJob {
             // 获取任务执行缓存
             OnlinePlatformSyncCache syncCache = onlinePlatformSyncCacheDao.selectOne(new LambdaQueryWrapper<OnlinePlatformSyncCache>()
                     .eq(OnlinePlatformSyncCache::getOnlinePlatformId, onlinePlatform.getId()).eq(OnlinePlatformSyncCache::getSyncKey, SystemConstants.DOWNLOAD_ONLINE_ORDER_LIST_JOB));
-            if (null == orderParam.getBeginTime() && null == syncCache) {
+            if (StringUtil.isEmpty(orderParam.getBeginTime()) && null == syncCache) {
                 XxlJobHelper.handleFail(ERROR_BEGIN_TIME_NOT_EMPTY);
                 return;
             }
             // 设置结束时间
-            orderParam.setEndTime(OptionalUtil.ofNullable(orderParam, RetailOrderDownloadOnlineOrderParam::getEndTime, DateUtil.getNowDateString(DateUtil.FULL_DATE_FORMAT)));
+            orderParam.setEndTime(OptionalUtil.ofNullable(orderParam, v -> StringUtil.isEmpty(v.getBeginTime()) ? DateUtil.getNowDateString(SystemConstants.FULL_DATE_FORMAT) : v.getBeginTime()));
             // 不存在则创建
             if (null == syncCache) {
                 syncCache = OnlinePlatformSyncCache.build(onlinePlatform.getId(), SystemConstants.DOWNLOAD_ONLINE_ORDER_LIST_JOB, orderParam.getEndTime());
                 onlinePlatformSyncCacheDao.insert(syncCache);
             }
             // 开始时间不存在则读取缓存
-            if (null == orderParam.getBeginTime()) {
-                Date cacheTime = DateUtil.getDate(syncCache.getData(), DateUtil.FULL_DATE_FORMAT);
+            if (StringUtil.isEmpty(orderParam.getBeginTime())) {
+                Date cacheTime = DateUtil.getDate(syncCache.getData(), SystemConstants.FULL_DATE_FORMAT);
                 // 默认查询10分钟前
-                orderParam.setBeginTime(DateUtil.getDateStr(new Date(cacheTime.getTime() - SystemConstants.DEFAULT_TEN_MINUTES)));
+                orderParam.setBeginTime(DateUtil.getDateStr(new Date(cacheTime.getTime() - SystemConstants.DEFAULT_TEN_MINUTES), SystemConstants.FULL_DATE_FORMAT));
             }
             //下载线上订单列表
             retailOrderService.downloadOnlineOrderList(orderParam, onlinePlatform);

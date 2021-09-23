@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
 import com.regent.rbp.api.dao.base.DbDao;
-import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncCacheDao;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.retail.RetailOrderBillGoodsDetailData;
@@ -49,11 +48,8 @@ public class RetailOrderServiceImpl implements RetailOrderService {
 
     @Autowired
     private InnoConfig innoConfig;
-
     @Autowired
     private RetailOrderBillService retailOrderBillService;
-    @Autowired
-    private OnlinePlatformDao onlinePlatformDao;
     @Autowired
     private DbDao dbDao;
     @Autowired
