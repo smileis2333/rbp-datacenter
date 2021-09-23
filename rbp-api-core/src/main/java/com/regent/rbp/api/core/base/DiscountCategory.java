@@ -43,7 +43,7 @@ public class DiscountCategory {
     }
 
     public static DiscountCategory build(String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         DiscountCategory item = new DiscountCategory();
         item.setName(name);
         item.setCreatedBy(userId);

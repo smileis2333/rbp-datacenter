@@ -49,7 +49,7 @@ public class ColorGroup {
     }
 
     public static ColorGroup build(String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         ColorGroup item = new ColorGroup();
         item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         item.setName(name);

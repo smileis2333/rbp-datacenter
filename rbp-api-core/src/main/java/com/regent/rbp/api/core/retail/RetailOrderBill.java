@@ -124,7 +124,7 @@ public class RetailOrderBill {
     private Date updatedTime;
 
     public static RetailOrderBill build() {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         RetailOrderBill item = new RetailOrderBill();
 
         item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());

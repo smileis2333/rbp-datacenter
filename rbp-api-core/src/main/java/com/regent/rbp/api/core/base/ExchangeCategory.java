@@ -43,7 +43,7 @@ public class ExchangeCategory {
     }
 
     public static ExchangeCategory build(String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         ExchangeCategory item = new ExchangeCategory();
         item.setName(name);
         item.setCreatedBy(userId);

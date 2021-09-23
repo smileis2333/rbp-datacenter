@@ -81,7 +81,7 @@ public class RetailOrderBillOperatorLog {
     private Date updatedTime;
 
     public static RetailOrderBillOperatorLog build() {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         RetailOrderBillOperatorLog item = new RetailOrderBillOperatorLog();
 
         item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());

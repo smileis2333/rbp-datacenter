@@ -46,7 +46,7 @@ public class Series {
     }
 
     public static Series build(String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         Series item = new Series();
         item.setName(name);
         item.setCode("");

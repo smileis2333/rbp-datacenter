@@ -52,7 +52,7 @@ public class ModuleBusinessType {
     }
 
     public static ModuleBusinessType build(String moduleId, Long businessTypeId) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         ModuleBusinessType item = new ModuleBusinessType();
 
         item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());

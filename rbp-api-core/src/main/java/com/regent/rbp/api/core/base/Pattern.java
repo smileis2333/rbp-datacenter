@@ -46,7 +46,7 @@ public class Pattern {
     }
 
     public static Pattern build(String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         Pattern item = new Pattern();
         item.setName(name);
         item.setCode("");

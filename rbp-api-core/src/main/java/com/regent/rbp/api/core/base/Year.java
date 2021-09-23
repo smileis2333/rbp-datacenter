@@ -46,7 +46,7 @@ public class Year {
     }
 
     public static Year build(String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         Year item = new Year();
         item.setName(name);
         item.setCode("");

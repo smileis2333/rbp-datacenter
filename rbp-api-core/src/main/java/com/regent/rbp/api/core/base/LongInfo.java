@@ -46,7 +46,7 @@ public class LongInfo {
     }
 
     public static LongInfo build(String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         LongInfo item = new LongInfo();
         item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         item.setName(name);

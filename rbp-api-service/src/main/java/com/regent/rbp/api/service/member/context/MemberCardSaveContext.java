@@ -1,16 +1,12 @@
 package com.regent.rbp.api.service.member.context;
 
-import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.member.MemberCard;
-import com.regent.rbp.api.dto.channel.ChannelSaveParam;
 import com.regent.rbp.api.dto.member.MemberCardSaveParam;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
-
-import java.util.Date;
 
 /**
  * @program: rbp-datacenter
@@ -27,7 +23,7 @@ public class MemberCardSaveContext {
 
     public MemberCardSaveContext(MemberCardSaveParam param) {
         this.memberCard = new MemberCard();
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         this.memberCard.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         this.memberCard.setCreatedBy(userId);
         this.memberCard.setUpdatedBy(userId);

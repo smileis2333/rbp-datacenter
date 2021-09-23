@@ -57,7 +57,7 @@ public class RetailOrderBillPaymentInfo {
     private Date updatedTime;
 
     public static RetailOrderBillPaymentInfo build() {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         RetailOrderBillPaymentInfo item = new RetailOrderBillPaymentInfo();
 
         item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());

@@ -35,7 +35,7 @@ public class TagPriceType {
         this.id = SnowFlakeUtil.getDefaultSnowFlakeId();
         this.code = code;
         this.name = name;
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         this.setCreatedBy(userId);
         this.setCreatedTime(new Date());
         this.setUpdatedBy(userId);

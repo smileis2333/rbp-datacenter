@@ -42,7 +42,7 @@ public class AgeRange {
     private Date updatedTime;
 
     public static AgeRange build(int minAge, int maxAge) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         AgeRange item = new AgeRange();
         item.setMinAge(minAge);
         item.setMaxAge(maxAge);

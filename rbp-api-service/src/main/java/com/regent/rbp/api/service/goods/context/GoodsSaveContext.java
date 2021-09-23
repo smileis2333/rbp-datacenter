@@ -34,7 +34,7 @@ public class GoodsSaveContext {
 
     public GoodsSaveContext(GoodsSaveParam param) {
         this.goods = new Goods();
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         this.goods.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         this.goods.setCreatedBy(userId);
         this.goods.setUpdatedBy(userId);

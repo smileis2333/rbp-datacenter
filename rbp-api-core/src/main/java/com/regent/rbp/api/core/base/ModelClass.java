@@ -47,7 +47,7 @@ public class ModelClass {
     }
 
     public static ModelClass build(String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         ModelClass item = new ModelClass();
         item.setName(name);
         item.setNotes("");

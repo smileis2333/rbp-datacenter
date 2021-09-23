@@ -3,7 +3,6 @@ package com.regent.rbp.api.core.channel;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.regent.rbp.api.core.base.Brand;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import io.swagger.annotations.ApiModel;
@@ -29,7 +28,7 @@ public class ChannelBalanceType {
         this.id = SnowFlakeUtil.getDefaultSnowFlakeId();
         this.code = code;
         this.name = name;
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         this.setCreatedBy(userId);
         this.setCreatedTime(new Date());
         this.setUpdatedBy(userId);

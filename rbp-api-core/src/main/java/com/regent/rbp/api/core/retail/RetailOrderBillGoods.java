@@ -112,7 +112,7 @@ public class RetailOrderBillGoods {
     }
 
     public static RetailOrderBillGoods build() {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         RetailOrderBillGoods item = new RetailOrderBillGoods();
 
         item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());

@@ -26,7 +26,7 @@ public class EmployeeSaveContext {
 
     public EmployeeSaveContext( EmployeeSaveParam param) {
         this.employee = new  Employee();
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         this.employee.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         this.employee.setCreatedBy(userId);
         this.employee.setUpdatedBy(userId);

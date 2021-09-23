@@ -46,7 +46,7 @@ public class Material {
     }
 
     public static Material build(String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         Material item = new Material();
         item.setName(name);
         item.setCode("");

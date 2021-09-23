@@ -46,7 +46,7 @@ public class SaleClass {
     }
 
     public static SaleClass build(String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         SaleClass item = new SaleClass();
         item.setName(name);
         item.setCode("");

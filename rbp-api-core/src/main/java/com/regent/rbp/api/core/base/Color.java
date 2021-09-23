@@ -58,7 +58,7 @@ public class Color {
     }
 
     public static Color build(String code, String name, Long groupId) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         Color item = new Color();
         item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         item.setName(name);

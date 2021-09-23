@@ -47,7 +47,7 @@ public class SizeClass {
     }
 
     public static SizeClass build(String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         SizeClass item = new SizeClass();
         item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         item.setName(name);

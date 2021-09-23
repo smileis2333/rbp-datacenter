@@ -54,7 +54,7 @@ public class ChannelBusinessNature {
     }
 
     public static Brand build(String code, String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         Brand item = new Brand();
         item.setCode(code);
         item.setName(name);

@@ -46,7 +46,7 @@ public class Band {
     }
 
     public static Band build(String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         Band item = new Band();
         item.setName(name);
         item.setCode("");

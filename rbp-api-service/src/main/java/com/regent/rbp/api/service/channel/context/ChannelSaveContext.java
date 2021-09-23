@@ -34,7 +34,7 @@ public class ChannelSaveContext {
 
     public ChannelSaveContext(ChannelSaveParam param) {
         this.channel = new Channel();
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         this.channel.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         this.channel.setCreatedBy(userId);
         this.channel.setUpdatedBy(userId);

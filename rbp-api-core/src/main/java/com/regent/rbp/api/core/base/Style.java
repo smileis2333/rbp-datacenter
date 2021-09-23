@@ -46,7 +46,7 @@ public class Style {
     }
 
     public static Style build(String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         Style item = new Style();
         item.setName(name);
         item.setCode("");

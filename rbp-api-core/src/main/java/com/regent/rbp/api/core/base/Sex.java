@@ -46,7 +46,7 @@ public class Sex {
     }
 
     public static Sex build(String name) {
-        long userId = ThreadLocalGroup.getUserId();
+        Long userId = ThreadLocalGroup.getUserId();
         Sex item = new Sex();
         item.setName(name);
         item.setCode("");
