@@ -1,8 +1,5 @@
 package com.regent.rbp.api.service.employee;
 
-import com.regent.rbp.api.dto.channel.ChannelQueryParam;
-import com.regent.rbp.api.dto.channel.ChannelQueryResult;
-import com.regent.rbp.api.dto.channel.ChannelSaveParam;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.employee.EmployeeQueryParam;
@@ -28,4 +25,5 @@ public interface EmployeeService {
      * @return
      */
     DataResponse save(EmployeeSaveParam param);
+
 }
