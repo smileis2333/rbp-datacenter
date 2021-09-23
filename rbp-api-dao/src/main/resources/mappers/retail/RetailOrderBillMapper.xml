@@ -12,7 +12,7 @@
         <foreach item="item" index="index" collection="billGoodsList" separator=",">
             (#{item.id}, #{item.billId},#{item.salesOrderBillGoodsId},#{item.saleType},#{item.retailGoodsType},#{item.processStatus},#{item.onlineStatus},
             #{item.refundStatus},#{item.afterSaleProcessStatus},#{item.returnStatus},#{item.tagPrice},#{item.balancePrice},#{item.discount},#{item.barcode},#{item.goodsId},#{item.colorId},#{item.longId},
-            #{item.sizeId},#{item.remark},#{item.quantity},#{item.createdBy},#{item.updatedBy})
+            #{item.sizeId},#{item.quantity},#{item.remark},#{item.createdBy},#{item.updatedBy})
         </foreach>
     </insert>
 

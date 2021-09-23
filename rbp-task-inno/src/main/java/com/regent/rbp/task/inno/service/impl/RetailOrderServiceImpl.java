@@ -91,7 +91,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
                 // 装换
                 RetailOrderSearchRespDto responseDto = JSON.parseObject(result, RetailOrderSearchRespDto.class);
                 if (responseDto != null && responseDto.getCode().equals(-1)) {
-                    XxlJobHelper.handleFail(responseDto.getMsg());
+                    XxlJobHelper.log(responseDto.getMsg());
                     return;
                 }
                 if (responseDto == null || responseDto.getData() == null) {
@@ -115,7 +115,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
                     ModelDataResponse<String> response = retailOrderBillService.save(saveParam);
                     // 返回结果
                     if (ResponseCode.OK != response.getCode()) {
-                        XxlJobHelper.handleFail(String.format("订单号：%s，失败原因：%s", saveParam.getOnlineOrderCode(), response.getMessage()));
+                        XxlJobHelper.log(String.format("订单号：%s，失败原因：%s", saveParam.getOnlineOrderCode(), response.getMessage()));
                     }
                 }
                 // 处理查询分页
