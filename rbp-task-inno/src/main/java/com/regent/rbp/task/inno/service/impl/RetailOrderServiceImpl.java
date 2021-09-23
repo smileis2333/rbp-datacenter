@@ -66,13 +66,13 @@ public class RetailOrderServiceImpl implements RetailOrderService {
      */
     @Transactional
     @Override
-    public void downloadOnlineOrderList(RetailOrderDownloadOnlineOrderParam param,OnlinePlatform onlinePlatform) {
+    public void downloadOnlineOrderList(RetailOrderDownloadOnlineOrderParam param, OnlinePlatform onlinePlatform) {
         RetailOrderSearchReqDto searchReqDto = new RetailOrderSearchReqDto();
         searchReqDto.setApp_key(innoConfig.getAppkey());
         searchReqDto.setApp_secrept(innoConfig.getAppsecret());
         int pageIndex = 1;
         // 记录最后一条记录时间
-        String lastTimeStr = DateUtil.getFullDateStr(param.getEndTime());
+        String lastTimeStr = param.getEndTime();
         try {
             // 获取销售渠道编号
             String channelCode = dbDao.getStringDataBySql(String.format("select code from rbp_channel where id = %s", onlinePlatform.getChannelId()));
@@ -87,9 +87,13 @@ public class RetailOrderServiceImpl implements RetailOrderService {
                 searchDto.setPageIndex(pageIndex);
 
                 String api_url = String.format("%s%s", innoConfig.getUrl(), POST_GET_APP_ORDER_LIST);
-                String result = HttpUtil.post(api_url, JSON.toJSONString(searchDto));
+                String result = HttpUtil.post(api_url, JSON.toJSONString(searchReqDto));
                 // 装换
                 RetailOrderSearchRespDto responseDto = JSON.parseObject(result, RetailOrderSearchRespDto.class);
+                if (responseDto != null && responseDto.getCode().equals(-1)) {
+                    XxlJobHelper.handleFail(responseDto.getMsg());
+                    return;
+                }
                 if (responseDto == null || responseDto.getData() == null) {
                     break;
                 }

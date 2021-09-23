@@ -1,10 +1,7 @@
 package com.regent.rbp.task.inno.model.param;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
-import java.util.Date;
 
 /**
  * @author chenchungui
@@ -16,13 +13,11 @@ public class RetailOrderDownloadOnlineOrderParam {
     @ApiModelProperty(notes = "平台编码")
     private String onlinePlatformCode;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(notes = "开始时间（时间标准化：2021-01-01 00:00:01）")
-    private Date beginTime;
+    private String beginTime;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(notes = "结束时间（时间标准化：2021-01-02 00:00:01）")
-    private Date endTime;
+    private String endTime;
 
     @ApiModelProperty(notes = "订单SN(订单编号 例如： “201510010003,201510010004”）")
     private String order_sn_list;

@@ -28,6 +28,11 @@ import java.util.Date;
 @Component
 public class RetailOrderJob {
 
+    private static final String ERROR_PARAM_NOT_EMPTY = "[inno拉取订单列表]:拉取订单列表参数不能为空";
+    private static final String ERROR_ONLINE_PLATFORM_CODE_NOT_EXIST = "[inno拉取订单列表]:电商平台编号不存在";
+    private static final String ERROR_BEGIN_TIME_NOT_EMPTY = "[inno拉取订单列表]:第一次拉取订单列表开始时间不能为空";
+
+
     @Autowired
     private RetailOrderService retailOrderService;
     @Autowired
@@ -52,35 +57,35 @@ public class RetailOrderJob {
             RetailOrderDownloadOnlineOrderParam orderParam = JSON.parseObject(param, RetailOrderDownloadOnlineOrderParam.class);
             // 参数验证
             if (null == orderParam || "{}".equals(JSONUtil.toJsonStr(orderParam))) {
-                XxlJobHelper.handleFail("[inno拉取订单列表]:拉取订单列表参数不能为空");
+                XxlJobHelper.handleFail(ERROR_PARAM_NOT_EMPTY);
                 return;
             }
             // 获取电商平台信息
             OnlinePlatform onlinePlatform = onlinePlatformDao.selectOne(new QueryWrapper<OnlinePlatform>()
                     .select("id,channel_id").eq("status", StatusEnum.CHECK.getStatus()).eq("code", orderParam.getOnlinePlatformCode()));
             if (null == onlinePlatform) {
-                XxlJobHelper.handleFail("[inno拉取订单列表]:电商平台编号不存在");
+                XxlJobHelper.handleFail(ERROR_ONLINE_PLATFORM_CODE_NOT_EXIST);
                 return;
             }
             // 获取任务执行缓存
             OnlinePlatformSyncCache syncCache = onlinePlatformSyncCacheDao.selectOne(new LambdaQueryWrapper<OnlinePlatformSyncCache>()
                     .eq(OnlinePlatformSyncCache::getOnlinePlatformId, onlinePlatform.getId()).eq(OnlinePlatformSyncCache::getSyncKey, SystemConstants.DOWNLOAD_ONLINE_ORDER_LIST_JOB));
             if (null == orderParam.getBeginTime() && null == syncCache) {
-                XxlJobHelper.handleFail("[inno拉取订单列表]:第一次拉取订单列表开始时间不能为空");
+                XxlJobHelper.handleFail(ERROR_BEGIN_TIME_NOT_EMPTY);
                 return;
             }
             // 设置结束时间
-            orderParam.setEndTime(OptionalUtil.ofNullable(orderParam, RetailOrderDownloadOnlineOrderParam::getEndTime, DateUtil.getNowDate()));
+            orderParam.setEndTime(OptionalUtil.ofNullable(orderParam, RetailOrderDownloadOnlineOrderParam::getEndTime, DateUtil.getNowDateString(DateUtil.FULL_DATE_FORMAT)));
             // 不存在则创建
             if (null == syncCache) {
-                syncCache = OnlinePlatformSyncCache.build(onlinePlatform.getId(), SystemConstants.DOWNLOAD_ONLINE_ORDER_LIST_JOB, DateUtil.getDateStr(orderParam.getEndTime(), DateUtil.FULL_DATE_FORMAT));
+                syncCache = OnlinePlatformSyncCache.build(onlinePlatform.getId(), SystemConstants.DOWNLOAD_ONLINE_ORDER_LIST_JOB, orderParam.getEndTime());
                 onlinePlatformSyncCacheDao.insert(syncCache);
             }
             // 开始时间不存在则读取缓存
             if (null == orderParam.getBeginTime()) {
                 Date cacheTime = DateUtil.getDate(syncCache.getData(), DateUtil.FULL_DATE_FORMAT);
                 // 默认查询10分钟前
-                orderParam.setBeginTime(new Date(cacheTime.getTime() - SystemConstants.DEFAULT_TEN_MINUTES));
+                orderParam.setBeginTime(DateUtil.getDateStr(new Date(cacheTime.getTime() - SystemConstants.DEFAULT_TEN_MINUTES)));
             }
             //下载线上订单列表
             retailOrderService.downloadOnlineOrderList(orderParam, onlinePlatform);
