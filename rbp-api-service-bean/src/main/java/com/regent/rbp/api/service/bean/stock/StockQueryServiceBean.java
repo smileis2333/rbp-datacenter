@@ -15,7 +15,6 @@ import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.api.core.stock.StockDetail;
 import com.regent.rbp.api.core.warehouse.Warehouse;
-import com.regent.rbp.api.core.warehouse.WarehouseChannelRange;
 import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.base.ColorDao;
 import com.regent.rbp.api.dao.base.LongDao;
@@ -32,12 +31,10 @@ import com.regent.rbp.api.service.enums.StockTypeEnum;
 import com.regent.rbp.api.service.stock.StockQueryService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.util.MD5Util;
-import com.regent.rbp.infrastructure.util.NumberUtil;
 import com.regent.rbp.infrastructure.util.StreamUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -121,7 +118,7 @@ public class StockQueryServiceBean implements StockQueryService {
             }
 
             response.setTotalCount(stockDetailIPage.getTotal());
-            response.setData(this.convertStockQueryResult(stockDetailIPage.getRecords(), warehouseList));
+            response.setData(this.convertStockQueryResult(stockDetailIPage.getRecords(), warehouseList, param.getMerge()));
         }
         return response;
     }
@@ -133,7 +130,7 @@ public class StockQueryServiceBean implements StockQueryService {
      * @param warehouseList
      * @return
      */
-    private List<StockQueryResult> convertStockQueryResult(List<StockDetail> stockDetailList, List<Warehouse> warehouseList) {
+    private List<StockQueryResult> convertStockQueryResult(List<StockDetail> stockDetailList, List<Warehouse> warehouseList, int merge) {
         if (CollUtil.isEmpty(stockDetailList)) {
             return new ArrayList<>();
         }
@@ -163,54 +160,33 @@ public class StockQueryServiceBean implements StockQueryService {
         List<Long> channelIdList = StreamUtil.toNoNullDistinctList(stockDetailList, StockDetail::getChannelId);
         Map<Long, String> channelMap = new HashMap<>();
         Map<Long, String> warehouseMap = new HashMap<>();
-        Map<Long, List<WarehouseChannelRange>> warehouseChannelRangeMap = new HashMap<>();
         if (CollUtil.isNotEmpty(channelIdList)) {
             //渠道
             List<Channel> channelList = channelDao.selectList(new QueryWrapper<Channel>().select("id", "code") .in("id", channelIdList));
             channelMap = channelList.stream().collect(Collectors.toMap(Channel::getId, Channel::getCode, (v1, v2) -> v1));
-            //云仓
-            if (CollUtil.isNotEmpty(warehouseList)) {
-                warehouseMap = warehouseList.stream().collect(Collectors.toMap(Warehouse::getId, Warehouse::getCode, (v1, v2) -> v1));
-                List<WarehouseChannelRange> warehouseChannelRangeList = warehouseChannelRangeDao.selectList(new LambdaQueryWrapper<WarehouseChannelRange>()
-                        .in(WarehouseChannelRange::getChannelId, channelIdList)
-                        .in(WarehouseChannelRange::getWarehouseId, StreamUtil.toNoNullDistinctList(warehouseList, Warehouse::getId)));
-                warehouseChannelRangeMap = warehouseChannelRangeList.stream().collect(Collectors.groupingBy(WarehouseChannelRange::getChannelId));
-            }
+        }
+        //云仓
+        if (CollUtil.isNotEmpty(warehouseList)) {
+            warehouseMap = warehouseList.stream().collect(Collectors.toMap(Warehouse::getId, Warehouse::getCode, (v1, v2) -> v1));
         }
 
 
         for(StockDetail stockDetail : stockDetailList) {
             String skuKey = MD5Util.shortenKeyString(stockDetail.getGoodsId(), stockDetail.getColorId(), stockDetail.getLongId(), stockDetail.getLongId());
-            List<WarehouseChannelRange> warehouseChannelRangeList = warehouseChannelRangeMap.get(stockDetail.getChannelId());
-            if (CollUtil.isNotEmpty(warehouseChannelRangeList)) {
-                //有云仓，计算比例
-                for (WarehouseChannelRange warehouseChannelRange : warehouseChannelRangeList) {
-                    StockQueryResult queryResult = new StockQueryResult();
-                    //TODO 计量商品保留小数
-                    queryResult.setQuantity(NumberUtil.mul(stockDetail.getQuantity(), warehouseChannelRange.getUseRate(), BigDecimal.ROUND_HALF_UP));
-                    queryResult.setGoodsCode(goodsMap.get(stockDetail.getGoodsId()));
-                    queryResult.setColorCode(colorMap.get(stockDetail.getColorId()));
-                    queryResult.setLongName(longInfoMap.get(stockDetail.getLongId()));
-                    queryResult.setSize(sizeDetailMap.get(stockDetail.getSizeId()));
-                    queryResult.setBarcode(barcodeMap.get(skuKey));
-                    queryResult.setChannelCode(channelMap.get(stockDetail.getChannelId()));
-                    queryResult.setWarehouseCode(warehouseMap.get(warehouseChannelRange.getWarehouseId()));
+            StockQueryResult queryResult = new StockQueryResult();
+            queryResult.setQuantity(stockDetail.getQuantity());
+            queryResult.setGoodsCode(goodsMap.get(stockDetail.getGoodsId()));
+            queryResult.setColorCode(colorMap.get(stockDetail.getColorId()));
+            queryResult.setLongName(longInfoMap.get(stockDetail.getLongId()));
+            queryResult.setSize(sizeDetailMap.get(stockDetail.getSizeId()));
+            queryResult.setBarcode(barcodeMap.get(skuKey));
+            queryResult.setChannelCode(channelMap.get(stockDetail.getChannelId()));
+            queryResult.setWarehouseCode(warehouseMap.get(stockDetail.getWarehouseId()));
 
-                    queryResults.add(queryResult);
-                }
-            } else {
-                StockQueryResult queryResult = new StockQueryResult();
-                queryResult.setQuantity(stockDetail.getQuantity());
-                queryResult.setGoodsCode(goodsMap.get(stockDetail.getGoodsId()));
-                queryResult.setColorCode(colorMap.get(stockDetail.getColorId()));
-                queryResult.setLongName(longInfoMap.get(stockDetail.getLongId()));
-                queryResult.setSize(sizeDetailMap.get(stockDetail.getSizeId()));
-                queryResult.setBarcode(barcodeMap.get(skuKey));
-                queryResult.setChannelCode(channelMap.get(stockDetail.getChannelId()));
+            queryResults.add(queryResult);
 
-                queryResults.add(queryResult);
-            }
         }
+
         return queryResults;
     }
 

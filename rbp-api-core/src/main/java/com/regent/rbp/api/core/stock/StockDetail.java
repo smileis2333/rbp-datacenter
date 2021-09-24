@@ -4,11 +4,9 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.regent.rbp.infrastructure.util.DateUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -53,5 +51,9 @@ public class StockDetail extends Model<StockDetail> {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(notes = "更新时间")
     private Date updatedTime;
+
+    @ApiModelProperty(notes = "云仓")
+    @TableField(exist = false)
+    private Long warehouseId;
 
 }

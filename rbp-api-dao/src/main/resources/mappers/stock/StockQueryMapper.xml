@@ -6,17 +6,34 @@
 
     <select id="searchPageData" resultType="com.regent.rbp.api.core.stock.StockDetail">
         <choose>
-            <when test="queryParam.merge = 1">
-                SELECT a.goods_id goodsId, a.color_id colorId,
-                a.long_id colorId, a.size_id sizeId, sum(a.quantity) quantity
+            <!--云仓合并-->
+            <when test="queryParam.merge == 1 and
+            queryParam.warehouseCodeList != null and queryParam.warehouseCodeList.length > 0">
+                SELECT wcr.warehouse_id warehouseId, a.goods_id goodsId, a.color_id colorId,
+                a.long_id longId, a.size_id sizeId, sum(ROUND(a.quantity * IFNULL(wcr.use_rate, 1))) quantity
+                FROM ${tableName} a
+                left join rbp_warehouse_channel_range wcr on a.channel_id = wcr.channel_id
             </when>
+            <!--渠道合并-->
+            <when test="queryParam.merge == 1">
+                SELECT a.goods_id goodsId, a.color_id colorId,
+                a.long_id longId, a.size_id sizeId, sum(a.quantity) quantity
+                FROM ${tableName} a
+            </when>
+            <!--云仓不合并-->
+            <when test="queryParam.warehouseCodeList != null and queryParam.warehouseCodeList.length > 0">
+                SELECT wcr.warehouse_id warehouseId, a.channel_id channelId, a.goods_id goodsId, a.color_id colorId,
+                a.long_id longId, a.size_id sizeId, ROUND(a.quantity * IFNULL(wcr.use_rate, 1)) quantity
+                FROM ${tableName} a
+                left join rbp_warehouse_channel_range wcr on a.channel_id = wcr.channel_id
+            </when>
+            <!--渠道不合并-->
             <otherwise>
                 SELECT a.channel_id channelId, a.goods_id goodsId, a.color_id colorId,
-                a.long_id colorId, a.size_id sizeId, a.quantity
+                a.long_id longId, a.size_id sizeId, a.quantity
+                FROM ${tableName} a
             </otherwise>
         </choose>
-
-        FROM ${tableName} a
         <where>
             <if test="queryParam.channelCodeList != null and queryParam.channelCodeList.length > 0">
                 and exists (select 1 from rbp_channel b where a.channel_id = b.id and b.code in
@@ -26,10 +43,7 @@
                 )
             </if>
             <if test="queryParam.warehouseCodeList != null and queryParam.warehouseCodeList.length > 0">
-                and exists (select 1 from rbp_channel c
-                inner join rbp_warehourse_channel_range d on c.id = d.channel_id
-                inner join rbp_warehouse e on d.warehouse_id = e.id
-                where a.channel_id = c.id and e.code in
+                and exists (select 1 from rbp_warehouse e where wcr.warehouse_id = e.id and e.code in
                 <foreach collection="queryParam.warehouseCodeList" item="code" open="(" separator="," close=")">
                     #{code}
                 </foreach>
@@ -56,10 +70,16 @@
                 </otherwise>
             </choose>
         </where>
-        <if test="queryParam.merge = 1">
-            group by a.goods_id, a.color_id, a.long_id, a.size_id
-        </if>
-        ORDER BY goods_id
+        <choose>
+            <when test="queryParam.merge == 1 and
+            queryParam.warehouseCodeList != null and queryParam.warehouseCodeList.length > 0">
+                group by wcr.warehouse_id, a.goods_id, a.color_id, a.long_id, a.size_id
+            </when>
+            <when test="queryParam.merge == 1">
+                group by a.goods_id, a.color_id, a.long_id, a.size_id
+            </when>
+        </choose>
+        ORDER BY a.goods_id
     </select>
 
 </mapper>
