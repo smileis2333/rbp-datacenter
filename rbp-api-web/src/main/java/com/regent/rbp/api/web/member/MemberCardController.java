@@ -10,6 +10,7 @@ import com.regent.rbp.api.dto.member.MemberCardQueryResult;
 import com.regent.rbp.api.dto.member.MemberCardSaveParam;
 import com.regent.rbp.api.service.member.MemberCardService;
 import com.regent.rbp.api.web.constants.ApiConstants;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping(ApiConstants.API_MEMBER_CARD)
+@Api(tags = "会员档案")
 public class MemberCardController {
 
     @Autowired

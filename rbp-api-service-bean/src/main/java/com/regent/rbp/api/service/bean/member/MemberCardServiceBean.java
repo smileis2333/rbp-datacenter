@@ -252,7 +252,7 @@ public class MemberCardServiceBean implements MemberCardService {
             queryResult.setCity(memberCard.getCity());
             queryResult.setArea(memberCard.getArea());
             queryResult.setAddress(memberCard.getAddress());
-            queryResult.setBirthday(memberCard.getBirthday().toString());
+            queryResult.setBirthday(memberCard.getBirthdayDate().toString());
             queryResult.setBirthdayYear(memberCard.getBirthdayYear());
             queryResult.setBirthdayMouth(memberCard.getBirthdayMouth());
             queryResult.setBirthdayDay(memberCard.getBirthdayDay());

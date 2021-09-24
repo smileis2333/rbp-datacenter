@@ -76,25 +76,30 @@ public class MemberServiceImpl implements MemberService {
         List<MemberCard> memberCardList = memberCardDao.selectList(queryWrapper);
         if (memberCardList != null && memberCardList.size() > 0) {
             // 发卡渠道
-            List<Long> channelIds = memberCardList.stream().map(MemberCard::getChannelId).collect(Collectors.toList());
+            List<Long> channelIds = memberCardList.stream().map(MemberCard::getChannelId).distinct().collect(Collectors.toList());
             List<Channel> channelList = channelDao.selectBatchIds(channelIds);
             Map<Long, String> channelMap = channelList.stream().collect(Collectors.toMap(Channel::getId, Channel::getCode));
             // 性别
-            List<Long> sexIds = memberCardList.stream().map(MemberCard::getSexId).collect(Collectors.toList());
+            List<Long> sexIds = memberCardList.stream().map(MemberCard::getSexId).distinct().collect(Collectors.toList());
             List<Sex> sexList = sexDao.selectBatchIds(sexIds);
             Map<Long, String> sexMap = sexList.stream().collect(Collectors.toMap(Sex::getId, Sex::getName));
             // 会员政策
-            List<Long> memberPolicyIds = memberCardList.stream().map(MemberCard::getMemberPolicyId).collect(Collectors.toList());
+            List<Long> memberPolicyIds = memberCardList.stream().map(MemberCard::getMemberPolicyId).distinct().collect(Collectors.toList());
             List<MemberPolicy> memberPolicyList = memberPolicyDao.selectBatchIds(memberPolicyIds);
             Map<Long, String> memberPolicyMap = memberPolicyList.stream().collect(Collectors.toMap(MemberPolicy::getId, MemberPolicy::getGradeCode));
 
             Map<Integer, List<MemberDto>> listMap = new HashMap<>();
             Integer sumQty = memberCardList.size();
-            double pageNo = Math.ceil(sumQty / 100);
+            double pageNo = Math.ceil(Double.valueOf(sumQty) / new Double(100));
             for(int i = 0; i < pageNo; i++) {
                 Integer rowIndex = 1;
                 List<MemberDto> dtoList = new ArrayList<>();
-                List<MemberCard> cardList = memberCardList.subList(i * 100, 100);
+                List<MemberCard> cardList = new ArrayList<>();
+                if (sumQty < 100 || i == pageNo-1) {
+                    cardList = memberCardList.subList(i * 100, sumQty);
+                } else {
+                    cardList = memberCardList.subList(i * 100, ((i + 1) * 100));
+                }
                 for (MemberCard card : cardList) {
                     MemberDto dto = new MemberDto();
                     dto.setRowIndex(rowIndex);
@@ -103,7 +108,7 @@ public class MemberServiceImpl implements MemberService {
                     dto.setNickName(card.getName());
                     dto.setEmail(card.getEmail());
                     dto.setSex(sexMap.get(card.getSexId()));
-                    dto.setBirthday(DateUtil.getFullDateStr(card.getBirthday()));
+                    dto.setBirthday(DateUtil.getFullDateStr(card.getBirthdayDate()));
                     dto.setMobileNo(card.getPhone());
                     dto.setCreateDate(DateUtil.getFullDateStr(card.getCreatedTime()));
                     dto.setModifyDate(DateUtil.getFullDateStr(card.getUpdatedTime()));

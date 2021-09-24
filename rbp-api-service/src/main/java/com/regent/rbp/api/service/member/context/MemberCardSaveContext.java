@@ -61,7 +61,7 @@ public class MemberCardSaveContext {
 
         this.memberCard.setBeginDate(DateUtil.getDate(param.getBeginDate(), DateUtil.FULL_DATE_FORMAT));
         this.memberCard.setEndDate(DateUtil.getDate(param.getEndDate(), DateUtil.FULL_DATE_FORMAT));
-        this.memberCard.setBirthday(DateUtil.getDate(param.getBirthday(), DateUtil.FULL_DATE_FORMAT));
+        this.memberCard.setBirthdayDate(DateUtil.getDate(param.getBirthday(), DateUtil.FULL_DATE_FORMAT));
 
         if (StringUtils.isNotBlank(param.getOriginType())) {
             Integer originType = null;
