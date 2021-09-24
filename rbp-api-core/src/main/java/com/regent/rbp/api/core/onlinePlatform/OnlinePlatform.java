@@ -9,10 +9,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
-import java.util.Map;
 
 /**
  * 电商平台档案 对象 rbp_online_platform
+ *
  * @author xuxing
  */
 @Data
@@ -53,6 +53,10 @@ public class OnlinePlatform {
     @TableField(exist = false)
     private String channelName;
 
+    @ApiModelProperty(notes = "对应销售渠道编码")
+    @TableField(exist = false)
+    private String channelCode;
+
     @ApiModelProperty(notes = "默认物流公司")
     private Long logisticsCompanyId;
 
@@ -73,6 +77,10 @@ public class OnlinePlatform {
     @ApiModelProperty(notes = "云仓名称")
     @TableField(exist = false)
     private String warehouseName;
+
+    @ApiModelProperty(notes = "云仓编号")
+    @TableField(exist = false)
+    private String warehouseCode;
 
     @ApiModelProperty(notes = "默认发货渠道")
     private Long sendChannelId;
