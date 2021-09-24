@@ -27,6 +27,8 @@ public class SystemConstants {
 
     public static final String POST_ERP_EMPLOYEE = "inno.PostErpEmployee";
 
+    public static final String POST_ERP_USERS = "inno.PostErpUsers";
+
     public static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
 
