@@ -7,6 +7,10 @@ package com.regent.rbp.api.service.constants;
  */
 public class SystemConstants {
 
+    public static final String SUCCESS_CODE = "1";
+
+    public static final String FAIL_CODE = "-1";
+
     public static final Integer PAGE_NO = 1;
 
     public static final Integer PAGE_SIZE = 100;
@@ -20,6 +24,10 @@ public class SystemConstants {
     public static final Long DEFAULT_TEN_MINUTES = 10 * 60 * 1000L;
 
     public static final String DOWNLOAD_ONLINE_ORDER_LIST_JOB = "inno.downloadOnlineOrderListJobHandler";
+
+    public static final String ONLINE_SYNC_GOODS_STOCK_FULL_JOB = "inno.onlineSyncGoodsStockFullJobHandler";
+
+    public static final String ONLINE_SYNC_GOODS_STOCK_JOB = "inno.onlineSyncGoodsStockJobHandler";
 
     public static final String POST_ERP_STORE = "inno.PostErpStore";
 

@@ -86,9 +86,9 @@ public class RetailOrderServiceImpl implements RetailOrderService {
                 String result = HttpUtil.post(api_url, JSON.toJSONString(searchReqDto));
                 // 装换
                 RetailOrderSearchRespDto responseDto = JSON.parseObject(result, RetailOrderSearchRespDto.class);
-                if (responseDto != null && responseDto.getCode().equals(-1)) {
+                if (responseDto != null && SystemConstants.FAIL_CODE.equals(responseDto.getCode())) {
                     XxlJobHelper.log(responseDto.getMsg());
-                    return;
+                    break;
                 }
                 if (responseDto == null || responseDto.getData() == null) {
                     break;
@@ -122,6 +122,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
                 }
                 pageIndex++;
             }
+            XxlJobHelper.handleSuccess();
         } catch (Exception e) {
             XxlJobHelper.handleFail(e.getMessage());
         } finally {

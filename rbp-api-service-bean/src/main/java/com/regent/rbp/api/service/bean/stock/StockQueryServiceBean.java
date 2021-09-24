@@ -172,7 +172,7 @@ public class StockQueryServiceBean implements StockQueryService {
 
 
         for(StockDetail stockDetail : stockDetailList) {
-            String skuKey = MD5Util.shortenKeyString(stockDetail.getGoodsId(), stockDetail.getColorId(), stockDetail.getLongId(), stockDetail.getLongId());
+            String skuKey = MD5Util.shortenKeyString(stockDetail.getGoodsId(), stockDetail.getColorId(), stockDetail.getLongId(), stockDetail.getSizeId());
             StockQueryResult queryResult = new StockQueryResult();
             queryResult.setQuantity(stockDetail.getQuantity());
             queryResult.setGoodsCode(goodsMap.get(stockDetail.getGoodsId()));
