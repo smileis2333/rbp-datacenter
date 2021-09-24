@@ -24,6 +24,7 @@ import com.regent.rbp.task.inno.model.req.EmployeeReqDto;
 import com.regent.rbp.task.inno.model.resp.EmployeeRespDto;
 import com.regent.rbp.task.inno.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,6 +35,7 @@ import java.util.List;
  * @Author shaoqidong
  * @Date 2021/9/23
  **/
+@Service
 public class EmployeeServiceImpl implements EmployeeService {
     private static final String POST_ERP_STORESTAFF = "api/StoreStaff/Post_ErpStoreStaff";
 
