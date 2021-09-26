@@ -13,6 +13,7 @@ import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.model.param.RetailOrderDownloadOnlineOrderParam;
 import com.regent.rbp.task.inno.service.RetailOrderService;
 import com.xxl.job.core.context.XxlJobHelper;
@@ -50,7 +51,7 @@ public class RetailOrderJob {
      */
     @XxlJob(SystemConstants.DOWNLOAD_ONLINE_ORDER_LIST_JOB)
     public void downloadOnlineOrderListJobHandler() {
-
+        ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
         try {
             //读取参数
             String param = XxlJobHelper.getJobParam();
