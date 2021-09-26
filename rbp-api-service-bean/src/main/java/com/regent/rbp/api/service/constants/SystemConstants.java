@@ -7,6 +7,8 @@ package com.regent.rbp.api.service.constants;
  */
 public class SystemConstants {
 
+    public static final Long ADMIN_CODE = 6877239110796543L;
+
     public static final String SUCCESS_CODE = "1";
 
     public static final String FAIL_CODE = "-1";
@@ -34,6 +36,8 @@ public class SystemConstants {
     public static final String POST_ERP_WAREHOUSE = "inno.PostErpWarehouse";
 
     public static final String POST_ERP_EMPLOYEE = "inno.PostErpEmployee";
+
+    public static final String POST_ERP_USERS = "inno.PostErpUsers";
 
     public static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 

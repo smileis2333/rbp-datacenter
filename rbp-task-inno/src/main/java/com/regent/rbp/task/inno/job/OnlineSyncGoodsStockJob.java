@@ -12,6 +12,7 @@ import com.regent.rbp.api.dao.onlinePlatform.OnlineSyncGoodsStockDao;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.StringUtil;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.model.param.OnlineSyncGoodsStockParam;
 import com.regent.rbp.task.inno.service.OnlineSyncGoodsStockService;
 import com.xxl.job.core.context.XxlJobHelper;
@@ -52,6 +53,7 @@ public class OnlineSyncGoodsStockJob {
      */
     @XxlJob(SystemConstants.ONLINE_SYNC_GOODS_STOCK_FULL_JOB)
     public void onlineSyncGoodsStockFullJobHandler() {
+        ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
         try {
             OnlinePlatform onlinePlatform = this.convertAndSyncData();
             if (null == onlinePlatform) {
@@ -74,6 +76,7 @@ public class OnlineSyncGoodsStockJob {
      */
     @XxlJob(SystemConstants.ONLINE_SYNC_GOODS_STOCK_JOB)
     public void onlineSyncGoodsStockJobHandler() {
+        ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
         try {
             OnlinePlatform onlinePlatform = this.convertAndSyncData();
             if (null == onlinePlatform) {

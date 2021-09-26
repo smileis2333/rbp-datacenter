@@ -1,5 +1,6 @@
 package com.regent.rbp.api.core.member;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -79,6 +80,7 @@ public class MemberCard {
     private Long developerId;
 
     @ApiModelProperty(notes = "国家")
+    @TableField(exist = false)
     private String nation;
 
     @ApiModelProperty(notes = "省")
@@ -94,7 +96,7 @@ public class MemberCard {
     private String address;
 
     @ApiModelProperty(notes = "生日")
-    private Date birthday;
+    private Date birthdayDate;
 
     @ApiModelProperty(notes = "生日-年")
     private Integer birthdayYear;

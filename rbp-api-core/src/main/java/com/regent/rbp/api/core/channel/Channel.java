@@ -1,5 +1,6 @@
 package com.regent.rbp.api.core.channel;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -134,6 +135,7 @@ public class Channel {
     private BigDecimal maxPrice;
 
     @ApiModelProperty(notes = "渠道归属云仓")
+    @TableField(exist = false)
     private Long wareHouseId;
 
     @ApiModelProperty(notes = "创建人")

@@ -11,5 +11,6 @@ import lombok.Setter;
 public class StatusResponseDto{
     private String code;
     private String msg;
+    private Integer rowIndex;
     private String RowUniqueKey;
 }
