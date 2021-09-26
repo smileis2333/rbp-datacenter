@@ -1,6 +1,8 @@
 package com.regent.rbp.task.inno.job;
 
 import com.alibaba.fastjson.JSON;
+import com.regent.rbp.api.service.constants.SystemConstants;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.model.param.GoodsDownloadOnlineGoodsParam;
 import com.regent.rbp.task.inno.service.GoodsService;
 import com.xxl.job.core.context.XxlJobHelper;
@@ -27,7 +29,7 @@ public class GoodsJob {
      */
     @XxlJob("inno.downloadOnlineGoodsListJobHandler")
     public void downloadOnlineGoodsListJobHandler() {
-
+        ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
         try {
             //读取参数(电商平台编号)
             String param = XxlJobHelper.getJobParam();

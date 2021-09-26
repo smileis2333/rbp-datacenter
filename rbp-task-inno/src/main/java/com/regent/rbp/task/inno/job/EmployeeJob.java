@@ -3,6 +3,7 @@ package com.regent.rbp.task.inno.job;
 import com.alibaba.fastjson.JSON;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.service.constants.SystemConstants;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.model.param.EmployeeUploadingParam;
 import com.regent.rbp.task.inno.model.resp.EmployeeRespDto;
 import com.regent.rbp.task.inno.service.EmployeeService;
@@ -31,6 +32,7 @@ public class EmployeeJob {
      */
     @XxlJob(SystemConstants.POST_ERP_EMPLOYEE)
     public void uploadingEmployee() {
+        ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
         try {
             //读取参数(电商平台编号)
             String param = XxlJobHelper.getJobParam();

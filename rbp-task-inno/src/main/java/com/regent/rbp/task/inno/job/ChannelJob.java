@@ -3,6 +3,7 @@ package com.regent.rbp.task.inno.job;
 import com.alibaba.fastjson.JSON;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.service.constants.SystemConstants;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.model.param.ChannelUploadingParam;
 import com.regent.rbp.task.inno.model.resp.ChannelRespDto;
 import com.regent.rbp.task.inno.service.ChannelService;
@@ -38,6 +39,7 @@ public class ChannelJob {
      */
     @XxlJob(SystemConstants.POST_ERP_STORE)
     public void uploadingChannel() {
+        ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
         try {
             //读取参数(电商平台编号)
             String param = XxlJobHelper.getJobParam();
@@ -77,6 +79,7 @@ public class ChannelJob {
      */
     @XxlJob(SystemConstants.POST_ERP_WAREHOUSE)
     public void uploadingWarehouse() {
+        ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
         try {
             //读取参数(电商平台编号)
             String param = XxlJobHelper.getJobParam();

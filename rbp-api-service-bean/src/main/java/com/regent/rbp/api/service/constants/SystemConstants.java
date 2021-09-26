@@ -7,6 +7,8 @@ package com.regent.rbp.api.service.constants;
  */
 public class SystemConstants {
 
+    public static final Long ADMIN_CODE = 6877239110796543L;
+
     public static final String SUCCESS_CODE = "1";
 
     public static final String FAIL_CODE = "-1";
