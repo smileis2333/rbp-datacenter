@@ -18,22 +18,22 @@ public class MemberDto {
     /**
      * 用户名，默认跟手机号一致
      */
-    private String userName;
+    private String user_name;
 
     /**
      * 店铺编码
      */
-    private String storeCode;
+    private String store_code;
 
     /**
      * 会员卡号
      */
-    private String cardNo;
+    private String card_no;
 
     /**
      * 用户别名
      */
-    private String nickName;
+    private String nick_name;
 
     /**
      * 邮箱
@@ -53,30 +53,30 @@ public class MemberDto {
     /**
      * 手机号
      */
-    private String mobileNo;
+    private String mobile_no;
 
     /**
      * 创建时间 2016-01-01 10:00:00
      */
-    private String createDate;
+    private String create_date;
 
     /**
      * 修改时间 2016-01-01 10:00:00
      */
-    private String modifyDate;
+    private String modify_date;
 
     /**
      * 等级代码，用于设置对应等级
      */
-    private String rankCode;
+    private String rank_code;
 
     /**
      * 店员编码
      */
-    private String staffCode;
+    private String staff_code;
 
     /**
      * 历史积分
      */
-    private Integer historyPoint;
+    private Integer history_point;
 }

@@ -70,7 +70,7 @@ public class MemberServiceImpl implements MemberService {
 
         QueryWrapper<MemberCard> queryWrapper = new QueryWrapper<MemberCard>();
         if (uploadingDate != null) {
-            queryWrapper.le("updated_time", uploadingDate);
+            queryWrapper.ge("updated_time", uploadingDate);
         }
 
         List<MemberCard> memberCardList = memberCardDao.selectList(queryWrapper);
@@ -103,29 +103,29 @@ public class MemberServiceImpl implements MemberService {
                 for (MemberCard card : cardList) {
                     MemberDto dto = new MemberDto();
                     dto.setRowIndex(rowIndex);
-                    dto.setUserName(card.getName());
-                    dto.setCardNo(card.getCode());
-                    dto.setNickName(card.getName());
+                    dto.setUser_name(card.getName());
+                    dto.setCard_no(card.getCode());
+                    dto.setNick_name(card.getName());
                     dto.setEmail(card.getEmail());
                     dto.setSex(sexMap.get(card.getSexId()));
                     dto.setBirthday(DateUtil.getFullDateStr(card.getBirthdayDate()));
-                    dto.setMobileNo(card.getPhone());
-                    dto.setCreateDate(DateUtil.getFullDateStr(card.getCreatedTime()));
-                    dto.setModifyDate(DateUtil.getFullDateStr(card.getUpdatedTime()));
+                    dto.setMobile_no(card.getPhone());
+                    dto.setCreate_date(DateUtil.getFullDateStr(card.getCreatedTime()));
+                    dto.setModify_date(DateUtil.getFullDateStr(card.getUpdatedTime()));
 
                     if (card.getChannelId() != null && channelMap.containsKey(card.getChannelId())) {
-                        dto.setStoreCode(channelMap.get(card.getChannelId()));
-                        dto.setStaffCode(channelMap.get(card.getChannelId()));
+                        dto.setStore_code(channelMap.get(card.getChannelId()));
+                        dto.setStaff_code(channelMap.get(card.getChannelId()));
                     }
                     if (card.getMemberPolicyId() != null && memberPolicyMap.containsKey(card.getMemberPolicyId())) {
-                        dto.setRankCode(memberPolicyMap.get(card.getMemberPolicyId()));
+                        dto.setRank_code(memberPolicyMap.get(card.getMemberPolicyId()));
                     }
 
                     MemberIntegral memberIntegral = memberIntegralDao.selectOne(new QueryWrapper<MemberIntegral>().eq("member_card_id", card.getId()));
                     if (memberIntegral != null) {
-                        dto.setHistoryPoint(memberIntegral.getIntegral());
+                        dto.setHistory_point(memberIntegral.getIntegral());
                     } else {
-                        dto.setHistoryPoint(0);
+                        dto.setHistory_point(0);
                     }
                     dtoList.add(dto);
                     rowIndex++;

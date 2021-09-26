@@ -1,6 +1,7 @@
 package com.regent.rbp.api.service.bean.base;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.regent.rbp.api.core.base.SizeClass;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
@@ -42,10 +43,10 @@ public class OnlinePlatformSyncCacheServiceBean extends ServiceImpl<OnlinePlatfo
 
     @Override
     public void saveOnlinePlatformSyncCache(Long onlinePlatformId, String key, Date uploadingTime) {
-        OnlinePlatformSyncCache syncCache = onlinePlatformSyncCacheDao.selectOne(new LambdaQueryWrapper<OnlinePlatformSyncCache>()
-                .eq(OnlinePlatformSyncCache::getOnlinePlatformId, onlinePlatformId).eq(OnlinePlatformSyncCache::getSyncKey, key));
+        OnlinePlatformSyncCache syncCache = onlinePlatformSyncCacheDao.selectOne(new QueryWrapper<OnlinePlatformSyncCache>()
+                .eq("online_platform_id", onlinePlatformId).eq("sync_key", key));
         if (syncCache == null) {
-            syncCache.build(onlinePlatformId, key, DateUtil.getDateStr(uploadingTime, DateUtil.FULL_DATE_FORMAT));
+            syncCache = syncCache.build(onlinePlatformId, key, DateUtil.getDateStr(uploadingTime, DateUtil.FULL_DATE_FORMAT));
             onlinePlatformSyncCacheDao.insert(syncCache);
         } else {
             syncCache.setData(DateUtil.getDateStr(uploadingTime, DateUtil.FULL_DATE_FORMAT));

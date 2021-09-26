@@ -123,7 +123,7 @@ public class ChannelServiceImpl implements ChannelService {
             QueryWrapper<Channel> queryWrapper = new QueryWrapper<Channel>();
             queryWrapper.in("id", channelIds);
             if (uploadingDate != null) {
-                queryWrapper.le("updated_time", uploadingDate);
+                queryWrapper.ge("updated_time", uploadingDate);
             }
 
             List<Channel> channelList = channelDao.selectList(queryWrapper);
