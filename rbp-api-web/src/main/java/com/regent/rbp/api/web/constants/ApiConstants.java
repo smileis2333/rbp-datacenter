@@ -26,4 +26,6 @@ public class ApiConstants {
     public static final String API_RETAIL_ORDER = "api/retailOrder";
 
     public static final String API_MEMBER_CARD = "api/memberCard";
+
+    public static final String API_SEND_ORDER = "api/sendOrder";
 }
