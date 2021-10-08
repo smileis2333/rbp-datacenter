@@ -37,7 +37,6 @@ public class OnlinePlatformSyncCache {
     @ApiModelProperty(notes = "值")
     private String data;
 
-
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     /**
      * 数据库默认时间
