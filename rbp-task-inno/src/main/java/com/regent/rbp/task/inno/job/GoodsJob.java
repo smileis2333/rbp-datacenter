@@ -27,7 +27,7 @@ public class GoodsJob {
      * 入参格式：{ "onlinePlatformCode": "RBP" }
      * @return
      */
-    @XxlJob("inno.downloadOnlineGoodsListJobHandler")
+    @XxlJob(SystemConstants.DOWNLOAD_ONLINE_GOODS_LIST_JOB)
     public void downloadOnlineGoodsListJobHandler() {
         ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
         try {

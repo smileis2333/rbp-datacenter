@@ -9,4 +9,6 @@ import lombok.Data;
 @Data
 public class GoodsSearchRespDto extends BaseResponseDto {
     private GoodsSearchPageDto data;
+
+
 }
