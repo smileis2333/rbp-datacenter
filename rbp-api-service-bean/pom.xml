@@ -22,6 +22,18 @@
 	<dependencies>
 
 		<dependency>
+			<groupId>com.regent.rbp.infrastructure</groupId>
+			<artifactId>rbp-infrastructure</artifactId>
+			<version>0.0.0.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.regent.rbp.common</groupId>
+			<artifactId>rbp-common-core</artifactId>
+			<version>0.0.0.5</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.regent.rbp.api.core</groupId>
 			<artifactId>rbp-api-core</artifactId>
 			<version>1.0.0.0</version>

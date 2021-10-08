@@ -10,7 +10,7 @@ import com.regent.rbp.api.core.retail.RetailOrderBill;
 import com.regent.rbp.api.core.retail.RetailOrderBillCustomerInfo;
 import com.regent.rbp.api.core.retail.RetailOrderBillGoods;
 import com.regent.rbp.api.dao.base.BarcodeDao;
-import com.regent.rbp.api.dao.base.DbDao;
+import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.retail.RetailOrderBillCustomInfoDao;
 import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
 import com.regent.rbp.api.dto.core.DataResponse;
@@ -53,7 +53,7 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
     @Autowired
     private RetailOrderBillCustomInfoDao retailOrderBillCustomInfoDao;
     @Autowired
-    private DbDao dbDao;
+    private BaseDbDao baseDbDao;
     @Autowired
     private BarcodeDao barcodeDao;
 
@@ -164,7 +164,7 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         bill.setDistributionStatus(StatusEnum.NONE.getStatus());
         bill.setRefundStatus(StatusEnum.NONE.getStatus());
         // 获取模块业务类型
-        ModuleBusinessType moduleBusinessType = dbDao.getOneModuleBusinessType(BaseModuleEnum.RETAIL_ORDER_BILL.getBaseModuleId(), SystemConstants.DEFAULT_RETAIL_ORDER_BASE_BUSINESS_TYPE_ID);
+        ModuleBusinessType moduleBusinessType = baseDbDao.getOneModuleBusinessType(BaseModuleEnum.RETAIL_ORDER_BILL.getBaseModuleId(), SystemConstants.DEFAULT_RETAIL_ORDER_BASE_BUSINESS_TYPE_ID);
         bill.setModuleId(OptionalUtil.ofNullable(moduleBusinessType, ModuleBusinessType::getModuleId));
         bill.setStatus(param.getStatus());
         bill.setBusinessTypeId(OptionalUtil.ofNullable(moduleBusinessType, ModuleBusinessType::getBusinessTypeId));
@@ -185,15 +185,15 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         }
         // 电商平台
         if (null != bill.getOnlinePlatformTypeId()) {
-            bill.setOnlinePlatformId(dbDao.getLongDataBySql(String.format("SELECT id FROM rbp_online_platform WHERE status = 1 AND online_platform_type_id = %s LIMIT 1", bill.getOnlinePlatformTypeId())));
+            bill.setOnlinePlatformId(baseDbDao.getLongDataBySql(String.format("SELECT id FROM rbp_online_platform WHERE status = 1 AND online_platform_type_id = %s LIMIT 1", bill.getOnlinePlatformTypeId())));
         }
         // 渠道编码
         if (StringUtil.isNotEmpty(param.getRetailChannelNo())) {
-            bill.setChannelId(dbDao.getLongDataBySql(String.format("select id from rbp_channel where status = 1 and code = '%s'", param.getRetailChannelNo())));
+            bill.setChannelId(baseDbDao.getLongDataBySql(String.format("select id from rbp_channel where status = 1 and code = '%s'", param.getRetailChannelNo())));
         }
         // 营业员编码
         if (StringUtil.isNotEmpty(param.getEmployeeName())) {
-            bill.setEmployeeId(dbDao.getLongDataBySql(String.format("select id from rbp_employee where work_status != 2 and name = '%s'", param.getEmployeeName())));
+            bill.setEmployeeId(baseDbDao.getLongDataBySql(String.format("select id from rbp_employee where work_status != 2 and name = '%s'", param.getEmployeeName())));
         }
         // 自定义字段
         if (CollUtil.isNotEmpty(param.getCustomizeData())) {
@@ -219,11 +219,11 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         billCustomerInfo.setNotes(param.getNote());
         // 会员
         if (StringUtil.isNotEmpty(param.getMemberCardCode())) {
-            billCustomerInfo.setMemberCardId(dbDao.getLongDataBySql(String.format("select id from rbp_member_card where status = 1 and code = '%s'", param.getMemberCardCode())));
+            billCustomerInfo.setMemberCardId(baseDbDao.getLongDataBySql(String.format("select id from rbp_member_card where status = 1 and code = '%s'", param.getMemberCardCode())));
         }
         // 物流公司
         if (StringUtil.isNotEmpty(param.getLogisticsCompanyCode())) {
-            billCustomerInfo.setLogisticsCompanyId(dbDao.getLongDataBySql(String.format("select id from rbp_logistics_company where status = 100 and code = '%s'", param.getLogisticsCompanyCode())));
+            billCustomerInfo.setLogisticsCompanyId(baseDbDao.getLongDataBySql(String.format("select id from rbp_logistics_company where status = 100 and code = '%s'", param.getLogisticsCompanyCode())));
         }
         /****************   货品明细    ******************/
         if (CollUtil.isEmpty(param.getGoodsDetailData())) {

@@ -1,5 +1,6 @@
 package com.regent.rbp.api.dto.core;
 
+import com.regent.rbp.api.dto.constants.ApiResponseCode;
 import lombok.Data;
 
 /**
@@ -25,6 +26,10 @@ public class ModelDataResponse<T> extends DataResponse {
 
     public static ModelDataResponse Success(Object data) {
         return new ModelDataResponse(data);
+    }
+
+    public static ModelDataResponse errorParameter(String message) {
+        return new ModelDataResponse(ApiResponseCode.API_PARAMETER_ERROR, message);
     }
 
 }

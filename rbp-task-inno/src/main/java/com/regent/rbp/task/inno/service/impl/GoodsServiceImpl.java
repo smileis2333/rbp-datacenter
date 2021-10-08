@@ -86,22 +86,27 @@ public class GoodsServiceImpl implements GoodsService {
         requestDto.setData(searchDto);
         while (true) {
             searchDto.setPageIndex(pageIndex);
+            XxlJobHelper.log(String.format("查询第%s页线上货品", pageIndex));
 
             String api_url = String.format("%s%s", innoConfig.getUrl(), GET_GOODS_LIST);
             String result = HttpUtil.post(api_url, JSON.toJSONString(requestDto));
-            //XxlJobHelper.log(result);
+
             GoodsSearchRespDto responseDto = JSON.parseObject(result, GoodsSearchRespDto.class);
             if(responseDto == null || responseDto.getData() == null) {
+                XxlJobHelper.log(result);
                 break;
             }
             GoodsSearchPageDto goodsSearchPageDto = responseDto.getData();
             if(goodsSearchPageDto == null || goodsSearchPageDto.getData() == null) {
+                XxlJobHelper.log(result);
                 break;
             }
             List<GoodsItemDto> goodsList = goodsSearchPageDto.getData();
             if(goodsList.size() == 0) {
+                XxlJobHelper.log(result);
                 break;
             }
+            XxlJobHelper.log(String.format("获取线上商品：%s",goodsList.size()));
             List<OnlineGoods> insertOnlineGoodsList = new ArrayList<>(goodsList.size());
             List<OnlineGoods> updateOnlineGoodsList = new ArrayList<>(goodsList.size());
             for (GoodsItemDto goodsItemDto : goodsList) {
@@ -123,9 +128,11 @@ public class GoodsServiceImpl implements GoodsService {
                     int count = barcodeDao.selectCount(new QueryWrapper<Barcode>().eq("barcode", skuDto.getSku()));
                     if(count > 0) {
                         item.setAbnormalFlag(false);
+                        item.setAbnormalMessage("");
                     } else {
                         item.setAbnormalFlag(true);
                         item.setAbnormalMessage("条码不存在");
+                        XxlJobHelper.log(String.format("%s条码不存在", skuDto.getSku()));
                     }
 
                     List<OnlineGoods> existsRecords = onlineGoodsService.list(new QueryWrapper<OnlineGoods>()
@@ -141,6 +148,7 @@ public class GoodsServiceImpl implements GoodsService {
                 }
             }
             onlineGoodsService.saveOrUpdateList(updateOnlineGoodsList, insertOnlineGoodsList);
+            XxlJobHelper.log(String.format("更新线上商品：%s,插入线上商品：%s",updateOnlineGoodsList.size(), insertOnlineGoodsList.size()));
 
             int totalPages = Integer.parseInt(goodsSearchPageDto.getTotalPages());
             if(pageIndex >= totalPages) {

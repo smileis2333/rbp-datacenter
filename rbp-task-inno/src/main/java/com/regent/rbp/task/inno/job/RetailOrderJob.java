@@ -45,7 +45,10 @@ public class RetailOrderJob {
     /**
      * 拉取订单列表
      * 调用频率：60分钟1次
-     * 入参格式：{ "onlinePlatformCode": "RBP","beginTime": "2021-01-01 00:00:01","endTime": "2021-01-02 00:00:01","order_sn_list": "201510010002,201510010003"}
+     * 入参格式：{ "onlinePlatformCode": "RBP",
+     * "beginTime": "2021-01-01 00:00:01",
+     * "endTime": "2021-01-02 00:00:01",
+     * "order_sn_list": "201510010002,201510010003"}
      *
      * @return
      */

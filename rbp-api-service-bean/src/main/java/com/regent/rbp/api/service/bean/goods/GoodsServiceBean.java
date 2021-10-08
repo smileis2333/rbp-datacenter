@@ -10,7 +10,6 @@ import com.regent.rbp.api.dao.base.*;
 import com.regent.rbp.api.dao.goods.*;
 import com.regent.rbp.api.dao.supplier.SupplierDao;
 import com.regent.rbp.api.dto.base.BarcodeDto;
-import com.regent.rbp.api.dto.base.CustomizeColumnDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
@@ -20,7 +19,6 @@ import com.regent.rbp.api.service.enums.BaseModuleEnum;
 import com.regent.rbp.api.service.goods.GoodsService;
 import com.regent.rbp.api.service.goods.context.GoodsQueryContext;
 import com.regent.rbp.api.service.goods.context.GoodsSaveContext;
-import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
@@ -122,7 +120,7 @@ public class GoodsServiceBean implements GoodsService {
     private CustomizeColumnDao customizeColumnDao;
 
     @Autowired
-    private DbDao dbDao;
+    private BaseDbDao baseDbDao;
 
     @Autowired
     private SizeDetailDao sizeDetailDao;
@@ -652,9 +650,9 @@ public class GoodsServiceBean implements GoodsService {
      */
     private void saveCustomizeData(boolean createFlag, Map map) {
         if(createFlag) {
-            dbDao.insertMap(TableConstants.GOODS_CUSTOM, map);
+            baseDbDao.insertMap(TableConstants.GOODS_CUSTOM, map);
         } else {
-            dbDao.updateMapById(TableConstants.GOODS_CUSTOM, map);
+            baseDbDao.updateMapById(TableConstants.GOODS_CUSTOM, map);
         }
     }
 

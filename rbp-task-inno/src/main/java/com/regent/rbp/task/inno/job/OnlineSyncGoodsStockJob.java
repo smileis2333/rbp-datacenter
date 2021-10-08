@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.omiChannel.OnlineSyncGoodsStock;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
-import com.regent.rbp.api.dao.base.DbDao;
+import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlineSyncGoodsStockDao;
 import com.regent.rbp.api.service.constants.SystemConstants;
@@ -42,7 +42,7 @@ public class OnlineSyncGoodsStockJob {
     @Autowired
     private OnlineSyncGoodsStockDao onlineSyncGoodsStockDao;
     @Autowired
-    private DbDao dbDao;
+    private BaseDbDao baseDbDao;
 
     /**
      * 全量更新上传inno仓库库存
@@ -115,14 +115,14 @@ public class OnlineSyncGoodsStockJob {
             return null;
         }
         // 电商平台编号
-        String warehouseCode = dbDao.getStringDataBySql(String.format("SELECT code FROM rbp_warehouse WHERE id = %s", onlinePlatform.getWarehouseId()));
+        String warehouseCode = baseDbDao.getStringDataBySql(String.format("SELECT code FROM rbp_warehouse WHERE id = %s", onlinePlatform.getWarehouseId()));
         if (StringUtil.isEmpty(warehouseCode)) {
             XxlJobHelper.handleFail(ERROR_WAREHOUSE_CODE_NOT_EXIST);
             return null;
         }
         onlinePlatform.setWarehouseCode(warehouseCode);
         // 销售渠道编码
-        String channelCode = dbDao.getStringDataBySql(String.format("SELECT code FROM rbp_channel WHERE id = %s", onlinePlatform.getChannelId()));
+        String channelCode = baseDbDao.getStringDataBySql(String.format("SELECT code FROM rbp_channel WHERE id = %s", onlinePlatform.getChannelId()));
         if (StringUtil.isEmpty(channelCode)) {
             XxlJobHelper.handleFail(ERROR_CHANNEL_CODE_NOT_EXIST);
             return null;
@@ -135,7 +135,7 @@ public class OnlineSyncGoodsStockJob {
         sql.append("INSERT INTO rbp_online_sync_goods_stock (id,online_platform_id,barcode,quantity) ");
         sql.append(" SELECT id,online_platform_id,barcode,online_quantity from rbp_online_goods WHERE online_platform_id =  ");
         sql.append(onlinePlatform.getId()).append(" AND abnormal_flag = 0");
-        dbDao.insertSql(sql.toString());
+        baseDbDao.insertSql(sql.toString());
 
         return onlinePlatform;
     }

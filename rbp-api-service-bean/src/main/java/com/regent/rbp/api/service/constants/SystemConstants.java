@@ -25,6 +25,8 @@ public class SystemConstants {
 
     public static final Long DEFAULT_TEN_MINUTES = 10 * 60 * 1000L;
 
+    public static final String DOWNLOAD_ONLINE_GOODS_LIST_JOB= "inno.downloadOnlineGoodsListJobHandler";
+
     public static final String DOWNLOAD_ONLINE_ORDER_LIST_JOB = "inno.downloadOnlineOrderListJobHandler";
 
     public static final String ONLINE_SYNC_GOODS_STOCK_FULL_JOB = "inno.onlineSyncGoodsStockFullJobHandler";

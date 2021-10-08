@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * @author xuxing
  */
-public interface DbDao {
+public interface BaseDbDao {
 
     List<Map> selectTableDataByMap(@Param("tableName") String tableName, @Param("conditionMap") Map conditionMap);
 

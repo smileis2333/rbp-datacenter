@@ -7,7 +7,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
-import com.regent.rbp.api.dao.base.DbDao;
+import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncCacheDao;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.retail.RetailOrderBillGoodsDetailData;
@@ -51,7 +51,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
     @Autowired
     private RetailOrderBillService retailOrderBillService;
     @Autowired
-    private DbDao dbDao;
+    private BaseDbDao baseDbDao;
     @Autowired
     private OnlinePlatformSyncCacheDao onlinePlatformSyncCacheDao;
 
@@ -71,7 +71,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
         String lastTimeStr = param.getEndTime();
         try {
             // 获取销售渠道编号
-            String channelCode = dbDao.getStringDataBySql(String.format("select code from rbp_channel where id = %s", onlinePlatform.getChannelId()));
+            String channelCode = baseDbDao.getStringDataBySql(String.format("select code from rbp_channel where id = %s", onlinePlatform.getChannelId()));
 
             RetailOrderSearchDto searchDto = new RetailOrderSearchDto();
             searchReqDto.setData(searchDto);
