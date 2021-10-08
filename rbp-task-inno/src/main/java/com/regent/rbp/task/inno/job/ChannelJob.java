@@ -2,7 +2,9 @@ package com.regent.rbp.task.inno.job;
 
 import com.alibaba.fastjson.JSON;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
+import com.regent.rbp.api.service.base.OnlinePlatformService;
 import com.regent.rbp.api.service.constants.SystemConstants;
+import com.regent.rbp.infrastructure.annotation.PassToken;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.model.param.ChannelUploadingParam;
 import com.regent.rbp.task.inno.model.resp.ChannelRespDto;
@@ -29,7 +31,8 @@ public class ChannelJob {
 
     @Autowired
     ChannelService channelService;
-
+    @Autowired
+    OnlinePlatformService onlinePlatformService;
     @Autowired
     private RestTemplate restTemplate;
 
@@ -45,7 +48,7 @@ public class ChannelJob {
             String param = XxlJobHelper.getJobParam();
             XxlJobHelper.log(param);
             ChannelUploadingParam channelUploadingParam = JSON.parseObject(param, ChannelUploadingParam.class);
-            OnlinePlatform onlinePlatform = channelService.getOnlinePlatform(channelUploadingParam.getOnlinePlatformCode());
+            OnlinePlatform onlinePlatform = onlinePlatformService.getOnlinePlatform(channelUploadingParam.getOnlinePlatformCode());
 
             if(onlinePlatform == null) {
                 XxlJobHelper.log(ERROR_CHANNEL_ONLINEPLATFORMCODE);
@@ -85,7 +88,7 @@ public class ChannelJob {
             String param = XxlJobHelper.getJobParam();
             XxlJobHelper.log(param);
             ChannelUploadingParam channelUploadingParam = JSON.parseObject(param, ChannelUploadingParam.class);
-            OnlinePlatform onlinePlatform = channelService.getOnlinePlatform(channelUploadingParam.getOnlinePlatformCode());
+            OnlinePlatform onlinePlatform = onlinePlatformService.getOnlinePlatform(channelUploadingParam.getOnlinePlatformCode());
 
             if(onlinePlatform == null) {
                 XxlJobHelper.log(ERROR_WAREHOUSE_ONLINEPLATFORMCODE);
