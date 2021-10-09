@@ -3,6 +3,8 @@ package com.regent.rbp.api.core.retail;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -75,5 +77,19 @@ public class RetailReturnNoticeBillOperatorLog {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(notes = "更新时间")
     private Date updatedTime;
+
+    public static RetailReturnNoticeBillOperatorLog build() {
+        Long userId = ThreadLocalGroup.getUserId();
+        RetailReturnNoticeBillOperatorLog item = new RetailReturnNoticeBillOperatorLog();
+
+        item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+        item.setCreatedBy(userId);
+        item.setUpdatedBy(userId);
+        return item;
+    }
+
+    public void preUpdate() {
+        this.setUpdatedBy(ThreadLocalGroup.getUserId());
+    }
 
 }

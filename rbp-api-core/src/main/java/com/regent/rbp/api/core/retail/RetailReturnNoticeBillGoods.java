@@ -75,7 +75,6 @@ public class RetailReturnNoticeBillGoods {
     public static RetailReturnNoticeBillGoods build() {
         Long userId = ThreadLocalGroup.getUserId();
         RetailReturnNoticeBillGoods item = new RetailReturnNoticeBillGoods();
-
         item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         item.setCreatedBy(userId);
         item.setUpdatedBy(userId);

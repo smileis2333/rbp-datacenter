@@ -12,7 +12,7 @@ import com.regent.rbp.api.dto.retail.RetailReturnNoticeBillSaveParam;
 public interface RetailReturnNoticeBillService {
 
     /**
-     * 修改/新增
+     * 新增
      * @param param
      * @return
      */

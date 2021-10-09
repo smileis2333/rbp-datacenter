@@ -4,19 +4,25 @@ import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.regent.rbp.api.core.base.Barcode;
-import com.regent.rbp.api.core.retail.RetailOrderBillGoods;
-import com.regent.rbp.api.core.retail.RetailReturnNoticeBill;
-import com.regent.rbp.api.core.retail.RetailReturnNoticeBillGoods;
+import com.regent.rbp.api.core.channel.Channel;
+import com.regent.rbp.api.core.retail.*;
 import com.regent.rbp.api.dao.base.BarcodeDao;
+import com.regent.rbp.api.dao.base.ColorDao;
+import com.regent.rbp.api.dao.base.LongDao;
+import com.regent.rbp.api.dao.base.SizeClassDao;
+import com.regent.rbp.api.dao.channel.ChannelDao;
+import com.regent.rbp.api.dao.goods.GoodsDao;
+import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
+import com.regent.rbp.api.dao.retail.RetailOrderBillGoodsDao;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillDao;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillGoodsDao;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
-import com.regent.rbp.api.dto.retail.RetailOrderBillGoodsDetailData;
 import com.regent.rbp.api.dto.retail.RetailReturnNoticeBillGoodsDetailData;
 import com.regent.rbp.api.dto.retail.RetailReturnNoticeBillSaveParam;
 import com.regent.rbp.api.service.retail.RetailReturnNoticeBillService;
 import com.regent.rbp.api.service.retail.context.RetailReturnNoticeBillSaveContext;
-import com.regent.rbp.infrastructure.enums.StatusEnum;
+import com.regent.rbp.infrastructure.util.StringUtil;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,22 +49,38 @@ public class RetailReturnNoticeBillServiceBean extends ServiceImpl<RetailReturnN
     RetailReturnNoticeBillDao retailReturnNoticeBillDao;
     @Autowired
     RetailReturnNoticeBillGoodsDao retailReturnNoticeBillGoodsDao;
+    @Autowired
+    ChannelDao channelDao;
+    @Autowired
+    RetailOrderBillDao retailOrderBillDao;
+    @Autowired
+    RetailOrderBillGoodsDao retailOrderBillGoodsDao;
+    @Autowired
+    GoodsDao goodsDao;
+    @Autowired
+    ColorDao colorDao;
+    @Autowired
+    LongDao longDao;
+    @Autowired
+    SizeClassDao sizeClassDao;
 
     @Transactional
     @Override
     public ModelDataResponse<String> save(RetailReturnNoticeBillSaveParam param) {
-        boolean createFlag = true;
         RetailReturnNoticeBillSaveContext context = new RetailReturnNoticeBillSaveContext(param);
-        // 判断是新增还是更新
-        RetailReturnNoticeBill bill = retailReturnNoticeBillDao.selectOne(new QueryWrapper<RetailReturnNoticeBill>().eq("bill_no", param.getBillNo()));
-        if (bill != null) {
-            context.getBill().setId(bill.getId());
-            createFlag = false;
-        }
         // 验证数有效性
+        List<String> errorMsgList = verificationProperty(param, context);
+        if(errorMsgList.size() > 0 ) {
+            String message = StringUtil.join(errorMsgList, ",");
+            //throw new BusinessException(ErrorC, "");
+        }
 
-
-        return null;
+        // 写入 全渠道退货通知单
+        retailReturnNoticeBillDao.insert(context.getBill());
+        for (RetailReturnNoticeBillGoods billGoods : context.getBillGoodsList()) {
+            retailReturnNoticeBillGoodsDao.insert(billGoods);
+        }
+        return ModelDataResponse.Success(context.getBill().getBillNo());
     }
 
     /**
@@ -69,7 +91,96 @@ public class RetailReturnNoticeBillServiceBean extends ServiceImpl<RetailReturnN
      */
     private List<String> verificationProperty(RetailReturnNoticeBillSaveParam param, RetailReturnNoticeBillSaveContext context) {
         List<String> errorMsgList = new ArrayList<>();
+        RetailReturnNoticeBill bill = context.getBill();
 
+        if (StringUtils.isBlank(param.getBillNo())) {
+            errorMsgList.add("单号(billNo)不能为空");
+        } else {
+            RetailReturnNoticeBill item = retailReturnNoticeBillDao.selectOne(new QueryWrapper<RetailReturnNoticeBill>().eq("bill_no", param.getBillNo()));
+            if(item != null) {
+                bill.setId(item.getId());
+            } else {
+                errorMsgList.add("单号(billNo)不存在");
+            }
+        }
+        if (StringUtils.isBlank(param.getSaleChannelCode())) {
+            errorMsgList.add("销售渠道编号(saleChannelCode)不能为空");
+        } else {
+            Channel channel = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getSaleChannelCode()));
+            if (channel != null) {
+                bill.setSaleChannelId(channel.getId());
+            } else {
+                errorMsgList.add("销售渠道编号(saleChannelCode)不存在");
+            }
+        }
+        if (StringUtils.isBlank(param.getReceiveChannelCode())) {
+            errorMsgList.add("收货渠道编号(receiveChannelCode)不能为空");
+        } else {
+            Channel channel = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getReceiveChannelCode()));
+            if (channel != null) {
+                bill.setReceiveChannelId(channel.getId());
+            } else {
+                errorMsgList.add("收货渠道编号(receiveChannelCode)不存在");
+            }
+        }
+        if (StringUtils.isBlank(param.getRetailOrdereBillNo())) {
+            errorMsgList.add("全渠道订单号(retailOrdereBillNo)不能为空");
+        } else {
+            RetailOrderBill orderBill = retailOrderBillDao.selectOne(new QueryWrapper<RetailOrderBill>().eq("bill_no", param.getRetailOrdereBillNo()));
+            if (orderBill != null) {
+                bill.setRetailOrderBillId(orderBill.getId());
+            } else {
+                errorMsgList.add("全渠道订单号(retailOrdereBillNo)不存在");
+            }
+        }
+        if (param.getStatus() == null) {
+            errorMsgList.add("单据状态(status)不能为空");
+        }
+        if (param.getGoodsDetailData() == null) {
+            errorMsgList.add("货品明细(goodsDetailData)不能为空");
+        } else {
+            List<RetailReturnNoticeBillGoods> goodsList = new ArrayList<>();
+            for (RetailReturnNoticeBillGoodsDetailData data : param.getGoodsDetailData()) {
+
+                List<RetailOrderBillGoods> orderDetailList = retailOrderBillGoodsDao.selectList(new QueryWrapper<RetailOrderBillGoods>().eq("bill_id", bill.getRetailOrderBillId()));
+
+                RetailReturnNoticeBillGoods detail = RetailReturnNoticeBillGoods.build();
+                detail.setBillId(bill.getId());
+
+                if (StringUtils.isNotBlank(data.getBarcode())) {
+                    Barcode barcode = barcodeDao.selectOne(new QueryWrapper<Barcode>().eq("barcode", data.getBarcode()));
+                    if (barcode == null) {
+                        errorMsgList.add(String.format("条码(barcode)： %s 不存在", data.getBarcode()));
+                        continue;
+                    }
+                    // 验证当前款是否已经退货
+                    List<RetailOrderBillGoods> orderList = orderDetailList.stream().filter(f -> f.getBarcode().equals(data.getBarcode()) &&
+                            f.getBalancePrice().equals(data.getBalancePrice()) && f.getReturnStatus().equals(0)).collect(Collectors.toList());
+                    if (orderList == null) {
+                        errorMsgList.add(String.format("条码(barcode)： %s 不存在或已退货", data.getBarcode()));
+                        continue;
+                    }
+
+                    RetailOrderBillGoods orderBillGoods = orderList.get(0);
+                    detail.setRetailOrderBillGoodsId(orderBillGoods.getId());
+                    orderDetailList.remove(orderBillGoods);
+
+                    detail.setBarcode(barcode.getBarcode());
+                    detail.setGoodsId(barcode.getGoodsId());
+                    detail.setColorId(barcode.getColorId());
+                    detail.setLongId(barcode.getLongId());
+                    detail.setSizeId(barcode.getSizeId());
+                    detail.setTagPrice(data.getTagPrice());
+                    detail.setBalancePrice(data.getBalancePrice());
+                    detail.setDiscount(data.getDiscount());
+                    detail.setQuantity(data.getQuantity());
+                } else {
+                    // 暂时为空 先不处理货品写入
+                }
+                goodsList.add(detail);
+            }
+            context.setBillGoodsList(goodsList);
+        }
         return errorMsgList;
     }
 

@@ -2,6 +2,7 @@ package com.regent.rbp.api.service.retail.context;
 
 import com.regent.rbp.api.core.retail.RetailReturnNoticeBill;
 import com.regent.rbp.api.core.retail.RetailReturnNoticeBillGoods;
+import com.regent.rbp.api.core.retail.RetailReturnNoticeBillOperatorLog;
 import com.regent.rbp.api.dto.retail.RetailReturnNoticeBillSaveParam;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
@@ -35,6 +36,9 @@ public class RetailReturnNoticeBillSaveContext {
     }
 
     public void readProperties(RetailReturnNoticeBillSaveParam param) {
+        if (this.bill == null) {
+            return;
+        }
         this.bill.setManualId(param.getManualId());
         this.bill.setBillNo(param.getBillNo());
         this.bill.setBillDate(param.getBillDate());

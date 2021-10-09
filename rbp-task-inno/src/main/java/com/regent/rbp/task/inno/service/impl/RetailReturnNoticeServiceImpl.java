@@ -8,9 +8,11 @@ import com.regent.rbp.api.core.retail.RetailReturnNoticeBillGoods;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillDao;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillGoodsDao;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillOperatorLogDao;
+import com.regent.rbp.api.dto.retail.RetailReturnNoticeBillSaveParam;
 import com.regent.rbp.api.service.base.OnlinePlatformService;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
 import com.regent.rbp.api.service.constants.SystemConstants;
+import com.regent.rbp.api.service.retail.RetailReturnNoticeBillService;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.task.inno.config.InnoConfig;
 import com.regent.rbp.task.inno.model.dto.RetailReturnNoticeDto;
@@ -44,6 +46,8 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
     OnlinePlatformService onlinePlatformService;
     @Autowired
     OnlinePlatformSyncCacheService onlinePlatformSyncCacheService;
+    @Autowired
+    RetailReturnNoticeBillService retailReturnNoticeBillService;
 
     @Autowired
     RetailReturnNoticeBillDao retailReturnNoticeBillDao;
@@ -93,6 +97,9 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
             for (RetailReturnNoticeListDto notice : respDto.getData().getData()) {
                 RetailReturnNoticeBill bill = retailReturnNoticeBillDao.selectOne(new QueryWrapper<RetailReturnNoticeBill>().eq("bill_no", notice.getReturn_sn()));
                 if (bill == null) {
+                    RetailReturnNoticeBillSaveParam saveParam = new RetailReturnNoticeBillSaveParam();
+
+                    //retailReturnNoticeBillService.save(param)
                 }
             }
 
