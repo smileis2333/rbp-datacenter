@@ -12,6 +12,6 @@ import com.regent.rbp.task.inno.model.resp.EmployeeRespDto;
 public interface EmployeeService{
     OnlinePlatform getOnlinePlatform(String onlinePlatformCode);
 
-    EmployeeRespDto uploadingEmployee(Long id, Long channelId);
+    void uploadingEmployee(Long id, Long channelId);
 
 }

@@ -22,7 +22,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class EmployeeJob {
     private static final String ERROR_EMPLOYEE_ONLINEPLATFORMCODE = "[inno推送员工档案信息]:onlinePlatformCode电商平台编号参数值不存在";
-    private static final String ERROR_EMPLOYEE_LIST = "[inno推送员工档案信息]:当前无员工档案信息需要同步";
     @Autowired
     EmployeeService employeeService;
 
@@ -46,18 +45,7 @@ public class EmployeeJob {
                 return;
             }
             //开始推送
-            if (onlinePlatform.getWarehouseId() != null) {
-                EmployeeRespDto resp = employeeService.uploadingEmployee(onlinePlatform.getId(), onlinePlatform.getChannelId());
-                if (resp == null) {
-                    XxlJobHelper.log(ERROR_EMPLOYEE_LIST);
-                }
-                else if (resp.getCode().equals("-1")) {
-                    new Exception(resp.getMsg());
-                }
-                XxlJobHelper.log("请求成功：" + JSON.toJSONString(resp));
-            } else {
-                XxlJobHelper.log(ERROR_EMPLOYEE_LIST);
-            }
+            employeeService.uploadingEmployee(onlinePlatform.getId(), onlinePlatform.getChannelId());
         }catch (Exception ex) {
             String message = ex.getMessage();
             XxlJobHelper.log(message);
