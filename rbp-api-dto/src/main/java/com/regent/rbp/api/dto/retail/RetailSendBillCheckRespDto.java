@@ -10,9 +10,9 @@ import java.util.List;
  * @date 2021-09-26
  */
 @Data
-public class RetailSendBillCheckDto {
+public class RetailSendBillCheckRespDto {
 
-    @ApiModelProperty(notes = "全渠道发货单号")
+    @ApiModelProperty(notes = "全渠道订单单号")
     private String billNo;
 
     @ApiModelProperty(notes = "是否能发货，1能发货，0不能发货")
@@ -22,6 +22,6 @@ public class RetailSendBillCheckDto {
     private String reason;
 
     @ApiModelProperty(notes = "货品明细")
-    private List<RetailSendBillGoodsCheckDto> billGoodsList;
+    private List<RetailSendBillGoodsCheckRespDto> billGoodsList;
 
 }
