@@ -2,7 +2,6 @@ package com.regent.rbp.api.dao.employee;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.regent.rbp.api.core.employee.Employee;
-import com.regent.rbp.api.core.fundAccount.FundAccount;
 
 /**
  * @Description

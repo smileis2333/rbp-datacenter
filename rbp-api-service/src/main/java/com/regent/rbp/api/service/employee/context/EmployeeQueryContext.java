@@ -14,12 +14,14 @@ public class EmployeeQueryContext {
     private String[]  code;
     private String  name;
     private long[]  sex;
-    private long[]  channelCode;
+    private String[]  channelCode;
+    private long[]  channelId;
     private String  mobile;
     private String  entryDate;
     private String leaveDate;
     private String jobNumber;
     private String[] positionName;
+    private long[] positionId;
     private String[] workStatus;
     private Date createdDateStart;
     private Date createdDateEnd;
