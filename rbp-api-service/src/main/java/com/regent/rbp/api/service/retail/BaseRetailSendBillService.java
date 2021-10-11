@@ -1,9 +1,8 @@
 package com.regent.rbp.api.service.retail;
 
 import com.regent.rbp.api.dto.core.ListDataResponse;
-import com.regent.rbp.api.dto.core.ModelDataResponse;
-import com.regent.rbp.api.dto.retail.RetailSendBillCheckDto;
-import com.regent.rbp.api.dto.retail.RetailSendBillCheckParam;
+import com.regent.rbp.api.dto.retail.RetailSendBillCheckReqDto;
+import com.regent.rbp.api.dto.retail.RetailSendBillCheckRespDto;
 import com.regent.rbp.api.dto.retail.RetailSendBillUploadDto;
 import com.regent.rbp.api.dto.retail.RetailSendBillUploadParam;
 
@@ -18,6 +17,6 @@ public interface BaseRetailSendBillService {
 
     ListDataResponse<RetailSendBillUploadDto> batchUploadSendBill(List<RetailSendBillUploadParam> list);
 
-    ModelDataResponse<RetailSendBillCheckDto> checkSendBill(RetailSendBillCheckParam param);
+    ListDataResponse<RetailSendBillCheckRespDto> checkOrderCanDelivery(List<RetailSendBillCheckReqDto> list);
 
 }

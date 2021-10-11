@@ -1,5 +1,7 @@
 package com.regent.rbp.task.inno.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.regent.rbp.infrastructure.util.MD5Util;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -18,5 +20,11 @@ public class CheckRetailSendBillGoodsDto {
 
     @ApiModelProperty(notes = "是否能发货，1能发货，0不能发货")
     private Integer canDelivery;
+
+    @ApiModelProperty(notes = "唯一标记")
+    @JsonIgnore
+    public String getSingleCode() {
+        return MD5Util.shortenKeyString(this.goodsSn, this.sku);
+    }
 
 }
