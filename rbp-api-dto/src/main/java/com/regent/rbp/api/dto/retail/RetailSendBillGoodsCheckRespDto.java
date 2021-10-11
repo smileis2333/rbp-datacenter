@@ -19,6 +19,9 @@ public class RetailSendBillGoodsCheckRespDto {
     @ApiModelProperty(notes = "是否能发货，1能发货，0不能发货")
     private Integer canDelivery;
 
+    @ApiModelProperty(notes = "理由")
+    private String reason;
+
     public RetailSendBillGoodsCheckRespDto() {
     }
 

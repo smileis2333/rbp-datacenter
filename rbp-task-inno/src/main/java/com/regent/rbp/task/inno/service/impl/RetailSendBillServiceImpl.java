@@ -132,12 +132,19 @@ public class RetailSendBillServiceImpl implements BaseRetailSendBillService {
                     checkRespDto.setBillGoodsList(billGoodsList);
                     Map<String, CheckRetailSendBillGoodsDto> onlineGoodsMap = onlineBill.getOrderGoods().stream().collect(Collectors.toMap(CheckRetailSendBillGoodsDto::getSingleCode, Function.identity()));
                     for (RetailSendBillGoodsCheckReqDto orderBillGoods : orderBill.getBillGoodsList()) {
-                        Integer canDelivery = OptionalUtil.ofNullable(onlineGoodsMap.get(orderBillGoods.getSingleCode()), CheckRetailSendBillGoodsDto::getCanDelivery, 0);
+                        Integer canDelivery = OptionalUtil.ofNullable(onlineGoodsMap.get(orderBillGoods.getSingleCode()), CheckRetailSendBillGoodsDto::getCanDelivery);
+                        RetailSendBillGoodsCheckRespDto goodsDto = new RetailSendBillGoodsCheckRespDto(orderBillGoods.getGoodsCode(), orderBillGoods.getBarcode(), canDelivery);
                         // 存在不能发货货品，则当前订单不能发货
-                        if (canDelivery.equals(0)) {
+                        if (null == canDelivery) {
+                            checkRespDto.setCanDelivery(0);
+                            checkRespDto.setReason(LanguageUtil.getMessage("checkOrderError0"));
+                            goodsDto.setCanDelivery(0);
+                            goodsDto.setReason(LanguageUtil.getMessage("notExist"));
+                        } else if (canDelivery.equals(0)) {
                             checkRespDto.setCanDelivery(canDelivery);
+                            checkRespDto.setReason(LanguageUtil.getMessage("checkOrderError1"));
                         }
-                        billGoodsList.add(new RetailSendBillGoodsCheckRespDto(orderBillGoods.getGoodsCode(), orderBillGoods.getBarcode(), canDelivery));
+                        billGoodsList.add(goodsDto);
                     }
                 }
             }
