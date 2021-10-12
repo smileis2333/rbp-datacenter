@@ -1,11 +1,9 @@
 package com.regent.rbp.api.dto.retail;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -25,8 +23,7 @@ public class RetailSendBillUploadParam {
     private String onlineOrderNo;
 
     @ApiModelProperty(notes = "发货时间")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date billDate;
+    private String billDate;
 
     @ApiModelProperty(notes = "渠道编码")
     private String channelCode;

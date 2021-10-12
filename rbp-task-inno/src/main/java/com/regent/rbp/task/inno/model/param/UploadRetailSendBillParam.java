@@ -1,9 +1,7 @@
 package com.regent.rbp.task.inno.model.param;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -19,8 +17,7 @@ public class UploadRetailSendBillParam {
 
     private String OrderSn;//	订单号
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date AddTime;//	发货时间
+    private String AddTime;//	发货时间
 
     private String ShippingName;//	快递名称
 
