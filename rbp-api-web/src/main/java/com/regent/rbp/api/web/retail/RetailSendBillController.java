@@ -1,6 +1,7 @@
 package com.regent.rbp.api.web.retail;
 
 import com.regent.rbp.api.dto.core.ListDataResponse;
+import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.retail.RetailSendBillCheckReqDto;
 import com.regent.rbp.api.dto.retail.RetailSendBillCheckRespDto;
 import com.regent.rbp.api.dto.retail.RetailSendBillUploadDto;
@@ -35,8 +36,8 @@ public class RetailSendBillController {
 
     @ApiOperation(value = "检查订单是否可以发货")
     @PostMapping("/checkOrderCanDelivery/{key}")
-    public ListDataResponse<RetailSendBillCheckRespDto> checkOrderCanDelivery(@PathVariable("key") String key, @RequestBody List<RetailSendBillCheckReqDto> param) {
-        ListDataResponse<RetailSendBillCheckRespDto> result = BaseRetailSendBillServiceFinder.findServiceImpl(key).checkOrderCanDelivery(param);
+    public ModelDataResponse<RetailSendBillCheckRespDto> checkOrderCanDelivery(@PathVariable("key") String key, @RequestBody RetailSendBillCheckReqDto param) {
+        ModelDataResponse<RetailSendBillCheckRespDto> result = BaseRetailSendBillServiceFinder.findServiceImpl(key).checkOrderCanDelivery(param);
         return result;
     }
 
