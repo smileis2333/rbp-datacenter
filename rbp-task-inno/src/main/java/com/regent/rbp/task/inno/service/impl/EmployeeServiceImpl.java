@@ -85,6 +85,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (uploadingDate != null) {
             queryWrapper.ge("updated_time", uploadingDate);
         }
+        queryWrapper.orderByAsc("updated_time");
+        queryWrapper.last(" limit 100 ");
         List<Employee> employeeList = employeeDao.selectList(queryWrapper);
         if (CollUtil.isNotEmpty(employeeList)) {
             Date uploadingTime = employeeList.stream().max(Comparator.comparing(Employee::getUpdatedTime)).get().getUpdatedTime();
