@@ -27,7 +27,10 @@ public class RetailOrderBillSaveParam {
     @ApiModelProperty(notes = "线上订单号")
     private String onlineOrderCode;
 
-    @ApiModelProperty(notes = "平台类型(0-无;1-线下店铺;2-Inno微商城)")
+    @ApiModelProperty(notes = "来源平台编号")
+    private String onlinePlatformCode;
+
+    @ApiModelProperty(notes = "平台类型(0-线下渠道;1-Inno微商城)")
     private Integer onlinePlatformTypeId;
 
     @ApiModelProperty(notes = "销售渠道编号")

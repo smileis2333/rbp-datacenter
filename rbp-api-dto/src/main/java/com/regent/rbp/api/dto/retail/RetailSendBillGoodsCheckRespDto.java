@@ -8,9 +8,9 @@ import lombok.Data;
  * @date 2021-09-26
  */
 @Data
-public class RetailSendBillGoodsCheckDto {
+public class RetailSendBillGoodsCheckRespDto {
 
-    @ApiModelProperty(notes = "全渠道发货单号")
+    @ApiModelProperty(notes = "货号")
     private String goodsCode;
 
     @ApiModelProperty(notes = "条码")
@@ -19,10 +19,13 @@ public class RetailSendBillGoodsCheckDto {
     @ApiModelProperty(notes = "是否能发货，1能发货，0不能发货")
     private Integer canDelivery;
 
-    public RetailSendBillGoodsCheckDto() {
+    @ApiModelProperty(notes = "理由")
+    private String reason;
+
+    public RetailSendBillGoodsCheckRespDto() {
     }
 
-    public RetailSendBillGoodsCheckDto(String goodsCode, String barcode, Integer canDelivery) {
+    public RetailSendBillGoodsCheckRespDto(String goodsCode, String barcode, Integer canDelivery) {
         this.goodsCode = goodsCode;
         this.barcode = barcode;
         this.canDelivery = canDelivery;

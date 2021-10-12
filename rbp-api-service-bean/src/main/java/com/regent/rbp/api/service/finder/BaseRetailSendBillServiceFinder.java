@@ -1,8 +1,8 @@
 package com.regent.rbp.api.service.finder;
 
 import cn.hutool.core.util.ReflectUtil;
+import com.regent.rbp.api.dto.constants.ApiResponseCode;
 import com.regent.rbp.api.service.retail.BaseRetailSendBillService;
-import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
@@ -36,7 +36,7 @@ public class BaseRetailSendBillServiceFinder implements ApplicationListener<Cont
     public static BaseRetailSendBillService findServiceImpl(String key) {
         BaseRetailSendBillService excelService = SERVICE_MAP.get(key);
         if (null == excelService) {
-            throw new BusinessException(ResponseCode.INTERNAL_ERROR, "baseRetailSendServiceNotExist", new Object[]{key});
+            throw new BusinessException(ApiResponseCode.SERVICE_NOT_EXIST_ERROR, "baseRetailSendServiceNotExist", new Object[]{key});
         }
         return excelService;
     }

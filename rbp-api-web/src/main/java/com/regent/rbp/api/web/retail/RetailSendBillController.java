@@ -2,12 +2,12 @@ package com.regent.rbp.api.web.retail;
 
 import com.regent.rbp.api.dto.core.ListDataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
-import com.regent.rbp.api.dto.retail.RetailSendBillCheckDto;
-import com.regent.rbp.api.dto.retail.RetailSendBillCheckParam;
+import com.regent.rbp.api.dto.retail.RetailSendBillCheckReqDto;
+import com.regent.rbp.api.dto.retail.RetailSendBillCheckRespDto;
 import com.regent.rbp.api.dto.retail.RetailSendBillUploadDto;
 import com.regent.rbp.api.dto.retail.RetailSendBillUploadParam;
-import com.regent.rbp.api.web.constants.ApiConstants;
 import com.regent.rbp.api.service.finder.BaseRetailSendBillServiceFinder;
+import com.regent.rbp.api.web.constants.ApiConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,9 +35,9 @@ public class RetailSendBillController {
     }
 
     @ApiOperation(value = "检查订单是否可以发货")
-    @PostMapping("/checkSendBill/{key}")
-    public ModelDataResponse<RetailSendBillCheckDto> checkSendBill(@PathVariable("key") String key, @RequestBody RetailSendBillCheckParam param) {
-        ModelDataResponse<RetailSendBillCheckDto> result = BaseRetailSendBillServiceFinder.findServiceImpl(key).checkSendBill(param);
+    @PostMapping("/checkOrderCanDelivery/{key}")
+    public ModelDataResponse<RetailSendBillCheckRespDto> checkOrderCanDelivery(@PathVariable("key") String key, @RequestBody RetailSendBillCheckReqDto param) {
+        ModelDataResponse<RetailSendBillCheckRespDto> result = BaseRetailSendBillServiceFinder.findServiceImpl(key).checkOrderCanDelivery(param);
         return result;
     }
 

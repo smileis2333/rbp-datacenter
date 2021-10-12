@@ -1,6 +1,7 @@
 package com.regent.rbp.task.inno.service.impl;
 
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
@@ -8,12 +9,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.employee.Employee;
+import com.regent.rbp.api.core.member.MemberCard;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
 import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.employee.EmployeeDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncCacheDao;
+import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.common.dao.UserDao;
 import com.regent.rbp.common.model.system.entity.User;
@@ -22,11 +25,14 @@ import com.regent.rbp.task.inno.config.InnoConfig;
 import com.regent.rbp.task.inno.model.dto.EmployeeDto;
 import com.regent.rbp.task.inno.model.req.EmployeeReqDto;
 import com.regent.rbp.task.inno.model.resp.EmployeeRespDto;
+import com.regent.rbp.task.inno.model.resp.MemberRespDto;
 import com.regent.rbp.task.inno.service.EmployeeService;
+import com.xxl.job.core.context.XxlJobHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -52,6 +58,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     UserDao userDao;
     @Autowired
     OnlinePlatformSyncCacheDao onlinePlatformSyncCacheDao;
+    @Autowired
+    OnlinePlatformSyncCacheService onlinePlatformSyncCacheService;
 
     @Override
     public OnlinePlatform getOnlinePlatform(String onlinePlatformCode) {
@@ -69,41 +77,44 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @return
      */
     @Override
-    public EmployeeRespDto uploadingEmployee(Long onlinePlatformId, Long channelId) {
-        EmployeeRespDto respDto = null;
+    public void uploadingEmployee(Long onlinePlatformId, Long channelId) {
         String key = SystemConstants.POST_ERP_EMPLOYEE;
-        Employee employee = employeeDao.selectById(channelId);
-        if (employee != null) {
-            Channel channel = channelDao.selectById(employee.getChannelId());
-            User user = userDao.selectOne(new LambdaQueryWrapper<User>().eq(User::getCode,employee.getCode()));
-            Date uploadingDate = this.getOnlinePlatformSyncCacheByDate(onlinePlatformId, key);
-            if (uploadingDate != null && employee.getUpdatedTime().getTime() <= uploadingDate.getTime())
-            {
-                return respDto;
-            }
-            List<EmployeeDto> reqList = new ArrayList<>();
-            String isEnabled = "1";
-            String updateTimeStr = DateUtil.getFullDateStr(employee.getUpdatedTime());
-            String channelCode = channel !=null ? channel.getCode() : StrUtil.EMPTY;
-            String openId = user !=null ? user.getQyweixin() : StrUtil.EMPTY;
-            Integer status = employee.getWorkStatus() != 2 ? 1 : 0;
-            EmployeeDto employeeDto = new EmployeeDto(employee.getCode(),employee.getName(),channelCode,employee.getMobile(),openId,updateTimeStr,isEnabled,status);
-            reqList.add(employeeDto);
+        Date uploadingDate = onlinePlatformSyncCacheService.getOnlinePlatformSyncCacheByDate(onlinePlatformId, key);
 
+        QueryWrapper<Employee> queryWrapper = new QueryWrapper<Employee>();
+        if (uploadingDate != null) {
+            queryWrapper.ge("updated_time", uploadingDate);
+        }
+        queryWrapper.orderByAsc("updated_time");
+        queryWrapper.last(" limit 100 ");
+        List<Employee> employeeList = employeeDao.selectList(queryWrapper);
+        if (CollUtil.isNotEmpty(employeeList)) {
+            Date uploadingTime = employeeList.stream().max(Comparator.comparing(Employee::getUpdatedTime)).get().getUpdatedTime();
+            List<EmployeeDto> reqList = new ArrayList<>();
+            for (Employee employee : employeeList) {
+                Channel channel = channelDao.selectById(employee.getChannelId());
+                User user = userDao.selectOne(new LambdaQueryWrapper<User>().eq(User::getCode,employee.getCode()));
+                String isEnabled = "1";
+                String updateTimeStr = DateUtil.getFullDateStr(employee.getUpdatedTime());
+                String channelCode = channel !=null ? channel.getCode() : StrUtil.EMPTY;
+                String openId = user !=null ? user.getQyweixin() : StrUtil.EMPTY;
+                Integer status = employee.getWorkStatus() != 2 ? 1 : 0;
+                EmployeeDto employeeDto = new EmployeeDto(employee.getCode(),employee.getName(),channelCode,employee.getMobile(),openId,updateTimeStr,isEnabled,status);
+                reqList.add(employeeDto);
+            }
             EmployeeReqDto employeeReqDto = new EmployeeReqDto();
             employeeReqDto.setApp_key(innoConfig.getAppkey());
             employeeReqDto.setApp_secrept(innoConfig.getAppsecret());
             employeeReqDto.setData(reqList);
-
             String api_url = String.format("%s%s", innoConfig.getUrl(), POST_ERP_STORESTAFF);
             String result = HttpUtil.post(api_url, JSON.toJSONString(employeeReqDto));
-
-            respDto = JSON.parseObject(result, EmployeeRespDto.class);
-
-            Date uploadingTime = employee.getUpdatedTime();
+            EmployeeRespDto respDto = JSON.parseObject(result, EmployeeRespDto.class);
+            if (respDto.getCode().equals("-1")) {
+                new Exception(respDto.getMsg());
+            }
+            XxlJobHelper.log("请求成功：" + JSON.toJSONString(respDto));
             this.saveOnlinePlatformSyncCache(onlinePlatformId, key, uploadingTime);
         }
-        return respDto;
     }
 
     /***
@@ -116,7 +127,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         OnlinePlatformSyncCache syncCache = onlinePlatformSyncCacheDao.selectOne(new LambdaQueryWrapper<OnlinePlatformSyncCache>()
                 .eq(OnlinePlatformSyncCache::getOnlinePlatformId, onlinePlatformId).eq(OnlinePlatformSyncCache::getSyncKey, key));
         if (syncCache == null) {
-            syncCache.build(onlinePlatformId, key, DateUtil.getDateStr(uploadingTime, DateUtil.FULL_DATE_FORMAT));
+            syncCache = syncCache.build(onlinePlatformId, key, DateUtil.getDateStr(uploadingTime, DateUtil.FULL_DATE_FORMAT));
             onlinePlatformSyncCacheDao.insert(syncCache);
         } else {
             syncCache.setData(DateUtil.getDateStr(uploadingTime, DateUtil.FULL_DATE_FORMAT));

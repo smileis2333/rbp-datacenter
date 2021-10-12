@@ -80,7 +80,7 @@ public class RetailOrderJob {
                 return;
             }
             // 设置结束时间
-            orderParam.setEndTime(OptionalUtil.ofNullable(orderParam, v -> StringUtil.isEmpty(v.getBeginTime()) ? DateUtil.getNowDateString(SystemConstants.FULL_DATE_FORMAT) : v.getBeginTime()));
+            orderParam.setEndTime(OptionalUtil.ofNullable(orderParam, v -> StringUtil.isEmpty(v.getEndTime()) ? DateUtil.getNowDateString(SystemConstants.FULL_DATE_FORMAT) : v.getEndTime()));
             // 不存在则创建
             if (null == syncCache) {
                 syncCache = OnlinePlatformSyncCache.build(onlinePlatform.getId(), SystemConstants.DOWNLOAD_ONLINE_ORDER_LIST_JOB, orderParam.getEndTime());
