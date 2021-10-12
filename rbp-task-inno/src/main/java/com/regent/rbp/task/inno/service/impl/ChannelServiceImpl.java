@@ -4,10 +4,16 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.regent.rbp.api.core.base.BusinessFormatType;
 import com.regent.rbp.api.core.channel.Channel;
+import com.regent.rbp.api.core.channel.ChannelBalanceType;
+import com.regent.rbp.api.core.channel.ChannelBusinessFormat;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
 import com.regent.rbp.api.core.warehouse.WarehouseChannelRange;
+import com.regent.rbp.api.dao.base.BusinessFormatTypeDao;
+import com.regent.rbp.api.dao.channel.ChannelBalanceTypeDao;
+import com.regent.rbp.api.dao.channel.ChannelBusinessFormatDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncCacheDao;
@@ -23,6 +29,7 @@ import com.regent.rbp.task.inno.model.req.ChannelReqDto;
 import com.regent.rbp.task.inno.model.req.WarehouseReqDto;
 import com.regent.rbp.task.inno.model.resp.ChannelRespDto;
 import com.regent.rbp.task.inno.service.ChannelService;
+import com.xxl.job.core.context.XxlJobHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,6 +64,8 @@ public class ChannelServiceImpl implements ChannelService {
     WarehouseDao warehouseDao;
     @Autowired
     WarehouseChannelRangeDao warehouseChannelRangeDao;
+    @Autowired
+    ChannelBusinessFormatDao channelBusinessFormatDao;
 
     @Autowired
     OnlinePlatformSyncCacheService onlinePlatformSyncCacheService;
@@ -76,21 +85,29 @@ public class ChannelServiceImpl implements ChannelService {
     public ChannelRespDto uploadingChannel(Long onlinePlatformId, Long channelId) {
         ChannelRespDto respDto = null;
         String key = SystemConstants.POST_ERP_STORE;
-        Channel channel = channelDao.selectById(channelId);
-        if (channel != null) {
+        List<WarehouseChannelRange> warehouseChannelRangeList = warehouseChannelRangeDao.selectList(
+                new QueryWrapper<WarehouseChannelRange>().eq("warehouse_id", channelId));
+        if (warehouseChannelRangeList != null && warehouseChannelRangeList.size() > 0) {
+            List<Long> channelIds = warehouseChannelRangeList.stream().map(WarehouseChannelRange::getChannelId).collect(Collectors.toList());
+
             Date uploadingDate = onlinePlatformSyncCacheService.getOnlinePlatformSyncCacheByDate(onlinePlatformId, key);
-            if (uploadingDate != null && channel.getUpdatedTime().getTime() <= uploadingDate.getTime())
-            {
-                return respDto;
+
+            QueryWrapper<Channel> queryWrapper = new QueryWrapper<Channel>();
+            queryWrapper.in("id", channelIds);
+            if (uploadingDate != null) {
+                queryWrapper.ge("updated_time", uploadingDate);
             }
+
+            List<Long> channelBusinessFormatIds = this.getChannelBusinessFormat("002");
+            queryWrapper.in("business_format_id", channelBusinessFormatIds);
+
+            List<Channel> channelList = channelDao.selectList(queryWrapper);
             List<ChannelDto> reqList = new ArrayList<>();
-            Integer isEnabled = 0;
-            if (channel.getStatus() == 1)
-                isEnabled = 1;
-            BigDecimal latitude = new BigDecimal(0);
-            ChannelDto channelDto = new ChannelDto(channel.getId().toString(), channel.getName(), channel.getLinkManMobile(), channel.getLinkMan(), channel.getCode(),
-                    channel.getAddress(), "", isEnabled.toString(),  channel.getCode(), new BigDecimal(0), new BigDecimal(0));
-            reqList.add(channelDto);
+            for (Channel item : channelList) {
+                ChannelDto channelDto = new ChannelDto(item.getId().toString(), item.getName(), item.getLinkManMobile(), item.getLinkMan(), item.getCode(),
+                        item.getAddress(), "", item.toString(),  item.getCode(), new BigDecimal(0), new BigDecimal(0));
+                reqList.add(channelDto);
+            }
 
             ChannelReqDto channelReqDto = new ChannelReqDto();
             channelReqDto.setApp_key(innoConfig.getAppkey());
@@ -102,7 +119,7 @@ public class ChannelServiceImpl implements ChannelService {
 
             respDto = JSON.parseObject(result, ChannelRespDto.class);
 
-            Date uploadingTime = channel.getUpdatedTime();
+            Date uploadingTime = channelList.stream().max(Comparator.comparing(Channel::getUpdatedTime)).get().getUpdatedTime();
             onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatformId, key, uploadingTime);
         }
         return respDto;
@@ -112,7 +129,7 @@ public class ChannelServiceImpl implements ChannelService {
     @Override
     public ChannelRespDto uploadingWarehouse(Long onlinePlatformId, Long warehouseId) {
         ChannelRespDto respDto = null;
-        String key = SystemConstants.POST_ERP_WAREHOUSE;
+        String key = SystemConstants.POST_ERP_STORE;
         List<WarehouseChannelRange> warehouseChannelRangeList = warehouseChannelRangeDao.selectList(
                 new QueryWrapper<WarehouseChannelRange>().eq("warehouse_id", warehouseId));
         if (warehouseChannelRangeList != null && warehouseChannelRangeList.size() > 0) {
@@ -125,12 +142,15 @@ public class ChannelServiceImpl implements ChannelService {
             if (uploadingDate != null) {
                 queryWrapper.ge("updated_time", uploadingDate);
             }
+            queryWrapper.in("business_format_id", this.getChannelBusinessFormat("001"));
 
             List<Channel> channelList = channelDao.selectList(queryWrapper);
             List<WarehouseDto> warehouseDtoList = new ArrayList<>();
+            Integer i = 1;
             for (Channel item : channelList) {
-                WarehouseDto warehouse = new WarehouseDto(item.getId().toString(), item.getRegion(), item.getCode(), item.getLinkMan(), item.getName(), item.getLinkManMobile(), item.getAddress());
+                WarehouseDto warehouse = new WarehouseDto(i.toString(), item.getRegion(), item.getCode(), item.getLinkMan(), item.getName(), item.getLinkManMobile(), item.getAddress());
                 warehouseDtoList.add(warehouse);
+                i++;
             }
 
             WarehouseReqDto warehouseReqDto = new WarehouseReqDto();
@@ -139,6 +159,9 @@ public class ChannelServiceImpl implements ChannelService {
             warehouseReqDto.setData(warehouseDtoList);
 
             String api_url = String.format("%s%s", innoConfig.getUrl(), POST_ERP_WAREHOUSE);
+
+            XxlJobHelper.log("请求url：" + api_url);
+            XxlJobHelper.log("请求json：" + JSON.toJSONString(warehouseReqDto));
             String result = HttpUtil.post(api_url, JSON.toJSONString(warehouseReqDto));
 
             respDto = JSON.parseObject(result, ChannelRespDto.class);
@@ -147,6 +170,11 @@ public class ChannelServiceImpl implements ChannelService {
             onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatformId, key, uploadingTime);
         }
         return respDto;
+    }
+
+    private List<Long> getChannelBusinessFormat(String code) {
+        List<ChannelBusinessFormat> list = channelBusinessFormatDao.selectList(new QueryWrapper<ChannelBusinessFormat>().eq("format_type_code", code));
+        return list.stream().map(ChannelBusinessFormat::getId).collect(Collectors.toList());
     }
 
 }

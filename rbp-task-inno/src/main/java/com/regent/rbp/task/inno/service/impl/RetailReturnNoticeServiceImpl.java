@@ -8,14 +8,18 @@ import com.regent.rbp.api.core.retail.RetailReturnNoticeBillGoods;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillDao;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillGoodsDao;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillOperatorLogDao;
+import com.regent.rbp.api.dto.core.ModelDataResponse;
+import com.regent.rbp.api.dto.retail.RetailReturnNoticeBillGoodsDetailData;
 import com.regent.rbp.api.dto.retail.RetailReturnNoticeBillSaveParam;
 import com.regent.rbp.api.service.base.OnlinePlatformService;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.api.service.retail.RetailReturnNoticeBillService;
+import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.task.inno.config.InnoConfig;
 import com.regent.rbp.task.inno.model.dto.RetailReturnNoticeDto;
+import com.regent.rbp.task.inno.model.dto.RetailReturnNoticeListDetailDto;
 import com.regent.rbp.task.inno.model.dto.RetailReturnNoticeListDto;
 import com.regent.rbp.task.inno.model.param.RetailReturnNoticeParam;
 import com.regent.rbp.task.inno.model.req.RetailReturnNoticeReqDto;
@@ -26,8 +30,11 @@ import com.xxl.job.core.context.XxlJobHelper;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @program: rbp-datacenter
@@ -98,12 +105,35 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
                 RetailReturnNoticeBill bill = retailReturnNoticeBillDao.selectOne(new QueryWrapper<RetailReturnNoticeBill>().eq("bill_no", notice.getReturn_sn()));
                 if (bill == null) {
                     RetailReturnNoticeBillSaveParam saveParam = new RetailReturnNoticeBillSaveParam();
+                    saveParam.setManualId(notice.getReturn_sn());
+                    saveParam.setBillDate(new Date());
+                    saveParam.setSaleChannelCode(notice.getStore_code());
+                    saveParam.setReceiveChannelCode("收货渠道");
+                    saveParam.setLogisticsCompanyCode("快递公司");
+                    saveParam.setLogisticsBillCode(notice.getShipping_no().toString());
+                    saveParam.setRetailOrdereBillNo(notice.getErp_order_sn());
+                    saveParam.setStatus(0);
+                    saveParam.setNotes("inno推送");
 
-                    //retailReturnNoticeBillService.save(param)
+                    List<RetailReturnNoticeBillGoodsDetailData> goodsDetailList = new ArrayList<>();
+                    for (RetailReturnNoticeListDetailDto detail: notice.getListDetail()) {
+                        RetailReturnNoticeBillGoodsDetailData data = new RetailReturnNoticeBillGoodsDetailData();
+                        data.setBarcode(detail.getSku());
+                        data.setQuantity(new BigDecimal(detail.getGoods_number()));
+                        data.setTagPrice(detail.getGoods_price());
+                        data.setBalancePrice(detail.getReal_price());
+                        BigDecimal discount = data.getBalancePrice().divide(data.getTagPrice());
+                        data.setDiscount(discount);
+                        goodsDetailList.add(data);
+                    }
+                    saveParam.setGoodsDetailData(goodsDetailList);
+                    ModelDataResponse<String> response = retailReturnNoticeBillService.save(saveParam);
+                    if (response.getCode() !=ResponseCode.OK){
+                        XxlJobHelper.log(String.format("全渠道退货通知单：%s，失败原因：%s", saveParam.getManualId(), response.getMessage()));
+                    }
                 }
             }
-
-
+            XxlJobHelper.handleSuccess();
         } catch (Exception e) {
             XxlJobHelper.handleFail(e.getMessage());
         } finally {

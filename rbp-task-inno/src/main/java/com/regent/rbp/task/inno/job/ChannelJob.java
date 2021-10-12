@@ -55,9 +55,9 @@ public class ChannelJob {
                 XxlJobHelper.handleFail(ERROR_CHANNEL_ONLINEPLATFORMCODE);
                 return;
             }
-            //开始推送云仓
+            //开始推送渠道
             if (onlinePlatform.getWarehouseId() != null) {
-                ChannelRespDto resp = channelService.uploadingChannel(onlinePlatform.getId(), onlinePlatform.getChannelId());
+                ChannelRespDto resp = channelService.uploadingChannel(onlinePlatform.getId(), onlinePlatform.getWarehouseId());
                 if (resp == null) {
                     XxlJobHelper.log(ERROR_CHANNEL_List);
                 }
@@ -95,7 +95,7 @@ public class ChannelJob {
                 XxlJobHelper.handleFail(ERROR_WAREHOUSE_ONLINEPLATFORMCODE);
                 return;
             }
-            //开始推送门店
+            //开始推送仓库
             if (onlinePlatform.getWarehouseId() != null) {
                 ChannelRespDto resp = channelService.uploadingWarehouse(onlinePlatform.getId(), onlinePlatform.getWarehouseId());
                 if (resp == null) {
