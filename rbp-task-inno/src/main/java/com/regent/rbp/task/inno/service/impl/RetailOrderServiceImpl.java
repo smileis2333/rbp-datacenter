@@ -106,6 +106,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
                     RetailOrderBillSaveParam saveParam = new RetailOrderBillSaveParam();
                     // 参数转换
                     this.convertOrder(mainDto, saveParam);
+                    saveParam.setOnlinePlatformCode(param.getOnlinePlatformCode());
                     saveParam.setRetailChannelNo(channelCode);
                     // 插入订单
                     ModelDataResponse<String> response = retailOrderBillService.save(saveParam);
@@ -149,7 +150,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
         targetDto.setBillDate(DateUtil.getDate(order.getAdd_time(), DateUtil.SHORT_DATE_FORMAT));
         targetDto.setManualNo(order.getOrder_sn());
         targetDto.setOnlineOrderCode(order.getOrder_sn());
-        targetDto.setOnlinePlatformTypeId(2);
+        targetDto.setOnlinePlatformTypeId(1);
         // 状态转换
         targetDto.setStatus(StatusEnum.NONE.getStatus());
         if ("0".equals(order.getPay_status())) {

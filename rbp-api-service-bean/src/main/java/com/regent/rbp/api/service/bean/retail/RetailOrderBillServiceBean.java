@@ -78,7 +78,7 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
             return new ModelDataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("paramVerifyError", new String[]{msg}));
         }
         // TODO 获取单号
-        bill.setBillNo(bill.getId().toString());
+        bill.setBillNo(bill.getOnlineOrderCode());
         // 新增订单
         retailOrderBillDao.insert(bill);
         // TODO 单据自定义字段
@@ -184,8 +184,8 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
             bill.setPayStatus(0);
         }
         // 电商平台
-        if (null != bill.getOnlinePlatformTypeId()) {
-            bill.setOnlinePlatformId(baseDbDao.getLongDataBySql(String.format("SELECT id FROM rbp_online_platform WHERE status = 1 AND online_platform_type_id = %s LIMIT 1", bill.getOnlinePlatformTypeId())));
+        if (StringUtil.isNotEmpty(param.getOnlinePlatformCode())) {
+            bill.setOnlinePlatformId(baseDbDao.getLongDataBySql(String.format("SELECT id FROM rbp_online_platform WHERE  status = 1 and code = '%s'", param.getOnlinePlatformCode())));
         }
         // 渠道编码
         if (StringUtil.isNotEmpty(param.getRetailChannelNo())) {
