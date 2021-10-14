@@ -24,6 +24,9 @@ public class RetailOrderBillSaveParam {
     @ApiModelProperty(notes = "外部单号，唯一")
     private String manualNo;
 
+    @ApiModelProperty(notes = "提货码")
+    private String acceptGoodsCode;
+
     @ApiModelProperty(notes = "线上订单号")
     private String onlineOrderCode;
 

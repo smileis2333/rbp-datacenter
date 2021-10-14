@@ -28,6 +28,9 @@ public class RetailOrderBill {
     @ApiModelProperty(notes = "模块编号")
     private String moduleId;
 
+    @ApiModelProperty(notes = "提货码")
+    private String acceptGoodsCode;
+
     @ApiModelProperty(notes = "单号")
     private String billNo;
 
