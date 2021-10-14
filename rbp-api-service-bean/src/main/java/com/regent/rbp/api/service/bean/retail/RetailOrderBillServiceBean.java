@@ -170,6 +170,7 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         bill.setBusinessTypeId(OptionalUtil.ofNullable(moduleBusinessType, ModuleBusinessType::getBusinessTypeId));
         bill.setBillDate(param.getBillDate());
         bill.setManualId(param.getManualNo());
+        bill.setAcceptGoodsCode(param.getAcceptGoodsCode());
         bill.setOnlineOrderCode(param.getOnlineOrderCode());
         bill.setOnlinePlatformTypeId(param.getOnlinePlatformTypeId());
         bill.setOnlineStatus(param.getOnlineStatus());

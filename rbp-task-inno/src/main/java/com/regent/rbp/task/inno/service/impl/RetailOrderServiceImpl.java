@@ -149,6 +149,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
         /********************** 订单主体 ******************************/
         targetDto.setBillDate(DateUtil.getDate(order.getAdd_time(), DateUtil.SHORT_DATE_FORMAT));
         targetDto.setManualNo(order.getOrder_sn());
+        targetDto.setAcceptGoodsCode(order.getPickup_code());
         targetDto.setOnlineOrderCode(order.getOrder_sn());
         targetDto.setOnlinePlatformTypeId(1);
         // 状态转换
