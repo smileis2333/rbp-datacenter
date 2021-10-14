@@ -21,6 +21,9 @@ import com.regent.rbp.api.dto.retail.RetailReturnNoticeBillGoodsDetailData;
 import com.regent.rbp.api.dto.retail.RetailReturnNoticeBillSaveParam;
 import com.regent.rbp.api.service.retail.RetailReturnNoticeBillService;
 import com.regent.rbp.api.service.retail.context.RetailReturnNoticeBillSaveContext;
+import com.regent.rbp.infrastructure.constants.ResponseCode;
+import com.regent.rbp.infrastructure.exception.BusinessException;
+import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,8 +74,8 @@ public class RetailReturnNoticeBillServiceBean extends ServiceImpl<RetailReturnN
         // 验证数有效性
         List<String> errorMsgList = verificationProperty(param, context);
         if(errorMsgList.size() > 0 ) {
-            String message = StringUtil.join(errorMsgList, ",");
-            //throw new BusinessException(ErrorC, "");
+            String message = LanguageUtil.getMessage(LanguageUtil.ZH, "paramVerifyError", new String[]{StringUtil.join(errorMsgList, ",")});
+            return new ModelDataResponse(ResponseCode.PARAMS_ERROR, message);
         }
 
         // 写入 全渠道退货通知单
@@ -95,14 +98,8 @@ public class RetailReturnNoticeBillServiceBean extends ServiceImpl<RetailReturnN
 
         if (StringUtils.isBlank(param.getBillNo())) {
             errorMsgList.add("单号(billNo)不能为空");
-        } else {
-            RetailReturnNoticeBill item = retailReturnNoticeBillDao.selectOne(new QueryWrapper<RetailReturnNoticeBill>().eq("bill_no", param.getBillNo()));
-            if(item != null) {
-                bill.setId(item.getId());
-            } else {
-                errorMsgList.add("单号(billNo)不存在");
-            }
         }
+
         if (StringUtils.isBlank(param.getSaleChannelCode())) {
             errorMsgList.add("销售渠道编号(saleChannelCode)不能为空");
         } else {
@@ -155,8 +152,8 @@ public class RetailReturnNoticeBillServiceBean extends ServiceImpl<RetailReturnN
                     }
                     // 验证当前款是否已经退货
                     List<RetailOrderBillGoods> orderList = orderDetailList.stream().filter(f -> f.getBarcode().equals(data.getBarcode()) &&
-                            f.getBalancePrice().equals(data.getBalancePrice()) && f.getReturnStatus().equals(0)).collect(Collectors.toList());
-                    if (orderList == null) {
+                            f.getBalancePrice().compareTo(data.getBalancePrice()) == 0 && f.getReturnStatus().equals(0)).collect(Collectors.toList());
+                    if (orderList == null || orderList.size() == 0) {
                         errorMsgList.add(String.format("条码(barcode)： %s 不存在或已退货", data.getBarcode()));
                         continue;
                     }

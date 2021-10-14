@@ -39,6 +39,7 @@ public class RetailReturnNoticeBillSaveContext {
         if (this.bill == null) {
             return;
         }
+        this.bill.setModuleId("701074");
         this.bill.setManualId(param.getManualId());
         this.bill.setBillNo(param.getBillNo());
         this.bill.setBillDate(param.getBillDate());

@@ -12,7 +12,7 @@ import lombok.Data;
 @Data
 public class RetailReturnNoticeParam {
 
-    @ApiModelProperty(notes = "平台编码")
+    @ApiModelProperty(notes = "平台编号")
     private String onlinePlatformCode;
 
     @ApiModelProperty(notes = "订单号")

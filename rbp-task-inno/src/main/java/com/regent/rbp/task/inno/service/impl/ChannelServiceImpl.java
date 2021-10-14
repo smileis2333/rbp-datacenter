@@ -8,6 +8,7 @@ import com.regent.rbp.api.core.base.BusinessFormatType;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.channel.ChannelBalanceType;
 import com.regent.rbp.api.core.channel.ChannelBusinessFormat;
+import com.regent.rbp.api.core.eum.BusinessFormatTypeEnum;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
 import com.regent.rbp.api.core.warehouse.WarehouseChannelRange;
@@ -98,7 +99,7 @@ public class ChannelServiceImpl implements ChannelService {
                 queryWrapper.ge("updated_time", uploadingDate);
             }
 
-            List<Long> channelBusinessFormatIds = this.getChannelBusinessFormat("002");
+            List<Long> channelBusinessFormatIds = this.getChannelBusinessFormat(BusinessFormatTypeEnum.STORE.getKey());
             queryWrapper.in("business_format_id", channelBusinessFormatIds);
 
             List<Channel> channelList = channelDao.selectList(queryWrapper);
@@ -142,7 +143,7 @@ public class ChannelServiceImpl implements ChannelService {
             if (uploadingDate != null) {
                 queryWrapper.ge("updated_time", uploadingDate);
             }
-            queryWrapper.in("business_format_id", this.getChannelBusinessFormat("001"));
+            queryWrapper.in("business_format_id", this.getChannelBusinessFormat(BusinessFormatTypeEnum.WAREHOUSE.getKey()));
 
             List<Channel> channelList = channelDao.selectList(queryWrapper);
             List<WarehouseDto> warehouseDtoList = new ArrayList<>();
@@ -159,9 +160,6 @@ public class ChannelServiceImpl implements ChannelService {
             warehouseReqDto.setData(warehouseDtoList);
 
             String api_url = String.format("%s%s", innoConfig.getUrl(), POST_ERP_WAREHOUSE);
-
-            XxlJobHelper.log("请求url：" + api_url);
-            XxlJobHelper.log("请求json：" + JSON.toJSONString(warehouseReqDto));
             String result = HttpUtil.post(api_url, JSON.toJSONString(warehouseReqDto));
 
             respDto = JSON.parseObject(result, ChannelRespDto.class);

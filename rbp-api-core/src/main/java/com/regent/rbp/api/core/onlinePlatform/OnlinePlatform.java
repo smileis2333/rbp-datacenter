@@ -116,6 +116,9 @@ public class OnlinePlatform {
     @ApiModelProperty(notes = "详细地址")
     private String address;
 
+    @ApiModelProperty(notes = "默认收退货渠道")
+    private Long receiveChannelId;
+
     @ApiModelProperty(notes = "状态 (0：未审核 1：已审核 2：反审核 3：作废)")
     private Integer status;
 

@@ -93,7 +93,7 @@ public class RetailReturnNoticeListDto {
     /**
      * 物流单号
      */
-    private Integer shipping_no;
+    private String shipping_no;
 
     /**
      * 商品明细
