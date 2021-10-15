@@ -1,6 +1,5 @@
 package com.regent.rbp.api.core.retail;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -10,17 +9,16 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * @program: rbp-datacenter
- * @description: 全渠道退货通知单
+ * @description: 全渠道收退货单
  * @author: HaiFeng
- * @create: 2021-09-26 16:47
+ * @create: 2021-10-14 17:25
  */
 @Data
-@TableName(value = "rbp_retail_return_notice_bill")
-public class RetailReturnNoticeBill {
+@TableName(value = "rbp_retail_receive_back_bill")
+public class RetailReceiveBackBill {
 
     @ApiModelProperty(notes = "编码")
     @TableId("id")
@@ -50,8 +48,8 @@ public class RetailReturnNoticeBill {
     @ApiModelProperty(notes = "快递单号")
     private String logisticsBillCode;
 
-    @ApiModelProperty(notes = "全渠道订单号")
-    private Long retailOrderBillId;
+    @ApiModelProperty(notes = "全渠道退货通知单号")
+    private Long retailReturnNoticeBillId;
 
     @ApiModelProperty(notes = "单据状态;(0.未审核,1.已审核,2.反审核,3.已作废,4.已配货,5.已发货)")
     private Integer status;
@@ -70,9 +68,6 @@ public class RetailReturnNoticeBill {
 
     @ApiModelProperty(notes = "流程实例编码")
     private String flowId;
-
-    @ApiModelProperty(notes = "线上退货单号")
-    private String onlineReturnNoticeCode;
 
     @ApiModelProperty(notes = "创建人")
     private Long createdBy;
@@ -109,9 +104,9 @@ public class RetailReturnNoticeBill {
     @ApiModelProperty(notes = "反审核时间")
     private Date uncheckTime;
 
-    public static RetailReturnNoticeBill build() {
+    public static RetailReceiveBackBill build() {
         Long userId = ThreadLocalGroup.getUserId();
-        RetailReturnNoticeBill item = new RetailReturnNoticeBill();
+        RetailReceiveBackBill item = new RetailReceiveBackBill();
 
         item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         item.setCreatedBy(userId);
@@ -122,5 +117,4 @@ public class RetailReturnNoticeBill {
     public void preUpdate() {
         this.setUpdatedBy(ThreadLocalGroup.getUserId());
     }
-
 }
