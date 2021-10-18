@@ -5,12 +5,10 @@ import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.service.base.OnlinePlatformService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
-import com.regent.rbp.task.inno.model.param.RetailReturnNoticeParam;
 import com.regent.rbp.task.inno.model.param.UpdateRetailReceiveBackByStatusParam;
 import com.regent.rbp.task.inno.service.RetailReceiveBackService;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,6 +30,11 @@ public class RetailReceiveBackJob {
     @Autowired
     OnlinePlatformService onlinePlatformService;
 
+    /**
+     * 更新退货单收货状态
+     * 入参格式：{ "onlinePlatformCode": "INNO" }
+     * onlinePlatformCode：平台编号
+     */
     @XxlJob(SystemConstants.POST_RETURN_ORDER_STATUS)
     public void UpdateReturnOrderStatus() {
         ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
