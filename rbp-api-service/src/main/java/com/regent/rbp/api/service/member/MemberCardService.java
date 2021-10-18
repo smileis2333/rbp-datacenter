@@ -28,4 +28,18 @@ public interface MemberCardService  {
      * @return
      */
     DataResponse save(MemberCardSaveParam param);
+
+    /**
+     * 检测会员卡是否已存在
+     * @param memberCard
+     * @return
+     */
+    boolean checkExistMemberCard(String memberCard);
+
+    /**
+     * 检测手机号是否已存在
+     * @param mobile
+     * @return
+     */
+    boolean checkExistMobile(String mobile);
 }

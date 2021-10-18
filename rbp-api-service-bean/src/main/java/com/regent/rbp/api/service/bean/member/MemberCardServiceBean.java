@@ -361,6 +361,26 @@ public class MemberCardServiceBean implements MemberCardService {
     }
 
     /**
+     * 检测会员卡是否已存在
+     * @param memberCard
+     * @return
+     */
+    @Override
+    public boolean checkExistMemberCard(String memberCard) {
+        return memberCardDao.selectCount(new QueryWrapper<MemberCard>().eq("code", memberCard)) > 0;
+    }
+
+    /**
+     * 检测手机号是否已存在
+     * @param mobile
+     * @return
+     */
+    @Override
+    public boolean checkExistMobile(String mobile) {
+        return memberCardDao.selectCount(new QueryWrapper<MemberCard>().eq("phone", mobile)) > 0;
+    }
+
+    /**
      * 验证属性
      * @param param
      * @param context
