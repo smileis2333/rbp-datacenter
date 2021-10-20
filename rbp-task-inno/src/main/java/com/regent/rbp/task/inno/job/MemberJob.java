@@ -3,6 +3,9 @@ package com.regent.rbp.task.inno.job;
 import com.alibaba.fastjson.JSON;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
+import com.regent.rbp.task.inno.controller.CustomerVipController;
+import com.regent.rbp.task.inno.model.dto.CustomerVipDto;
+import com.regent.rbp.task.inno.model.param.DownloadMemberParam;
 import com.regent.rbp.task.inno.model.param.MemberUploadingParam;
 import com.regent.rbp.task.inno.service.MemberService;
 import com.xxl.job.core.context.XxlJobHelper;
@@ -23,6 +26,8 @@ public class MemberJob {
 
     @Autowired
     MemberService memberService;
+    @Autowired
+    CustomerVipController customerVipController;
 
     /**
      * 上传会员
@@ -40,6 +45,53 @@ public class MemberJob {
             //开始推送会员
             memberService.uploadingMember(memberUploadingParam.getOnlinePlatformCode());
         }catch (Exception ex) {
+            String message = ex.getMessage();
+            XxlJobHelper.log(message);
+            XxlJobHelper.handleFail(message);
+            return;
+        }
+    }
+
+    /**
+     * 下载会员
+     *  请求Json：{ "onlinePlatformCode": "INNO" }
+     *  请求Json：{ "onlinePlatformCode": "INNO", "cardnumList": [ "13545395618", "13599331689" ] }
+     *  请求Json：{ "onlinePlatformCode": "INNO", "cardnumList": [ "13545395618", "13599331689" ] }
+     *  onlinePlatformCode:平台编号
+     *  mobileList：手机号
+     *  cardnumList：会员卡
+     */
+    @XxlJob(SystemConstants.GET_USER_LIST)
+    public void downloadMember() {
+        ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
+        try {
+            //读取参数(电商平台编号)
+            String param = XxlJobHelper.getJobParam();
+            XxlJobHelper.log(param);
+            DownloadMemberParam downloadMemberParam = JSON.parseObject(param, DownloadMemberParam.class);
+
+            //开始下载会员
+            memberService.saveMember(downloadMemberParam);
+        } catch (Exception ex) {
+            String message = ex.getMessage();
+            XxlJobHelper.log(message);
+            XxlJobHelper.handleFail(message);
+            return;
+        }
+    }
+
+
+    @XxlJob("textAddCustomerVIP")
+    public void AddCustomerVIP() {
+        ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
+        try {
+            //读取参数(电商平台编号)
+            String param = XxlJobHelper.getJobParam();
+            XxlJobHelper.log(param);
+            CustomerVipDto customerVipDto = JSON.parseObject(param, CustomerVipDto.class);
+
+            customerVipController.AddCustomerVIP(customerVipDto);
+        } catch (Exception ex) {
             String message = ex.getMessage();
             XxlJobHelper.log(message);
             XxlJobHelper.handleFail(message);

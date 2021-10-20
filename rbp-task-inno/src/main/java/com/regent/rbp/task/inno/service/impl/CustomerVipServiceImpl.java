@@ -53,7 +53,7 @@ public class CustomerVipServiceImpl implements CustomerVipService {
         memberCardSaveParam.setEndDate(param.getExpireDate());
         memberCardSaveParam.setBirthday(param.getBirthDate());
         memberCardSaveParam.setSexName(param.getSex());
-        memberCardSaveParam.setNotes(param.getRemark());
+        //memberCardSaveParam.setNotes(param.getRemark());
         memberCardSaveParam.setChannelCode(param.getCustomer_ID());
         memberCardSaveParam.setRepairChannelCode(param.getOriginalCustomer());
         memberCardSaveParam.setMemberStatus(MEMBER_STATUS_NAME);

@@ -45,6 +45,8 @@ public class SystemConstants {
 
     public static final String POST_RETURN_ORDER_STATUS = "inno.PostUpdateReturnOrderStatus";
 
+    public static final String GET_USER_LIST = "inno.GetUserList";
+
     public static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
 

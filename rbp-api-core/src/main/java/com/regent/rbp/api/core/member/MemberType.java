@@ -1,5 +1,6 @@
 package com.regent.rbp.api.core.member;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -31,6 +32,7 @@ public class MemberType {
     private Integer typeValue;
 
     @ApiModelProperty(notes = "是否禁用")
+    @TableField(exist = false)
     private Integer status;
 
     @ApiModelProperty(notes = "创建人")

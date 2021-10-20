@@ -58,10 +58,11 @@ public class MemberCardSaveContext {
         this.memberCard.setEmail(param.getEmail());
         this.memberCard.setWeixin(param.getWeixin());
         this.memberCard.setNotes(param.getNotes());
+        this.memberCard.setUpdatedOrigin(param.getUpdatedOrigin());
 
-        this.memberCard.setBeginDate(DateUtil.getDate(param.getBeginDate(), DateUtil.FULL_DATE_FORMAT));
-        this.memberCard.setEndDate(DateUtil.getDate(param.getEndDate(), DateUtil.FULL_DATE_FORMAT));
-        this.memberCard.setBirthdayDate(DateUtil.getDate(param.getBirthday(), DateUtil.FULL_DATE_FORMAT));
+        this.memberCard.setBeginDate(DateUtil.getDate(param.getBeginDate(), DateUtil.SHORT_DATE_FORMAT));
+        this.memberCard.setEndDate(DateUtil.getDate(param.getEndDate(), DateUtil.SHORT_DATE_FORMAT));
+        this.memberCard.setBirthdayDate(DateUtil.getDate(param.getBirthday(), DateUtil.SHORT_DATE_FORMAT));
 
         if (StringUtils.isNotBlank(param.getOriginType())) {
             Integer originType = null;
@@ -100,26 +101,6 @@ public class MemberCardSaveContext {
             }
             this.memberCard.setOrigin(origint);
         }
-
-        if (StringUtils.isNotBlank(param.getMemberStatus())) {
-            Integer status = null;
-            switch (param.getMemberStatus()) {
-                case "未审核":
-                    status = 0;
-                    break;
-                case "已审核":
-                    status = 1;
-                    break;
-                case "反审核":
-                    status = 2;
-                    break;
-                case "已作废":
-                    status = 3;
-                    break;
-            }
-            this.memberCard.setStatus(status);
-        }
-
     }
 
 }

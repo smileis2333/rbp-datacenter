@@ -1,5 +1,10 @@
 package com.regent.rbp.task.inno.service;
 
+import com.regent.rbp.task.inno.model.dto.CustomerVipDto;
+import com.regent.rbp.task.inno.model.param.DownloadMemberParam;
+
+import java.util.Map;
+
 /**
  * @program: rbp-datacenter
  * @description: 会员档案 Service
@@ -13,4 +18,18 @@ public interface MemberService {
      * @param onlinePlatformCode
      */
     void uploadingMember(String onlinePlatformCode);
+
+    /**
+     * 下载会员信息
+     * @param param
+     */
+    void saveMember(DownloadMemberParam param);
+
+    /**
+     * inno 新增会员
+     * @param dto
+     * @return
+     */
+    Map<String, String> save(CustomerVipDto dto);
+
 }

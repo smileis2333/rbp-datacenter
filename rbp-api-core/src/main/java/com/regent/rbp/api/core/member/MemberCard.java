@@ -157,5 +157,7 @@ public class MemberCard {
     @ApiModelProperty(notes = "反审核时间")
     private Date uncheckTime;
 
+    @ApiModelProperty(notes = "更新来源 0.RBP,1.INNO")
+    private Integer updatedOrigin;
 
 }

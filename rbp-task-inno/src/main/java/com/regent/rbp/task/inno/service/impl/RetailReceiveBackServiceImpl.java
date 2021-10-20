@@ -16,7 +16,9 @@ import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.task.inno.config.InnoConfig;
 import com.regent.rbp.task.inno.model.dto.UpdateReturnOrderStatusDto;
+import com.regent.rbp.task.inno.model.dto.UpdateReturnOrderStatusReqDto;
 import com.regent.rbp.task.inno.model.param.UpdateRetailReceiveBackByStatusParam;
+import com.regent.rbp.task.inno.model.req.RetailReturnNoticeReqDto;
 import com.regent.rbp.task.inno.model.resp.ChannelRespDto;
 import com.regent.rbp.task.inno.model.resp.UpdateReturnOrderStatusRespDto;
 import com.regent.rbp.task.inno.service.RetailReceiveBackService;
@@ -24,6 +26,7 @@ import com.xxl.job.core.context.XxlJobHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -63,7 +66,7 @@ public class RetailReceiveBackServiceImpl implements RetailReceiveBackService {
         Date uploadingDate = onlinePlatformSyncCacheService.getOnlinePlatformSyncCacheByDate(onlinePlatformId, key);
 
         // 得到 inno 平台下的全渠道订单
-        List<RetailOrderBill> orderBillList = retailOrderBillDao.selectList(new QueryWrapper<RetailOrderBill>().eq("online_platform_type_id", onlinePlatformId));
+        List<RetailOrderBill> orderBillList = retailOrderBillDao.selectList(new QueryWrapper<RetailOrderBill>().eq("online_platform_id", onlinePlatformId));
         if (orderBillList == null || orderBillList.size() == 0) {
             XxlJobHelper.log("未找到 inno 平台下的全渠道订单");
             return;
@@ -86,7 +89,7 @@ public class RetailReceiveBackServiceImpl implements RetailReceiveBackService {
 
         List<RetailReceiveBackBill> list = retailReceiveBackBillDao.selectList(queryWrapper);
         if (list != null && list.size() > 0) {
-            Integer pedometer = 0;
+            List<UpdateReturnOrderStatusDto> dtoList = new ArrayList<>();
             for (RetailReceiveBackBill bill : list) {
                 // 退货通知单
                 RetailReturnNoticeBill noticeBill = returnNoticeBillList.stream().filter(f -> f.getId().equals(bill.getRetailReturnNoticeBillId())).findAny().orElse(null);
@@ -101,25 +104,32 @@ public class RetailReceiveBackServiceImpl implements RetailReceiveBackService {
                 dto.setRemark("定时推送");
                 dto.setRec_time(DateUtil.getFullDateStr(bill.getCheckTime()));
 
-                String api_url = String.format("%s%s", innoConfig.getUrl(), API_URL_UPDATERETURNORDERSTATUS);
+                dtoList.add(dto);
+            }
 
-                String result = HttpUtil.post(api_url, JSON.toJSONString(dto));
-                XxlJobHelper.log(String.format("请求Url：%s", api_url));
-                XxlJobHelper.log(String.format("请求Json：%s", JSON.toJSONString(dto)));
-                XxlJobHelper.log(String.format("返回Json：%s", result));
+            UpdateReturnOrderStatusReqDto reqDto = new UpdateReturnOrderStatusReqDto();
+            reqDto.setApp_key(innoConfig.getAppkey());
+            reqDto.setApp_secrept(innoConfig.getAppsecret());
+            reqDto.setData(dtoList);
 
-                UpdateReturnOrderStatusRespDto respDto = JSON.parseObject(result, UpdateReturnOrderStatusRespDto.class);
-                if (respDto.getCode().equals("-1")) {
-                    XxlJobHelper.log(String.format("全渠道收退货货单：%s，失败原因：%s", bill.getBillNo(), respDto.getMsg()));
-                } else {
-                    XxlJobHelper.log(String.format("全渠道收退货货单：%s，成功：%s", bill.getBillNo(), result));
-                    pedometer++;
-                }
+            String api_url = String.format("%s%s", innoConfig.getUrl(), API_URL_UPDATERETURNORDERSTATUS);
+
+            String result = HttpUtil.post(api_url, JSON.toJSONString(reqDto));
+            XxlJobHelper.log(String.format("请求Url：%s", api_url));
+            XxlJobHelper.log(String.format("请求Json：%s", JSON.toJSONString(reqDto)));
+            XxlJobHelper.log(String.format("返回Json：%s", result));
+
+            UpdateReturnOrderStatusRespDto respDto = JSON.parseObject(result, UpdateReturnOrderStatusRespDto.class);
+            if (respDto.getCode().equals("-1")) {
+                XxlJobHelper.log(String.format("全渠道收退货货单：失败原因：%s", respDto.getMsg()));
+            } else {
+                XxlJobHelper.log(String.format("全渠道收退货货单：成功：%s", result));
             }
 
             XxlJobHelper.handleSuccess();
             // 全部推送成功在更新中时间
-            if (list.size() == pedometer) {
+            Integer winCount = respDto.getData().stream().filter(f -> f.getCode().equals("1")).collect(Collectors.toList()).size();
+            if (list.size() == winCount) {
                 Date recordTime = list.stream().max(Comparator.comparing(RetailReceiveBackBill::getCheckTime)).get().getCheckTime();
                 onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatformId, key, recordTime);
             }

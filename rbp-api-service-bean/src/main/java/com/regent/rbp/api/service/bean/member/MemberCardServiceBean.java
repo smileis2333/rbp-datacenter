@@ -16,6 +16,7 @@ import com.regent.rbp.api.dao.member.MemberPolicyDao;
 import com.regent.rbp.api.dao.member.MemberStatusDao;
 import com.regent.rbp.api.dao.member.MemberTypeDao;
 import com.regent.rbp.api.dto.core.DataResponse;
+import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.member.MemberCardQueryParam;
 import com.regent.rbp.api.dto.member.MemberCardQueryResult;
@@ -25,7 +26,10 @@ import com.regent.rbp.api.service.member.context.MemberCardQueryContext;
 import com.regent.rbp.api.service.member.context.MemberCardSaveContext;
 import com.regent.rbp.common.dao.UserDao;
 import com.regent.rbp.common.model.system.entity.User;
+import com.regent.rbp.infrastructure.constants.ResponseCode;
+import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.DateUtil;
+import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -350,14 +354,14 @@ public class MemberCardServiceBean implements MemberCardService {
         List<String> errorMsgList = verificationProperty(param, context);
         if(errorMsgList.size() > 0 ) {
             String message = StringUtil.join(errorMsgList, ",");
-            //throw new BusinessException(ErrorC, "");
+            return DataResponse.errorParameter(message);
         }
         // 自动补充不存在的数据字典
         processAutoCompleteDictionary(param, context);
         // 写入会员表
         saveMemberCard(createFlag, context.getMemberCard());
         //
-        return null;
+        return DataResponse.success();
     }
 
     /**
@@ -408,6 +412,13 @@ public class MemberCardServiceBean implements MemberCardService {
             }
         }
 
+        if (StringUtils.isNotBlank(param.getMemberStatus())) {
+            MemberStatus item = memberStatusDao.selectOne(new QueryWrapper<MemberStatus>().eq("name", param.getMemberStatus()));
+            if(item != null) {
+                memberCard.setMemberStatusId(item.getId());
+            }
+        }
+
         if (StringUtils.isBlank(param.getOriginType())) {
             errorMsgList.add("来源类别(originType)不能为空");
         }
@@ -421,6 +432,8 @@ public class MemberCardServiceBean implements MemberCardService {
             Sex item = sexDao.selectOne(new QueryWrapper<Sex>().eq("name", param.getSexName()));
             if (item != null) {
                 memberCard.setSexId(item.getId());
+            } else {
+                errorMsgList.add("性别(sexName)不存在");
             }
         }
         // 发卡渠道
@@ -428,6 +441,8 @@ public class MemberCardServiceBean implements MemberCardService {
             Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getChannelCode()));
             if (item != null) {
                 memberCard.setChannelId(item.getId());
+            } else {
+                errorMsgList.add("发卡渠道(channelCode)不存在");
             }
         }
         // 发卡人编号
@@ -435,13 +450,18 @@ public class MemberCardServiceBean implements MemberCardService {
             User item = userDao.selectOne(new QueryWrapper<User>().eq("code", param.getUserCode()));
             if (item != null) {
                 memberCard.setUserId(item.getId());
+            } else {
+                errorMsgList.add("发卡人编号(userCode)不存在");
             }
+
         }
         // 维护渠道编号
         if (StringUtils.isNotBlank(param.getRepairChannelCode())) {
             Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getRepairChannelCode()));
             if (item != null) {
                 memberCard.setRepairChannelId(item.getId());
+            } else {
+                errorMsgList.add("维护渠道编号(repairChannelCode)不存在");
             }
         }
         // 维护人编号
@@ -449,6 +469,8 @@ public class MemberCardServiceBean implements MemberCardService {
             User item = userDao.selectOne(new QueryWrapper<User>().eq("code", param.getMaintainerCode()));
             if (item != null) {
                 memberCard.setMaintainerId(item.getId());
+            } else {
+                errorMsgList.add("维护人编号(maintainerCode)不存在");
             }
         }
         // 拓展人编号
@@ -456,9 +478,18 @@ public class MemberCardServiceBean implements MemberCardService {
             User item = userDao.selectOne(new QueryWrapper<User>().eq("code", param.getDeveloperCode()));
             if (item != null) {
                 memberCard.setDeveloperId(item.getId());
+            } else {
+                errorMsgList.add("拓展人编号(developerCode)不存在");
             }
         }
-
+        // 会员政策
+        if (StringUtils.isNotBlank(param.getMemberPolicyCode())) {
+            MemberPolicy policy = memberPolicyDao.selectOne(new QueryWrapper<MemberPolicy>().eq("grade_code", param.getMemberPolicyCode()));
+            memberCard.setMemberPolicyId(policy.getId());
+        } else {
+            MemberPolicy policy = memberPolicyDao.selectOne(new QueryWrapper<MemberPolicy>().eq("is_default", 1));
+            memberCard.setMemberPolicyId(policy.getId());
+        }
         return errorMsgList;
     }
 
@@ -476,6 +507,7 @@ public class MemberCardServiceBean implements MemberCardService {
      */
     private void saveMemberCard(Boolean createFlag, MemberCard memberCard) {
         if (createFlag) {
+            memberCard.setStatus(0);
             memberCardDao.insert(memberCard);
         } else {
             memberCardDao.updateById(memberCard);

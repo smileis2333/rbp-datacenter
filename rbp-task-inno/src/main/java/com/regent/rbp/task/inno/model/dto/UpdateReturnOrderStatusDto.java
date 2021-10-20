@@ -1,5 +1,6 @@
 package com.regent.rbp.task.inno.model.dto;
 
+import com.regent.rbp.task.inno.model.req.BaseRequestDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
