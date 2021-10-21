@@ -19,7 +19,8 @@ public class SwaggerConfigDataCenter {
     public Docket datacenterApi() {
         String moduleCode = "dateCenter";
         String moduleName = "数据中台服务";
-        String basePackage = "com.regent.rbp.api";
+        //String basePackage = "com.regent.rbp.api";
+        String basePackage = "com.regent.rbp.task";
         return Swagger2Configuration.docket(moduleCode, moduleName, basePackage);
     }
 }
