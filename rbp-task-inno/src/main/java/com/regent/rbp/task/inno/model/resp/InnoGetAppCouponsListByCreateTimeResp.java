@@ -1,0 +1,596 @@
+package com.regent.rbp.task.inno.model.resp;
+
+import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
+
+/**
+ * @Author: wuhua.wwh
+ * @Date: 2019/9/17 9:43
+ * @Description:
+ **/
+public class InnoGetAppCouponsListByCreateTimeResp extends BaseResponseDto{
+
+    /**
+     * totalPages : 1
+     * data : [{"typeId":"1886","typeCode":"vvty","typeName":"测试修改时间2-折扣券","typeMoney":"0.00","sendType":"4","useStartDate":"2020-04-14 00:00:00","validityLimitType":"1","validityMonth":"0","useEndDate":"2020-05-14 23:59:00","minGoodsAmount":"10.00","bonusType":"4","inShippingfee":"1","qrcode_path":"https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=gQHh8jwAAAAAAAAAAS5odHRwOi8vd2VpeGluLnFxLmNvbS9xLzAyVzFnMjEzNlNhWlUxMDAwMGcwMy0AAgS9kpVeAwQAAAAA","qrcode_url":"http://weixin.qq.com/q/02W1g2136SaZU10000g03-","use_store_code":"LJJ","discount":"0.55","can_overlying":"1","is_allow_point":"1","is_allow_prepaidcard":"1","allowUseGoodsSn":"001,100001,100002,1011,200001,210002,25000012,250002,ASIDT0212FS,ASIDT0226FP,ASJDT0223FP,BJCK01,BJDP01,BJDP02,GCC01,GW001,GW002,GZ001,HB001,HB002,HBCK01,HN002,INNO036843,JG001,KAAL01601DA,KAAL02601NA,KAAL03500FA,KAAL03501FA,KAAS11004NA,KAAS11600DA,KAAS11600DB,KAAS11600DC,KAAS11602DA,KAAS11602DB,KAAS11603DA,KAAS11603DB,KAAS11603DC,KAAS11604DA,KAAS11604DB,KAAS11604DC,KAAS11611DA,KAAS11611DB,KAAS11619OA,KAAS11620DA,KAAS11620DB,KAAS12600NA,KAAS12602NA,KAAS12603NA,KAAS12604NA,KAAS12611NA,KAAS12619NB,KAAS12620NA,KAAS13533FA,KAAS13534FA,KAAS13535FA,KAAS13540FB,KAAS13546FA,KAAS13547FA,KAAS13548FA,KAAS13549FA,KAAS13552FB,KAAS21608DA,KAAS21608DB,KAAS21608DC,KAAS21609DA,KAAS21609DB,KAAS21609DC,KAAS22608NA,KAAS22609NA,KAAS23532FA,KAAS23534FA,KAAS23536FA,KAAS23542FB,KAAS23543FA,KAAS23545FA,KAAS23550FB,KAAS23551FB,KAAS23554FB,KAAS23560FB,KAAS23561FA,KABS10030RA,KABS10031RA,KABS10038FA,KABS10147FA,KABS11231DA,KABS11233DA,KABS12230NA,KABS12232NA,KABS12238NA,KABS12240NB,KABS12241NA,KABS13530FA,KABS13544FA,KABS15132LA,KABS15133FA,KABS15137LA,KABS15141FA,KABS15142FA,KABS15333FA,KABS15334FA,KABS20030RA,KABS20033FA,KABS20035FA,KABS20039FA,KABS20132RA,KABS20630FA,KABS20731FA,KABS21133DA,KABS21230OA,KABS21232DA,KABS22230NA,KABS22231NA,KABS22233NA,KABS22238NA,KABS22249NA,KABS22250NA,KABS22252NB,KABS22253NA,KABS22301NA,KABS23633FA,KABS23634FA,KABS23635FA,KABS23643FA,KABS23645FA,KABS25135FA,KABS25137LA,KABS25144LA,KABS35130IA,KACS10600RA,KACS12202NA,KACS12502NA,KACS13605FA,KACS15107IA,KACS15108IA,KACS15109FA,KACS20001RA,KACS20100RA,KACS20111RA,KACS22500NA,KACS23601FA,KACS23604FA,KACS25100IA,KACS25106LA,KACS25109FA,KACS25111LA,KACS25200FA,KSHAC3910FP,KSHAK2107NP,KSHAK2202NP,KSHAK2223NP,KSHAK2302NP,KSHAT0503KC,KSHAX1100LH,KSHAX1200DP,KSHAX1201OH,KSIAC3506FS,KSIAC3524FS,KSIAC3605FH,KSIAC3608FH,KSIAC3619FC,KSIAC3620FP,KSIAC3624FH,KSIAK2102NP,KSIAK2200NP,KSIAK2202NP,KSIAK2206NP,KSIAK2207NP,KSIAK2210NP,KSIAT0504KH,KSIAW5001LP,KSIAW5105FP,KSIAX1203DS,KSIAX1208DC,KSIAZ0500KP,KSIAZ2100NH,KSIAZ2101NP,KSIAZ2102NH,KSIAZ3600FS,KSIAZ5106LS,KSJAC3000XH,KSJAC3001XH,KSJAC3004XH,KSJAC3005XS,KSJAC3006XP,KSJAC3007XC,KSJAC3009FS,KSJAC3016XS,KSJAC3017XP,KSJAC3018XH,KSJAC3019FC,KSJAC3020FC,KSJAC3021FH,KSJAC3022FH,KSJAC3022FP,KSJAC3206XP,KSJAC3500XH,KSJAC3501XH,KSJAC3504XH,KSJAC3505XS,KSJAC3506XP,KSJAC3507XC,KSJAC3508XS,KSJAC3509FS,KSJAC3511FS,KSJAC3522FP,KSJAC3600YP,KSJAC3601YP,KSJAC3605XH,KSJAC3609XP,KSJAC3701XS,KSJAC3704XP,KSJAC3705XC,KSJAC3706XP,KSJAC3710XH,KSJAC3903FP,KSJAC3907FC,KSJAK1003VH,KSJAK2002NP,KSJAK2003NP,KSJAK2004NP,KSJAK2005NP,KSJAK2006NP,KSJAK2008NP,KSJAK2011NP,KSJAK2100NP,KSJAK2200NP,KSJAK2201NP,KSJAK2203NP,KSJAK2204NH,KSJAK2205NP,KSJAK2211NP,KSJAK2212NP,KSJAK2213NP,KSJAK2214NP,KSJAK2215NP,KSJAK2217NP,KSJAK2218NP,KSJAK2220NP,KSJAK2221NP,KSJAK2225NP,KSJAK2226NP,KSJAK2500NP,KSJAK2600NH,KSJAK2601NH,KSJAK2602NP,KSJAK2603NC,KSJAK2606NS,KSJAK2607NH,KSJAK2608NP,KSJAK2609NC,KSJAK2610NC,KSJAK2902NH,KSJAK2903NH,KSJAT0001FP,KSJAT0002FP,KSJAT0003FP,KSJAT0004FS,KSJAT0006FC,KSJAT0007FS,KSJAT0008FH,KSJAT0011FC,KSJAT0012FP,KSJAT0013FS,KSJAT0014FS,KSJAT0101FP,KSJAT0103RP,KSJAT0104RP,KSJAT0105RH,KSJAT0107FS,KSJAT0108FS,KSJAT0109FS,KSJAT0110FP,KSJAT0111FP,KSJAT0112FP,KSJAT0113FS,KSJAT0114FH,KSJAT0115FP,KSJAT0116FP,KSJAT0119FP,KSJAT0120FP,KSJAT0121RH,KSJAT0122FP,KSJAT0123FP,KSJAT0124FP,KSJAT0500RP,KSJAT0501RP,KSJAT0502KS,KSJAT0503KH,KSJAT0504KH,KSJAT0507FS,KSJAT0508FS,KSJAW5001LP,KSJAW5002LP,KSJAW5103LP,KSJAW5106LC,KSJAW5107FP,KSJAW5109FP,KSJAW5113LP,KSJAW5300LP,KSJAW5302FP,KSJAW5304FP,KSJAX1104OH,KSJAX1105OH,KSJAX1106OH,KSJAX1600OH,KSJAX1601OH,KSJAX1602DP,KSJAX1603DC,KSJAX1606DS,KSJAX1607DH,KSJAX1608DP,KSJAX1610DC,KSJAX1902DH,KSJAX1903DH,KWHAC3541FS,KWHAC3543FS,KWHAC3657FP,KWHAC3659FH,KWHAC3940FH,KWHAK2250NP,KWHAK2252NP,KWHAK2261JP,KWHAK2263NP,KWHAK2264NP,KWHAK2267NP,KWHAK2430NP,KWHAK2431NP,KWHAK2645NH,KWHAK2930NH,KWHAK2934NP,KWHAM4000VH,KWHAM4102RH,KWHAM4105RS,KWHAM4111RP,KWHAP9304LP,KWHAT0521FP,KWHAW5114LP,KWHAW5123LP,KWHAW5803LH,KWHAW5823FP,KWHAX1257NH,KWHAX1636DS,KWHAX1930DH,KWHAX1931DP,KWHAX1933DH,KWHAZ1908DH,KWHAZ1909DP,KWHAZ2908NH,KWHAZ2909NP,KWIAC3544FS,KWIAC3560FH,KWIAC3566FH,KWIAC3569FP,KWIAC3656XH,KWIAC3657XP,KWIAC3659FC,KWIAC3950XP,KWIAC3951XH,KWIAK2215NP,KWIAK2229NP,KWIAM4102LP,KWIAM4104RP,KWIAM4105RP,KWIAM4107RP,KWIAM4111ZP,KWIAT0532KH,KWIAT0538KS,KWIAT0541KH,KWIAT0543KP,KWIAW5007LH,KWIAW5805FP,KWIAW5912FP,KWIAX1624DC,KWIAX1627DP,KWIAX1628DC,KWIAX1918OH,KWIAZ1223OP,KWIAZ2220NP,KWIAZ3625YH,KWIAZ5110LP,KWIPA1015SG,KWJAC3544FP,KWJAC3643FS,KWJAC3646FS,KWJAC3647FP,KWJAC3650FH,KWJAC3651FS,KWJAC3653FC,KWJAC3654FH,KWJAC3655FC,KWJAC3656FP,KWJAC3940FP,KWJAC3942FC,KWJAC3947FC,KWJAC3948FC,KWJAC3949FC,KWJAK2242NP,KWJAK2243NP,KWJAK2244NP,KWJAK2248NP,KWJAK2305NP,KWJAK2620NC,KWJAK2622NP,KWJAK2623NP,KWJAK2624NP,KWJAK2625NP,KWJAK2626NC,KWJAK2627NC,KWJAK2631NC,KWJAK2632NS,KWJAK2700NP,KWJAK2703NP,KWJAK2711NP,KWJAK2921NP,KWJAK2924NC,KWJAK2926NH,KWJAK2927NH,KWJAK2930NH,KWJAK2932NH,KWJAM4105ZP,KWJAM4106RH,KWJAM4107RH,KWJAM4108RP,KWJAM4109RS,KWJAM4110RP,KWJAM4112RH,KWJAM4113RH,KWJAM4114RP,KWJAM4115FP,KWJAM4116RH,KWJAM4117ZH,KWJAM4118ZH,KWJAM4119RP,KWJAM4120FP,KWJAM4121RP,KWJAM4123RP,KWJAM4125RS,KWJAM4305KP,KWJAP9300FP,KWJAP9302LP,KWJAP9303LP,KWJAP9304FP,KWJAT0520ZP,KWJAT0521RP,KWJAW1700NP,KWJAW1703FP,KWJAW5123LP,KWJAW5128FP,KWJAW5130LP,KWJAW5132FP,KWJAW5305FP,KWJAW5306FP,KWJAW5801FH,KWJAW5803FS,KWJAW5805FP,KWJAW5806FP,KWJAW5809FS,KWJAW5810FC,KWJAW5812FC,KWJAW5821FP,KWJAW5902FP,KWJAW5904FP,KWJAW5905FP,KWJAW5910LP,KWJAW5990LP,KWJAW5991LP,KWJAX1220OC,KWJAX1221OP,KWJAX1222OP,KWJAX1223DC,KWJAX1224OP,KWJAX1228DC,KWJAX1228NC,KWJAX1231DC,KWJAX1231NC,KWJAX1620DC,KWJAX1622DP,KWJAX1623DP,KWJAX1624DP,KWJAX1625OP,KWJAX1626DC,KWJAX1627OC,KWJAX1628OS,KWJAX1631DC,KWJAX1632DS,KWJAX1921OP,KWJAX1924OC,KWJAX1926DH,KWJAX1927DH,KWJAX1930OH,KWJAX1932DH,KWJAX1933DP,RE20190518,SSIAC3601FP,SSIAC3602FC,SSIAC3603FC,SSIAC3605FS,SSIAC3607FP,SSIAC3611FP,SSIAK2100NP,SSIAK2101NP,SSIAK2102NP,SSIAK2103NP,SSIAK2106NP,SSIAK2109NP,SSIAK2120NP,SSIAK2126NP,SSIAK2132NP,SSIAK2133NP,SSIAK2135NP,SSIAK2232NP,SSIAK2291NP,SSIAK2300NP,SSIAK2301NP,SSIAT0601FS,SSIAW5000LP,SSIAW5001LP,SSIAW5106LP,SSIAW5107LP,SSIAW5108LP,SSIAX1200FP,SSIAX1202FP,SSIAX1203FP,SSJAC3200FP,SSJAC3201FP,SSJAC3204FC,SSJAC3205FC,SSJAC3604FP,SSJAK2100NP,SSJAK2101NP,SSJAK2102NP,SSJAK2103NP,SSJAK2105NP,SSJAK2106NP,SSJAK2108NP,SSJAK2109NP,SSJAK2111NP,SSJAK2112NP,SSJAK2113NP,SSJAK2205NP,SSJAK2300NP,SSJAK2301NP,SSJAK2501NP,SSJAK2502NP,SSJAK2504NP,SSJAK2509NP,SSJAK2543NP,SSJAK2716NP,SSJAK2717NP,SSJAK2718NP,SSJAK2719NP,SSJAK2741NP,SSJAK2743NP,SSJAT0000FS,SSJAT0001FS,SSJAT0002FS,SSJAT0003FP,SSJAT0004FP,SSJAT0006FS,SSJAT0007FP,SSJAT0008RP,SSJAT0010FP,SSJAT0011VP,SSJAT0012RS,SSJAT0104RP,SSJAT0106FS,SSJAT0109FP,SSJAT0110FP,SSJAT0112FP,SSJAT0113RJ,SSJAT0114RP,SSJAT0115RS,SSJAT0116RP,SSJAT0117RS,SSJAT0120RP,SSJAT0121RP,SSJAT0122RP,SSJAT0124RS,SSJAT0125RS,SSJAT0126RP,SSJAT0128FP,SSJAT0130FP,SSJAT0143RP,SSJAT0500RP,SSJAT0501RP,SSJAT0502FP,SSJAT0503FP,SSJAT0505FS,SSJAT0506RS,SSJAT0507RJ,SSJAT0509RS,SSJAT0513FP,SSJAW5000LP,SSJAW5004LP,SSJAW5100FP,SSJAW5102FP,SSJAW5106ZP,SSJAW5107ZH,SSJAW5200FP,SSJAW5303FP,SSJAW5443FP,SSJAX1201NP,SSJBK2101NP,SSJBK2105NP,SSJBK2107NP,SSJBK2109NP,SSJBQ8500NP,SSJBQ8502NP,SSJBQ8701ZP,SSJBQ8704FP,SSJBQ8706RP,SSJBT0002FP,SSJBT0003FS,SSJBT0004FP,SSJBT0007RS,SSJBT0011FP,SSJBT0014RP,SSJBT0017RP,SSJBT0502RP,SSJBT0504VP,SSJBW5000LP,SSJBW5104FP,SWHAC3610FC,SWHAC3661FP,SWHAK2111NP,SWHAK2116NP,SWHAK2119NP,SWHAK2122NP,SWHAK2130NP,SWHAK2144NP,SWHAK2166NP,SWHAK2170NP,SWHAK2218NP,SWHAM4100RH,SWHAM4109RS,SWHAM4113RS,SWHAM4123ZS,SWHAM4362LP,SWHAW5000LP,SWHAW5100LP,SWHAW5122LP,SWHAW5601LP,SWHAW5817LP,SWHAW5907LP,SWHAW5908LP,SWHAW5910LP,SWIAC3600LP,SWIAC3601FS,SWIAC3602FS,SWIAK2137NP,SWIAK2212NP,SWIAK2300NP,SWIAK2301NP,SWIAM4110LS,SWIAM4116RS,SWIAM4200RP,SWIAW5407FP,SWIAW5412KP,SWIAW5501ZP,SWIAW5502LP,SWIAX1201OP,SWJAC3900FC,SWJAK2700NP,SWJAK2710NJ,SWJAM4100RS,SWJAM4101RP,SWJAM4103RS,SWJAM4104RP,SWJAM4106RJ,SWJAM4107RP,SWJAM4301FP,SWJAT0500RP,SWJAT0501FP,SWJAT0502RS,SWJAT0505FP,SWJAT0508FP,SWJAT0509FP,SWJAT0510FP,SWJAW5000LP,SWJAW5102FP,SWJAW5500FP,SWJAW5910LP,test,TM001,TM002,WL001,WL002,WL003,WL004,WPH001,WPH002,WS001,WS002,ZB,ZB001,ZB002,ZB003,ZB004,ZBWL,ZG001,ZG002,ZN,ZN-1,ZN-2,ZN-3,ZN-4,ZN-5,ZNC01,ZSJAC3600XP,ZSJAC3602YP,ZSJAC3614XH,ZSJAC3622XH,ZSJAC3623XH,ZSJAK2200NP,ZSJAK2205NH,ZSJAK2209NH,ZSJAK2211NP,ZSJAK2212NH,ZSJAK2213OS,ZSJAK2214NP,ZSJAK2501NS,ZSJAK2503NH,ZSJAK2508NH,ZSJAK2900NH,ZSJAK2902NP,ZSJAK2907NP,ZSJAK2909NS,ZSJAK5001LS,ZSJAK5101LP,ZSJAK5107LH,ZSJAK5200FS,ZSJAT0102RP,ZSJAT0103RP,ZSJAT0106RH,ZSJAT0109FP,ZSJAT0111RH,ZSJAT0112RH,ZSJAT0113FP,ZSJAT0115FP,ZSJAT0117FH,ZSJAT0118RH,ZSJAT2504NH,ZSJAW5104LH,ZSJAX1104OP,ZSJAX1110NH,ZSJAX1900OH,ZSJAX1902OP,ZSJAX1907OP,ZSJAX1909OS,ZSJAX1910OH,ZSJAX5103LP,ZSJAX5111LP,ZSJAX5112LS,ZWJAC3620LS,ZWJAC3621FS,ZWJAK2700NJ,ZWJAK2708NP,ZWJAK2709NP,ZWJAK2900NH,ZWJAK2904NP,ZWJAK2907NH,ZWJAK2908NP,ZWJAK2910NP,ZWJAM4103RH,ZWJAM4104RH,ZWJAM4105RP,ZWJAM4106RH,ZWJAM4108RH,ZWJAT0001RS,ZWJAT0002RH,ZWJAT0500RS,ZWJAT0502RJ,ZWJAW1700LJ,ZWJAW5102LH,ZWJAW5103FH,ZWJAW5400FH,ZWJAW5401FP,ZWJAW5402FP,ZWJAW5500LP,ZWJAW5801FP,ZWJAW5900FP,ZWJAW5902FP,ZWJAX1100OP,ZWJAX1900OH,ZWJAX1904NP,ZWJAX1906OH,ZWJAX1907OH,ZWJAX1908NP","min_amount":"10.00","max_amount":"1000.00","is_log_income":"0","is_multiple_discount":"0","create_time":"2020-04-14 18:21:31","bonus_desc":"测试修改时间2","is_delete":0,"is_binding_erp_user":1,"lave_count":76,"goods_brand_code":"","exclude_goods":"","allow_cat_codes":"","allow_vcat_goods":"","allow_vcat_skus":"","receive_time_type":2,"receive_time":100,"max_use_goods_number":5,"pyament_code":"","discount_type_code":"type1","modify_time":"2020-04-15 10:32:17","sale_category1":null,"sale_category2":null,"sale_category3":null,"sale_category4":null,"story_category1":null,"story_category2":null,"story_category3":null,"time_category1":null,"time_category2":null,"time_category3":null}]
+     */
+
+    @SerializedName("totalPages")
+    private String totalPages;
+    @SerializedName("data")
+    private List<Data> data;
+
+    public String getTotalPages() {
+        return totalPages;
+    }
+
+    public void setTotalPages(String totalPages) {
+        this.totalPages = totalPages;
+    }
+
+    public List<Data> getData() {
+        return data;
+    }
+
+    public void setData(List<Data> data) {
+        this.data = data;
+    }
+
+    public static class Data {
+        /**
+         * typeId : 1886
+         * typeCode : vvty
+         * typeName : 测试修改时间2-折扣券
+         * typeMoney : 0.00
+         * sendType : 4
+         * useStartDate : 2020-04-14 00:00:00
+         * validityLimitType : 1
+         * validityMonth : 0
+         * useEndDate : 2020-05-14 23:59:00
+         * minGoodsAmount : 10.00
+         * bonusType : 4
+         * inShippingfee : 1
+         * qrcode_path : https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=gQHh8jwAAAAAAAAAAS5odHRwOi8vd2VpeGluLnFxLmNvbS9xLzAyVzFnMjEzNlNhWlUxMDAwMGcwMy0AAgS9kpVeAwQAAAAA
+         * qrcode_url : http://weixin.qq.com/q/02W1g2136SaZU10000g03-
+         * use_store_code : LJJ
+         * discount : 0.55
+         * can_overlying : 1
+         * is_allow_point : 1
+         * is_allow_prepaidcard : 1
+         * allowUseGoodsSn : 001,100001,100002,1011,200001,210002,25000012,250002,ASIDT0212FS,ASIDT0226FP,ASJDT0223FP,BJCK01,BJDP01,BJDP02,GCC01,GW001,GW002,GZ001,HB001,HB002,HBCK01,HN002,INNO036843,JG001,KAAL01601DA,KAAL02601NA,KAAL03500FA,KAAL03501FA,KAAS11004NA,KAAS11600DA,KAAS11600DB,KAAS11600DC,KAAS11602DA,KAAS11602DB,KAAS11603DA,KAAS11603DB,KAAS11603DC,KAAS11604DA,KAAS11604DB,KAAS11604DC,KAAS11611DA,KAAS11611DB,KAAS11619OA,KAAS11620DA,KAAS11620DB,KAAS12600NA,KAAS12602NA,KAAS12603NA,KAAS12604NA,KAAS12611NA,KAAS12619NB,KAAS12620NA,KAAS13533FA,KAAS13534FA,KAAS13535FA,KAAS13540FB,KAAS13546FA,KAAS13547FA,KAAS13548FA,KAAS13549FA,KAAS13552FB,KAAS21608DA,KAAS21608DB,KAAS21608DC,KAAS21609DA,KAAS21609DB,KAAS21609DC,KAAS22608NA,KAAS22609NA,KAAS23532FA,KAAS23534FA,KAAS23536FA,KAAS23542FB,KAAS23543FA,KAAS23545FA,KAAS23550FB,KAAS23551FB,KAAS23554FB,KAAS23560FB,KAAS23561FA,KABS10030RA,KABS10031RA,KABS10038FA,KABS10147FA,KABS11231DA,KABS11233DA,KABS12230NA,KABS12232NA,KABS12238NA,KABS12240NB,KABS12241NA,KABS13530FA,KABS13544FA,KABS15132LA,KABS15133FA,KABS15137LA,KABS15141FA,KABS15142FA,KABS15333FA,KABS15334FA,KABS20030RA,KABS20033FA,KABS20035FA,KABS20039FA,KABS20132RA,KABS20630FA,KABS20731FA,KABS21133DA,KABS21230OA,KABS21232DA,KABS22230NA,KABS22231NA,KABS22233NA,KABS22238NA,KABS22249NA,KABS22250NA,KABS22252NB,KABS22253NA,KABS22301NA,KABS23633FA,KABS23634FA,KABS23635FA,KABS23643FA,KABS23645FA,KABS25135FA,KABS25137LA,KABS25144LA,KABS35130IA,KACS10600RA,KACS12202NA,KACS12502NA,KACS13605FA,KACS15107IA,KACS15108IA,KACS15109FA,KACS20001RA,KACS20100RA,KACS20111RA,KACS22500NA,KACS23601FA,KACS23604FA,KACS25100IA,KACS25106LA,KACS25109FA,KACS25111LA,KACS25200FA,KSHAC3910FP,KSHAK2107NP,KSHAK2202NP,KSHAK2223NP,KSHAK2302NP,KSHAT0503KC,KSHAX1100LH,KSHAX1200DP,KSHAX1201OH,KSIAC3506FS,KSIAC3524FS,KSIAC3605FH,KSIAC3608FH,KSIAC3619FC,KSIAC3620FP,KSIAC3624FH,KSIAK2102NP,KSIAK2200NP,KSIAK2202NP,KSIAK2206NP,KSIAK2207NP,KSIAK2210NP,KSIAT0504KH,KSIAW5001LP,KSIAW5105FP,KSIAX1203DS,KSIAX1208DC,KSIAZ0500KP,KSIAZ2100NH,KSIAZ2101NP,KSIAZ2102NH,KSIAZ3600FS,KSIAZ5106LS,KSJAC3000XH,KSJAC3001XH,KSJAC3004XH,KSJAC3005XS,KSJAC3006XP,KSJAC3007XC,KSJAC3009FS,KSJAC3016XS,KSJAC3017XP,KSJAC3018XH,KSJAC3019FC,KSJAC3020FC,KSJAC3021FH,KSJAC3022FH,KSJAC3022FP,KSJAC3206XP,KSJAC3500XH,KSJAC3501XH,KSJAC3504XH,KSJAC3505XS,KSJAC3506XP,KSJAC3507XC,KSJAC3508XS,KSJAC3509FS,KSJAC3511FS,KSJAC3522FP,KSJAC3600YP,KSJAC3601YP,KSJAC3605XH,KSJAC3609XP,KSJAC3701XS,KSJAC3704XP,KSJAC3705XC,KSJAC3706XP,KSJAC3710XH,KSJAC3903FP,KSJAC3907FC,KSJAK1003VH,KSJAK2002NP,KSJAK2003NP,KSJAK2004NP,KSJAK2005NP,KSJAK2006NP,KSJAK2008NP,KSJAK2011NP,KSJAK2100NP,KSJAK2200NP,KSJAK2201NP,KSJAK2203NP,KSJAK2204NH,KSJAK2205NP,KSJAK2211NP,KSJAK2212NP,KSJAK2213NP,KSJAK2214NP,KSJAK2215NP,KSJAK2217NP,KSJAK2218NP,KSJAK2220NP,KSJAK2221NP,KSJAK2225NP,KSJAK2226NP,KSJAK2500NP,KSJAK2600NH,KSJAK2601NH,KSJAK2602NP,KSJAK2603NC,KSJAK2606NS,KSJAK2607NH,KSJAK2608NP,KSJAK2609NC,KSJAK2610NC,KSJAK2902NH,KSJAK2903NH,KSJAT0001FP,KSJAT0002FP,KSJAT0003FP,KSJAT0004FS,KSJAT0006FC,KSJAT0007FS,KSJAT0008FH,KSJAT0011FC,KSJAT0012FP,KSJAT0013FS,KSJAT0014FS,KSJAT0101FP,KSJAT0103RP,KSJAT0104RP,KSJAT0105RH,KSJAT0107FS,KSJAT0108FS,KSJAT0109FS,KSJAT0110FP,KSJAT0111FP,KSJAT0112FP,KSJAT0113FS,KSJAT0114FH,KSJAT0115FP,KSJAT0116FP,KSJAT0119FP,KSJAT0120FP,KSJAT0121RH,KSJAT0122FP,KSJAT0123FP,KSJAT0124FP,KSJAT0500RP,KSJAT0501RP,KSJAT0502KS,KSJAT0503KH,KSJAT0504KH,KSJAT0507FS,KSJAT0508FS,KSJAW5001LP,KSJAW5002LP,KSJAW5103LP,KSJAW5106LC,KSJAW5107FP,KSJAW5109FP,KSJAW5113LP,KSJAW5300LP,KSJAW5302FP,KSJAW5304FP,KSJAX1104OH,KSJAX1105OH,KSJAX1106OH,KSJAX1600OH,KSJAX1601OH,KSJAX1602DP,KSJAX1603DC,KSJAX1606DS,KSJAX1607DH,KSJAX1608DP,KSJAX1610DC,KSJAX1902DH,KSJAX1903DH,KWHAC3541FS,KWHAC3543FS,KWHAC3657FP,KWHAC3659FH,KWHAC3940FH,KWHAK2250NP,KWHAK2252NP,KWHAK2261JP,KWHAK2263NP,KWHAK2264NP,KWHAK2267NP,KWHAK2430NP,KWHAK2431NP,KWHAK2645NH,KWHAK2930NH,KWHAK2934NP,KWHAM4000VH,KWHAM4102RH,KWHAM4105RS,KWHAM4111RP,KWHAP9304LP,KWHAT0521FP,KWHAW5114LP,KWHAW5123LP,KWHAW5803LH,KWHAW5823FP,KWHAX1257NH,KWHAX1636DS,KWHAX1930DH,KWHAX1931DP,KWHAX1933DH,KWHAZ1908DH,KWHAZ1909DP,KWHAZ2908NH,KWHAZ2909NP,KWIAC3544FS,KWIAC3560FH,KWIAC3566FH,KWIAC3569FP,KWIAC3656XH,KWIAC3657XP,KWIAC3659FC,KWIAC3950XP,KWIAC3951XH,KWIAK2215NP,KWIAK2229NP,KWIAM4102LP,KWIAM4104RP,KWIAM4105RP,KWIAM4107RP,KWIAM4111ZP,KWIAT0532KH,KWIAT0538KS,KWIAT0541KH,KWIAT0543KP,KWIAW5007LH,KWIAW5805FP,KWIAW5912FP,KWIAX1624DC,KWIAX1627DP,KWIAX1628DC,KWIAX1918OH,KWIAZ1223OP,KWIAZ2220NP,KWIAZ3625YH,KWIAZ5110LP,KWIPA1015SG,KWJAC3544FP,KWJAC3643FS,KWJAC3646FS,KWJAC3647FP,KWJAC3650FH,KWJAC3651FS,KWJAC3653FC,KWJAC3654FH,KWJAC3655FC,KWJAC3656FP,KWJAC3940FP,KWJAC3942FC,KWJAC3947FC,KWJAC3948FC,KWJAC3949FC,KWJAK2242NP,KWJAK2243NP,KWJAK2244NP,KWJAK2248NP,KWJAK2305NP,KWJAK2620NC,KWJAK2622NP,KWJAK2623NP,KWJAK2624NP,KWJAK2625NP,KWJAK2626NC,KWJAK2627NC,KWJAK2631NC,KWJAK2632NS,KWJAK2700NP,KWJAK2703NP,KWJAK2711NP,KWJAK2921NP,KWJAK2924NC,KWJAK2926NH,KWJAK2927NH,KWJAK2930NH,KWJAK2932NH,KWJAM4105ZP,KWJAM4106RH,KWJAM4107RH,KWJAM4108RP,KWJAM4109RS,KWJAM4110RP,KWJAM4112RH,KWJAM4113RH,KWJAM4114RP,KWJAM4115FP,KWJAM4116RH,KWJAM4117ZH,KWJAM4118ZH,KWJAM4119RP,KWJAM4120FP,KWJAM4121RP,KWJAM4123RP,KWJAM4125RS,KWJAM4305KP,KWJAP9300FP,KWJAP9302LP,KWJAP9303LP,KWJAP9304FP,KWJAT0520ZP,KWJAT0521RP,KWJAW1700NP,KWJAW1703FP,KWJAW5123LP,KWJAW5128FP,KWJAW5130LP,KWJAW5132FP,KWJAW5305FP,KWJAW5306FP,KWJAW5801FH,KWJAW5803FS,KWJAW5805FP,KWJAW5806FP,KWJAW5809FS,KWJAW5810FC,KWJAW5812FC,KWJAW5821FP,KWJAW5902FP,KWJAW5904FP,KWJAW5905FP,KWJAW5910LP,KWJAW5990LP,KWJAW5991LP,KWJAX1220OC,KWJAX1221OP,KWJAX1222OP,KWJAX1223DC,KWJAX1224OP,KWJAX1228DC,KWJAX1228NC,KWJAX1231DC,KWJAX1231NC,KWJAX1620DC,KWJAX1622DP,KWJAX1623DP,KWJAX1624DP,KWJAX1625OP,KWJAX1626DC,KWJAX1627OC,KWJAX1628OS,KWJAX1631DC,KWJAX1632DS,KWJAX1921OP,KWJAX1924OC,KWJAX1926DH,KWJAX1927DH,KWJAX1930OH,KWJAX1932DH,KWJAX1933DP,RE20190518,SSIAC3601FP,SSIAC3602FC,SSIAC3603FC,SSIAC3605FS,SSIAC3607FP,SSIAC3611FP,SSIAK2100NP,SSIAK2101NP,SSIAK2102NP,SSIAK2103NP,SSIAK2106NP,SSIAK2109NP,SSIAK2120NP,SSIAK2126NP,SSIAK2132NP,SSIAK2133NP,SSIAK2135NP,SSIAK2232NP,SSIAK2291NP,SSIAK2300NP,SSIAK2301NP,SSIAT0601FS,SSIAW5000LP,SSIAW5001LP,SSIAW5106LP,SSIAW5107LP,SSIAW5108LP,SSIAX1200FP,SSIAX1202FP,SSIAX1203FP,SSJAC3200FP,SSJAC3201FP,SSJAC3204FC,SSJAC3205FC,SSJAC3604FP,SSJAK2100NP,SSJAK2101NP,SSJAK2102NP,SSJAK2103NP,SSJAK2105NP,SSJAK2106NP,SSJAK2108NP,SSJAK2109NP,SSJAK2111NP,SSJAK2112NP,SSJAK2113NP,SSJAK2205NP,SSJAK2300NP,SSJAK2301NP,SSJAK2501NP,SSJAK2502NP,SSJAK2504NP,SSJAK2509NP,SSJAK2543NP,SSJAK2716NP,SSJAK2717NP,SSJAK2718NP,SSJAK2719NP,SSJAK2741NP,SSJAK2743NP,SSJAT0000FS,SSJAT0001FS,SSJAT0002FS,SSJAT0003FP,SSJAT0004FP,SSJAT0006FS,SSJAT0007FP,SSJAT0008RP,SSJAT0010FP,SSJAT0011VP,SSJAT0012RS,SSJAT0104RP,SSJAT0106FS,SSJAT0109FP,SSJAT0110FP,SSJAT0112FP,SSJAT0113RJ,SSJAT0114RP,SSJAT0115RS,SSJAT0116RP,SSJAT0117RS,SSJAT0120RP,SSJAT0121RP,SSJAT0122RP,SSJAT0124RS,SSJAT0125RS,SSJAT0126RP,SSJAT0128FP,SSJAT0130FP,SSJAT0143RP,SSJAT0500RP,SSJAT0501RP,SSJAT0502FP,SSJAT0503FP,SSJAT0505FS,SSJAT0506RS,SSJAT0507RJ,SSJAT0509RS,SSJAT0513FP,SSJAW5000LP,SSJAW5004LP,SSJAW5100FP,SSJAW5102FP,SSJAW5106ZP,SSJAW5107ZH,SSJAW5200FP,SSJAW5303FP,SSJAW5443FP,SSJAX1201NP,SSJBK2101NP,SSJBK2105NP,SSJBK2107NP,SSJBK2109NP,SSJBQ8500NP,SSJBQ8502NP,SSJBQ8701ZP,SSJBQ8704FP,SSJBQ8706RP,SSJBT0002FP,SSJBT0003FS,SSJBT0004FP,SSJBT0007RS,SSJBT0011FP,SSJBT0014RP,SSJBT0017RP,SSJBT0502RP,SSJBT0504VP,SSJBW5000LP,SSJBW5104FP,SWHAC3610FC,SWHAC3661FP,SWHAK2111NP,SWHAK2116NP,SWHAK2119NP,SWHAK2122NP,SWHAK2130NP,SWHAK2144NP,SWHAK2166NP,SWHAK2170NP,SWHAK2218NP,SWHAM4100RH,SWHAM4109RS,SWHAM4113RS,SWHAM4123ZS,SWHAM4362LP,SWHAW5000LP,SWHAW5100LP,SWHAW5122LP,SWHAW5601LP,SWHAW5817LP,SWHAW5907LP,SWHAW5908LP,SWHAW5910LP,SWIAC3600LP,SWIAC3601FS,SWIAC3602FS,SWIAK2137NP,SWIAK2212NP,SWIAK2300NP,SWIAK2301NP,SWIAM4110LS,SWIAM4116RS,SWIAM4200RP,SWIAW5407FP,SWIAW5412KP,SWIAW5501ZP,SWIAW5502LP,SWIAX1201OP,SWJAC3900FC,SWJAK2700NP,SWJAK2710NJ,SWJAM4100RS,SWJAM4101RP,SWJAM4103RS,SWJAM4104RP,SWJAM4106RJ,SWJAM4107RP,SWJAM4301FP,SWJAT0500RP,SWJAT0501FP,SWJAT0502RS,SWJAT0505FP,SWJAT0508FP,SWJAT0509FP,SWJAT0510FP,SWJAW5000LP,SWJAW5102FP,SWJAW5500FP,SWJAW5910LP,test,TM001,TM002,WL001,WL002,WL003,WL004,WPH001,WPH002,WS001,WS002,ZB,ZB001,ZB002,ZB003,ZB004,ZBWL,ZG001,ZG002,ZN,ZN-1,ZN-2,ZN-3,ZN-4,ZN-5,ZNC01,ZSJAC3600XP,ZSJAC3602YP,ZSJAC3614XH,ZSJAC3622XH,ZSJAC3623XH,ZSJAK2200NP,ZSJAK2205NH,ZSJAK2209NH,ZSJAK2211NP,ZSJAK2212NH,ZSJAK2213OS,ZSJAK2214NP,ZSJAK2501NS,ZSJAK2503NH,ZSJAK2508NH,ZSJAK2900NH,ZSJAK2902NP,ZSJAK2907NP,ZSJAK2909NS,ZSJAK5001LS,ZSJAK5101LP,ZSJAK5107LH,ZSJAK5200FS,ZSJAT0102RP,ZSJAT0103RP,ZSJAT0106RH,ZSJAT0109FP,ZSJAT0111RH,ZSJAT0112RH,ZSJAT0113FP,ZSJAT0115FP,ZSJAT0117FH,ZSJAT0118RH,ZSJAT2504NH,ZSJAW5104LH,ZSJAX1104OP,ZSJAX1110NH,ZSJAX1900OH,ZSJAX1902OP,ZSJAX1907OP,ZSJAX1909OS,ZSJAX1910OH,ZSJAX5103LP,ZSJAX5111LP,ZSJAX5112LS,ZWJAC3620LS,ZWJAC3621FS,ZWJAK2700NJ,ZWJAK2708NP,ZWJAK2709NP,ZWJAK2900NH,ZWJAK2904NP,ZWJAK2907NH,ZWJAK2908NP,ZWJAK2910NP,ZWJAM4103RH,ZWJAM4104RH,ZWJAM4105RP,ZWJAM4106RH,ZWJAM4108RH,ZWJAT0001RS,ZWJAT0002RH,ZWJAT0500RS,ZWJAT0502RJ,ZWJAW1700LJ,ZWJAW5102LH,ZWJAW5103FH,ZWJAW5400FH,ZWJAW5401FP,ZWJAW5402FP,ZWJAW5500LP,ZWJAW5801FP,ZWJAW5900FP,ZWJAW5902FP,ZWJAX1100OP,ZWJAX1900OH,ZWJAX1904NP,ZWJAX1906OH,ZWJAX1907OH,ZWJAX1908NP
+         * min_amount : 10.00
+         * max_amount : 1000.00
+         * is_log_income : 0
+         * is_multiple_discount : 0
+         * create_time : 2020-04-14 18:21:31
+         * bonus_desc : 测试修改时间2
+         * is_delete : 0
+         * is_binding_erp_user : 1
+         * lave_count : 76
+         * goods_brand_code :
+         * exclude_goods :
+         * allow_cat_codes :
+         * allow_vcat_goods :
+         * allow_vcat_skus :
+         * receive_time_type : 2
+         * receive_time : 100
+         * max_use_goods_number : 5
+         * pyament_code :
+         * discount_type_code : type1
+         * modify_time : 2020-04-15 10:32:17
+         * sale_category1 : null
+         * sale_category2 : null
+         * sale_category3 : null
+         * sale_category4 : null
+         * story_category1 : null
+         * story_category2 : null
+         * story_category3 : null
+         * time_category1 : null
+         * time_category2 : null
+         * time_category3 : null
+         */
+
+        @SerializedName("typeId")
+        private String typeId;
+        @SerializedName("typeCode")
+        private String typeCode;
+        @SerializedName("typeName")
+        private String typeName;
+        @SerializedName("typeMoney")
+        private String typeMoney;
+        @SerializedName("sendType")
+        private String sendType;
+        @SerializedName("useStartDate")
+        private String useStartDate;
+        @SerializedName("validityLimitType")
+        private String validityLimitType;
+        @SerializedName("validityMonth")
+        private String validityMonth;
+        @SerializedName("useEndDate")
+        private String useEndDate;
+        @SerializedName("minGoodsAmount")
+        private String minGoodsAmount;
+        @SerializedName("bonusType")
+        private String bonusType;
+        @SerializedName("inShippingfee")
+        private String inShippingfee;
+        @SerializedName("qrcode_path")
+        private String qrcodePath;
+        @SerializedName("qrcode_url")
+        private String qrcodeUrl;
+        @SerializedName("use_store_code")
+        private String useStoreCode;
+        @SerializedName("discount")
+        private String discount;
+        @SerializedName("can_overlying")
+        private String canOverlying;
+        @SerializedName("is_allow_point")
+        private String isAllowPoint;
+        @SerializedName("is_allow_prepaidcard")
+        private String isAllowPrepaidcard;
+        @SerializedName("allowUseGoodsSn")
+        private String allowUseGoodsSn;
+        @SerializedName("min_amount")
+        private String minAmount;
+        @SerializedName("max_amount")
+        private String maxAmount;
+        @SerializedName("is_log_income")
+        private String isLogIncome;
+        @SerializedName("is_multiple_discount")
+        private String isMultipleDiscount;
+        @SerializedName("create_time")
+        private String createTime;
+        @SerializedName("bonus_desc")
+        private String bonusDesc;
+        @SerializedName("is_delete")
+        private int isDelete;
+        @SerializedName("is_binding_erp_user")
+        private int isBindingErpUser;
+        @SerializedName("lave_count")
+        private int laveCount;
+        @SerializedName("goods_brand_code")
+        private String goodsBrandCode;
+        @SerializedName("exclude_goods")
+        private String excludeGoods;
+        @SerializedName("allow_cat_codes")
+        private String allowCatCodes;
+        @SerializedName("allow_vcat_goods")
+        private String allowVcatGoods;
+        @SerializedName("allow_vcat_skus")
+        private String allowVcatSkus;
+        @SerializedName("receive_time_type")
+        private int receiveTimeType;
+        @SerializedName("receive_time")
+        private int receiveTime;
+        @SerializedName("max_use_goods_number")
+        private int maxUseGoodsNumber;
+        @SerializedName("pyament_code")
+        private String pyamentCode;
+        @SerializedName("discount_type_code")
+        private String discountTypeCode;
+        @SerializedName("modify_time")
+        private String modifyTime;
+        @SerializedName("sale_category1")
+        private String saleCategory1;
+        @SerializedName("sale_category2")
+        private String saleCategory2;
+        @SerializedName("sale_category3")
+        private String saleCategory3;
+        @SerializedName("sale_category4")
+        private String saleCategory4;
+        @SerializedName("story_category1")
+        private String storyCategory1;
+        @SerializedName("story_category2")
+        private String storyCategory2;
+        @SerializedName("story_category3")
+        private String storyCategory3;
+        @SerializedName("time_category1")
+        private String timeCategory1;
+        @SerializedName("time_category2")
+        private String timeCategory2;
+        @SerializedName("time_category3")
+        private String timeCategory3;
+
+        public String getTypeId() {
+            return typeId;
+        }
+
+        public void setTypeId(String typeId) {
+            this.typeId = typeId;
+        }
+
+        public String getTypeCode() {
+            return typeCode;
+        }
+
+        public void setTypeCode(String typeCode) {
+            this.typeCode = typeCode;
+        }
+
+        public String getTypeName() {
+            return typeName;
+        }
+
+        public void setTypeName(String typeName) {
+            this.typeName = typeName;
+        }
+
+        public String getTypeMoney() {
+            return typeMoney;
+        }
+
+        public void setTypeMoney(String typeMoney) {
+            this.typeMoney = typeMoney;
+        }
+
+        public String getSendType() {
+            return sendType;
+        }
+
+        public void setSendType(String sendType) {
+            this.sendType = sendType;
+        }
+
+        public String getUseStartDate() {
+            return useStartDate;
+        }
+
+        public void setUseStartDate(String useStartDate) {
+            this.useStartDate = useStartDate;
+        }
+
+        public String getValidityLimitType() {
+            return validityLimitType;
+        }
+
+        public void setValidityLimitType(String validityLimitType) {
+            this.validityLimitType = validityLimitType;
+        }
+
+        public String getValidityMonth() {
+            return validityMonth;
+        }
+
+        public void setValidityMonth(String validityMonth) {
+            this.validityMonth = validityMonth;
+        }
+
+        public String getUseEndDate() {
+            return useEndDate;
+        }
+
+        public void setUseEndDate(String useEndDate) {
+            this.useEndDate = useEndDate;
+        }
+
+        public String getMinGoodsAmount() {
+            return minGoodsAmount;
+        }
+
+        public void setMinGoodsAmount(String minGoodsAmount) {
+            this.minGoodsAmount = minGoodsAmount;
+        }
+
+        public String getBonusType() {
+            return bonusType;
+        }
+
+        public void setBonusType(String bonusType) {
+            this.bonusType = bonusType;
+        }
+
+        public String getInShippingfee() {
+            return inShippingfee;
+        }
+
+        public void setInShippingfee(String inShippingfee) {
+            this.inShippingfee = inShippingfee;
+        }
+
+        public String getQrcodePath() {
+            return qrcodePath;
+        }
+
+        public void setQrcodePath(String qrcodePath) {
+            this.qrcodePath = qrcodePath;
+        }
+
+        public String getQrcodeUrl() {
+            return qrcodeUrl;
+        }
+
+        public void setQrcodeUrl(String qrcodeUrl) {
+            this.qrcodeUrl = qrcodeUrl;
+        }
+
+        public String getUseStoreCode() {
+            return useStoreCode;
+        }
+
+        public void setUseStoreCode(String useStoreCode) {
+            this.useStoreCode = useStoreCode;
+        }
+
+        public String getDiscount() {
+            return discount;
+        }
+
+        public void setDiscount(String discount) {
+            this.discount = discount;
+        }
+
+        public String getCanOverlying() {
+            return canOverlying;
+        }
+
+        public void setCanOverlying(String canOverlying) {
+            this.canOverlying = canOverlying;
+        }
+
+        public String getIsAllowPoint() {
+            return isAllowPoint;
+        }
+
+        public void setIsAllowPoint(String isAllowPoint) {
+            this.isAllowPoint = isAllowPoint;
+        }
+
+        public String getIsAllowPrepaidcard() {
+            return isAllowPrepaidcard;
+        }
+
+        public void setIsAllowPrepaidcard(String isAllowPrepaidcard) {
+            this.isAllowPrepaidcard = isAllowPrepaidcard;
+        }
+
+        public String getAllowUseGoodsSn() {
+            return allowUseGoodsSn;
+        }
+
+        public void setAllowUseGoodsSn(String allowUseGoodsSn) {
+            this.allowUseGoodsSn = allowUseGoodsSn;
+        }
+
+        public String getMinAmount() {
+            return minAmount;
+        }
+
+        public void setMinAmount(String minAmount) {
+            this.minAmount = minAmount;
+        }
+
+        public String getMaxAmount() {
+            return maxAmount;
+        }
+
+        public void setMaxAmount(String maxAmount) {
+            this.maxAmount = maxAmount;
+        }
+
+        public String getIsLogIncome() {
+            return isLogIncome;
+        }
+
+        public void setIsLogIncome(String isLogIncome) {
+            this.isLogIncome = isLogIncome;
+        }
+
+        public String getIsMultipleDiscount() {
+            return isMultipleDiscount;
+        }
+
+        public void setIsMultipleDiscount(String isMultipleDiscount) {
+            this.isMultipleDiscount = isMultipleDiscount;
+        }
+
+        public String getCreateTime() {
+            return createTime;
+        }
+
+        public void setCreateTime(String createTime) {
+            this.createTime = createTime;
+        }
+
+        public String getBonusDesc() {
+            return bonusDesc;
+        }
+
+        public void setBonusDesc(String bonusDesc) {
+            this.bonusDesc = bonusDesc;
+        }
+
+        public int getIsDelete() {
+            return isDelete;
+        }
+
+        public void setIsDelete(int isDelete) {
+            this.isDelete = isDelete;
+        }
+
+        public int getIsBindingErpUser() {
+            return isBindingErpUser;
+        }
+
+        public void setIsBindingErpUser(int isBindingErpUser) {
+            this.isBindingErpUser = isBindingErpUser;
+        }
+
+        public int getLaveCount() {
+            return laveCount;
+        }
+
+        public void setLaveCount(int laveCount) {
+            this.laveCount = laveCount;
+        }
+
+        public String getGoodsBrandCode() {
+            return goodsBrandCode;
+        }
+
+        public void setGoodsBrandCode(String goodsBrandCode) {
+            this.goodsBrandCode = goodsBrandCode;
+        }
+
+        public String getExcludeGoods() {
+            return excludeGoods;
+        }
+
+        public void setExcludeGoods(String excludeGoods) {
+            this.excludeGoods = excludeGoods;
+        }
+
+        public String getAllowCatCodes() {
+            return allowCatCodes;
+        }
+
+        public void setAllowCatCodes(String allowCatCodes) {
+            this.allowCatCodes = allowCatCodes;
+        }
+
+        public String getAllowVcatGoods() {
+            return allowVcatGoods;
+        }
+
+        public void setAllowVcatGoods(String allowVcatGoods) {
+            this.allowVcatGoods = allowVcatGoods;
+        }
+
+        public String getAllowVcatSkus() {
+            return allowVcatSkus;
+        }
+
+        public void setAllowVcatSkus(String allowVcatSkus) {
+            this.allowVcatSkus = allowVcatSkus;
+        }
+
+        public int getReceiveTimeType() {
+            return receiveTimeType;
+        }
+
+        public void setReceiveTimeType(int receiveTimeType) {
+            this.receiveTimeType = receiveTimeType;
+        }
+
+        public int getReceiveTime() {
+            return receiveTime;
+        }
+
+        public void setReceiveTime(int receiveTime) {
+            this.receiveTime = receiveTime;
+        }
+
+        public int getMaxUseGoodsNumber() {
+            return maxUseGoodsNumber;
+        }
+
+        public void setMaxUseGoodsNumber(int maxUseGoodsNumber) {
+            this.maxUseGoodsNumber = maxUseGoodsNumber;
+        }
+
+        public String getPyamentCode() {
+            return pyamentCode;
+        }
+
+        public void setPyamentCode(String pyamentCode) {
+            this.pyamentCode = pyamentCode;
+        }
+
+        public String getDiscountTypeCode() {
+            return discountTypeCode;
+        }
+
+        public void setDiscountTypeCode(String discountTypeCode) {
+            this.discountTypeCode = discountTypeCode;
+        }
+
+        public String getModifyTime() {
+            return modifyTime;
+        }
+
+        public void setModifyTime(String modifyTime) {
+            this.modifyTime = modifyTime;
+        }
+
+        public String getSaleCategory1() {
+            return saleCategory1;
+        }
+
+        public void setSaleCategory1(String saleCategory1) {
+            this.saleCategory1 = saleCategory1;
+        }
+
+        public String getSaleCategory2() {
+            return saleCategory2;
+        }
+
+        public void setSaleCategory2(String saleCategory2) {
+            this.saleCategory2 = saleCategory2;
+        }
+
+        public String getSaleCategory3() {
+            return saleCategory3;
+        }
+
+        public void setSaleCategory3(String saleCategory3) {
+            this.saleCategory3 = saleCategory3;
+        }
+
+        public String getSaleCategory4() {
+            return saleCategory4;
+        }
+
+        public void setSaleCategory4(String saleCategory4) {
+            this.saleCategory4 = saleCategory4;
+        }
+
+        public String getStoryCategory1() {
+            return storyCategory1;
+        }
+
+        public void setStoryCategory1(String storyCategory1) {
+            this.storyCategory1 = storyCategory1;
+        }
+
+        public String getStoryCategory2() {
+            return storyCategory2;
+        }
+
+        public void setStoryCategory2(String storyCategory2) {
+            this.storyCategory2 = storyCategory2;
+        }
+
+        public String getStoryCategory3() {
+            return storyCategory3;
+        }
+
+        public void setStoryCategory3(String storyCategory3) {
+            this.storyCategory3 = storyCategory3;
+        }
+
+        public String getTimeCategory1() {
+            return timeCategory1;
+        }
+
+        public void setTimeCategory1(String timeCategory1) {
+            this.timeCategory1 = timeCategory1;
+        }
+
+        public String getTimeCategory2() {
+            return timeCategory2;
+        }
+
+        public void setTimeCategory2(String timeCategory2) {
+            this.timeCategory2 = timeCategory2;
+        }
+
+        public String getTimeCategory3() {
+            return timeCategory3;
+        }
+
+        public void setTimeCategory3(String timeCategory3) {
+            this.timeCategory3 = timeCategory3;
+        }
+    }
+
+}

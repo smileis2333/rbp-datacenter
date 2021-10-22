@@ -10,4 +10,8 @@ public class ApiResponseCode {
 
     public static final int SERVICE_NOT_EXIST_ERROR = 404;
 
+    public static final int MEMBER_NOT_EXISTS_ERROR = 80001;
+
+    public static final int MEMBER_NOT_STORED_CADD_ERROR = 80002;
+
 }

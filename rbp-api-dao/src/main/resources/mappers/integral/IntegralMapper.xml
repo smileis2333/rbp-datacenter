@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+        <!DOCTYPE mapper
+                PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.integral.IntegralDao">
+    <select id="get" resultType="java.math.BigDecimal">
+        select integral from rbp_member_integral where member_card_id = #{memberCardId}
+    </select>
+    <insert id="insertMemberIntegral">
+      insert into rbp_member_integral (id,member_card_id,card_no,integral,frozen_integral,created_by,created_time)
+      values (#{id,jdbcType=BIGINT},#{memberCardId,jdbcType=BIGINT},
+      #{cardNo,jdbcType=VARCHAR},#{integral,jdbcType=NUMERIC},
+      #{frozenIntegral,jdbcType=NUMERIC},#{createdBy,jdbcType=BIGINT},now())
+    </insert>
+
+    <update id="updateMemberIntegral">
+        update rbp_member_integral set integral = integral + #{integral},updated_time = now()
+        where member_card_id = #{memberCardId}
+    </update>
+
+    <insert id="insertMemberIntegralChangeRecord">
+         insert into rbp_member_integral_change_record (id,member_card_id,bill_id,bill_no,change_type,change_integral,change_surplus_integral,notes,
+         created_by,created_time)
+      values (#{id,jdbcType=BIGINT},#{memberCardId,jdbcType=BIGINT},
+      #{billId,jdbcType=BIGINT},#{billNo,jdbcType=VARCHAR},#{changeType,jdbcType=INTEGER},
+      #{changeIntegral,jdbcType=NUMERIC},#{changeSurplusIntegral,jdbcType=NUMERIC},#{notes,jdbcType=VARCHAR},
+      #{createdBy,jdbcType=BIGINT},#{createdTime,jdbcType=DATE})
+    </insert>
+
+    <select id="countMemberIntegralChangeRecord" resultType="java.lang.Integer">
+      SELECT COUNT(1) FROM rbp_member_integral_change_record
+      <where>
+          <if test="memberCardId != null">
+              and member_card_id = #{memberCardId}
+          </if>
+          <if test="beginDate!= null">
+              and created_time <![CDATA[ >= ]]> #{beginDate}
+          </if>
+          <if test="endDate != null">
+              and created_time <![CDATA[ <= ]]> #{endDate}
+          </if>
+      </where>
+    </select>
+
+    <select id="queryMemberIntegralChangeRecord" resultType="com.regent.rbp.api.core.integral.MemberIntegralChangeRecord">
+        SELECT micr.bill_no,micr.change_integral changeIntegral,micr.notes notes,mc.code memberCardNo,mc.name memberCardName,
+        micr.created_time createdTime,micr.change_type changeType
+        FROM rbp_member_integral_change_record micr
+        inner join rbp_member_card mc on mc.id = micr.member_card_id
+        <where>
+            <if test="memberCardId != null">
+                and micr.member_card_id = #{memberCardId}
+            </if>
+            <if test="beginDate!= null">
+                and micr.created_time <![CDATA[ >= ]]> #{beginDate}
+            </if>
+            <if test="endDate != null">
+                and micr.created_time <![CDATA[ <= ]]> #{endDate}
+            </if>
+        </where>
+        <choose>
+            <when test="sort == 'asc'">
+                order by micr.created_time
+            </when>
+            <otherwise>
+                order by micr.created_time desc
+            </otherwise>
+        </choose>
+        limit ${offset},${end}
+    </select>
+</mapper>

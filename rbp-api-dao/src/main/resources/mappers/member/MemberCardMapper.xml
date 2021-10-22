@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+        <!DOCTYPE mapper
+                PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.member.MemberCardDao">
+
+    <select id="getIdByCode" resultType="java.lang.Long">
+        select id from rbp_member_card where code = #{code} and status = 1
+    </select>
+
+    <select id="getMemberIntegralById" resultType="com.regent.rbp.api.core.integral.MemberIntegral">
+        select id,member_card_id memberCardId,integral from rbp_member_integral where member_card_id = #{memberCardId}
+    </select>
+
+</mapper>

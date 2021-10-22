@@ -1,12 +1,14 @@
 package com.regent.rbp.api.dto.core;
 
 import com.regent.rbp.api.dto.constants.ApiResponseCode;
+import lombok.Data;
 
 import java.util.List;
 
 /**
  * @author xuxing
  */
+@Data
 public class ListDataResponse<T> extends DataResponse {
 
     private List<T> data;

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.storedvaluecard.StoredValueCardDao">
+
+    <select id="getByMemberCardId" resultType="java.lang.Long">
+        select id from rbp_stored_value_card where member_card_id = #{memberCardId}
+    </select>
+
+    <select id="selectAssetsById" resultType="com.regent.rbp.api.core.storedvaluecard.StoredValueCardAssets">
+        select id,stored_value_card_id storedValueCardId,pay_amount payAmount,credit_amount creditAmount,
+        cumulative_consume_amount cumulativeConsumeAmount,cumulative_consume_denomination cumulativeConsumeDenomination,
+        created_by createdBy,created_time createdTime,updated_by updatedBy,updated_time updatedTime
+        from rbp_stored_value_card_assets
+        where stored_value_card_id = #{storedValueCardId}
+    </select>
+
+    <select id="query" resultType="com.regent.rbp.api.core.storedvaluecard.StoredValueCardChangeRecord">
+        select id ,
+        stored_value_card_id storedValueCardId,
+        change_type changeType,
+        bill_id billId,
+        bill_no billNo,
+        change_pay_amount changePayAmount,
+        change_credit_amount changeCreditAmount,
+        change_surplus_amount changeSurplusAmount,
+        notes ,
+        created_by createdBy,
+        created_time createdTime,
+        updated_by updatedBy,
+        updated_time updatedTime
+        from rbp_stored_value_card_change_record
+        where stored_value_card_id = #{storedValueCardId}
+    </select>
+
+</mapper>
