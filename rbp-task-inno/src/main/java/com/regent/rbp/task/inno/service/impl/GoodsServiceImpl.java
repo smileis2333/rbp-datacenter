@@ -121,6 +121,7 @@ public class GoodsServiceImpl implements GoodsService {
                     item.setOnlineOnsaleDate(DateUtil.getDate(goodsItemDto.getOnSaleTime(), DateUtil.FULL_DATE_FORMAT));
 
                     item.setBarcode(skuDto.getSku());
+                    item.setOnlineBarcode(skuDto.getSku());
                     item.setOnlineQuantity(new BigDecimal(skuDto.getProduct_number()));
                     item.setOnlinePrice(new BigDecimal(skuDto.getSku_sale_price()));
 
@@ -134,7 +135,6 @@ public class GoodsServiceImpl implements GoodsService {
                         item.setAbnormalMessage("条码不存在");
                         XxlJobHelper.log(String.format("%s条码不存在", skuDto.getSku()));
                     }
-
                     List<OnlineGoods> existsRecords = onlineGoodsService.list(new QueryWrapper<OnlineGoods>()
                             .select("id").eq("online_platform_id", onlinePlatformId)
                             .eq("barcode", item.getBarcode()));

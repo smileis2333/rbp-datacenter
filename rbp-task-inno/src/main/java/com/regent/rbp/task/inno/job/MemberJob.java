@@ -4,9 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.controller.CustomerVipController;
+import com.regent.rbp.task.inno.controller.StockController;
 import com.regent.rbp.task.inno.model.dto.CustomerVipDto;
+import com.regent.rbp.task.inno.model.dto.StockDto;
 import com.regent.rbp.task.inno.model.param.DownloadMemberParam;
 import com.regent.rbp.task.inno.model.param.MemberUploadingParam;
+import com.regent.rbp.task.inno.model.resp.StockRespDto;
 import com.regent.rbp.task.inno.service.MemberService;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
@@ -26,8 +29,6 @@ public class MemberJob {
 
     @Autowired
     MemberService memberService;
-    @Autowired
-    CustomerVipController customerVipController;
 
     /**
      * 上传会员
@@ -72,25 +73,6 @@ public class MemberJob {
 
             //开始下载会员
             memberService.saveMember(downloadMemberParam);
-        } catch (Exception ex) {
-            String message = ex.getMessage();
-            XxlJobHelper.log(message);
-            XxlJobHelper.handleFail(message);
-            return;
-        }
-    }
-
-
-    @XxlJob("textAddCustomerVIP")
-    public void AddCustomerVIP() {
-        ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
-        try {
-            //读取参数(电商平台编号)
-            String param = XxlJobHelper.getJobParam();
-            XxlJobHelper.log(param);
-            CustomerVipDto customerVipDto = JSON.parseObject(param, CustomerVipDto.class);
-
-            customerVipController.AddCustomerVIP(customerVipDto);
         } catch (Exception ex) {
             String message = ex.getMessage();
             XxlJobHelper.log(message);

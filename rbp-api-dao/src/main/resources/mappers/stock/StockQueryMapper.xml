@@ -82,4 +82,30 @@
         ORDER BY a.goods_id
     </select>
 
+    <select id="searchStockList" resultType="com.regent.rbp.api.dto.stock.StockDataDto">
+        select channel_id, goods_id, color_id, long_id, size_id, quantity
+        from ${tableName}
+        where 1 = 1
+        <if test="goodsIds != null and goodsIds.size() > 0">
+            and goods_id in
+            <foreach collection="goodsIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="barcodeList != null and barcodeList.size() > 0">
+            and (goods_id, color_id, long_id, size_id) in (
+                select goods_id, color_id, long_id, size_id from rbp_barcode where barcode in
+                <foreach collection="barcodeList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            )
+        </if>
+        <if test="channelIds != null and channelIds.size() > 0">
+            and channel_id in
+            <foreach collection="channelIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
 </mapper>
