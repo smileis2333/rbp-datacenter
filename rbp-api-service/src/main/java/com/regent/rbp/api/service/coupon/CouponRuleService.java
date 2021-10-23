@@ -11,7 +11,7 @@ import java.util.List;
  */
 public interface CouponRuleService {
     /**
-     * 保存使用组
+     * 保存券使用组
      * @param couponRuleList
      */
     void saveCouponRule(List<CouponRule> couponRuleList);

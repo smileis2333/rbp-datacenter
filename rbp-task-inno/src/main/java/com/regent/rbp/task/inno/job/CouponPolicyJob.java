@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * @Description 拉取储值卡政策
+ * @Description 拉取优惠券类型列表
  * @Author czd
  * @Date 2021/10/22 14:22
  */
@@ -22,7 +22,7 @@ public class CouponPolicyJob {
     @Autowired
     private CouponService couponService;
 
-    @XxlJob(SystemConstants.GET_STORED_VALUE_CARD_POLICY)
+    @XxlJob(SystemConstants.GET_COUPON_POLICY)
     public void downloadCouponPolicy() {
         ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
         try {
@@ -36,7 +36,6 @@ public class CouponPolicyJob {
             String message = ex.getMessage();
             XxlJobHelper.log(message);
             XxlJobHelper.handleFail(message);
-            return;
         }
     }
 }

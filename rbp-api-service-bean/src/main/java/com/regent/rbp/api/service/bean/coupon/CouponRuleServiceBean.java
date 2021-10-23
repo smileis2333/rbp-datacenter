@@ -8,6 +8,7 @@ import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -34,6 +35,7 @@ public class CouponRuleServiceBean implements CouponRuleService {
     @Autowired
     private CouponRuleGoodsRangeValueDao couponRuleGoodsRangeValueDao;
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void saveCouponRule(List<CouponRule> couponRuleList) {
         if (CollectionUtils.isEmpty(couponRuleList)) {
             return;
@@ -47,17 +49,20 @@ public class CouponRuleServiceBean implements CouponRuleService {
                 couponRuleId = data.getId();
             } else {
                 couponRuleId = oldCoupon.getId();
+                oldCoupon.setUpdatedTime(new Date());
+                couponRuleDao.update(oldCoupon, new QueryWrapper<CouponRule>().eq("id", oldCoupon.getId()));
             }
-            couponRuleChannelRangeDao.delete(new QueryWrapper<CouponRuleChannelRange>().eq("coupon_rule_id",couponRuleId));
-            couponRuleChannelRangeValueDao.delete(new QueryWrapper<CouponRuleChannelRangeValue>().eq("coupon_rule_id",couponRuleId));
+            couponRuleChannelRangeDao.delete(new QueryWrapper<CouponRuleChannelRange>().eq("coupon_rule_id", couponRuleId));
+            couponRuleChannelRangeValueDao.delete(new QueryWrapper<CouponRuleChannelRangeValue>().eq("coupon_rule_id", couponRuleId));
             //couponRuleMemberRangeDao.delete(new QueryWrapper<CouponRuleMemberRange>().eq("coupon_rule_id",couponRuleId));
             //couponRuleMemberRangeValueDao.delete(new QueryWrapper<CouponRuleMemberRangeValue>().eq("coupon_rule_id",couponRuleId));
-            couponRuleGoodsRangeDao.delete(new QueryWrapper<CouponRuleGoodsRange>().eq("coupon_rule_id",couponRuleId));
-            couponRuleGoodsRangeValueDao.delete(new QueryWrapper<CouponRuleGoodsRangeValue>().eq("coupon_rule_id",couponRuleId));
+            couponRuleGoodsRangeDao.delete(new QueryWrapper<CouponRuleGoodsRange>().eq("coupon_rule_id", couponRuleId));
+            couponRuleGoodsRangeValueDao.delete(new QueryWrapper<CouponRuleGoodsRangeValue>().eq("coupon_rule_id", couponRuleId));
             //店铺范围
             if (CollectionUtils.isNotEmpty(data.getCouponRuleChannelRangeList())) {
                 for (CouponRuleChannelRange couponRuleChannelRange : data.getCouponRuleChannelRangeList()) {
                     couponRuleChannelRange.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                    couponRuleChannelRange.setCouponRuleId(couponRuleId);
                     couponRuleChannelRange.setCreatedTime(new Date());
                     couponRuleChannelRangeDao.insert(couponRuleChannelRange);
                     if (CollectionUtils.isNotEmpty(couponRuleChannelRange.getCouponRuleChannelRangeValueList())) {
@@ -75,6 +80,7 @@ public class CouponRuleServiceBean implements CouponRuleService {
             if (CollectionUtils.isNotEmpty(data.getCouponRuleGoodsRangeList())) {
                 for (CouponRuleGoodsRange couponRuleGoodsRange : data.getCouponRuleGoodsRangeList()) {
                     couponRuleGoodsRange.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                    couponRuleGoodsRange.setCouponRuleId(couponRuleId);
                     couponRuleGoodsRange.setCreatedTime(new Date());
                     couponRuleGoodsRangeDao.insert(couponRuleGoodsRange);
                     if (CollectionUtils.isNotEmpty(couponRuleGoodsRange.getCouponRuleGoodsRangeValueList())) {
@@ -106,6 +112,5 @@ public class CouponRuleServiceBean implements CouponRuleService {
                 }
             }
         }
-
     }
 }

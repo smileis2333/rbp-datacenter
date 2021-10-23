@@ -5,11 +5,10 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 /**
- * @Author: wuhua.wwh
- * @Date: 2019/9/17 9:43
- * @Description:
- **/
-public class InnoGetAppCouponsListByCreateTimeResp extends BaseResponseDto{
+ * @author czd
+ * @date 2021/10/23
+ */
+public class InnoGetAppCouponsListByCreateTimeResp{
 
     /**
      * totalPages : 1

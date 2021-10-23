@@ -47,7 +47,7 @@ public class SystemConstants {
 
     public static final String GET_USER_LIST = "inno.GetUserList";
 
-    public static final String GET_STORED_VALUE_CARD_POLICY = "inno.GetStoredValueCardPolicy";
+    public static final String GET_COUPON_POLICY = "inno.GetCouponPolicy";
 
     public static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
