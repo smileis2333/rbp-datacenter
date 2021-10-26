@@ -46,9 +46,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     private static final String POST_ERP_STORESTAFF = "api/StoreStaff/Post_ErpStoreStaff";
 
     @Autowired
-    private InnoConfig innoConfig;
-
-    @Autowired
     EmployeeDao employeeDao;
     @Autowired
     OnlinePlatformDao onlinePlatformDao;
@@ -72,12 +69,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     /***
      * 员工档案上传
-     * @param onlinePlatformId
-     * @param channelId
+     * @param onlinePlatform
      * @return
      */
     @Override
-    public void uploadingEmployee(Long onlinePlatformId, Long channelId) {
+    public void uploadingEmployee(OnlinePlatform onlinePlatform) {
+        Long onlinePlatformId = onlinePlatform.getId();
+        Long channelId = onlinePlatform.getChannelId();
         String key = SystemConstants.POST_ERP_EMPLOYEE;
         Date uploadingDate = onlinePlatformSyncCacheService.getOnlinePlatformSyncCacheByDate(onlinePlatformId, key);
 
@@ -103,10 +101,10 @@ public class EmployeeServiceImpl implements EmployeeService {
                 reqList.add(employeeDto);
             }
             EmployeeReqDto employeeReqDto = new EmployeeReqDto();
-            employeeReqDto.setApp_key(innoConfig.getAppkey());
-            employeeReqDto.setApp_secrept(innoConfig.getAppsecret());
+            employeeReqDto.setApp_key(onlinePlatform.getAppKey());
+            employeeReqDto.setApp_secrept(onlinePlatform.getAppSecret());
             employeeReqDto.setData(reqList);
-            String api_url = String.format("%s%s", innoConfig.getUrl(), POST_ERP_STORESTAFF);
+            String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), POST_ERP_STORESTAFF);
             String result = HttpUtil.post(api_url, JSON.toJSONString(employeeReqDto));
             EmployeeRespDto respDto = JSON.parseObject(result, EmployeeRespDto.class);
             if (respDto.getCode().equals("-1")) {

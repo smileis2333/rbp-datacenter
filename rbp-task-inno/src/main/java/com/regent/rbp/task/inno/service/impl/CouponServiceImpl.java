@@ -9,8 +9,10 @@ import com.google.gson.reflect.TypeToken;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.coupon.*;
 import com.regent.rbp.api.core.goods.Goods;
+import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
+import com.regent.rbp.api.service.base.OnlinePlatformService;
 import com.regent.rbp.api.service.coupon.CouponRuleService;
 import com.regent.rbp.task.inno.config.InnoConfig;
 import com.regent.rbp.task.inno.constants.InnoApiUrl;
@@ -40,8 +42,9 @@ import java.util.List;
 @Service
 @Slf4j
 public class CouponServiceImpl implements CouponService {
+
     @Autowired
-    private InnoConfig innoConfig;
+    OnlinePlatformService onlinePlatformService;
     @Autowired
     private CouponRuleService couponRuleService;
     @Autowired
@@ -63,8 +66,10 @@ public class CouponServiceImpl implements CouponService {
     @Override
     public void getAppCouponsListByCreateTime(CouponPolicyDownLoadParam downLoadParam) {
         InnoBaseReq<InnoGetAppCouponsListByCreateTimeReq> req = new InnoBaseReq<>();
-        req.setApp_key(innoConfig.getAppkey());
-        req.setApp_secrept(innoConfig.getAppsecret());
+
+        OnlinePlatform onlinePlatform = onlinePlatformService.getOnlinePlatform(downLoadParam.getOnlinePlatformCode());
+        req.setApp_key(onlinePlatform.getAppKey());
+        req.setApp_secrept(onlinePlatform.getAppSecret());
         InnoGetAppCouponsListByCreateTimeReq data = new InnoGetAppCouponsListByCreateTimeReq();
         data.setBeginTime(downLoadParam.getStartTime());
         data.setEndTime(downLoadParam.getEndTime());
@@ -73,7 +78,7 @@ public class CouponServiceImpl implements CouponService {
         data.setTypeCodeList(downLoadParam.getTypeCodeList());
         req.setData(data);
         try {
-            String apiUrl = String.format("%s%s", innoConfig.getUrl(), InnoApiUrl.GET_APP_COUPONS_LIST_BY_CREATE_TIME);
+            String apiUrl = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), InnoApiUrl.GET_APP_COUPONS_LIST_BY_CREATE_TIME);
             Log.info("拉取优惠券类型列表请求参数{}", JSON.toJSONString(req));
             String result = HttpUtil.post(apiUrl, JSON.toJSONString(req));
             Log.info("拉取优惠券类型列表响应数据{}", JSON.toJSONString(result));

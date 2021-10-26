@@ -9,6 +9,7 @@ import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.integral.MemberIntegral;
 import com.regent.rbp.api.core.member.MemberCard;
 import com.regent.rbp.api.core.member.MemberPolicy;
+import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.dao.base.SexDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.member.MemberCardDao;
@@ -61,9 +62,6 @@ public class MemberServiceImpl implements MemberService {
     private static final String MEMBER_STATUS = "正常";
 
     @Autowired
-    private InnoConfig innoConfig;
-
-    @Autowired
     MemberCardDao memberCardDao;
     @Autowired
     ChannelDao channelDao;
@@ -83,9 +81,9 @@ public class MemberServiceImpl implements MemberService {
 
 
     @Override
-    public void uploadingMember(String onlinePlatformCode) {
+    public void uploadingMember(OnlinePlatform onlinePlatform) {
         String key = SystemConstants.POST_ERP_USERS;
-        Long onlinePlatformId = onlinePlatformService.getOnlinePlatformById(onlinePlatformCode);
+        Long onlinePlatformId = onlinePlatform.getId();
 
         Date uploadingDate = onlinePlatformSyncCacheService.getOnlinePlatformSyncCacheByDate(onlinePlatformId, key);
 
@@ -160,11 +158,11 @@ public class MemberServiceImpl implements MemberService {
             for (Map.Entry<Integer, List<MemberDto>> entry : listMap.entrySet()) {
 
                 MemberReqDto memberReqDto = new MemberReqDto();
-                memberReqDto.setApp_key(innoConfig.getAppkey());
-                memberReqDto.setApp_secrept(innoConfig.getAppsecret());
+                memberReqDto.setApp_key(onlinePlatform.getAppKey());
+                memberReqDto.setApp_secrept(onlinePlatform.getAppSecret());
                 memberReqDto.setData(entry.getValue());
 
-                String api_url = String.format("%s%s", innoConfig.getUrl(), API_URL_USERS);
+                String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), API_URL_USERS);
                 String result = HttpUtil.post(api_url, JSON.toJSONString(memberReqDto));
                 MemberRespDto respDto = JSON.parseObject(result, MemberRespDto.class);
                 if (respDto.getCode().equals("-1")) {
@@ -179,7 +177,8 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void saveMember(DownloadMemberParam param) {
         String key = SystemConstants.GET_USER_LIST;
-        Long onlinePlatformId = onlinePlatformService.getOnlinePlatformById(param.getOnlinePlatformCode());
+        OnlinePlatform onlinePlatform = onlinePlatformService.getOnlinePlatform(param.getOnlinePlatformCode());
+        Long onlinePlatformId = onlinePlatform.getId();
 
         Date uploadingDate = onlinePlatformSyncCacheService.getOnlinePlatformSyncCacheByDate(onlinePlatformId, key);
 
@@ -202,12 +201,12 @@ public class MemberServiceImpl implements MemberService {
             dto.setPageIndex("1");
 
             SaveMemberReqDto reqDto = new SaveMemberReqDto();
-            reqDto.setApp_key(innoConfig.getAppkey());
-            reqDto.setApp_secrept(innoConfig.getAppsecret());
+            reqDto.setApp_key(onlinePlatform.getAppKey());
+            reqDto.setApp_secrept(onlinePlatform.getAppSecret());
             reqDto.setData(dto);
 
             DateTime recordTime = null;
-            String api_url = String.format("%s%s", innoConfig.getUrl(), API_Get_USERS_LIST);
+            String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), API_Get_USERS_LIST);
             String result = HttpUtil.post(api_url, JSON.toJSONString(reqDto));
 
             XxlJobHelper.log(String.format("请求Url：%s", api_url));

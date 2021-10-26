@@ -21,18 +21,16 @@ public interface ChannelService {
 
     /**
      * 上传 渠道信息
-     * @param onlinePlatformId
-     * @param channelId
+     * @param onlinePlatform
      * @return
      */
-    ChannelRespDto uploadingChannel(Long onlinePlatformId, Long channelId);
+    ChannelRespDto uploadingChannel(OnlinePlatform onlinePlatform);
 
     /**
      * 上传 云仓信息
-     * @param onlinePlatformId
-     * @param warehouseId
+     * @param onlinePlatform
      * @return
      */
-    ChannelRespDto uploadingWarehouse(Long onlinePlatformId, Long warehouseId);
+    ChannelRespDto uploadingWarehouse(OnlinePlatform onlinePlatform);
 
 }

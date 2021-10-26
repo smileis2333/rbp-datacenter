@@ -55,9 +55,6 @@ public class ChannelServiceImpl implements ChannelService {
     private static final String POST_ERP_WAREHOUSE = "api/WareHouse/Post_Erp_Warehouse";
 
     @Autowired
-    private InnoConfig innoConfig;
-
-    @Autowired
     ChannelDao channelDao;
     @Autowired
     OnlinePlatformDao onlinePlatformDao;
@@ -83,7 +80,9 @@ public class ChannelServiceImpl implements ChannelService {
 
     @Transactional
     @Override
-    public ChannelRespDto uploadingChannel(Long onlinePlatformId, Long channelId) {
+    public ChannelRespDto uploadingChannel(OnlinePlatform onlinePlatform) {
+        Long onlinePlatformId = onlinePlatform.getId();
+        Long channelId = onlinePlatform.getWarehouseId();
         ChannelRespDto respDto = null;
         String key = SystemConstants.POST_ERP_STORE;
         List<WarehouseChannelRange> warehouseChannelRangeList = warehouseChannelRangeDao.selectList(
@@ -111,11 +110,11 @@ public class ChannelServiceImpl implements ChannelService {
             }
 
             ChannelReqDto channelReqDto = new ChannelReqDto();
-            channelReqDto.setApp_key(innoConfig.getAppkey());
-            channelReqDto.setApp_secrept(innoConfig.getAppsecret());
+            channelReqDto.setApp_key(onlinePlatform.getAppKey());
+            channelReqDto.setApp_secrept(onlinePlatform.getAppSecret());
             channelReqDto.setData(reqList);
 
-            String api_url = String.format("%s%s", innoConfig.getUrl(), POST_ERP_STORE);
+            String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), POST_ERP_STORE);
             String result = HttpUtil.post(api_url, JSON.toJSONString(channelReqDto));
 
             respDto = JSON.parseObject(result, ChannelRespDto.class);
@@ -128,7 +127,9 @@ public class ChannelServiceImpl implements ChannelService {
 
     @Transactional
     @Override
-    public ChannelRespDto uploadingWarehouse(Long onlinePlatformId, Long warehouseId) {
+    public ChannelRespDto uploadingWarehouse(OnlinePlatform onlinePlatform) {
+        Long onlinePlatformId = onlinePlatform.getId();
+        Long warehouseId = onlinePlatform.getWarehouseId();
         ChannelRespDto respDto = null;
         String key = SystemConstants.POST_ERP_STORE;
         List<WarehouseChannelRange> warehouseChannelRangeList = warehouseChannelRangeDao.selectList(
@@ -155,11 +156,11 @@ public class ChannelServiceImpl implements ChannelService {
             }
 
             WarehouseReqDto warehouseReqDto = new WarehouseReqDto();
-            warehouseReqDto.setApp_key(innoConfig.getAppkey());
-            warehouseReqDto.setApp_secrept(innoConfig.getAppsecret());
+            warehouseReqDto.setApp_key(onlinePlatform.getAppKey());
+            warehouseReqDto.setApp_secrept(onlinePlatform.getAppSecret());
             warehouseReqDto.setData(warehouseDtoList);
 
-            String api_url = String.format("%s%s", innoConfig.getUrl(), POST_ERP_WAREHOUSE);
+            String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), POST_ERP_WAREHOUSE);
             String result = HttpUtil.post(api_url, JSON.toJSONString(warehouseReqDto));
 
             respDto = JSON.parseObject(result, ChannelRespDto.class);

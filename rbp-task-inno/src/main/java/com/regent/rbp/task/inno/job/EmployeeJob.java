@@ -45,7 +45,7 @@ public class EmployeeJob {
                 return;
             }
             //开始推送
-            employeeService.uploadingEmployee(onlinePlatform.getId(), onlinePlatform.getChannelId());
+            employeeService.uploadingEmployee(onlinePlatform);
         }catch (Exception ex) {
             String message = ex.getMessage();
             XxlJobHelper.log(message);

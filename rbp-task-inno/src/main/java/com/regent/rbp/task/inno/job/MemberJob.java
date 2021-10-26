@@ -1,6 +1,8 @@
 package com.regent.rbp.task.inno.job;
 
 import com.alibaba.fastjson.JSON;
+import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
+import com.regent.rbp.api.service.base.OnlinePlatformService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.controller.CustomerVipController;
@@ -26,9 +28,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class MemberJob {
+    private static final String ERROR_MEMBER_ONLINEPLATFORMCODE = "[inno推送会员档案信息]:onlinePlatformCode电商平台编号参数值不存在";
 
     @Autowired
     MemberService memberService;
+    @Autowired
+    OnlinePlatformService onlinePlatformService;
 
     /**
      * 上传会员
@@ -42,9 +47,15 @@ public class MemberJob {
             String param = XxlJobHelper.getJobParam();
             XxlJobHelper.log(param);
             MemberUploadingParam memberUploadingParam = JSON.parseObject(param, MemberUploadingParam.class);
+            OnlinePlatform onlinePlatform = onlinePlatformService.getOnlinePlatform(memberUploadingParam.getOnlinePlatformCode());
 
+            if(onlinePlatform == null) {
+                XxlJobHelper.log(ERROR_MEMBER_ONLINEPLATFORMCODE);
+                XxlJobHelper.handleFail(ERROR_MEMBER_ONLINEPLATFORMCODE);
+                return;
+            }
             //开始推送会员
-            memberService.uploadingMember(memberUploadingParam.getOnlinePlatformCode());
+            memberService.uploadingMember(onlinePlatform);
         }catch (Exception ex) {
             String message = ex.getMessage();
             XxlJobHelper.log(message);

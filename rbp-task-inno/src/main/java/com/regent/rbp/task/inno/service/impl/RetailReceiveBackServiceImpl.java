@@ -4,6 +4,7 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.channel.Channel;
+import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.core.retail.RetailOrderBill;
 import com.regent.rbp.api.core.retail.RetailReceiveBackBill;
 import com.regent.rbp.api.core.retail.RetailReturnNoticeBill;
@@ -61,7 +62,8 @@ public class RetailReceiveBackServiceImpl implements RetailReceiveBackService {
     @Override
     public void UpdateReturnOrderStatus(UpdateRetailReceiveBackByStatusParam param) {
         String key = SystemConstants.POST_RETURN_ORDER_STATUS;
-        Long onlinePlatformId = onlinePlatformService.getOnlinePlatformById(param.getOnlinePlatformCode());
+        OnlinePlatform onlinePlatform = onlinePlatformService.getOnlinePlatform(param.getOnlinePlatformCode());
+        Long onlinePlatformId = onlinePlatform.getId();
 
         Date uploadingDate = onlinePlatformSyncCacheService.getOnlinePlatformSyncCacheByDate(onlinePlatformId, key);
 
@@ -108,11 +110,11 @@ public class RetailReceiveBackServiceImpl implements RetailReceiveBackService {
             }
 
             UpdateReturnOrderStatusReqDto reqDto = new UpdateReturnOrderStatusReqDto();
-            reqDto.setApp_key(innoConfig.getAppkey());
-            reqDto.setApp_secrept(innoConfig.getAppsecret());
+            reqDto.setApp_key(onlinePlatform.getAppKey());
+            reqDto.setApp_secrept(onlinePlatform.getAppSecret());
             reqDto.setData(dtoList);
 
-            String api_url = String.format("%s%s", innoConfig.getUrl(), API_URL_UPDATERETURNORDERSTATUS);
+            String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), API_URL_UPDATERETURNORDERSTATUS);
 
             String result = HttpUtil.post(api_url, JSON.toJSONString(reqDto));
             XxlJobHelper.log(String.format("请求Url：%s", api_url));

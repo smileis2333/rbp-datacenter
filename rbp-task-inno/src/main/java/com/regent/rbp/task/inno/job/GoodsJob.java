@@ -1,6 +1,8 @@
 package com.regent.rbp.task.inno.job;
 
 import com.alibaba.fastjson.JSON;
+import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
+import com.regent.rbp.api.service.base.OnlinePlatformService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.model.param.GoodsDownloadOnlineGoodsParam;
@@ -21,6 +23,9 @@ public class GoodsJob {
     @Autowired
     private GoodsService goodsService;
 
+    @Autowired
+    private OnlinePlatformService onlinePlatformService;
+
     /**
      * 拉取APP商品列表
      * 调用频率：180分钟1次
@@ -35,15 +40,15 @@ public class GoodsJob {
             String param = XxlJobHelper.getJobParam();
             XxlJobHelper.log(param);
             GoodsDownloadOnlineGoodsParam goodsDownloadOnlineGoodsParam = JSON.parseObject(param, GoodsDownloadOnlineGoodsParam.class);
-            Long onlinePlatformId = goodsService.getOnlinePlatformId(goodsDownloadOnlineGoodsParam);
+            OnlinePlatform onlinePlatform = onlinePlatformService.getOnlinePlatform(goodsDownloadOnlineGoodsParam.getOnlinePlatformCode());
 
-            if(onlinePlatformId == null) {
+            if(onlinePlatform == null) {
                 XxlJobHelper.log(ERROR_ONLINEPLATFORMCODE);
                 XxlJobHelper.handleFail(ERROR_ONLINEPLATFORMCODE);
                 return;
             }
             //下载线上货品列表
-            goodsService.downloadGoodsList(onlinePlatformId);
+            goodsService.downloadGoodsList(onlinePlatform);
 
         }catch (Exception ex) {
             String message = ex.getMessage();

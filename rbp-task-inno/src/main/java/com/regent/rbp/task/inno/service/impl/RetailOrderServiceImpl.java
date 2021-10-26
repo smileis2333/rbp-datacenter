@@ -64,8 +64,8 @@ public class RetailOrderServiceImpl implements RetailOrderService {
     @Override
     public void downloadOnlineOrderList(RetailOrderDownloadOnlineOrderParam param, OnlinePlatform onlinePlatform) {
         RetailOrderSearchReqDto searchReqDto = new RetailOrderSearchReqDto();
-        searchReqDto.setApp_key(innoConfig.getAppkey());
-        searchReqDto.setApp_secrept(innoConfig.getAppsecret());
+        searchReqDto.setApp_key(onlinePlatform.getAppKey());
+        searchReqDto.setApp_secrept(onlinePlatform.getAppSecret());
         int pageIndex = 1;
         // 记录最后一条记录时间
         String lastTimeStr = param.getEndTime();

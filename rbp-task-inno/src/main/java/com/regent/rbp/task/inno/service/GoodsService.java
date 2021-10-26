@@ -1,5 +1,6 @@
 package com.regent.rbp.task.inno.service;
 
+import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.task.inno.model.param.GoodsDownloadOnlineGoodsParam;
 
 /**
@@ -9,9 +10,9 @@ public interface GoodsService {
 
     /**
      * 拉取APP商品列表
-     * @param onlinePlatformId
+     * @param onlinePlatform
      */
-    void downloadGoodsList(Long onlinePlatformId);
+    void downloadGoodsList(OnlinePlatform onlinePlatform);
 
     /**
      * 转换参数(电商平台编号)

@@ -55,9 +55,6 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
     private static final String API_URL_APPRETURNORDER = "api/ReturnOrder/Get_AppReturnOrder";
 
     @Autowired
-    private InnoConfig innoConfig;
-
-    @Autowired
     OnlinePlatformService onlinePlatformService;
     @Autowired
     OnlinePlatformSyncCacheService onlinePlatformSyncCacheService;
@@ -97,8 +94,8 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
         Channel recChannel = channelDao.selectById(onlinePlatform.getReceiveChannelId());
 
         RetailReturnNoticeReqDto reqDto = new RetailReturnNoticeReqDto();
-        reqDto.setApp_key(innoConfig.getAppkey());
-        reqDto.setApp_secrept(innoConfig.getAppsecret());
+        reqDto.setApp_key(onlinePlatform.getAppKey());
+        reqDto.setApp_secrept(onlinePlatform.getAppSecret());
         int pageIndex = 1;
         DateTime recordTime = null;
         try {
@@ -119,7 +116,7 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
                 dto.setReturnSn(param.getReturnSn());
             }
             reqDto.setData(dto);
-            String api_url = String.format("%s%s", innoConfig.getUrl(), API_URL_APPRETURNORDER);
+            String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), API_URL_APPRETURNORDER);
             String result = HttpUtil.post(api_url, JSON.toJSONString(reqDto));
 
             XxlJobHelper.log(String.format("请求Url：%s", api_url));

@@ -41,8 +41,6 @@ public class OnlineSyncGoodsStockServiceImpl extends ServiceImpl<OnlineSyncGoods
     private static final String POST_WAREHOUSE_INVERTORY = "api/Inventory/Post_Warehouse_Invertory";
 
     @Autowired
-    private InnoConfig innoConfig;
-    @Autowired
     private OnlineSyncGoodsStockDao onlineSyncGoodsStockDao;
     @Autowired
     private StockQueryService stockQueryService;
@@ -54,8 +52,8 @@ public class OnlineSyncGoodsStockServiceImpl extends ServiceImpl<OnlineSyncGoods
     public void fullSyncGoodsStockEvent(OnlinePlatform onlinePlatform) {
         try {
             OnlineSyncGoodsStockReqDto stockReqDto = new OnlineSyncGoodsStockReqDto();
-            stockReqDto.setApp_key(innoConfig.getAppkey());
-            stockReqDto.setApp_secrept(innoConfig.getAppsecret());
+            stockReqDto.setApp_key(onlinePlatform.getAppKey());
+            stockReqDto.setApp_secrept(onlinePlatform.getAppSecret());
             List<OnlineSyncGoodsStockDto> goodsStockDtoList = new ArrayList<>();
             stockReqDto.setData(goodsStockDtoList);
             // 成功数量
@@ -80,7 +78,7 @@ public class OnlineSyncGoodsStockServiceImpl extends ServiceImpl<OnlineSyncGoods
                         goodsStockDtoList.add(OnlineSyncGoodsStockDto.build(stock.getBarcode(), stock.getQuantity().intValue(), onlinePlatform.getChannelCode()));
                         // 批量上传实际库存
                         if (goodsStockDtoList.size() >= SystemConstants.BATCH_SIZE) {
-                            successTotal += this.batchUploadStock(stockReqDto);
+                            successTotal += this.batchUploadStock(stockReqDto, onlinePlatform.getExternalApplicationApiUrl());
                             // 清除数据
                             goodsStockDtoList.clear();
                         }
@@ -90,7 +88,7 @@ public class OnlineSyncGoodsStockServiceImpl extends ServiceImpl<OnlineSyncGoods
                 if (CollUtil.isEmpty(stockPages.getData())) {
                     // 批量上传剩余数据
                     if (CollUtil.isNotEmpty(goodsStockDtoList)) {
-                        successTotal += this.batchUploadStock(stockReqDto);
+                        successTotal += this.batchUploadStock(stockReqDto, onlinePlatform.getExternalApplicationApiUrl());
                         // 清除数据
                         goodsStockDtoList.clear();
                     }
@@ -111,8 +109,8 @@ public class OnlineSyncGoodsStockServiceImpl extends ServiceImpl<OnlineSyncGoods
     public void syncGoodsStockEvent(OnlinePlatform onlinePlatform) {
         try {
             OnlineSyncGoodsStockReqDto stockReqDto = new OnlineSyncGoodsStockReqDto();
-            stockReqDto.setApp_key(innoConfig.getAppkey());
-            stockReqDto.setApp_secrept(innoConfig.getAppsecret());
+            stockReqDto.setApp_key(onlinePlatform.getAppKey());
+            stockReqDto.setApp_secrept(onlinePlatform.getAppSecret());
             List<OnlineSyncGoodsStockDto> goodsStockDtoList = new ArrayList<>();
             stockReqDto.setData(goodsStockDtoList);
             // 成功数量
@@ -147,7 +145,7 @@ public class OnlineSyncGoodsStockServiceImpl extends ServiceImpl<OnlineSyncGoods
                             goodsStockDtoList.add(OnlineSyncGoodsStockDto.build(stock.getBarcode(), stock.getQuantity().intValue(), onlinePlatform.getChannelCode()));
                             // 批量上传实际库存
                             if (goodsStockDtoList.size() >= SystemConstants.BATCH_SIZE) {
-                                successTotal += this.batchUploadStock(stockReqDto);
+                                successTotal += this.batchUploadStock(stockReqDto, onlinePlatform.getExternalApplicationApiUrl());
                                 // 清除数据
                                 goodsStockDtoList.clear();
                             }
@@ -158,7 +156,7 @@ public class OnlineSyncGoodsStockServiceImpl extends ServiceImpl<OnlineSyncGoods
                 if (pageNo >= goodsPages.getPages()) {
                     // 批量上传剩余数据
                     if (CollUtil.isNotEmpty(goodsStockDtoList)) {
-                        successTotal += this.batchUploadStock(stockReqDto);
+                        successTotal += this.batchUploadStock(stockReqDto, onlinePlatform.getExternalApplicationApiUrl());
                         // 清除数据
                         goodsStockDtoList.clear();
                     }
@@ -175,8 +173,8 @@ public class OnlineSyncGoodsStockServiceImpl extends ServiceImpl<OnlineSyncGoods
     /**
      * 批量上传仓库库存
      */
-    private Long batchUploadStock(OnlineSyncGoodsStockReqDto stockReqDto) {
-        String api_url = String.format("%s%s", innoConfig.getUrl(), POST_WAREHOUSE_INVERTORY);
+    private Long batchUploadStock(OnlineSyncGoodsStockReqDto stockReqDto, String url) {
+        String api_url = String.format("%s%s", url, POST_WAREHOUSE_INVERTORY);
         String result = HttpUtil.post(api_url, JSON.toJSONString(stockReqDto));
         // 成功数量
         Long successTotal = 0L;

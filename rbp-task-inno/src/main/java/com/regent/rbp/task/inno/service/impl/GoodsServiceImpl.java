@@ -37,9 +37,6 @@ public class GoodsServiceImpl implements GoodsService {
     private static final String GET_GOODS_LIST = "api/BasicData/Get_Goods_List_WithDetail";
 
     @Autowired
-    private InnoConfig innoConfig;
-
-    @Autowired
     private RestTemplate restTemplate;
 
     @Autowired
@@ -67,13 +64,14 @@ public class GoodsServiceImpl implements GoodsService {
 
     /**
      * 拉取APP商品列表
-     * @param onlinePlatformId
+     * @param onlinePlatform
      */
     @Override
-    public void downloadGoodsList(Long onlinePlatformId) {
+    public void downloadGoodsList(OnlinePlatform onlinePlatform) {
+        Long onlinePlatformId = onlinePlatform.getId();
         GoodsSearchReqDto requestDto = new GoodsSearchReqDto();
-        requestDto.setApp_key(innoConfig.getAppkey());
-        requestDto.setApp_secrept(innoConfig.getAppsecret());
+        requestDto.setApp_key(onlinePlatform.getAppKey());
+        requestDto.setApp_secrept(onlinePlatform.getAppSecret());
 
         int pageIndex = 1;
         GoodsSearchDto searchDto = new GoodsSearchDto();
@@ -88,7 +86,7 @@ public class GoodsServiceImpl implements GoodsService {
             searchDto.setPageIndex(pageIndex);
             XxlJobHelper.log(String.format("查询第%s页线上货品", pageIndex));
 
-            String api_url = String.format("%s%s", innoConfig.getUrl(), GET_GOODS_LIST);
+            String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), GET_GOODS_LIST);
             String result = HttpUtil.post(api_url, JSON.toJSONString(requestDto));
 
             GoodsSearchRespDto responseDto = JSON.parseObject(result, GoodsSearchRespDto.class);

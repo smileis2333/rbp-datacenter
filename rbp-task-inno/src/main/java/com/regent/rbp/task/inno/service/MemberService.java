@@ -1,5 +1,6 @@
 package com.regent.rbp.task.inno.service;
 
+import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.task.inno.model.dto.CustomerVipDto;
 import com.regent.rbp.task.inno.model.param.DownloadMemberParam;
 
@@ -15,9 +16,9 @@ public interface MemberService {
 
     /**
      * 同步会员信息
-     * @param onlinePlatformCode
+     * @param onlinePlatform
      */
-    void uploadingMember(String onlinePlatformCode);
+    void uploadingMember(OnlinePlatform onlinePlatform);
 
     /**
      * 下载会员信息
