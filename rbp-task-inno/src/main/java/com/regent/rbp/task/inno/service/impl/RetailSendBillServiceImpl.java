@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
+import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.dto.core.ListDataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.retail.RetailSendBillCheckReqDto;
@@ -17,7 +18,6 @@ import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.api.service.retail.BaseRetailSendBillService;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
-import com.regent.rbp.task.inno.config.InnoConfig;
 import com.regent.rbp.task.inno.model.dto.CheckRetailSendBillDto;
 import com.regent.rbp.task.inno.model.dto.CheckRetailSendBillGoodsDto;
 import com.regent.rbp.task.inno.model.dto.CheckRetailSendBillMainDto;
@@ -28,7 +28,6 @@ import com.regent.rbp.task.inno.model.req.CheckRetailSendBillReqDto;
 import com.regent.rbp.task.inno.model.req.UploadRetailSendBillReqDto;
 import com.regent.rbp.task.inno.model.resp.CheckRetailSendBillRespDto;
 import com.regent.rbp.task.inno.model.resp.UploadRetailSendBillRespDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -56,8 +55,6 @@ public class RetailSendBillServiceImpl implements BaseRetailSendBillService {
     private static final String Post_ErpDeliveryOrder = "api/DeliveryOrder/Post_ErpDeliveryOrder";
     private static final String Post_CheckOrderCanDelivery = "api/DeliveryOrder/Post_CheckOrderCanDelivery";
 
-    @Autowired
-    private InnoConfig innoConfig;
 
     /**
      * 上传ERP发货单到线上
@@ -66,7 +63,7 @@ public class RetailSendBillServiceImpl implements BaseRetailSendBillService {
      * @return
      */
     @Override
-    public ListDataResponse<RetailSendBillUploadDto> batchUploadSendBill(List<RetailSendBillUploadParam> list) {
+    public ListDataResponse<RetailSendBillUploadDto> batchUploadSendBill(List<RetailSendBillUploadParam> list, OnlinePlatform onlinePlatform) {
         if (CollUtil.isEmpty(list)) {
             return ListDataResponse.errorParameter(LanguageUtil.getMessage("notNull"));
         }
@@ -76,11 +73,11 @@ public class RetailSendBillServiceImpl implements BaseRetailSendBillService {
         List<UploadRetailSendBillParam> billList = new ArrayList<>();
         this.convertUploadReqDto(list, billList);
         UploadRetailSendBillReqDto reqDto = new UploadRetailSendBillReqDto();
-        reqDto.setApp_key(innoConfig.getAppkey());
-        reqDto.setApp_secrept(innoConfig.getAppsecret());
+        reqDto.setApp_key(onlinePlatform.getAppKey());
+        reqDto.setApp_secrept(onlinePlatform.getAppSecret());
         reqDto.setData(billList);
         // 接口调用
-        String api_url = String.format("%s%s", innoConfig.getUrl(), Post_ErpDeliveryOrder);
+        String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), Post_ErpDeliveryOrder);
         String result = HttpUtil.post(api_url, JSON.toJSONString(reqDto));
         // 装换
         UploadRetailSendBillRespDto responseDto = JSON.parseObject(result, UploadRetailSendBillRespDto.class);
@@ -100,19 +97,19 @@ public class RetailSendBillServiceImpl implements BaseRetailSendBillService {
      * @return
      */
     @Override
-    public ModelDataResponse<RetailSendBillCheckRespDto> checkOrderCanDelivery(RetailSendBillCheckReqDto orderBill) {
+    public ModelDataResponse<RetailSendBillCheckRespDto> checkOrderCanDelivery(RetailSendBillCheckReqDto orderBill, OnlinePlatform onlinePlatform) {
         if (null == orderBill || CollUtil.isEmpty(orderBill.getBillGoodsList())) {
             return ModelDataResponse.errorParameter(LanguageUtil.getMessage("notNull"));
         }
         CheckRetailSendBillReqDto reqDto = new CheckRetailSendBillReqDto();
-        reqDto.setApp_key(innoConfig.getAppkey());
-        reqDto.setApp_secrept(innoConfig.getAppsecret());
+        reqDto.setApp_key(onlinePlatform.getAppKey());
+        reqDto.setApp_secrept(onlinePlatform.getAppSecret());
         // 循环验证
         RetailSendBillCheckRespDto checkRespDto = new RetailSendBillCheckRespDto();
         checkRespDto.setBillNo(orderBill.getBillNo());
         reqDto.setData(new CheckRetailSendBillDto(orderBill.getBillNo()));
         // 接口调用
-        String api_url = String.format("%s%s", innoConfig.getUrl(), Post_CheckOrderCanDelivery);
+        String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), Post_CheckOrderCanDelivery);
         String result = HttpUtil.post(api_url, JSON.toJSONString(reqDto));
         // 装换
         CheckRetailSendBillRespDto responseDto = JSON.parseObject(result, CheckRetailSendBillRespDto.class);

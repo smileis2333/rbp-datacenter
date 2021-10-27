@@ -1,5 +1,6 @@
 package com.regent.rbp.api.service.retail;
 
+import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.dto.core.ListDataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.retail.RetailSendBillCheckReqDto;
@@ -16,8 +17,8 @@ import java.util.List;
  */
 public interface BaseRetailSendBillService {
 
-    ListDataResponse<RetailSendBillUploadDto> batchUploadSendBill(List<RetailSendBillUploadParam> list);
+    ListDataResponse<RetailSendBillUploadDto> batchUploadSendBill(List<RetailSendBillUploadParam> list, OnlinePlatform onlinePlatform);
 
-    ModelDataResponse<RetailSendBillCheckRespDto> checkOrderCanDelivery(RetailSendBillCheckReqDto param);
+    ModelDataResponse<RetailSendBillCheckRespDto> checkOrderCanDelivery(RetailSendBillCheckReqDto param, OnlinePlatform onlinePlatform);
 
 }
