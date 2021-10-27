@@ -11,28 +11,28 @@ import springfox.documentation.spring.web.plugins.Docket;
 @Configuration
 public class SwaggerConfigDataCenter {
     /**
-     * 注册Swagger
+     * 注册标准接口
      *
      * @return
      */
     @Bean
     public Docket datacenterStandardApi() {
         String moduleCode = "dateCenterStandard";
-        String moduleName = "数据中台标准接口服务";
+        String moduleName = "数据中台标准接口";
         String basePackage = "com.regent.rbp.api";
         return Swagger2Configuration.docket(moduleCode, moduleName, basePackage);
     }
 
     /**
-     * 注册Swagger
+     * 注册INNO接口
      *
      * @return
      */
     @Bean
-    public Docket datacenterPlatformApi() {
-        String moduleCode = "dateCenterPlatform";
-        String moduleName = "数据中台平台接口服务";
-        String basePackage = "com.regent.rbp.task";
+    public Docket datacenterInnoApi() {
+        String moduleCode = "dateCenterInno";
+        String moduleName = "数据中台INNO接口";
+        String basePackage = "com.regent.rbp.task.inno";
         return Swagger2Configuration.docket(moduleCode, moduleName, basePackage);
     }
 }

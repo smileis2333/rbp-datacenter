@@ -3,7 +3,6 @@ package com.regent.rbp.task.inno.service.impl;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.core.retail.RetailOrderBill;
 import com.regent.rbp.api.core.retail.RetailReceiveBackBill;
@@ -15,12 +14,9 @@ import com.regent.rbp.api.service.base.OnlinePlatformService;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.util.DateUtil;
-import com.regent.rbp.task.inno.config.InnoConfig;
 import com.regent.rbp.task.inno.model.dto.UpdateReturnOrderStatusDto;
 import com.regent.rbp.task.inno.model.dto.UpdateReturnOrderStatusReqDto;
 import com.regent.rbp.task.inno.model.param.UpdateRetailReceiveBackByStatusParam;
-import com.regent.rbp.task.inno.model.req.RetailReturnNoticeReqDto;
-import com.regent.rbp.task.inno.model.resp.ChannelRespDto;
 import com.regent.rbp.task.inno.model.resp.UpdateReturnOrderStatusRespDto;
 import com.regent.rbp.task.inno.service.RetailReceiveBackService;
 import com.xxl.job.core.context.XxlJobHelper;
@@ -43,9 +39,6 @@ import java.util.stream.Collectors;
 public class RetailReceiveBackServiceImpl implements RetailReceiveBackService {
 
     private static final String API_URL_UPDATERETURNORDERSTATUS= "api/ReturnOrder/Post_UpdateReturnOrderStatus";
-
-    @Autowired
-    private InnoConfig innoConfig;
 
     @Autowired
     OnlinePlatformService onlinePlatformService;

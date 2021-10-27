@@ -133,3 +133,7 @@ inno:
   url: https://innoadmin.innourl.com/ERPApi/
   appkey: JN_53_USER
   appsecret: JN_53_USER_USER_1qaz@WSX
+
+datacenter:
+  appkey: QFYKs3mUVO
+  appsecret: 3V9VldtOV7UIVwkUcU4Fg0FcCg

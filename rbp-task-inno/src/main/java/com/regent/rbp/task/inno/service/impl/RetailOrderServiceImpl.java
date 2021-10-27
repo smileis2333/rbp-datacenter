@@ -47,8 +47,6 @@ public class RetailOrderServiceImpl implements RetailOrderService {
     private static final String POST_GET_APP_ORDER_LIST = "api/Order/Post_Get_App_Order_Info";
 
     @Autowired
-    private InnoConfig innoConfig;
-    @Autowired
     private RetailOrderBillService retailOrderBillService;
     @Autowired
     private BaseDbDao baseDbDao;
@@ -82,7 +80,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
             while (true) {
                 searchDto.setPageIndex(pageIndex);
 
-                String api_url = String.format("%s%s", innoConfig.getUrl(), POST_GET_APP_ORDER_LIST);
+                String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), POST_GET_APP_ORDER_LIST);
                 String result = HttpUtil.post(api_url, JSON.toJSONString(searchReqDto));
                 // 装换
                 RetailOrderSearchRespDto responseDto = JSON.parseObject(result, RetailOrderSearchRespDto.class);
