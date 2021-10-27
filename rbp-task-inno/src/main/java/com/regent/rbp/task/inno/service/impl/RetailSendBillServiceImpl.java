@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
+import com.regent.rbp.api.core.eum.OnlinePlatformTypeEnum;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.dto.core.ListDataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
@@ -47,7 +48,7 @@ public class RetailSendBillServiceImpl implements BaseRetailSendBillService {
     /**
      * 唯一标识
      */
-    private static final String SEND_BILL_KEY = "INNO";
+    private static final String SEND_BILL_KEY = OnlinePlatformTypeEnum.INNO.getKey();
 
     /**
      * 接口
