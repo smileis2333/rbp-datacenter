@@ -22,9 +22,9 @@ public class VipIntegralController {
     @Autowired
     private VipIntegralService vipIntegralService;
 
-    @GetMapping("/Integral/{VIP}")
+    @GetMapping("/Integral")
     @ApiOperation(value = "获取积分信息")
-    public Map<String, Object> integral(@PathVariable(name = "VIP") String vip) {
+    public Map<String, Object> integral(@RequestParam(name = "VIP") String vip) {
         return vipIntegralService.get(vip);
     }
 

@@ -21,9 +21,9 @@ public class StoredValueCardController {
     @Autowired
     private StoredCardService storedCardService;
 
-    @GetMapping("/VIPValue/{VIP}")
+    @GetMapping("/VIPValue")
     @ApiOperation(value = "（单个）会员可用储值余额读取")
-    public Map<String, Object> storedValueCard(@PathVariable(name = "VIP") String vip) {
+    public Map<String, Object> storedValueCard(@RequestParam(name = "VIP") String vip) {
         return storedCardService.get(vip);
     }
 
@@ -33,9 +33,9 @@ public class StoredValueCardController {
         return storedCardService.addVipValue(vipValueParam);
     }
 
-    @GetMapping("/VIPValueList/{VIP}")
+    @GetMapping("/VIPValueList")
     @ApiOperation(value = "会员储值流水账读取")
-    public Map<String, Object> query(@PathVariable(name = "VIP") String vip) {
+    public Map<String, Object> query(@RequestParam(name = "VIP") String vip) {
         return storedCardService.query(vip);
     }
 }
