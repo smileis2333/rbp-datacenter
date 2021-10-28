@@ -70,7 +70,7 @@ public class CustomerVipController {
             response = memberService.save(customerVipDto);
         }catch (Exception ex) {
             response.put("Flag", "-1");
-            response.put("Message", "新增会员异常：" + ex.getMessage());
+            response.put("Message", "更新会员异常：" + ex.getMessage());
         }
         return response;
     }

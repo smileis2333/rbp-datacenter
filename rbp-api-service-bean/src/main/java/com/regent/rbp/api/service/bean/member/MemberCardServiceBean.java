@@ -485,7 +485,11 @@ public class MemberCardServiceBean implements MemberCardService {
         // 会员政策
         if (StringUtils.isNotBlank(param.getMemberPolicyCode())) {
             MemberPolicy policy = memberPolicyDao.selectOne(new QueryWrapper<MemberPolicy>().eq("grade_code", param.getMemberPolicyCode()));
-            memberCard.setMemberPolicyId(policy.getId());
+            if (policy != null) {
+                memberCard.setMemberPolicyId(policy.getId());
+            } else {
+                errorMsgList.add("会员政策编号(memberPolicyCode)不存在");
+            }
         } else {
             MemberPolicy policy = memberPolicyDao.selectOne(new QueryWrapper<MemberPolicy>().eq("is_default", 1));
             memberCard.setMemberPolicyId(policy.getId());

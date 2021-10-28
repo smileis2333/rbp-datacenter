@@ -21,6 +21,9 @@ import com.regent.rbp.api.service.base.OnlinePlatformService;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.api.service.member.MemberCardService;
+import com.regent.rbp.common.dao.UserDao;
+import com.regent.rbp.common.model.system.entity.User;
+import com.regent.rbp.common.model.system.entity.UserData;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
@@ -71,6 +74,8 @@ public class MemberServiceImpl implements MemberService {
     MemberPolicyDao memberPolicyDao;
     @Autowired
     MemberIntegralDao memberIntegralDao;
+    @Autowired
+    UserDao userDao;
 
     @Autowired
     OnlinePlatformSyncCacheService onlinePlatformSyncCacheService;
@@ -323,6 +328,39 @@ public class MemberServiceImpl implements MemberService {
                 errorMsgList.add("手机号(MobileTel)已存在！");
             }
         }
+        if (StringUtil.isNotEmpty(dto.getVipGrade())) {
+            MemberPolicy policy = memberPolicyDao.selectOne(new QueryWrapper<MemberPolicy>().eq("grade_code", dto.getVipGrade()));
+            if (policy != null) {
+                saveParam.setMemberPolicyCode(dto.getVipGrade());
+            } else {
+                errorMsgList.add("等级(VipGrade)不存在");
+            }
+        }
+        if (StringUtil.isNotEmpty(dto.getOriginalCustomer())) {
+            Channel channel = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", dto.getOriginalCustomer()));
+            if (channel != null) {
+                saveParam.setChannelCode(dto.getOriginalCustomer());
+            } else {
+                errorMsgList.add("原渠道(OriginalCustomer)不存在");
+            }
+        }
+        if (StringUtil.isNotEmpty(dto.getCustomer_ID())) {
+            Channel channel = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", dto.getCustomer_ID()));
+            if (channel != null) {
+                saveParam.setRepairChannelCode(dto.getCustomer_ID());
+            } else {
+                errorMsgList.add("店铺编号(Customer_ID)不存在");
+            }
+        }
+        if (StringUtil.isNotEmpty(dto.getBusinessManID())) {
+            User item = userDao.selectOne(new QueryWrapper<User>().eq("code", dto.getBusinessManID()));
+            if (item != null) {
+                saveParam.setUserCode(dto.getBusinessManID());
+                saveParam.setMaintainerCode(dto.getBusinessManID());
+            } else {
+                errorMsgList.add("营业员(BusinessManID)不存在");
+            }
+        }
 
         saveParam.setCode(dto.getVIP());
         saveParam.setPassword(dto.getPasswords());
@@ -337,10 +375,7 @@ public class MemberServiceImpl implements MemberService {
         saveParam.setOrigin(ORIGIN);
         saveParam.setBeginDate(dto.getBegainDate());
         saveParam.setEndDate(dto.getExpireDate());
-        saveParam.setChannelCode(dto.getOriginalCustomer());
-        saveParam.setUserCode(dto.getBusinessManID());
         saveParam.setRepairChannelCode(dto.getCustomer_ID());
-        saveParam.setMaintainerCode(dto.getBusinessManID());
         saveParam.setNation("");
         saveParam.setProvince(dto.getCity());
         saveParam.setCity(dto.getInCity());
@@ -357,7 +392,7 @@ public class MemberServiceImpl implements MemberService {
         saveParam.setEmail(dto.getEmail());
         saveParam.setWeixin("");
         saveParam.setNotes("Inno 新建生成");
-        saveParam.setMemberPolicyCode(dto.getVipGrade());
+
         saveParam.setUpdatedOrigin(1);
         return errorMsgList;
     }
