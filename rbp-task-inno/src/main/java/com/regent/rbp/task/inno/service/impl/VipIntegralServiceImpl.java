@@ -47,7 +47,7 @@ public class VipIntegralServiceImpl implements VipIntegralService {
         MemberIntegral memberIntegral = new MemberIntegral();
         memberIntegral.setIntegral(vipAddIntegralParam.getIntegral());
         memberIntegral.setCardNo(vipAddIntegralParam.getVip());
-        memberIntegral.setCreatedTime(vipAddIntegralParam.getVipAddIntegral_Date());
+        memberIntegral.setCreatedTime(vipAddIntegralParam.getVipAddIntegralDate());
         memberIntegral.setNotes(vipAddIntegralParam.getRemark());
         ModelDataResponse result = integralService.updateMemberIntegral(memberIntegral);
         if (result.getCode().equals(ApiResponseCode.MEMBER_NOT_EXISTS_ERROR)) {

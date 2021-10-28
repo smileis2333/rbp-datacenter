@@ -51,10 +51,10 @@ public class StoredCardServiceImpl implements StoredCardService {
     public Map<String, String> addVipValue(AddVipValueParam vipValueParam) {
         Map<String, String> response = new HashMap<>(16);
         String memberCardNo = vipValueParam.getVip();
-        String channelId = vipValueParam.getCheckOrderID();
-        String employeeId = vipValueParam.getBuisnessManID();
-        String billNo = vipValueParam.getCheckOrderID();
-        Date createTime = vipValueParam.getVipAddValue_Date();
+        String channelId = vipValueParam.getCustomerId();
+        String employeeId = vipValueParam.getBusinessManId();
+        String billNo = vipValueParam.getCheckOrderId();
+        Date createTime = vipValueParam.getVipAddValueDate();
         Date postDate = vipValueParam.getPostedDate();
         //实付金额
         BigDecimal integral = new BigDecimal(0);
