@@ -105,7 +105,7 @@ public class OnlineSyncGoodsStockJob {
         }
         // 获取电商平台信息
         OnlinePlatform onlinePlatform = onlinePlatformDao.selectOne(new QueryWrapper<OnlinePlatform>()
-                .select("id,warehouse_id,channel_id").eq("status", StatusEnum.CHECK.getStatus()).eq("code", stockParam.getOnlinePlatformCode()));
+                .eq("status", StatusEnum.CHECK.getStatus()).eq("code", stockParam.getOnlinePlatformCode()));
         if (null == onlinePlatform) {
             XxlJobHelper.handleFail(ERROR_ONLINE_PLATFORM_CODE_NOT_EXIST);
             return null;

@@ -8,6 +8,7 @@ import com.regent.rbp.task.inno.service.MemberService;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,7 +32,7 @@ public class CustomerVipController {
     MemberCardService memberCardService;
 
     @PostMapping("/AddCustomerVIP")
-    public Map<String, String> AddCustomerVIP(CustomerVipDto customerVipDto) {
+    public Map<String, String> AddCustomerVIP(@RequestBody CustomerVipDto customerVipDto) {
         Map<String, String> response = new HashMap<>();
 
         if(StringUtil.isEmpty(customerVipDto.getMobileTel())) {
@@ -56,7 +57,7 @@ public class CustomerVipController {
     }
 
     @PostMapping("/UpdateCustomerVIP")
-    public Map<String, String> UpdateCustomerVIP(CustomerVipDto customerVipDto) {
+    public Map<String, String> UpdateCustomerVIP(@RequestBody CustomerVipDto customerVipDto) {
         Map<String, String> response = new HashMap<>();
 
         if(StringUtil.isEmpty(customerVipDto.getMobileTel())) {
