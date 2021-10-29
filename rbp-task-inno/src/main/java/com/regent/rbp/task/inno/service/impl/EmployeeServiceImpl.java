@@ -87,7 +87,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                 queryWrapper.ge("updated_time", uploadingDate);
             }
             queryWrapper.orderByAsc("updated_time");
-            queryWrapper.last(" limit 10 ");
             List<Employee> employeeList = employeeDao.selectList(queryWrapper);
             if (CollUtil.isNotEmpty(employeeList)) {
                 Date uploadingTime = employeeList.stream().max(Comparator.comparing(Employee::getUpdatedTime)).get().getUpdatedTime();
@@ -111,7 +110,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                     String result = HttpUtil.post(api_url, JSON.toJSONString(employeeReqDto));
                     EmployeeRespDto respDto = JSON.parseObject(result, EmployeeRespDto.class);
                     if (respDto.getCode().equals("-1")) {
-                        throw new Exception(respDto.getMsg());
+                        XxlJobHelper.log(respDto.getMsg());
                     }
                     this.saveOnlinePlatformSyncCache(onlinePlatformId, key, uploadingTime);
                 }
