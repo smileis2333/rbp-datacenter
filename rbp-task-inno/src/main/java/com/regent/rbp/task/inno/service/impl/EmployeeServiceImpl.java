@@ -87,12 +87,12 @@ public class EmployeeServiceImpl implements EmployeeService {
                 queryWrapper.ge("updated_time", uploadingDate);
             }
             queryWrapper.orderByAsc("updated_time");
-            queryWrapper.last(" limit 1 ");
+            queryWrapper.last(" limit 10 ");
             List<Employee> employeeList = employeeDao.selectList(queryWrapper);
             if (CollUtil.isNotEmpty(employeeList)) {
                 Date uploadingTime = employeeList.stream().max(Comparator.comparing(Employee::getUpdatedTime)).get().getUpdatedTime();
-                List<EmployeeDto> reqList = new ArrayList<>();
                 for (Employee employee : employeeList) {
+                    List<EmployeeDto> reqList = new ArrayList<>();
                     Channel channel = channelDao.selectById(employee.getChannelId());
                     User user = userDao.selectOne(new LambdaQueryWrapper<User>().eq(User::getCode,employee.getCode()));
                     String isEnabled = "1";
@@ -102,19 +102,20 @@ public class EmployeeServiceImpl implements EmployeeService {
                     Integer status = employee.getWorkStatus() != 2 ? 1 : 0;
                     EmployeeDto employeeDto = new EmployeeDto(employee.getCode(),employee.getName(),channelCode,employee.getMobile(),openId,updateTimeStr,isEnabled,status);
                     reqList.add(employeeDto);
+
+                    EmployeeReqDto employeeReqDto = new EmployeeReqDto();
+                    employeeReqDto.setApp_key(onlinePlatform.getAppKey());
+                    employeeReqDto.setApp_secrept(onlinePlatform.getAppSecret());
+                    employeeReqDto.setData(reqList);
+                    String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), POST_ERP_STORESTAFF);
+                    String result = HttpUtil.post(api_url, JSON.toJSONString(employeeReqDto));
+                    EmployeeRespDto respDto = JSON.parseObject(result, EmployeeRespDto.class);
+                    if (respDto.getCode().equals("-1")) {
+                        throw new Exception(respDto.getMsg());
+                    }
+                    this.saveOnlinePlatformSyncCache(onlinePlatformId, key, uploadingTime);
                 }
-                EmployeeReqDto employeeReqDto = new EmployeeReqDto();
-                employeeReqDto.setApp_key(onlinePlatform.getAppKey());
-                employeeReqDto.setApp_secrept(onlinePlatform.getAppSecret());
-                employeeReqDto.setData(reqList);
-                String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), POST_ERP_STORESTAFF);
-                String result = HttpUtil.post(api_url, JSON.toJSONString(employeeReqDto));
-                EmployeeRespDto respDto = JSON.parseObject(result, EmployeeRespDto.class);
-                if (respDto.getCode().equals("-1")) {
-                    throw new Exception(respDto.getMsg());
-                }
-                XxlJobHelper.log("请求成功：" + JSON.toJSONString(respDto));
-                this.saveOnlinePlatformSyncCache(onlinePlatformId, key, uploadingTime);
+                XxlJobHelper.log("上传完成");
             }else{
                 XxlJobHelper.log(ERROR_EMPLOYEE_LIST);
             }
