@@ -6,12 +6,14 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.base.Sex;
 import com.regent.rbp.api.core.channel.Channel;
+import com.regent.rbp.api.core.employee.Employee;
 import com.regent.rbp.api.core.integral.MemberIntegral;
 import com.regent.rbp.api.core.member.MemberCard;
 import com.regent.rbp.api.core.member.MemberPolicy;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.dao.base.SexDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
+import com.regent.rbp.api.dao.employee.EmployeeDao;
 import com.regent.rbp.api.dao.member.MemberCardDao;
 import com.regent.rbp.api.dao.member.MemberIntegralDao;
 import com.regent.rbp.api.dao.member.MemberPolicyDao;
@@ -75,7 +77,7 @@ public class MemberServiceImpl implements MemberService {
     @Autowired
     MemberIntegralDao memberIntegralDao;
     @Autowired
-    UserDao userDao;
+    EmployeeDao employeeDao;
 
     @Autowired
     OnlinePlatformSyncCacheService onlinePlatformSyncCacheService;
@@ -353,7 +355,7 @@ public class MemberServiceImpl implements MemberService {
             }
         }
         if (StringUtil.isNotEmpty(dto.getBusinessManID())) {
-            User item = userDao.selectOne(new QueryWrapper<User>().eq("code", dto.getBusinessManID()));
+            Employee item = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", dto.getBusinessManID()));
             if (item != null) {
                 saveParam.setUserCode(dto.getBusinessManID());
                 saveParam.setMaintainerCode(dto.getBusinessManID());

@@ -5,12 +5,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.*;
 import com.regent.rbp.api.core.channel.*;
+import com.regent.rbp.api.core.employee.Employee;
 import com.regent.rbp.api.core.member.MemberCard;
 import com.regent.rbp.api.core.member.MemberPolicy;
 import com.regent.rbp.api.core.member.MemberStatus;
 import com.regent.rbp.api.core.member.MemberType;
 import com.regent.rbp.api.dao.base.SexDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
+import com.regent.rbp.api.dao.employee.EmployeeDao;
 import com.regent.rbp.api.dao.member.MemberCardDao;
 import com.regent.rbp.api.dao.member.MemberPolicyDao;
 import com.regent.rbp.api.dao.member.MemberStatusDao;
@@ -59,6 +61,8 @@ public class MemberCardServiceBean implements MemberCardService {
     @Autowired
     UserDao userDao;
     @Autowired
+    EmployeeDao employeeDao;
+    @Autowired
     MemberTypeDao memberTypeDao;
     @Autowired
     MemberPolicyDao memberPolicyDao;
@@ -94,23 +98,23 @@ public class MemberCardServiceBean implements MemberCardService {
 
         // 发卡人编号
         if (StringUtils.isNotBlank(param.getUserCode())) {
-            User user = userDao.selectOne(new QueryWrapper<User>().eq("code", param.getUserCode()));
-            if (user != null) {
-                context.setUserCode(user.getId());
+            Employee employee = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", param.getUserCode()));
+            if (employee != null) {
+                context.setUserCode(employee.getId());
             }
         }
         // 维护人编号
         if (StringUtils.isNotBlank(param.getMaintainerCode())) {
-            User user = userDao.selectOne(new QueryWrapper<User>().eq("code", param.getMaintainerCode()));
-            if (user != null) {
-                context.setMaintainerCode(user.getId());
+            Employee employee = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", param.getMaintainerCode()));
+            if (employee != null) {
+                context.setMaintainerCode(employee.getId());
             }
         }
         // 扩展人编号
         if (StringUtils.isNotBlank(param.getDeveloperCode())) {
-            User user = userDao.selectOne(new QueryWrapper<User>().eq("code", param.getDeveloperCode()));
-            if (user != null) {
-                context.setDeveloperCode(user.getId());
+            Employee employee = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", param.getMaintainerCode()));
+            if (employee != null) {
+                context.setDeveloperCode(employee.getId());
             }
         }
 
@@ -227,10 +231,14 @@ public class MemberCardServiceBean implements MemberCardService {
         channelIds.addAll(list.stream().map(MemberCard :: getRepairChannelId).collect(Collectors.toList()));
         List<Channel> channelList = channelDao.selectBatchIds(channelIds.stream().distinct().collect(Collectors.toList()));
         Map<Long, Channel> mapChannel = channelList.stream().collect(Collectors.toMap(Channel::getId, t -> t));
-        // 加载当前所有会员 用户
-        List<Long> userIds = list.stream().map(MemberCard::getMaintainerId).collect(Collectors.toList());
-        userIds.addAll(list.stream().map(MemberCard::getDeveloperId).collect(Collectors.toList()));
-        userIds.addAll(list.stream().map(MemberCard::getCreatedBy).collect(Collectors.toList()));
+        // 加载 维护人，扩展人,发卡人
+        List<Long> employeeIds = list.stream().map(MemberCard::getMaintainerId).collect(Collectors.toList());
+        employeeIds.addAll(list.stream().map(MemberCard::getDeveloperId).collect(Collectors.toList()));
+        employeeIds.addAll(list.stream().map(MemberCard::getUserId).collect(Collectors.toList()));
+        List<Employee> employeeList = employeeDao.selectBatchIds(employeeIds.stream().distinct().collect(Collectors.toList()));
+        Map<Long, Employee> mapEmployee = employeeList.stream().collect(Collectors.toMap(Employee::getId, t -> t));
+        // 加载 ，创建人，更新人，审核人，失效人，反审核人
+        List<Long> userIds = list.stream().map(MemberCard::getCreatedBy).collect(Collectors.toList());
         userIds.addAll(list.stream().map(MemberCard::getUpdatedBy).collect(Collectors.toList()));
         userIds.addAll(list.stream().map(MemberCard::getCheckBy).collect(Collectors.toList()));
         userIds.addAll(list.stream().map(MemberCard::getCancelBy).collect(Collectors.toList()));
@@ -298,18 +306,23 @@ public class MemberCardServiceBean implements MemberCardService {
                 queryResult.setRepairChannelCode(channel.getCode());
             }
             // 维护人编号
-            if (memberCard.getMaintainerId() != null && mapUser.containsKey(memberCard.getMaintainerId())) {
-                User user = mapUser.get(memberCard.getMaintainerId());
-                queryResult.setMaintainerCode(user.getCode());
+            if (memberCard.getMaintainerId() != null && mapEmployee.containsKey(memberCard.getMaintainerId())) {
+                Employee employee = mapEmployee.get(memberCard.getMaintainerId());
+                queryResult.setMaintainerCode(employee.getCode());
             }
             // 拓展人编号
-            if (memberCard.getDeveloperId() != null && mapUser.containsKey(memberCard.getDeveloperId())) {
-                User user = mapUser.get(memberCard.getDeveloperId());
-                queryResult.setDeveloperCode(user.getCode());
+            if (memberCard.getDeveloperId() != null && mapEmployee.containsKey(memberCard.getDeveloperId())) {
+                Employee employee = mapEmployee.get(memberCard.getDeveloperId());
+                queryResult.setDeveloperCode(employee.getCode());
             }
             // 会员状态
             if (memberCard.getMemberStatusId() != null && mapMemberStatus.containsKey(memberCard.getMemberStatusId())) {
                 queryResult.setMemberStatus(mapMemberStatus.get(memberCard.getMemberStatusId()));
+            }
+            // 发卡人
+            if (memberCard.getUserId() != null && mapEmployee.containsKey(memberCard.getUserId())) {
+                Employee employee = mapEmployee.get(memberCard.getUserId());
+                queryResult.setUserCode(employee.getCode());
             }
             // 创建人
             if (memberCard.getCreatedBy() != null && mapUser.containsKey(memberCard.getCreatedBy())) {
@@ -447,7 +460,7 @@ public class MemberCardServiceBean implements MemberCardService {
         }
         // 发卡人编号
         if (StringUtils.isNotBlank(param.getUserCode())) {
-            User item = userDao.selectOne(new QueryWrapper<User>().eq("code", param.getUserCode()));
+            Employee item = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", param.getUserCode()));
             if (item != null) {
                 memberCard.setUserId(item.getId());
             } else {
@@ -466,7 +479,7 @@ public class MemberCardServiceBean implements MemberCardService {
         }
         // 维护人编号
         if (StringUtils.isNotBlank(param.getMaintainerCode())) {
-            User item = userDao.selectOne(new QueryWrapper<User>().eq("code", param.getMaintainerCode()));
+            Employee item = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", param.getMaintainerCode()));
             if (item != null) {
                 memberCard.setMaintainerId(item.getId());
             } else {
@@ -475,7 +488,7 @@ public class MemberCardServiceBean implements MemberCardService {
         }
         // 拓展人编号
         if (StringUtils.isNotBlank(param.getDeveloperCode())) {
-            User item = userDao.selectOne(new QueryWrapper<User>().eq("code", param.getDeveloperCode()));
+            Employee item = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", param.getDeveloperCode()));
             if (item != null) {
                 memberCard.setDeveloperId(item.getId());
             } else {
