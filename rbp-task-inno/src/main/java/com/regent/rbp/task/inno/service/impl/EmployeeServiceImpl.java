@@ -93,11 +93,10 @@ public class EmployeeServiceImpl implements EmployeeService {
                 for (Employee employee : employeeList) {
                     List<EmployeeDto> reqList = new ArrayList<>();
                     Channel channel = channelDao.selectById(employee.getChannelId());
-                    User user = userDao.selectOne(new LambdaQueryWrapper<User>().eq(User::getCode,employee.getCode()));
                     String isEnabled = "1";
                     String updateTimeStr = DateUtil.getFullDateStr(employee.getUpdatedTime());
                     String channelCode = channel !=null ? channel.getCode() : StrUtil.EMPTY;
-                    String openId = user !=null ? user.getQyweixin() : StrUtil.EMPTY;
+                    String openId = StrUtil.EMPTY;
                     Integer status = employee.getWorkStatus() != 2 ? 1 : 0;
                     EmployeeDto employeeDto = new EmployeeDto(employee.getCode(),employee.getName(),channelCode,employee.getMobile(),openId,updateTimeStr,isEnabled,status);
                     reqList.add(employeeDto);
@@ -112,8 +111,9 @@ public class EmployeeServiceImpl implements EmployeeService {
                     if (respDto.getCode().equals("-1")) {
                         XxlJobHelper.log(respDto.getMsg());
                     }
-                    this.saveOnlinePlatformSyncCache(onlinePlatformId, key, uploadingTime);
+                    XxlJobHelper.log(respDto.getMsg());
                 }
+                this.saveOnlinePlatformSyncCache(onlinePlatformId, key, uploadingTime);
                 XxlJobHelper.log("上传完成");
             }else{
                 XxlJobHelper.log(ERROR_EMPLOYEE_LIST);
