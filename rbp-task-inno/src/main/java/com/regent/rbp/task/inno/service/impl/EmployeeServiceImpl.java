@@ -102,7 +102,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                     employeeReqDto.setApp_secrept(onlinePlatform.getAppSecret());
                     employeeReqDto.setData(reqList);
                     String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), POST_ERP_STORESTAFF);
-                    System.out.println(JSON.toJSONString(employeeReqDto));
                     String result = HttpUtil.post(api_url, JSON.toJSONString(employeeReqDto));
                     EmployeeRespDto respDto = JSON.parseObject(result, EmployeeRespDto.class);
                     if (respDto.getCode().equals("-1")) {
