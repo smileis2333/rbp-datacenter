@@ -34,19 +34,6 @@ public class CustomerVipController {
     @PostMapping("/AddCustomerVIP")
     public Map<String, String> AddCustomerVIP(@RequestBody CustomerVipDto customerVipDto) {
         Map<String, String> response = new HashMap<>();
-
-        if(StringUtil.isEmpty(customerVipDto.getMobileTel())) {
-            response.put("Flag", "1");
-            response.put("Message", "会员手机号为空,已跳过");
-            response.put("data", customerVipDto.getVIP());
-            return response;
-        }
-        if (memberCardService.checkExistMemberCard(customerVipDto.getVIP())) {
-            response.put("Flag", "1");
-            response.put("Message", "Vip卡号(VIP)已存在！");
-            response.put("data", customerVipDto.getVIP());
-            return response;
-        }
         try {
             response = memberService.save(customerVipDto, true);
         }catch (Exception ex) {
@@ -59,13 +46,6 @@ public class CustomerVipController {
     @PostMapping("/UpdateCustomerVIP")
     public Map<String, String> UpdateCustomerVIP(@RequestBody CustomerVipDto customerVipDto) {
         Map<String, String> response = new HashMap<>();
-
-        if(StringUtil.isEmpty(customerVipDto.getMobileTel())) {
-            response.put("Flag", "1");
-            response.put("Message", "会员手机号为空,已跳过");
-            response.put("data", customerVipDto.getVIP());
-            return response;
-        }
         try {
             response = memberService.save(customerVipDto, false);
         }catch (Exception ex) {

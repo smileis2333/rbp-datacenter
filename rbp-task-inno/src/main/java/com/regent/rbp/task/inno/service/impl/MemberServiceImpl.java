@@ -291,7 +291,7 @@ public class MemberServiceImpl implements MemberService {
         HashMap<String, String> response = new HashMap<>();
 
         MemberCardSaveParam saveParam = new MemberCardSaveParam();
-        List<String> errorMsgList = this.verificationProperty(dto, saveParam);
+        List<String> errorMsgList = this.verificationProperty(dto, saveParam, createFlag);
         if(errorMsgList.size() > 0 ) {
             String message = StringUtil.join(errorMsgList, ",");
             response.put("Flag", "-1");
@@ -305,6 +305,8 @@ public class MemberServiceImpl implements MemberService {
             response.put("Message", saveResp.getMessage());
             response.put("data", dto.getVIP());
         } else {
+            // 审核会员
+            memberCardService.checkMemberCard(saveParam.getCode());
             response.put("Flag", "1");
             if (createFlag) {
                 response.put("Message", "会员新增成功");
@@ -321,7 +323,7 @@ public class MemberServiceImpl implements MemberService {
      * @param dto
      * @return
      */
-    private List<String> verificationProperty(CustomerVipDto dto, MemberCardSaveParam saveParam) {
+    private List<String> verificationProperty(CustomerVipDto dto, MemberCardSaveParam saveParam, Boolean createFlag) {
         List<String> errorMsgList = new ArrayList<>();
         if (dto == null) {
             errorMsgList.add("参数不能为空");
@@ -329,11 +331,28 @@ public class MemberServiceImpl implements MemberService {
         if (StringUtils.isEmpty(dto.getVIP())) {
             errorMsgList.add("Vip卡号(VIP)不能为空！");
         }
-        /*if(StringUtil.isNotEmpty(dto.getMobileTel())) {
-            if(memberCardService.checkExistMobile(dto.getMobileTel())) {
-                errorMsgList.add("手机号(MobileTel)已存在！");
+        if(StringUtil.isEmpty(dto.getMobileTel())) {
+            errorMsgList.add("手机(MobileTel) 会员手机号为空,已跳过！");
+        }
+
+        if (createFlag) {
+            if (memberCardService.checkExistMemberCard(dto.getVIP())) {
+                errorMsgList.add("Vip卡号(VIP)已存在！");
             }
-        }*/
+            if(StringUtil.isNotEmpty(dto.getMobileTel())) {
+                if(memberCardService.checkExistMobile(dto.getMobileTel())) {
+                    errorMsgList.add("手机号(MobileTel)已存在！");
+                }
+            }
+        } else {
+            if (!memberCardService.checkExistMemberCard(dto.getVIP())) {
+                errorMsgList.add("Vip卡号(VIP)不存在！");
+            }
+            if (memberCardService.checkExistStatus(dto.getVIP())) {
+                errorMsgList.add("Vip卡号(VIP)审核状态为作废，不更新数据！");
+            }
+        }
+
         if (StringUtil.isNotEmpty(dto.getVipGrade())) {
             MemberPolicy policy = memberPolicyDao.selectOne(new QueryWrapper<MemberPolicy>().eq("grade_code", dto.getVipGrade()));
             if (policy != null) {
@@ -397,7 +416,7 @@ public class MemberServiceImpl implements MemberService {
         saveParam.setMemberStatus(MEMBER_STATUS);
         saveParam.setEmail(dto.getEmail());
         saveParam.setWeixin("");
-        saveParam.setNotes("Inno 新建生成");
+        //saveParam.setNotes("Inno 新建生成");
 
         saveParam.setUpdatedOrigin(1);
         return errorMsgList;
