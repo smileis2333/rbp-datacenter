@@ -1,13 +1,16 @@
 package com.regent.rbp.task.inno.controller;
 
+import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.task.inno.model.param.IntegralQueryParam;
 import com.regent.rbp.task.inno.model.param.VipAddIntegralParam;
 import com.regent.rbp.task.inno.service.VipIntegralService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -34,9 +37,25 @@ public class VipIntegralController {
         return vipIntegralService.vipAddIntegral(vipAddIntegralParam);
     }
 
-    @PostMapping("/query")
+    @GetMapping("/VipIntegralDetali")
     @ApiOperation(value = "会员积分流水明细（分页）")
-    public Map<String, Object> query(@RequestBody IntegralQueryParam param) {
+    public Map<String, Object> query(@RequestParam (name = "vip",required = false) String vip,
+                                     @RequestParam (name = "pageNo") int pageNo,
+                                     @RequestParam (name = "pageSize") int pageSize,
+                                     @RequestParam (name = "startDate",required = false) String startDate,
+                                     @RequestParam (name = "endDate",required = false) String endDate,
+                                     @RequestParam (name = "sort",required = false) String sort) {
+        IntegralQueryParam param = new IntegralQueryParam();
+        param.setVip(vip);
+        param.setPageNo(pageNo);
+        param.setPageSize(pageSize);
+        if (StringUtils.isNotEmpty(startDate)) {
+            param.setStartDate(DateUtil.getDate(startDate, "YYYY-MM-dd"));
+        }
+        if (StringUtils.isNotEmpty(endDate)) {
+            param.setEndDate(DateUtil.getDate(endDate, "YYYY-MM-dd"));
+        }
+        param.setSort(sort);
         return vipIntegralService.query(param);
     }
 }
