@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.employee.Employee;
-import com.regent.rbp.api.core.member.MemberCard;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
 import com.regent.rbp.api.dao.channel.ChannelDao;
@@ -19,14 +18,11 @@ import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncCacheDao;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.common.dao.UserDao;
-import com.regent.rbp.common.model.system.entity.User;
 import com.regent.rbp.infrastructure.annotation.PassToken;
 import com.regent.rbp.infrastructure.util.DateUtil;
-import com.regent.rbp.task.inno.config.InnoConfig;
 import com.regent.rbp.task.inno.model.dto.EmployeeDto;
 import com.regent.rbp.task.inno.model.req.EmployeeReqDto;
 import com.regent.rbp.task.inno.model.resp.EmployeeRespDto;
-import com.regent.rbp.task.inno.model.resp.MemberRespDto;
 import com.regent.rbp.task.inno.service.EmployeeService;
 import com.xxl.job.core.context.XxlJobHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,11 +89,10 @@ public class EmployeeServiceImpl implements EmployeeService {
                 for (Employee employee : employeeList) {
                     List<EmployeeDto> reqList = new ArrayList<>();
                     Channel channel = channelDao.selectById(employee.getChannelId());
-                    User user = userDao.selectOne(new LambdaQueryWrapper<User>().eq(User::getCode,employee.getCode()));
                     String isEnabled = "1";
                     String updateTimeStr = DateUtil.getFullDateStr(employee.getUpdatedTime());
                     String channelCode = channel !=null ? channel.getCode() : StrUtil.EMPTY;
-                    String openId = user !=null ? user.getQyweixin() : StrUtil.EMPTY;
+                    String openId = StrUtil.EMPTY;
                     Integer status = employee.getWorkStatus() != 2 ? 1 : 0;
                     EmployeeDto employeeDto = new EmployeeDto(employee.getCode(),employee.getName(),channelCode,employee.getMobile(),openId,updateTimeStr,isEnabled,status);
                     reqList.add(employeeDto);
@@ -112,8 +107,9 @@ public class EmployeeServiceImpl implements EmployeeService {
                     if (respDto.getCode().equals("-1")) {
                         XxlJobHelper.log(respDto.getMsg());
                     }
-                    this.saveOnlinePlatformSyncCache(onlinePlatformId, key, uploadingTime);
+                    XxlJobHelper.log(respDto.getMsg());
                 }
+                this.saveOnlinePlatformSyncCache(onlinePlatformId, key, uploadingTime);
                 XxlJobHelper.log("上传完成");
             }else{
                 XxlJobHelper.log(ERROR_EMPLOYEE_LIST);
