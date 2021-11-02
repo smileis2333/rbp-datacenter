@@ -29,6 +29,7 @@ public class IntegralRecordContext {
                 dto.setRemark(record.getNotes());
                 dto.setVip(record.getMemberCardNo());
                 dto.setVipName(record.getMemberCardName());
+                dto.setIntegralAmount(record.getChangeIntegral());
                 resultList.add(dto);
             }
         }
