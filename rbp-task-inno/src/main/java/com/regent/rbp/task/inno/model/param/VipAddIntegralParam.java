@@ -1,5 +1,6 @@
 package com.regent.rbp.task.inno.model.param;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -16,6 +17,7 @@ import java.util.Date;
 public class VipAddIntegralParam {
     @ApiModelProperty(notes = "调整时间", required = true)
     @JsonProperty("VipAddIntegral_Date")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date vipAddIntegralDate;
     @ApiModelProperty(notes = "手工单号，可存流水号以免重复充值", required = true)
     @JsonProperty("Manual_ID")

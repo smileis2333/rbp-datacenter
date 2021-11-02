@@ -1,5 +1,6 @@
 package com.regent.rbp.api.dto.storedvaluecard;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -18,6 +19,7 @@ public class AddVipValueParam {
     @JsonProperty("AmountList")
     private List<AddAmount> amountList;
     @ApiModelProperty(notes = "生成时间", required = true)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonProperty("VipAddValue_Date")
     private Date vipAddValueDate;
     @ApiModelProperty(notes = "手工单号")

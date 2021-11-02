@@ -108,6 +108,7 @@ public class StoredValueCardBean implements StoredValueCardService {
         storedValueCardChangeRecord.setChangeCreditAmount(creditAmount);
         storedValueCardChangeRecord.setChangeSurplusAmount(changeSurplusAmount);
         storedValueCardChangeRecord.setChangeType(2);
+        storedValueCardChangeRecord.setCreatedTime(createTime);
         storedValueCardChangeRecordDao.insert(storedValueCardChangeRecord);
         return result;
     }

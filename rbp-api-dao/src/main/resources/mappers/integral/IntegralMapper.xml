@@ -24,7 +24,7 @@
       values (#{id,jdbcType=BIGINT},#{memberCardId,jdbcType=BIGINT},
       #{billId,jdbcType=BIGINT},#{billNo,jdbcType=VARCHAR},#{changeType,jdbcType=INTEGER},
       #{changeIntegral,jdbcType=NUMERIC},#{changeSurplusIntegral,jdbcType=NUMERIC},#{notes,jdbcType=VARCHAR},
-      #{createdBy,jdbcType=BIGINT},#{createdTime,jdbcType=DATE})
+      #{createdBy,jdbcType=BIGINT},#{createdTime,jdbcType=TIMESTAMP})
     </insert>
 
     <select id="countMemberIntegralChangeRecord" resultType="java.lang.Integer">
