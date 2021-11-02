@@ -21,7 +21,7 @@ public class VipAddIntegralParam {
     @JsonProperty("Manual_ID")
     private String manualId;
     @ApiModelProperty(notes = "VIP卡号", required = true)
-    @JsonProperty("Vip")
+    @JsonProperty("VIP")
     private String vip;
     @ApiModelProperty(notes = "付款方式如没有填空")
     @JsonProperty("Payment")
