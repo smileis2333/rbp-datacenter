@@ -27,10 +27,11 @@ public interface MemberService {
     void saveMember(DownloadMemberParam param);
 
     /**
-     * inno 新增会员
+     * inno 新增/修改 会员
      * @param dto
+     * @param createFlag
      * @return
      */
-    Map<String, String> save(CustomerVipDto dto);
+    Map<String, String> save(CustomerVipDto dto, Boolean createFlag);
 
 }

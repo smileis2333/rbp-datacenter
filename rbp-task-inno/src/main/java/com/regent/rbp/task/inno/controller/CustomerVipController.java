@@ -48,7 +48,7 @@ public class CustomerVipController {
             return response;
         }
         try {
-            response = memberService.save(customerVipDto);
+            response = memberService.save(customerVipDto, true);
         }catch (Exception ex) {
             response.put("Flag", "-1");
             response.put("Message", "新增会员异常：" + ex.getMessage());
@@ -67,7 +67,7 @@ public class CustomerVipController {
             return response;
         }
         try {
-            response = memberService.save(customerVipDto);
+            response = memberService.save(customerVipDto, false);
         }catch (Exception ex) {
             response.put("Flag", "-1");
             response.put("Message", "更新会员异常：" + ex.getMessage());

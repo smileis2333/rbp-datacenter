@@ -287,7 +287,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Map<String, String> save(CustomerVipDto dto) {
+    public Map<String, String> save(CustomerVipDto dto, Boolean createFlag) {
         HashMap<String, String> response = new HashMap<>();
 
         MemberCardSaveParam saveParam = new MemberCardSaveParam();
@@ -306,7 +306,11 @@ public class MemberServiceImpl implements MemberService {
             response.put("data", dto.getVIP());
         } else {
             response.put("Flag", "1");
-            response.put("Message", "会员新增成功");
+            if (createFlag) {
+                response.put("Message", "会员新增成功");
+            } else {
+                response.put("Message", "会员更新成功");
+            }
             response.put("data", "");
         }
         return response;
@@ -325,11 +329,11 @@ public class MemberServiceImpl implements MemberService {
         if (StringUtils.isEmpty(dto.getVIP())) {
             errorMsgList.add("Vip卡号(VIP)不能为空！");
         }
-        if(StringUtil.isNotEmpty(dto.getMobileTel())) {
+        /*if(StringUtil.isNotEmpty(dto.getMobileTel())) {
             if(memberCardService.checkExistMobile(dto.getMobileTel())) {
                 errorMsgList.add("手机号(MobileTel)已存在！");
             }
-        }
+        }*/
         if (StringUtil.isNotEmpty(dto.getVipGrade())) {
             MemberPolicy policy = memberPolicyDao.selectOne(new QueryWrapper<MemberPolicy>().eq("grade_code", dto.getVipGrade()));
             if (policy != null) {
