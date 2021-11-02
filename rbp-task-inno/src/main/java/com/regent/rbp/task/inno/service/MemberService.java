@@ -34,4 +34,5 @@ public interface MemberService {
      */
     Map<String, String> save(CustomerVipDto dto, Boolean createFlag);
 
+
 }

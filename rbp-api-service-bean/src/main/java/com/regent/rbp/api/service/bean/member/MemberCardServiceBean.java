@@ -1,5 +1,6 @@
 package com.regent.rbp.api.service.bean.member;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -33,6 +34,7 @@ import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -373,7 +375,8 @@ public class MemberCardServiceBean implements MemberCardService {
         processAutoCompleteDictionary(param, context);
         // 写入会员表
         saveMemberCard(createFlag, context.getMemberCard());
-        //
+        // 审核会员
+
         return DataResponse.success();
     }
 
@@ -395,6 +398,21 @@ public class MemberCardServiceBean implements MemberCardService {
     @Override
     public boolean checkExistMobile(String mobile) {
         return memberCardDao.selectCount(new QueryWrapper<MemberCard>().eq("phone", mobile)) > 0;
+    }
+
+    @Override
+    public boolean checkExistStatus(String memberNo) {
+        return memberCardDao.selectCount(new LambdaQueryWrapper<MemberCard>().eq(MemberCard::getCode, memberNo).eq(MemberCard::getStatus, 3)) > 0;
+    }
+
+    @Override
+    public void checkMemberCard(String memberNo) {
+        MemberCard memberCard = memberCardDao.selectOne(new LambdaQueryWrapper<MemberCard>().eq(MemberCard::getCode, memberNo));
+        Long userId = ThreadLocalGroup.getUserId();
+        memberCard.setStatus(1);
+        memberCard.setCheckBy(userId);
+        memberCard.setCheckTime(new Date());
+        memberCardDao.updateById(memberCard);
     }
 
     /**

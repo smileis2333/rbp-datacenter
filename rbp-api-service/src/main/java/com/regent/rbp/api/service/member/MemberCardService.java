@@ -42,4 +42,17 @@ public interface MemberCardService  {
      * @return
      */
     boolean checkExistMobile(String mobile);
+
+    /**
+     * 检测会员是否是作废状态
+     * @param memberNo
+     * @return
+     */
+    boolean checkExistStatus(String memberNo);
+
+    /**
+     * 审核会员
+     * @param memberNo
+     */
+    void checkMemberCard(String memberNo);
 }

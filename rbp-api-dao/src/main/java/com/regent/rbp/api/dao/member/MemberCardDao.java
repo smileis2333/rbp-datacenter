@@ -24,4 +24,5 @@ public interface MemberCardDao extends BaseMapper<MemberCard> {
      * @return
      */
     MemberIntegral getMemberIntegralById(Long memberCardId);
+
 }
