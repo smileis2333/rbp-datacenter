@@ -38,7 +38,7 @@ public class StoredCardServiceImpl implements StoredCardService {
             response.put("Flag", "-1");
             response.put("Message", result.getMessage());
         } else {
-            response.put("Flag", "0");
+            response.put("Flag", "1");
             response.put("Message", "成功");
             response.put("data", result.getData());
             return response;

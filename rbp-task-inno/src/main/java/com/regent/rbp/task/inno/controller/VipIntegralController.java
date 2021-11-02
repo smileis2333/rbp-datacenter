@@ -40,14 +40,14 @@ public class VipIntegralController {
     @GetMapping("/VipIntegralDetali")
     @ApiOperation(value = "会员积分流水明细（分页）")
     public Map<String, Object> query(@RequestParam (name = "vip",required = false) String vip,
-                                     @RequestParam (name = "pageNo") int pageNo,
+                                     @RequestParam (name = "page") int page,
                                      @RequestParam (name = "pageSize") int pageSize,
                                      @RequestParam (name = "startDate",required = false) String startDate,
                                      @RequestParam (name = "endDate",required = false) String endDate,
                                      @RequestParam (name = "sort",required = false) String sort) {
         IntegralQueryParam param = new IntegralQueryParam();
         param.setVip(vip);
-        param.setPageNo(pageNo);
+        param.setPage(page);
         param.setPageSize(pageSize);
         if (StringUtils.isNotEmpty(startDate)) {
             param.setStartDate(DateUtil.getDate(startDate, "YYYY-MM-dd"));

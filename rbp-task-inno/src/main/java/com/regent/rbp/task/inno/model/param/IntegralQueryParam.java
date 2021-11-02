@@ -21,7 +21,7 @@ public class IntegralQueryParam {
     @ApiModelProperty(notes = "VIP卡号")
     private String vip;
     @ApiModelProperty(notes = "页码")
-    private int pageNo;
+    private int page;
     @ApiModelProperty(notes = "每页单数")
     private int pageSize;
 }

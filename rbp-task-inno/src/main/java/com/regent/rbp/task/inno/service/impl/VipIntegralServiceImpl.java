@@ -34,7 +34,7 @@ public class VipIntegralServiceImpl implements VipIntegralService {
             response.put("Flag", "-1");
             response.put("Message", result.getMessage());
         } else {
-            response.put("Flag", "0");
+            response.put("Flag", "1");
             response.put("Message", "查询成功");
             response.put("data", result.getData());
         }
@@ -54,7 +54,7 @@ public class VipIntegralServiceImpl implements VipIntegralService {
             response.put("Flag", "-1");
             response.put("Message", result.getMessage());
         } else {
-            response.put("Flag", "0");
+            response.put("Flag", "1");
             response.put("Message", "修改积分成功");
         }
         return response;
@@ -64,14 +64,14 @@ public class VipIntegralServiceImpl implements VipIntegralService {
     public Map<String, Object> query(IntegralQueryParam param) {
         Map<String, Object> response = new HashMap<>(16);
         PageDataResponse<MemberIntegralChangeRecord> result = integralService.query(param.getVip(), param.getStartDate(), param.getEndDate(),
-                param.getSort(), param.getPageNo(), param.getPageSize());
+                param.getSort(), param.getPage(), param.getPageSize());
         if (result.getCode().equals(ApiResponseCode.MEMBER_NOT_EXISTS_ERROR)) {
             response.put("Flag", "-1");
             response.put("Message", result.getMessage());
         } else {
             //转化成inno响应数据
             IntegralRecordContext integralRecordContext = new IntegralRecordContext(result.getData());
-            response.put("Flag", "0");
+            response.put("Flag", "1");
             response.put("pageCount", result.getTotalCount() + "");
             response.put("Message", "查询成功");
             response.put("dataList", integralRecordContext.getResultList());
