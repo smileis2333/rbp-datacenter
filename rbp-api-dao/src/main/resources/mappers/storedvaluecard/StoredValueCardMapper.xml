@@ -32,6 +32,7 @@
         updated_time updatedTime
         from rbp_stored_value_card_change_record
         where stored_value_card_id = #{storedValueCardId}
+        order by created_time desc
     </select>
 
 </mapper>
