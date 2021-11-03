@@ -59,4 +59,5 @@ public class MemberIntegral extends Model<MemberIntegral> {
     @ApiModelProperty(notes = "更新时间")
     private Date updatedTime;
 
+
 }

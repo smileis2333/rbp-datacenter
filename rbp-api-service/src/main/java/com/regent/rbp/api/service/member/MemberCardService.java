@@ -50,9 +50,4 @@ public interface MemberCardService  {
      */
     boolean checkExistStatus(String memberNo);
 
-    /**
-     * 审核会员
-     * @param memberNo
-     */
-    void checkMemberCard(String memberNo);
 }

@@ -7,17 +7,19 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.*;
 import com.regent.rbp.api.core.channel.*;
 import com.regent.rbp.api.core.employee.Employee;
+import com.regent.rbp.api.core.integral.MemberIntegral;
 import com.regent.rbp.api.core.member.MemberCard;
 import com.regent.rbp.api.core.member.MemberPolicy;
 import com.regent.rbp.api.core.member.MemberStatus;
 import com.regent.rbp.api.core.member.MemberType;
+import com.regent.rbp.api.core.storedvaluecard.StoredValueCard;
+import com.regent.rbp.api.core.storedvaluecard.StoredValueCardAssets;
 import com.regent.rbp.api.dao.base.SexDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.employee.EmployeeDao;
-import com.regent.rbp.api.dao.member.MemberCardDao;
-import com.regent.rbp.api.dao.member.MemberPolicyDao;
-import com.regent.rbp.api.dao.member.MemberStatusDao;
-import com.regent.rbp.api.dao.member.MemberTypeDao;
+import com.regent.rbp.api.dao.member.*;
+import com.regent.rbp.api.dao.storedvaluecard.StoredValueCardAssetsDao;
+import com.regent.rbp.api.dao.storedvaluecard.StoredValueCardDao;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
@@ -31,14 +33,13 @@ import com.regent.rbp.common.dao.UserDao;
 import com.regent.rbp.common.model.system.entity.User;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
-import com.regent.rbp.infrastructure.util.DateUtil;
-import com.regent.rbp.infrastructure.util.LanguageUtil;
-import com.regent.rbp.infrastructure.util.StringUtil;
-import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
+import com.regent.rbp.infrastructure.util.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -70,6 +71,12 @@ public class MemberCardServiceBean implements MemberCardService {
     MemberPolicyDao memberPolicyDao;
     @Autowired
     MemberStatusDao memberStatusDao;
+    @Autowired
+    MemberIntegralDao memberIntegralDao;
+    @Autowired
+    StoredValueCardDao storedValueCardDao;
+    @Autowired
+    StoredValueCardAssetsDao storedValueCardAssetsDao;
 
 
     @Override
@@ -355,6 +362,7 @@ public class MemberCardServiceBean implements MemberCardService {
         return queryResults;
     }
 
+    @Transactional
     @Override
     public DataResponse save(MemberCardSaveParam param) {
         boolean createFlag = true;
@@ -374,8 +382,15 @@ public class MemberCardServiceBean implements MemberCardService {
         // 自动补充不存在的数据字典
         processAutoCompleteDictionary(param, context);
         // 写入会员表
-        saveMemberCard(createFlag, context.getMemberCard());
-        // 审核会员
+        this.saveMemberCard(createFlag, context.getMemberCard());
+        if (createFlag) {
+            // 审核会员
+            this.checkMemberCard(context.getMemberCard());
+        }
+        // 新增会员积分
+        this.saveMemberIntegral(context.getMemberCard());
+        // 新增储值卡
+        this.saveStoredValueCard(context.getMemberCard());
 
         return DataResponse.success();
     }
@@ -403,16 +418,6 @@ public class MemberCardServiceBean implements MemberCardService {
     @Override
     public boolean checkExistStatus(String memberNo) {
         return memberCardDao.selectCount(new LambdaQueryWrapper<MemberCard>().eq(MemberCard::getCode, memberNo).eq(MemberCard::getStatus, 3)) > 0;
-    }
-
-    @Override
-    public void checkMemberCard(String memberNo) {
-        MemberCard memberCard = memberCardDao.selectOne(new LambdaQueryWrapper<MemberCard>().eq(MemberCard::getCode, memberNo));
-        Long userId = ThreadLocalGroup.getUserId();
-        memberCard.setStatus(1);
-        memberCard.setCheckBy(userId);
-        memberCard.setCheckTime(new Date());
-        memberCardDao.updateById(memberCard);
     }
 
     /**
@@ -546,6 +551,87 @@ public class MemberCardServiceBean implements MemberCardService {
             memberCardDao.insert(memberCard);
         } else {
             memberCardDao.updateById(memberCard);
+        }
+    }
+
+    /**
+     * 审核会员
+     * @param memberCard
+     */
+    private void checkMemberCard(MemberCard memberCard) {
+        Long userId = ThreadLocalGroup.getUserId();
+        memberCard.setStatus(1);
+        memberCard.setCheckBy(userId);
+        memberCard.setCheckTime(new Date());
+        memberCardDao.updateById(memberCard);
+    }
+
+    /**
+     * 新增 会员积分基础表
+     * @param memberCard
+     */
+    private void saveMemberIntegral(MemberCard memberCard) {
+        MemberIntegral integral = memberIntegralDao.selectOne(new LambdaQueryWrapper<MemberIntegral>().eq(MemberIntegral::getMemberCardId, memberCard.getId()));
+        if (integral == null) {
+            Long userId = ThreadLocalGroup.getUserId();
+            integral = new MemberIntegral();
+            integral.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+            integral.setMemberCardId(memberCard.getId());
+            integral.setCardNo(memberCard.getCode());
+            integral.setIntegral(0);
+            integral.setFrozenIntegral(BigDecimal.ZERO);
+            integral.setManualId("");
+            integral.setNotes("");
+            integral.setCreatedBy(userId);
+            integral.setCreatedTime(new Date());
+            integral.setUpdatedBy(userId);
+            integral.setUpdatedTime(new Date());
+            memberIntegralDao.insert(integral);
+        }
+    }
+
+    /**
+     * 新建储值卡
+     * @param memberCard
+     */
+    private void saveStoredValueCard(MemberCard memberCard) {
+        // 判断会员政策是否充值
+        MemberPolicy policy = memberPolicyDao.selectOne(new LambdaQueryWrapper<MemberPolicy>().eq(MemberPolicy::getId, memberCard.getMemberPolicyId()));
+        if (policy.getIsRecharge().equals(1)) {
+            StoredValueCard storedValueCard = storedValueCardDao.selectOne(new LambdaQueryWrapper<StoredValueCard>().eq(StoredValueCard::getMemberCardId, memberCard.getId()));
+            if (storedValueCard == null) {
+                storedValueCard = new StoredValueCard();
+                storedValueCard.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                storedValueCard.setCardNo(memberCard.getCode());
+                storedValueCard.setPassword(memberCard.getPassword());
+                storedValueCard.setName(memberCard.getName());
+                storedValueCard.setType(2);
+                storedValueCard.setStatus(1);
+                storedValueCard.setOpenCardDate(new Date());
+                storedValueCard.setBeginDate(memberCard.getBeginDate());
+                storedValueCard.setEndDate(memberCard.getEndDate());
+                storedValueCard.setMemberCardId(memberCard.getId());
+                storedValueCard.setNotes("");
+                storedValueCard.setCreatedBy(memberCard.getCreatedBy());
+                storedValueCard.setCreatedTime(memberCard.getCreatedTime());
+                storedValueCard.setUpdatedBy(memberCard.getUpdatedBy());
+                storedValueCard.setUpdatedTime(memberCard.getUpdatedTime());
+                storedValueCardDao.insert(storedValueCard);
+                
+                // 新增储值卡资产
+                StoredValueCardAssets assets = new StoredValueCardAssets();
+                assets.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                assets.setStoredValueCardId(storedValueCard.getId());
+                assets.setPayAmount(BigDecimal.ZERO);
+                assets.setCreditAmount(BigDecimal.ZERO);
+                assets.setCumulativeConsumeAmount(BigDecimal.ZERO);
+                assets.setCumulativeConsumeDenomination(BigDecimal.ZERO);
+                assets.setCreatedBy(memberCard.getCreatedBy());
+                assets.setCreatedTime(memberCard.getCreatedTime());
+                assets.setUpdatedBy(memberCard.getUpdatedBy());
+                assets.setUpdatedTime(memberCard.getUpdatedTime());
+                storedValueCardAssetsDao.insert(assets);
+            }
         }
     }
 }

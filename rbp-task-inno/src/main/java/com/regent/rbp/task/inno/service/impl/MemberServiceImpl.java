@@ -305,8 +305,6 @@ public class MemberServiceImpl implements MemberService {
             response.put("Message", saveResp.getMessage());
             response.put("data", dto.getVIP());
         } else {
-            // 审核会员
-            memberCardService.checkMemberCard(saveParam.getCode());
             response.put("Flag", "1");
             if (createFlag) {
                 response.put("Message", "会员新增成功");
