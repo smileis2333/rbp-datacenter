@@ -506,7 +506,7 @@ public class MemberCardServiceBean implements MemberCardService {
             if (item != null) {
                 memberCard.setMaintainerId(item.getId());
             } else {
-                errorMsgList.add("维护人编号(maintainerCode)不存在");
+                //errorMsgList.add("维护人编号(maintainerCode)不存在");
             }
         }
         // 拓展人编号
@@ -515,7 +515,7 @@ public class MemberCardServiceBean implements MemberCardService {
             if (item != null) {
                 memberCard.setDeveloperId(item.getId());
             } else {
-                errorMsgList.add("拓展人编号(developerCode)不存在");
+                //errorMsgList.add("拓展人编号(developerCode)不存在");
             }
         }
         // 会员政策
