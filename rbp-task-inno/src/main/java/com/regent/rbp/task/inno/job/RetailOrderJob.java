@@ -67,7 +67,7 @@ public class RetailOrderJob {
             }
             // 获取电商平台信息
             OnlinePlatform onlinePlatform = onlinePlatformDao.selectOne(new QueryWrapper<OnlinePlatform>()
-                    .select("id,channel_id").eq("status", StatusEnum.CHECK.getStatus()).eq("code", orderParam.getOnlinePlatformCode()));
+                    .eq("status", StatusEnum.CHECK.getStatus()).eq("code", orderParam.getOnlinePlatformCode()));
             if (null == onlinePlatform) {
                 XxlJobHelper.handleFail(ERROR_ONLINE_PLATFORM_CODE_NOT_EXIST);
                 return;
