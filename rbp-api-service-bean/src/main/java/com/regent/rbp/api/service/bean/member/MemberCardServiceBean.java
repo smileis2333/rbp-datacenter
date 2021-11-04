@@ -487,7 +487,7 @@ public class MemberCardServiceBean implements MemberCardService {
             if (item != null) {
                 memberCard.setUserId(item.getId());
             } else {
-                errorMsgList.add("发卡人编号(userCode)不存在");
+                //errorMsgList.add("发卡人编号(userCode)不存在");
             }
 
         }
@@ -497,7 +497,7 @@ public class MemberCardServiceBean implements MemberCardService {
             if (item != null) {
                 memberCard.setRepairChannelId(item.getId());
             } else {
-                errorMsgList.add("维护渠道编号(repairChannelCode)不存在");
+                //errorMsgList.add("维护渠道编号(repairChannelCode)不存在");
             }
         }
         // 维护人编号
