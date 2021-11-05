@@ -17,7 +17,6 @@ import com.regent.rbp.api.service.retail.RetailOrderBillService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.DateUtil;
-import com.regent.rbp.task.inno.config.InnoConfig;
 import com.regent.rbp.task.inno.model.dto.RetailOrderGoodsDto;
 import com.regent.rbp.task.inno.model.dto.RetailOrderItemDto;
 import com.regent.rbp.task.inno.model.dto.RetailOrderMainDto;
@@ -185,6 +184,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
                 item.setBarcode(goodsDto.getProduct_sn());
                 item.setSaleType(0);
                 item.setRetailGoodsType(0);
+                item.setTagPrice(new BigDecimal(goodsDto.getMarket_price()));
                 item.setBalancePrice(new BigDecimal(goodsDto.getGoods_real_price()));
                 item.setDiscount(item.getBalancePrice().divide(new BigDecimal(goodsDto.getMarket_price()), 4, BigDecimal.ROUND_HALF_UP));
                 item.setQuantity(new BigDecimal(goodsDto.getGoods_num()));

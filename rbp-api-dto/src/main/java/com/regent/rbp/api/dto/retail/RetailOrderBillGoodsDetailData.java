@@ -28,6 +28,9 @@ public class RetailOrderBillGoodsDetailData {
     @ApiModelProperty(notes = "结算价")
     private BigDecimal balancePrice;
 
+    @ApiModelProperty(notes = "吊牌价")
+    private BigDecimal tagPrice;
+
     @ApiModelProperty(notes = "数量")
     private BigDecimal quantity;
 
