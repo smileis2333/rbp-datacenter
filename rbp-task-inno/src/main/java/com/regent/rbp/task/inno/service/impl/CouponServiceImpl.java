@@ -54,6 +54,7 @@ public class CouponServiceImpl implements CouponService {
      * 错误码
      */
     private static final String ERROR_CODE = "-1";
+
     /**
      * 折扣券
      */
@@ -62,6 +63,7 @@ public class CouponServiceImpl implements CouponService {
      * 抵用券
      */
     private static final String CASH_COUPON = "5";
+
     @Override
     public void getAppCouponsListByCreateTime(CouponPolicyDownLoadParam downLoadParam) {
         InnoBaseReq<InnoGetAppCouponsListByCreateTimeReq> req = new InnoBaseReq<>();
@@ -110,7 +112,12 @@ public class CouponServiceImpl implements CouponService {
         if (Integer.parseInt(respDto.getData().getTotalPages()) > 0 && CollectionUtils.isNotEmpty(resultList)) {
             Map<String, List<InnoGetAppCouponsListByCreateTimeResp.Data>> groupBy = resultList.stream().collect(Collectors.groupingBy(InnoGetAppCouponsListByCreateTimeResp.Data::getBonusType));
             for (String bonusType : groupBy.keySet()) {
-                couponRuleList =  buildCouponRule(bonusType, groupBy.get(bonusType));
+                if (bonusType.equals(DISCOUNT_COUPON) || bonusType.equals(CASH_COUPON)) {
+                    List<CouponRule> list = buildCouponRule(bonusType, groupBy.get(bonusType));
+                    if (CollectionUtils.isNotEmpty(list)) {
+                        couponRuleList.addAll(list);
+                    }
+                }
             }
         }
         return couponRuleList;
@@ -127,11 +134,6 @@ public class CouponServiceImpl implements CouponService {
         }
         List<CouponRule> couponRuleList = new ArrayList<>();
         Map<String, List<InnoGetAppCouponsListByCreateTimeResp.Data>>  sonGroupBy = list.stream().collect(Collectors.groupingBy(InnoGetAppCouponsListByCreateTimeResp.Data::getTypeCode));
-        if (bonusType.equals(DISCOUNT_COUPON)) {
-            sonGroupBy = list.stream().collect(Collectors.groupingBy(InnoGetAppCouponsListByCreateTimeResp.Data::getTypeCode));
-        } else if (bonusType.equals(CASH_COUPON)) {
-            sonGroupBy = list.stream().collect(Collectors.groupingBy(InnoGetAppCouponsListByCreateTimeResp.Data::getTypeCode));
-        }
         if (MapUtils.isEmpty(sonGroupBy)) {
             return null;
         }
@@ -141,7 +143,8 @@ public class CouponServiceImpl implements CouponService {
             couponRule.setName(sonGroupBy.get(code).get(0).getTypeName());
             couponRule.setNotes("来源英朗");
             couponRule.setCreatedTime(new Date());
-
+            couponRule.setBonusType(bonusType);
+            couponRule.setPaymentCode(sonGroupBy.get(code).get(0).getPyamentCode());
             List<CouponRuleChannelRange> couponRuleChannelRangeList = new ArrayList<>();
             List<CouponRuleGoodsRange> couponRuleGoodsRangeList = new ArrayList<>();
             for (InnoGetAppCouponsListByCreateTimeResp.Data item : sonGroupBy.get(code)) {
