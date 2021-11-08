@@ -266,6 +266,7 @@ public class MemberServiceImpl implements MemberService {
                 saveParam.setNotes("定时拉取 Inno 会员信息生成");
                 saveParam.setMemberPolicyCode(page.getRank_code());
                 saveParam.setUpdatedOrigin(1);
+                saveParam.setUnionId(page.getUnionid());
 
                 DataResponse response = memberCardService.save(saveParam);
                 if (response.getCode() != ResponseCode.OK){
