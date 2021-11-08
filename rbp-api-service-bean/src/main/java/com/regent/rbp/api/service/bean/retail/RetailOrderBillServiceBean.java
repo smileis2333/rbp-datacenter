@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -194,7 +193,7 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         }
         // 营业员编码
         if (StringUtil.isNotEmpty(param.getEmployeeName())) {
-            bill.setEmployeeId(baseDbDao.getLongDataBySql(String.format("select id from rbp_employee where work_status != 2 and name = '%s'", param.getEmployeeName())));
+            bill.setEmployeeId(baseDbDao.getLongDataBySql(String.format("select id from rbp_employee where work_status != 2 and (name = '%s' or code = '%s' ) limit 1", param.getEmployeeName(), param.getEmployeeName())));
         }
         // 自定义字段
         if (CollUtil.isNotEmpty(param.getCustomizeData())) {
@@ -248,6 +247,7 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
                 goods.setRetailGoodsType(item.getRetailGoodsType());
                 goods.setDiscount(item.getDiscount());
                 goods.setBalancePrice(item.getBalancePrice());
+                goods.setTagPrice(item.getTagPrice());
                 goods.setQuantity(item.getQuantity());
                 goods.setRemark(item.getRemark());
                 // 初始化状态
@@ -256,8 +256,6 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
                 goods.setProcessStatus(StatusEnum.NONE.getStatus());
                 goods.setReturnStatus(StatusEnum.NONE.getStatus());
                 goods.setOnlineStatus(bill.getOnlineStatus());
-                // TODO 渠道货品吊牌价
-                goods.setTagPrice(BigDecimal.ZERO);
                 goods.setBillId(bill.getId());
                 billGoodsList.add(goods);
             }
