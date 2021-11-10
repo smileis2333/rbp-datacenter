@@ -55,4 +55,13 @@ public class CouponRule extends Model<CouponRule> {
     @ApiModelProperty(notes = "使用会员")
     @TableField(exist = false)
     private List<CouponRuleMemberRange> couponRuleMemberRangeList;
+
+    @ApiModelProperty(notes = "券类型")
+    @TableField(exist = false)
+    private String bonusType;
+
+    @ApiModelProperty(notes = "支付方式编号")
+    @TableField(exist = false)
+    private String paymentCode;
+
 }
