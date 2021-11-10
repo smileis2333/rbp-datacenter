@@ -5,6 +5,7 @@ import com.regent.rbp.api.core.coupon.*;
 import com.regent.rbp.api.dao.coupon.*;
 import com.regent.rbp.api.service.coupon.CouponRuleService;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
+import net.bytebuddy.asm.Advice;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,22 @@ public class CouponRuleServiceBean implements CouponRuleService {
     private CouponRuleGoodsRangeDao couponRuleGoodsRangeDao;
     @Autowired
     private CouponRuleGoodsRangeValueDao couponRuleGoodsRangeValueDao;
+    /**
+     * 折扣券
+     */
+    private static final String DISCOUNT_COUPON = "4";
+    /**
+     * 抵用券
+     */
+    private static final String CASH_COUPON = "5";
+
+    @Autowired
+    private CashCouponPolicyDao cashCouponPolicyDao;
+    @Autowired
+    private DiscountCouponPolicyDao discountCouponPolicyDao;
+
+    @Autowired
+    private RetailPayTypeDao retailPayTypeDao;
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveCouponRule(List<CouponRule> couponRuleList) {
@@ -51,6 +68,49 @@ public class CouponRuleServiceBean implements CouponRuleService {
                 couponRuleId = oldCoupon.getId();
                 oldCoupon.setUpdatedTime(new Date());
                 couponRuleDao.update(oldCoupon, new QueryWrapper<CouponRule>().eq("id", oldCoupon.getId()));
+            }
+            cashCouponPolicyDao.delete(new QueryWrapper<CashCouponPolicy>().eq("code", data.getCode()));
+            discountCouponPolicyDao.delete(new QueryWrapper<DiscountCouponPolicy>().eq("code", data.getCode()));
+            retailPayTypeDao.delete(new QueryWrapper<RetailPayType>().eq("code", data.getPaymentCode()));
+            if (data.getBonusType().equals(CASH_COUPON)) {
+                // 自动生成抵用券政策和支付方式
+                CashCouponPolicy cashCouponPolicy = new CashCouponPolicy();
+                cashCouponPolicy.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                cashCouponPolicy.setCode(data.getCode());
+                cashCouponPolicy.setName(data.getName());
+                cashCouponPolicy.setRemark("拉取英朗券政策自动生成");
+                cashCouponPolicy.setNumberOfCoupon(1000);
+                cashCouponPolicy.setPolicyGroup(1000);
+                cashCouponPolicy.setCreatedTime(new Date());
+                cashCouponPolicyDao.insert(cashCouponPolicy);
+
+                RetailPayType retailPayType = new RetailPayType();
+                retailPayType.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                retailPayType.setCode(data.getPaymentCode());
+                retailPayType.setName("inno券支付方式");
+                retailPayType.setRetailPayPlatform("6");
+                retailPayType.setRetailPayPlatformId(1609200376474119L);
+                retailPayType.setUseAble(1);
+                retailPayType.setVisible(1);
+                retailPayType.setNotIncome(1);
+                retailPayType.setNotInPoint(1);
+                retailPayType.setPos(1);
+                retailPayType.setSystemInline(0);
+                retailPayType.setDpPrice(0);
+                retailPayType.setLimitRatio(100);
+                retailPayTypeDao.insert(retailPayType);
+
+            } else if (data.getBonusType().equals(DISCOUNT_COUPON)) {
+                // 自动生成折扣券政策
+                DiscountCouponPolicy discountCouponPolicy = new DiscountCouponPolicy();
+                discountCouponPolicy.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                discountCouponPolicy.setCode(data.getCode());
+                discountCouponPolicy.setName(data.getName());
+                discountCouponPolicy.setRemark("拉取英朗券政策自动生成");
+                discountCouponPolicy.setRestoreTagPrice(0);
+                discountCouponPolicy.setUseDiscountMinimum(0);
+                discountCouponPolicy.setCreatedTime(new Date());
+                discountCouponPolicyDao.insert(discountCouponPolicy);
             }
             couponRuleChannelRangeDao.delete(new QueryWrapper<CouponRuleChannelRange>().eq("coupon_rule_id", couponRuleId));
             couponRuleChannelRangeValueDao.delete(new QueryWrapper<CouponRuleChannelRangeValue>().eq("coupon_rule_id", couponRuleId));
