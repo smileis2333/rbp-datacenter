@@ -34,4 +34,6 @@ public class ApiConstants {
     public static final String API_INTEGRAL = "api/integral";
 
     public static final String API_STORED_VALUE_CARD = "api/storedValueCard";
+
+    public static final String API_SALES_ORDER = "api/salesOrder";
 }
