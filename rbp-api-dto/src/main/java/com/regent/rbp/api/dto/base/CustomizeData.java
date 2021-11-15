@@ -1,5 +1,6 @@
 package com.regent.rbp.api.dto.base;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -11,7 +12,12 @@ import lombok.Data;
 @Data
 public class CustomizeData {
 
+    @ApiModelProperty(notes = "字段编码")
     private String code;
+
+    @ApiModelProperty(notes = "字段名称")
     private String name;
+
+    @ApiModelProperty(notes = "字段值")
     private String value;
 }

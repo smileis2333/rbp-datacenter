@@ -160,4 +160,7 @@ public class MemberCard {
     @ApiModelProperty(notes = "更新来源 0.RBP,1.INNO")
     private Integer updatedOrigin;
 
+    @ApiModelProperty(notes = "微信unionid")
+    private String unionId;
+
 }

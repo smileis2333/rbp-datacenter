@@ -111,6 +111,9 @@ public class MemberCardSaveParam {
     @ApiModelProperty(notes = "更新来源 0.RBP,1.INNO")
     private Integer updatedOrigin;
 
+    @ApiModelProperty(notes = "微信unionId")
+    private String unionId;
+
     @ApiModelProperty(notes = "自定义字段")
     private List<CustomizeData> customizeData;
 

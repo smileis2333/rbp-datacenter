@@ -59,6 +59,7 @@ public class MemberCardSaveContext {
         this.memberCard.setWeixin(param.getWeixin());
         this.memberCard.setNotes(param.getNotes());
         this.memberCard.setUpdatedOrigin(param.getUpdatedOrigin());
+        this.memberCard.setUnionId(param.getUnionId());
 
         this.memberCard.setBeginDate(DateUtil.getDate(param.getBeginDate(), DateUtil.SHORT_DATE_FORMAT));
         this.memberCard.setEndDate(DateUtil.getDate(param.getEndDate(), DateUtil.SHORT_DATE_FORMAT));

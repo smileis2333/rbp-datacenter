@@ -14,7 +14,6 @@ import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.service.base.OnlinePlatformService;
 import com.regent.rbp.api.service.coupon.CouponRuleService;
-import com.regent.rbp.task.inno.config.InnoConfig;
 import com.regent.rbp.task.inno.constants.InnoApiUrl;
 import com.regent.rbp.task.inno.model.param.CouponPolicyDownLoadParam;
 import com.regent.rbp.task.inno.model.req.InnoBaseReq;
@@ -25,14 +24,14 @@ import com.regent.rbp.task.inno.service.CouponService;
 import com.xxl.job.core.context.XxlJobHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description
@@ -55,6 +54,7 @@ public class CouponServiceImpl implements CouponService {
      * 错误码
      */
     private static final String ERROR_CODE = "-1";
+
     /**
      * 折扣券
      */
@@ -63,6 +63,7 @@ public class CouponServiceImpl implements CouponService {
      * 抵用券
      */
     private static final String CASH_COUPON = "5";
+
     @Override
     public void getAppCouponsListByCreateTime(CouponPolicyDownLoadParam downLoadParam) {
         InnoBaseReq<InnoGetAppCouponsListByCreateTimeReq> req = new InnoBaseReq<>();
@@ -107,110 +108,131 @@ public class CouponServiceImpl implements CouponService {
      */
     private List<CouponRule> couponRuleContext(InnoBaseResp<InnoGetAppCouponsListByCreateTimeResp> respDto) {
         List<CouponRule> couponRuleList = new ArrayList<>();
-        CouponRule couponRule = new CouponRule();
-        couponRule.setCode("inno001");
-        couponRule.setName("英朗折扣券使用组");
-        couponRule.setNotes("来源英朗");
-        couponRule.setCreatedTime(new Date());
-
-        CouponRule couponRule1 = new CouponRule();
-        couponRule1.setCode("inno002");
-        couponRule1.setName("英朗抵用券使用组");
-        couponRule1.setNotes("来源英朗");
-        couponRule1.setCreatedTime(new Date());
-
-        couponRuleList.add(couponRule);
-        couponRuleList.add(couponRule1);
-
         List<InnoGetAppCouponsListByCreateTimeResp.Data> resultList = respDto.getData().getData();
         if (Integer.parseInt(respDto.getData().getTotalPages()) > 0 && CollectionUtils.isNotEmpty(resultList)) {
-            List<CouponRuleChannelRange> couponRuleChannelRangeList = new ArrayList<>();
-            List<CouponRuleGoodsRange> couponRuleGoodsRangeList = new ArrayList<>();
-            //List<CouponRuleMemberRange> couponRuleMemberRangeList = new ArrayList<>();
-            couponRule.setCouponRuleChannelRangeList(couponRuleChannelRangeList);
-            couponRule.setCouponRuleGoodsRangeList(couponRuleGoodsRangeList);
-
-            List<CouponRuleChannelRange> couponRuleChannelRangeList1 = new ArrayList<>();
-            List<CouponRuleGoodsRange> couponRuleGoodsRangeList1 = new ArrayList<>();
-           // List<CouponRuleMemberRange> couponRuleMemberRangeList1 = new ArrayList<>();
-            couponRule1.setCouponRuleChannelRangeList(couponRuleChannelRangeList1);
-            couponRule1.setCouponRuleGoodsRangeList(couponRuleGoodsRangeList1);
-
-            for (InnoGetAppCouponsListByCreateTimeResp.Data item : resultList) {
-                if (item.getBonusType().equals(DISCOUNT_COUPON) || item.getBonusType().equals(CASH_COUPON)) {
-                    //使用店铺
-                    CouponRuleChannelRange couponRuleChannelRange = null;
-                    if (StringUtils.isNotEmpty(item.getUseStoreCode())) {
-                        couponRuleChannelRange = new CouponRuleChannelRange();
-                        String[] channelCodeList = StringUtils.split(item.getUseStoreCode(), ",");
-                        couponRuleChannelRange.setReverseSelect(0);
-                        couponRuleChannelRange.setChannelCategory("rbp_channel");
-                        couponRuleChannelRange.setChannelAttributeColumn("code");
-                        List<CouponRuleChannelRangeValue> couponRuleChannelRangeValueList = new ArrayList<>();
-                        for (String channelCode : channelCodeList) {
-                            Channel channel = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", channelCode));
-                            if (channel == null) {
-                                continue;
-                            }
-                            CouponRuleChannelRangeValue rangeValue = new CouponRuleChannelRangeValue();
-                            rangeValue.setValueId(channel.getId());
-                            rangeValue.setValueCode(channel.getCode());
-                            rangeValue.setValueCode(channel.getName());
-                            couponRuleChannelRangeValueList.add(rangeValue);
-                        }
-                        couponRuleChannelRange.setCouponRuleChannelRangeValueList(couponRuleChannelRangeValueList);
-                    }
-                    //使用货品
-                    CouponRuleGoodsRange couponRuleGoodsRange = null;
-                    if (StringUtils.isNotEmpty(item.getAllowUseGoodsSn())) {
-                        String[] goodsCodeList = StringUtils.split(item.getAllowUseGoodsSn(), ",");
-                        couponRuleGoodsRange = new CouponRuleGoodsRange();
-                        couponRuleGoodsRange.setGoodsCategory("rbp_goods");
-                        couponRuleGoodsRange.setGoodsAttributeColumn("code");
-                        couponRuleGoodsRange.setReverseSelect(0);
-                        List<CouponRuleGoodsRangeValue> couponRuleGoodsRangeValueList = new ArrayList<>();
-                        buildCouponRuleGoods(goodsCodeList, couponRuleGoodsRangeValueList);
-                        couponRuleGoodsRange.setCouponRuleGoodsRangeValueList(couponRuleGoodsRangeValueList);
-                    }
-                    //不允许使用货品
-                    CouponRuleGoodsRange couponRuleGoodsRange1 = null;
-                    if (StringUtils.isNotEmpty(item.getExcludeGoods())) {
-                        String[] stopGoodsCodeList = StringUtils.split(item.getExcludeGoods(), ",");
-                        couponRuleGoodsRange1 = new CouponRuleGoodsRange();
-                        couponRuleGoodsRange1.setGoodsCategory("rbp_goods");
-                        couponRuleGoodsRange1.setGoodsAttributeColumn("code");
-                        couponRuleGoodsRange1.setReverseSelect(1);
-                        List<CouponRuleGoodsRangeValue> couponRuleGoodsRangeValueList1 = new ArrayList<>();
-                        buildCouponRuleGoods(stopGoodsCodeList, couponRuleGoodsRangeValueList1);
-                        couponRuleGoodsRange1.setCouponRuleGoodsRangeValueList(couponRuleGoodsRangeValueList1);
-                    }
-                    if (item.getBonusType().equals(DISCOUNT_COUPON)) {
-                        //折扣券
-                        if (couponRuleChannelRange != null) {
-                            couponRuleChannelRangeList.add(couponRuleChannelRange);
-                        }
-                        if (couponRuleGoodsRange != null) {
-                            couponRuleGoodsRangeList.add(couponRuleGoodsRange);
-                        }
-                        if (couponRuleGoodsRange1 != null) {
-                            couponRuleGoodsRangeList.add(couponRuleGoodsRange1);
-                        }
-                    } else if (item.getBonusType().equals(CASH_COUPON)) {
-                        //代用券
-                        if (couponRuleChannelRange != null) {
-                            couponRuleChannelRangeList1.add(couponRuleChannelRange);
-                        }
-                        if (couponRuleGoodsRange != null) {
-                            couponRuleGoodsRangeList1.add(couponRuleGoodsRange);
-                        }
-                        if (couponRuleGoodsRange1 != null) {
-                            couponRuleGoodsRangeList1.add(couponRuleGoodsRange1);
-                        }
+            Map<String, List<InnoGetAppCouponsListByCreateTimeResp.Data>> groupBy = resultList.stream().collect(Collectors.groupingBy(InnoGetAppCouponsListByCreateTimeResp.Data::getBonusType));
+            for (String bonusType : groupBy.keySet()) {
+                if (bonusType.equals(DISCOUNT_COUPON) || bonusType.equals(CASH_COUPON)) {
+                    List<CouponRule> list = buildCouponRule(bonusType, groupBy.get(bonusType));
+                    if (CollectionUtils.isNotEmpty(list)) {
+                        couponRuleList.addAll(list);
                     }
                 }
             }
         }
         return couponRuleList;
+    }
+
+    /**
+     * 构造券使用组
+     * @param bonusType
+     * @param list
+     */
+    private List<CouponRule> buildCouponRule(String bonusType,List<InnoGetAppCouponsListByCreateTimeResp.Data> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+        List<CouponRule> couponRuleList = new ArrayList<>();
+        Map<String, List<InnoGetAppCouponsListByCreateTimeResp.Data>>  sonGroupBy = list.stream().collect(Collectors.groupingBy(InnoGetAppCouponsListByCreateTimeResp.Data::getTypeCode));
+        if (MapUtils.isEmpty(sonGroupBy)) {
+            return null;
+        }
+        for (String code : sonGroupBy.keySet()) {
+            CouponRule couponRule = createCouponRule(bonusType, sonGroupBy.get(code), code);
+            List<CouponRuleChannelRange> couponRuleChannelRangeList = new ArrayList<>();
+            List<CouponRuleGoodsRange> couponRuleGoodsRangeList = new ArrayList<>();
+            for (InnoGetAppCouponsListByCreateTimeResp.Data item : sonGroupBy.get(code)) {
+                //使用店铺
+                CouponRuleChannelRange couponRuleChannelRange = buildCouponRuleChannelRange(item);
+                //允许使用货品
+                CouponRuleGoodsRange couponRuleGoodsRange = buildCouponRuleGoodsRange(item.getAllowUseGoodsSn(),0);
+                //不允许使用货品
+                CouponRuleGoodsRange couponRuleGoodsRangeStop = buildCouponRuleGoodsRange(item.getExcludeGoods(), 1);
+                if (couponRuleChannelRange != null) {
+                    couponRuleChannelRangeList.add(couponRuleChannelRange);
+                }
+                if (couponRuleGoodsRange != null) {
+                    couponRuleGoodsRangeList.add(couponRuleGoodsRange);
+                }
+                if (couponRuleGoodsRangeStop != null) {
+                    couponRuleGoodsRangeList.add(couponRuleGoodsRangeStop);
+                }
+            }
+            couponRule.setCouponRuleGoodsRangeList(couponRuleGoodsRangeList);
+            couponRule.setCouponRuleChannelRangeList(couponRuleChannelRangeList);
+            couponRuleList.add(couponRule);
+        }
+        return couponRuleList;
+    }
+
+    /**
+     * 创建CouponRule对象
+     * @param bonusType
+     * @param sonGroupList
+     * @param code
+     * @return
+     */
+    private CouponRule createCouponRule(String bonusType, List<InnoGetAppCouponsListByCreateTimeResp.Data> sonGroupList,
+                                        String code) {
+        CouponRule couponRule = new CouponRule();
+        couponRule.setCode(code);
+        couponRule.setName(sonGroupList.get(0).getTypeName());
+        couponRule.setNotes("来源英朗");
+        couponRule.setCreatedTime(new Date());
+        couponRule.setBonusType(bonusType);
+        couponRule.setPaymentCode(sonGroupList.get(0).getPyamentCode());
+        return couponRule;
+    }
+
+    /**
+     * 构造券使用或者禁用货品
+     * @param excludeGoods
+     * @param reverseSelect
+     * @return
+     */
+    private CouponRuleGoodsRange buildCouponRuleGoodsRange(String excludeGoods, int reverseSelect) {
+        CouponRuleGoodsRange couponRuleGoodsRange = null;
+        if (StringUtils.isNotEmpty(excludeGoods)) {
+            String[] stopGoodsCodeList = StringUtils.split(excludeGoods, ",");
+            couponRuleGoodsRange = new CouponRuleGoodsRange();
+            couponRuleGoodsRange.setGoodsCategory("rbp_goods");
+            couponRuleGoodsRange.setGoodsAttributeColumn("code");
+            couponRuleGoodsRange.setReverseSelect(reverseSelect);
+            List<CouponRuleGoodsRangeValue> couponRuleGoodsRangeValueList1 = new ArrayList<>();
+            buildCouponRuleGoods(stopGoodsCodeList, couponRuleGoodsRangeValueList1);
+            couponRuleGoodsRange.setCouponRuleGoodsRangeValueList(couponRuleGoodsRangeValueList1);
+        }
+        return couponRuleGoodsRange;
+    }
+
+    /**
+     * 构造券使用店铺
+     * @param item
+     * @return
+     */
+    private CouponRuleChannelRange buildCouponRuleChannelRange(InnoGetAppCouponsListByCreateTimeResp.Data item) {
+        CouponRuleChannelRange couponRuleChannelRange = null;
+        if (StringUtils.isNotEmpty(item.getUseStoreCode())) {
+            couponRuleChannelRange = new CouponRuleChannelRange();
+            String[] channelCodeList = StringUtils.split(item.getUseStoreCode(), ",");
+            couponRuleChannelRange.setReverseSelect(0);
+            couponRuleChannelRange.setChannelCategory("rbp_channel");
+            couponRuleChannelRange.setChannelAttributeColumn("code");
+            List<CouponRuleChannelRangeValue> couponRuleChannelRangeValueList = new ArrayList<>();
+            for (String channelCode : channelCodeList) {
+                Channel channel = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", channelCode));
+                if (channel == null) {
+                    continue;
+                }
+                CouponRuleChannelRangeValue rangeValue = new CouponRuleChannelRangeValue();
+                rangeValue.setValueId(channel.getId());
+                rangeValue.setValueCode(channel.getCode());
+                rangeValue.setValueCode(channel.getName());
+                couponRuleChannelRangeValueList.add(rangeValue);
+            }
+            couponRuleChannelRange.setCouponRuleChannelRangeValueList(couponRuleChannelRangeValueList);
+        }
+        return couponRuleChannelRange;
     }
 
     /**

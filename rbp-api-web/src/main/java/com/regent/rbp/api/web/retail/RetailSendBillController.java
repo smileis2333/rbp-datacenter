@@ -12,6 +12,7 @@ import com.regent.rbp.api.dto.retail.RetailSendBillUploadDto;
 import com.regent.rbp.api.dto.retail.RetailSendBillUploadParam;
 import com.regent.rbp.api.service.finder.BaseRetailSendBillServiceFinder;
 import com.regent.rbp.api.web.constants.ApiConstants;
+import com.regent.rbp.infrastructure.annotation.PassToken;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
 import io.swagger.annotations.Api;
@@ -39,6 +40,7 @@ public class RetailSendBillController {
 
     @ApiOperation(value = "批量上传发货单到线上")
     @PostMapping("/batchUploadSendBill/{key}")
+    @PassToken
     public ListDataResponse<RetailSendBillUploadDto> batchUploadSendBill(@PathVariable("key") String key, @RequestBody List<RetailSendBillUploadParam> param) {
         OnlinePlatform onlinePlatform = onlinePlatformDao.selectOne(new QueryWrapper<OnlinePlatform>().eq("code", key));
         if (null == onlinePlatform) {
@@ -51,6 +53,7 @@ public class RetailSendBillController {
 
     @ApiOperation(value = "检查订单是否可以发货")
     @PostMapping("/checkOrderCanDelivery/{key}")
+    @PassToken
     public ModelDataResponse<RetailSendBillCheckRespDto> checkOrderCanDelivery(@PathVariable("key") String key, @RequestBody RetailSendBillCheckReqDto param) {
         OnlinePlatform onlinePlatform = onlinePlatformDao.selectOne(new QueryWrapper<OnlinePlatform>().eq("code", key));
         if (null == onlinePlatform) {
