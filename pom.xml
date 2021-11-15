@@ -260,6 +260,7 @@
 		<module>rbp-api-service</module>
 		<module>rbp-api-service-bean</module>
 		<module>rbp-task-inno</module>
+		<module>rbp-task-standard</module>
 	</modules>
 
 </project>

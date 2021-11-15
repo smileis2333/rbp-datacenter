@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.regent.rbp.datacenter</groupId>
+		<artifactId>rbp-datacenter</artifactId>
+		<version>1.0.0.0</version>
+	</parent>
+
+	<groupId>com.regent.rbp.task.standard</groupId>
+	<artifactId>rbp-task-standard</artifactId>
+	<version>1.0</version>
+	<name>rbp-task-standard</name>
+	<description>rbp-task-standard</description>
+
+	<properties>
+		<java.version>1.8</java.version>
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>com.regent.rbp.api.core</groupId>
+			<artifactId>rbp-api-core</artifactId>
+			<version>1.0.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.regent.rbp.api.dto</groupId>
+			<artifactId>rbp-api-dto</artifactId>
+			<version>1.0.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.regent.rbp.api.service</groupId>
+			<artifactId>rbp-api-service</artifactId>
+			<version>1.0.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.regent.rbp.api.service.bean</groupId>
+			<artifactId>rbp-api-service-bean</artifactId>
+			<version>1.0.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.xuxueli</groupId>
+			<artifactId>xxl-job-core</artifactId>
+			<version>2.3.0</version>
+			<scope>compile</scope>
+		</dependency>
+
+	</dependencies>
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<encoding>${project.build.sourceEncoding}</encoding>
+				</configuration>
+			</plugin>
+		</plugins>
+		<resources>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
+
+</project>
