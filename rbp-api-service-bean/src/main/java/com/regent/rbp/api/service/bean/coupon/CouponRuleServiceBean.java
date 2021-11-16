@@ -2,6 +2,7 @@ package com.regent.rbp.api.service.bean.coupon;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.coupon.*;
+import com.regent.rbp.api.dao.base.RetailPayTypeDao;
 import com.regent.rbp.api.dao.coupon.*;
 import com.regent.rbp.api.service.coupon.CouponRuleService;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;

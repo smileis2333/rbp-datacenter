@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.calculate.BillOweDao">
+
+    <select id="calculateSalePlanBillOwe" parameterType="java.util.HashMap" statementType="CALLABLE">
+        {
+            call p_calculate_sale_plan_bill_owe(
+                #{v_channel_id,mode=IN,jdbcType=BIGINT},
+                #{v_channel_table,mode=IN,jdbcType=VARCHAR},
+                #{v_goods_id,mode=IN,jdbcType=BIGINT},
+                #{v_goods_table,mode=IN,jdbcType=VARCHAR},
+                #{v_sale_plan_id,mode=IN,jdbcType=BIGINT},
+                #{v_result_table,mode=IN,jdbcType=VARCHAR}
+            )
+        }
+    </select>
+
+    <select id="getSalePlanBillOweDetail" resultType="com.regent.rbp.api.dto.calculate.SalePlanBillOweDetail">
+        select sale_plan_id, sale_plan_goods_id, goods_id, color_id, long_id, size_id, quantity
+        from ${tableName}
+    </select>
+
+    <delete id="dropTemporaryTable">
+        drop temporary table if exists ${tableName}
+    </delete>
+
+</mapper>

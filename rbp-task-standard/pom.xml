@@ -10,7 +10,7 @@
 
 	<groupId>com.regent.rbp.task.standard</groupId>
 	<artifactId>rbp-task-standard</artifactId>
-	<version>1.0</version>
+	<version>1.0.0.0</version>
 	<name>rbp-task-standard</name>
 	<description>rbp-task-standard</description>
 

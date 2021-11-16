@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.*;
 import com.regent.rbp.api.core.channel.Channel;
+import com.regent.rbp.api.core.coupon.RetailPayType;
 import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.api.core.member.MemberCard;
 import com.regent.rbp.api.core.salesOrder.SalesOrderBill;

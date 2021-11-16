@@ -49,6 +49,8 @@ public class SystemConstants {
 
     public static final String GET_COUPON_POLICY = "inno.GetCouponPolicy";
 
+    public static final String SALE_PLAN_BILL_AUTO_COMPLETE = "salePlanBillAutoComplete";
+
     public static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
 

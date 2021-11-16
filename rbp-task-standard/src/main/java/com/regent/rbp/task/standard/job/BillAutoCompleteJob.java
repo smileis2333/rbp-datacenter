@@ -1,0 +1,46 @@
+package com.regent.rbp.task.standard.job;
+
+import com.alibaba.fastjson.JSON;
+import com.regent.rbp.api.service.constants.SystemConstants;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
+import com.regent.rbp.task.standard.module.param.SalePlanBillParam;
+import com.regent.rbp.task.standard.service.BillAutoCompleteService;
+import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.handler.annotation.XxlJob;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+/**
+ * @program: rbp-datacenter
+ * @description: 单据自动完结
+ * @author: HaiFeng
+ * @create: 2021-11-15 16:58
+ */
+@Slf4j
+@Component
+public class BillAutoCompleteJob {
+
+    @Autowired
+    BillAutoCompleteService billAutoCompleteService;
+
+    /**
+     * 自动完结销售计划
+     * 请求Json：{ "billNo": "" }
+     */
+    @XxlJob(SystemConstants.SALE_PLAN_BILL_AUTO_COMPLETE)
+    public void salePlanBillAutoComplete() {
+        ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
+        try {
+            //读取参数(电商平台编号)
+            String param = XxlJobHelper.getJobParam();
+            SalePlanBillParam salePlanBillParam = JSON.parseObject(param, SalePlanBillParam.class);
+            billAutoCompleteService.salePlanBillAutoComplete(salePlanBillParam.getBillNo());
+        }catch (Exception ex) {
+            String message = ex.getMessage();
+            XxlJobHelper.log(message);
+            XxlJobHelper.handleFail(message);
+            return;
+        }
+    }
+}
