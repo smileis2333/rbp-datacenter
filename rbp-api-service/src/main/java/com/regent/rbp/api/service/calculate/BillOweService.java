@@ -1,5 +1,6 @@
 package com.regent.rbp.api.service.calculate;
 
+import com.regent.rbp.api.dto.calculate.NoticeBillOweDetail;
 import com.regent.rbp.api.dto.calculate.SalePlanBillOweDetail;
 
 import java.util.List;
@@ -13,5 +14,7 @@ import java.util.List;
 public interface BillOweService {
 
     List<SalePlanBillOweDetail> calculateSalePlanBillOwe(Long channelId, String channelTable, Long goodsId, String goodsTable, Long salePlanId);
+
+    List<NoticeBillOweDetail> calculateNoticeBillOwe(Long channelId, String channelTable, Long goodsId, String goodsTable, Long noticeId);
 
 }

@@ -10,6 +10,7 @@ import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * @program: rbp-datacenter
@@ -23,6 +24,9 @@ public class BillAutoCompleteJob {
 
     @Autowired
     BillAutoCompleteService billAutoCompleteService;
+
+    @Autowired
+    RestTemplate restTemplate;
 
     /**
      * 自动完结销售计划

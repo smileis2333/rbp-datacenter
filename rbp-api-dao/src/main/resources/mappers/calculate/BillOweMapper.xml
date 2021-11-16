@@ -26,4 +26,22 @@
         drop temporary table if exists ${tableName}
     </delete>
 
+    <select id="calculateNoticeBillOwe" parameterType="java.util.HashMap" statementType="CALLABLE">
+        {
+            call p_calculate_notice_bill_owe(
+                #{v_channel_id,mode=IN,jdbcType=BIGINT},
+                #{v_channel_table,mode=IN,jdbcType=VARCHAR},
+                #{v_goods_id,mode=IN,jdbcType=BIGINT},
+                #{v_goods_table,mode=IN,jdbcType=VARCHAR},
+                #{v_notice_id,mode=IN,jdbcType=BIGINT},
+                #{v_result_table,mode=IN,jdbcType=VARCHAR}
+            )
+        }
+    </select>
+
+    <select id="getNoticeBillOweDetail" resultType="com.regent.rbp.api.dto.calculate.NoticeBillOweDetail">
+        select notice_id, notice_goods_id, goods_id, color_id, long_id, size_id, quantity
+        from ${tableName}
+    </select>
+
 </mapper>

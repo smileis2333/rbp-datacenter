@@ -10,4 +10,6 @@ public interface BillAutoCompleteService {
 
 
     void salePlanBillAutoComplete(String billNo);
+
+    void noticeBillAutoComplete(String billNo);
 }
