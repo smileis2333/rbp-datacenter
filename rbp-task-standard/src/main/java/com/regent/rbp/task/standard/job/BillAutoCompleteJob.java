@@ -3,7 +3,7 @@ package com.regent.rbp.task.standard.job;
 import com.alibaba.fastjson.JSON;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
-import com.regent.rbp.task.standard.module.param.SalePlanBillParam;
+import com.regent.rbp.task.standard.module.param.BillParam;
 import com.regent.rbp.task.standard.service.BillAutoCompleteService;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
@@ -38,8 +38,48 @@ public class BillAutoCompleteJob {
         try {
             //读取参数(电商平台编号)
             String param = XxlJobHelper.getJobParam();
-            SalePlanBillParam salePlanBillParam = JSON.parseObject(param, SalePlanBillParam.class);
+            BillParam salePlanBillParam = JSON.parseObject(param, BillParam.class);
             billAutoCompleteService.salePlanBillAutoComplete(salePlanBillParam.getBillNo());
+        }catch (Exception ex) {
+            String message = ex.getMessage();
+            XxlJobHelper.log(message);
+            XxlJobHelper.handleFail(message);
+            return;
+        }
+    }
+
+    /**
+     * 自动完结指令单
+     * 请求Json：{ "billNo": "" }
+     */
+    @XxlJob(SystemConstants.NOTICE_BILL_AUTO_COMPLETE)
+    public void noticeBillAutoComplete() {
+        ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
+        try {
+            //读取参数(电商平台编号)
+            String param = XxlJobHelper.getJobParam();
+            BillParam salePlanBillParam = JSON.parseObject(param, BillParam.class);
+            billAutoCompleteService.noticeBillAutoComplete(salePlanBillParam.getBillNo());
+        }catch (Exception ex) {
+            String message = ex.getMessage();
+            XxlJobHelper.log(message);
+            XxlJobHelper.handleFail(message);
+            return;
+        }
+    }
+
+    /**
+     * 自动完结采购单
+     * 请求Json：{ "billNo": "" }
+     */
+    @XxlJob(SystemConstants.PURCHASE_BILL_AUTO_COMPLETE)
+    public void purchaseBillAutoComplete() {
+        ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
+        try {
+            //读取参数(电商平台编号)
+            String param = XxlJobHelper.getJobParam();
+            BillParam salePlanBillParam = JSON.parseObject(param, BillParam.class);
+            billAutoCompleteService.purchaseBillAutoComplete(salePlanBillParam.getBillNo());
         }catch (Exception ex) {
             String message = ex.getMessage();
             XxlJobHelper.log(message);

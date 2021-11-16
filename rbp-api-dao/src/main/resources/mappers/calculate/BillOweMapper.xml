@@ -44,4 +44,22 @@
         from ${tableName}
     </select>
 
+    <select id="calculatePurchaseBillOwe" parameterType="java.util.HashMap" statementType="CALLABLE">
+        {
+            call p_calculate_purchase_bill_owe(
+                #{v_channel_id,mode=IN,jdbcType=BIGINT},
+                #{v_channel_table,mode=IN,jdbcType=VARCHAR},
+                #{v_goods_id,mode=IN,jdbcType=BIGINT},
+                #{v_goods_table,mode=IN,jdbcType=VARCHAR},
+                #{v_notice_id,mode=IN,jdbcType=BIGINT},
+                #{v_result_table,mode=IN,jdbcType=VARCHAR}
+            )
+        }
+    </select>
+
+    <select id="getPurchaseBillOweDetail" resultType="com.regent.rbp.api.dto.calculate.PurchaseBillOweDetail">
+        select purchase_id, goods_id, color_id, long_id, size_id, quantity
+        from ${tableName}
+    </select>
+
 </mapper>

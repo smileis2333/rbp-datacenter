@@ -51,6 +51,10 @@ public class SystemConstants {
 
     public static final String SALE_PLAN_BILL_AUTO_COMPLETE = "salePlanBillAutoComplete";
 
+    public static final String NOTICE_BILL_AUTO_COMPLETE = "noticeBillAutoComplete";
+
+    public static final String PURCHASE_BILL_AUTO_COMPLETE = "purchaseBillAutoComplete";
+
     public static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
 

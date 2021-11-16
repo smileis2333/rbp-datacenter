@@ -10,7 +10,7 @@ import lombok.Data;
  * @create: 2021-11-15 18:31
  */
 @Data
-public class SalePlanBillParam {
+public class BillParam {
 
     @ApiModelProperty(notes = "订单号")
     private String billNo;

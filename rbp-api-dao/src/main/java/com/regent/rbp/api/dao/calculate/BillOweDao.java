@@ -1,6 +1,7 @@
 package com.regent.rbp.api.dao.calculate;
 
 import com.regent.rbp.api.dto.calculate.NoticeBillOweDetail;
+import com.regent.rbp.api.dto.calculate.PurchaseBillOweDetail;
 import com.regent.rbp.api.dto.calculate.SalePlanBillOweDetail;
 import org.apache.ibatis.annotations.Param;
 
@@ -24,5 +25,9 @@ public interface BillOweDao {
     void calculateNoticeBillOwe(HashMap<String,Object> map);
 
     List<NoticeBillOweDetail> getNoticeBillOweDetail(@Param("tableName") String tableName);
+
+    void calculatePurchaseBillOwe(HashMap<String,Object> map);
+
+    List<PurchaseBillOweDetail> getPurchaseBillOweDetail(@Param("tableName") String tableName);
 
 }
