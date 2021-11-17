@@ -1,5 +1,7 @@
 package com.regent.rbp.task.standard.service;
 
+import com.regent.rbp.task.standard.module.param.BillParam;
+
 /**
  * @program: rbp-datacenter
  * @description: 单据自动完成
@@ -9,9 +11,9 @@ package com.regent.rbp.task.standard.service;
 public interface BillAutoCompleteService {
 
 
-    void salePlanBillAutoComplete(String billNo);
+    void salePlanBillAutoComplete(BillParam billParam);
 
-    void noticeBillAutoComplete(String billNo);
+    void noticeBillAutoComplete(BillParam billParam);
 
-    void purchaseBillAutoComplete(String billNo);
+    void purchaseBillAutoComplete(BillParam billParam);
 }

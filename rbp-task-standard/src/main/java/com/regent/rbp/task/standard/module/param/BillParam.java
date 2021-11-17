@@ -3,6 +3,8 @@ package com.regent.rbp.task.standard.module.param;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * @program: rbp-datacenter
  * @description: 销售计划自动完结请求
@@ -11,6 +13,9 @@ import lombok.Data;
  */
 @Data
 public class BillParam {
+
+    @ApiModelProperty(notes = "开始日期")
+    private Date startDate;
 
     @ApiModelProperty(notes = "订单号")
     private String billNo;

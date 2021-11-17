@@ -38,8 +38,8 @@ public class BillAutoCompleteJob {
         try {
             //读取参数(电商平台编号)
             String param = XxlJobHelper.getJobParam();
-            BillParam salePlanBillParam = JSON.parseObject(param, BillParam.class);
-            billAutoCompleteService.salePlanBillAutoComplete(salePlanBillParam.getBillNo());
+            BillParam billParam = JSON.parseObject(param, BillParam.class);
+            billAutoCompleteService.salePlanBillAutoComplete(billParam);
         }catch (Exception ex) {
             String message = ex.getMessage();
             XxlJobHelper.log(message);
@@ -58,8 +58,8 @@ public class BillAutoCompleteJob {
         try {
             //读取参数(电商平台编号)
             String param = XxlJobHelper.getJobParam();
-            BillParam salePlanBillParam = JSON.parseObject(param, BillParam.class);
-            billAutoCompleteService.noticeBillAutoComplete(salePlanBillParam.getBillNo());
+            BillParam billParam = JSON.parseObject(param, BillParam.class);
+            billAutoCompleteService.noticeBillAutoComplete(billParam);
         }catch (Exception ex) {
             String message = ex.getMessage();
             XxlJobHelper.log(message);
@@ -78,8 +78,8 @@ public class BillAutoCompleteJob {
         try {
             //读取参数(电商平台编号)
             String param = XxlJobHelper.getJobParam();
-            BillParam salePlanBillParam = JSON.parseObject(param, BillParam.class);
-            billAutoCompleteService.purchaseBillAutoComplete(salePlanBillParam.getBillNo());
+            BillParam billParam = JSON.parseObject(param, BillParam.class);
+            billAutoCompleteService.purchaseBillAutoComplete(billParam);
         }catch (Exception ex) {
             String message = ex.getMessage();
             XxlJobHelper.log(message);

@@ -4,31 +4,35 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.base.BillMasterData;
 import com.regent.rbp.api.core.noticeBill.NoticeBill;
+import com.regent.rbp.api.core.noticeBill.NoticeBillGoods;
 import com.regent.rbp.api.core.purchaseBill.PurchaseBill;
+import com.regent.rbp.api.core.purchaseBill.PurchaseBillGoodsFinal;
+import com.regent.rbp.api.core.purchaseReceiveBill.PurchaseReceiveBill;
 import com.regent.rbp.api.core.salePlan.SalePlanBill;
-import com.regent.rbp.api.core.salePlan.SalePlanBillGoods;
 import com.regent.rbp.api.core.salePlan.SalePlanBillGoodsFinal;
-import com.regent.rbp.api.core.sendBill.SendBill;
 import com.regent.rbp.api.core.sendBill.SendBillGoods;
 import com.regent.rbp.api.dao.noticeBill.NoticeBillDao;
+import com.regent.rbp.api.dao.noticeBill.NoticeBillGoodsDao;
 import com.regent.rbp.api.dao.purchaseBill.PurchaseBillDao;
+import com.regent.rbp.api.dao.purchaseBill.PurchaseBillGoodsFinalDao;
+import com.regent.rbp.api.dao.purchaseReceiveBill.PurchaseReceiveBillDao;
 import com.regent.rbp.api.dao.salePlan.SalePlanBillDao;
-import com.regent.rbp.api.dao.salePlan.SalePlanBillGoodsDao;
 import com.regent.rbp.api.dao.salePlan.SalePlanBillGoodsFinalDao;
 import com.regent.rbp.api.dao.sendBill.SendBillDao;
-import com.regent.rbp.api.dao.sendBill.SendBillGoodsDao;
-import com.regent.rbp.api.dto.calculate.NoticeBillOweDetail;
-import com.regent.rbp.api.dto.calculate.PurchaseBillOweDetail;
-import com.regent.rbp.api.dto.calculate.SalePlanBillOweDetail;
-import com.regent.rbp.api.service.calculate.BillOweService;
+import com.regent.rbp.task.standard.module.WeekDate;
+import com.regent.rbp.task.standard.module.param.BillParam;
 import com.regent.rbp.task.standard.service.BillAutoCompleteService;
+import com.regent.rbp.task.standard.util.DateUtil;
 import com.xxl.job.core.context.XxlJobHelper;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @program: rbp-datacenter
@@ -46,82 +50,158 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
     @Autowired
     NoticeBillDao noticeBillDao;
     @Autowired
-    SendBillDao sendBill;
+    NoticeBillGoodsDao noticeBillGoodsDao;
     @Autowired
-    SendBillGoodsDao sendBillGoodsDao;
+    SendBillDao sendBillDao;
     @Autowired
     PurchaseBillDao purchaseBillDao;
     @Autowired
-    BillOweService billOweService;
+    PurchaseBillGoodsFinalDao purchaseBillGoodsFinalDao;
+    @Autowired
+    PurchaseReceiveBillDao purchaseReceiveBillDao;
+
 
     @Override
-    public void salePlanBillAutoComplete(String billNo) {
-        // 查询未完结的计划单
-        QueryWrapper queryWrapper = new QueryWrapper();
-        if (StringUtils.isNotBlank(billNo)) {
-            queryWrapper.eq("bill_no", billNo);
-        }
-        queryWrapper.ne("finish_flag", 1);
-        queryWrapper.eq("status", 1);
-        List<SalePlanBill> salePlanBillList = salePlanBillDao.selectList(queryWrapper);
-        XxlJobHelper.log(String.format("查出 未完结 计划单 %s 单", salePlanBillList.size()));
-        Integer pedometer = 0;
-        for (SalePlanBill bill : salePlanBillList) {
-            List<SalePlanBillOweDetail> detail = billOweService.calculateSalePlanBillOwe(null, null, null, null, bill.getId());
-            if (detail != null && detail.size() == 0){
-                bill.setFinishFlag(1);
-                bill.setUpdatedTime(new Date());
-                salePlanBillDao.updateById(bill);
-                pedometer++;
+    public void salePlanBillAutoComplete(BillParam billParam) {
+        Date date = salePlanBillDao.queryMinDate(billParam.getStartDate());
+        List<WeekDate> weekDateList = DateUtil.doDateType(date.getTime(), new Date().getTime());
+        for (WeekDate weekDate : weekDateList) {
+            // 查询未完结的计划单
+            QueryWrapper queryWrapper = new QueryWrapper();
+            if (StringUtils.isNotBlank(billParam.getBillNo())) {
+                queryWrapper.eq("bill_no", billParam.getBillNo());
             }
+            queryWrapper.ne("finish_flag", 1);
+            queryWrapper.eq("status", 1);
+            queryWrapper.ge("created_time", weekDate.getStartTime());
+            queryWrapper.le("created_time", weekDate.getEndTime());
+            List<SalePlanBill> salePlanBillList = salePlanBillDao.selectList(queryWrapper);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateUtil.YYYY_MM_DD);
+            XxlJobHelper.log(String.format("查出 %s ~ %s 未完结 计划单 %s 单", simpleDateFormat.format(weekDate.getStartTime()), simpleDateFormat.format(weekDate.getEndTime()), salePlanBillList.size()));
+            Integer pedometer = 0;
+            for (SalePlanBill bill : salePlanBillList) {
+                // 计划单货品明细
+                List<SalePlanBillGoodsFinal> salePlanBillGoodsFinalList = salePlanBillGoodsFinalDao.selectList(new LambdaQueryWrapper<SalePlanBillGoodsFinal>().eq(SalePlanBillGoodsFinal::getBillId, bill.getId()));
+                // 发货单货品明细
+                List<SendBillGoods> sendBillGoodsList = sendBillDao.querySendBillGoods(bill.getId(), null);
+                Integer endState = 0;
+                for (SalePlanBillGoodsFinal goodsFinal : salePlanBillGoodsFinalList) {
+                    SendBillGoods sendBillGoods = sendBillGoodsList.stream().filter(f -> f.getSalePlanId().equals(goodsFinal.getBillId()) && f.getSalePlanGoodsId().equals(goodsFinal.getId())).findFirst().orElse(null);
+                    if (sendBillGoods != null) {
+                        BigDecimal owqQty = goodsFinal.getQuantity().subtract(sendBillGoods.getQuantity());
+                        if (owqQty.compareTo(BigDecimal.ZERO) == 1) {
+                            endState++;
+                        }
+                    } else {
+                        endState++;
+                    }
+                }
+                if (endState == 0) {
+                    bill.setFinishFlag(1);
+                    bill.setUpdatedTime(new Date());
+                    salePlanBillDao.updateById(bill);
+                    pedometer++;
+                }
+            }
+            XxlJobHelper.log(String.format("本次完结 销售计划有 %s 单", pedometer));
         }
-        XxlJobHelper.log(String.format("本次完结 销售计划有 %s 单", pedometer));
     }
 
     @Override
-    public void noticeBillAutoComplete(String billNo) {
-        // 查询未完结的指令单
-        QueryWrapper queryWrapper = new QueryWrapper();
-        if (StringUtils.isNotBlank(billNo)) {
-            queryWrapper.eq("bill_no", billNo);
-        }
-        queryWrapper.ne("finish_flag", 1);
-        List<NoticeBill> noticeBillList = noticeBillDao.selectList(queryWrapper);
-        XxlJobHelper.log(String.format("查出 未完结 指令单有 %s 单", noticeBillList.size()));
-        Integer pedometer = 0;
-        for (NoticeBill bill : noticeBillList) {
-            List<NoticeBillOweDetail> detail = billOweService.calculateNoticeBillOwe(null, null, null, null, bill.getId());
-            if (detail != null && detail.size() == 0){
-                bill.setFinishFlag(1);
-                bill.setUpdatedTime(new Date());
-                noticeBillDao.updateById(bill);
-                pedometer++;
+    public void noticeBillAutoComplete(BillParam billParam) {
+        Date date = salePlanBillDao.queryMinDate(billParam.getStartDate());
+        List<WeekDate> weekDateList = DateUtil.doDateType(date.getTime(), new Date().getTime());
+        for (WeekDate weekDate : weekDateList) {
+            // 查询未完结的指令单
+            QueryWrapper queryWrapper = new QueryWrapper();
+            if (StringUtils.isNotBlank(billParam.getBillNo())) {
+                queryWrapper.eq("bill_no", billParam.getBillNo());
             }
+            queryWrapper.ne("finish_flag", 1);
+            queryWrapper.eq("status", 1);
+            queryWrapper.ge("created_time", weekDate.getStartTime());
+            queryWrapper.le("created_time", weekDate.getEndTime());
+            List<NoticeBill> noticeBillList = noticeBillDao.selectList(queryWrapper);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateUtil.YYYY_MM_DD);
+            XxlJobHelper.log(String.format("查出 %s ~ %s 未完结 指令单有 %s 单", simpleDateFormat.format(weekDate.getStartTime()), simpleDateFormat.format(weekDate.getEndTime()), noticeBillList.size()));
+            Integer pedometer = 0;
+            for (NoticeBill bill : noticeBillList) {
+                // 指令单货品明细
+                List<NoticeBillGoods> goodsList = noticeBillGoodsDao.selectList(new LambdaQueryWrapper<NoticeBillGoods>().eq(NoticeBillGoods::getBillId, bill.getId()));
+                // 发货单货品明细
+                List<SendBillGoods> sendBillGoodsList = sendBillDao.querySendBillGoods(null, bill.getId());
+
+                Integer endState = 0;
+                for (NoticeBillGoods goods : goodsList) {
+                    SendBillGoods sendBillGoods = sendBillGoodsList.stream().filter(f -> f.getNoticeId().equals(goods.getBillId()) && f.getNoticeGoodsId().equals(goods.getId())).findFirst().orElse(null);
+                    if (sendBillGoods != null) {
+                        BigDecimal owqQty = goods.getQuantity().subtract(sendBillGoods.getQuantity());
+                        if (owqQty.compareTo(BigDecimal.ZERO) == 1) {
+                            endState++;
+                        }
+                    } else {
+                        endState++;
+                    }
+                }
+                if (endState == 0) {
+                    bill.setFinishFlag(1);
+                    bill.setUpdatedTime(new Date());
+                    noticeBillDao.updateById(bill);
+                    pedometer++;
+                }
+            }
+            XxlJobHelper.log(String.format("本次完结 指令单有 %s 单", pedometer));
         }
-        XxlJobHelper.log(String.format("本次完结 指令单有 %s 单", pedometer));
     }
 
     @Override
-    public void purchaseBillAutoComplete(String billNo) {
-        // 查询未完结的采购单
-        QueryWrapper queryWrapper = new QueryWrapper();
-        if (StringUtils.isNotBlank(billNo)) {
-            queryWrapper.eq("bill_no", billNo);
-        }
-        queryWrapper.ne("finish_flag", 1);
-        List<PurchaseBill> purchaseBillList = purchaseBillDao.selectList(queryWrapper);
-        XxlJobHelper.log(String.format("查出 未完结 采购单 有 %s 单", purchaseBillList.size()));
-        Integer pedometer = 0;
-        for (PurchaseBill bill : purchaseBillList) {
-            List<PurchaseBillOweDetail> detail = billOweService.calculatePurchaseBillOwe(null, null, null, null, bill.getId());
-            if (detail != null && detail.size() == 0){
-                bill.setFinishFlag(1);
-                bill.setUpdatedTime(new Date());
-                purchaseBillDao.updateById(bill);
-                pedometer++;
+    public void purchaseBillAutoComplete(BillParam billParam) {
+        Date date = salePlanBillDao.queryMinDate(billParam.getStartDate());
+        List<WeekDate> weekDateList = DateUtil.doDateType(date.getTime(), new Date().getTime());
+        for (WeekDate weekDate : weekDateList) {
+            // 查询未完结的采购单
+            QueryWrapper queryWrapper = new QueryWrapper();
+            if (StringUtils.isNotBlank(billParam.getBillNo())) {
+                queryWrapper.eq("bill_no", billParam.getBillNo());
             }
+            queryWrapper.ne("finish_flag", 1);
+            queryWrapper.eq("status", 1);
+            queryWrapper.ge("created_time", weekDate.getStartTime());
+            queryWrapper.le("created_time", weekDate.getEndTime());
+            List<PurchaseBill> purchaseBillList = purchaseBillDao.selectList(queryWrapper);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateUtil.YYYY_MM_DD);
+            XxlJobHelper.log(String.format("查出 %s ~ %s 未完结 采购单 %s 单", simpleDateFormat.format(weekDate.getStartTime()), simpleDateFormat.format(weekDate.getEndTime()), purchaseBillList.size()));
+            Integer pedometer = 0;
+            for (PurchaseBill bill : purchaseBillList) {
+                // 采购单调后货品明细
+                List<PurchaseBillGoodsFinal> goodsFinalList = purchaseBillGoodsFinalDao.selectList(new LambdaQueryWrapper<PurchaseBillGoodsFinal>().eq(PurchaseBillGoodsFinal::getBillId, bill.getId()));
+                // 采购入库单
+                List<PurchaseReceiveBill> purchaseReceiveBillList = purchaseReceiveBillDao.selectList(new LambdaQueryWrapper<PurchaseReceiveBill>().eq(BillMasterData::getStatus, 1).eq(PurchaseReceiveBill::getPurchaseId, bill.getId()));
+                List<Long> purchaseReceiveBillId = purchaseReceiveBillList.stream().map(BillMasterData::getId).collect(Collectors.toList());
+                List<PurchaseBillGoodsFinal> purchaseBillGoodsFinalList = purchaseBillGoodsFinalDao.queryPurchaseBillGoodsFinal(purchaseReceiveBillId);
+
+                Integer endState = 0;
+                for (PurchaseBillGoodsFinal goods : goodsFinalList) {
+                    PurchaseBillGoodsFinal purchaseBillGoodsFinal = purchaseBillGoodsFinalList.stream().filter(f -> f.getGoodsId().equals(goods.getGoodsId())).findFirst().orElse(null);
+                    if (purchaseBillGoodsFinal != null) {
+                        BigDecimal owqQty = goods.getQuantity().subtract(purchaseBillGoodsFinal.getQuantity());
+                        if (owqQty.compareTo(BigDecimal.ZERO) == 1) {
+                            endState++;
+                        }
+                    } else {
+                        endState++;
+                    }
+                }
+
+                if (endState == 0) {
+                    bill.setFinishFlag(1);
+                    bill.setUpdatedTime(new Date());
+                    purchaseBillDao.updateById(bill);
+                    pedometer++;
+                }
+            }
+            XxlJobHelper.log(String.format("本次完结 采购单 有 %s 单", pedometer));
         }
-        XxlJobHelper.log(String.format("本次完结 采购单 有 %s 单", pedometer));
     }
 
 

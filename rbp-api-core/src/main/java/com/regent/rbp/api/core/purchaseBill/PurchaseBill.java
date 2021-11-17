@@ -2,6 +2,7 @@ package com.regent.rbp.api.core.purchaseBill;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -15,6 +16,7 @@ import java.util.Date;
  * @create: 2021-11-16 16:06
  */
 @Data
+@ApiModel(description = "采购单")
 @TableName(value = "rbp_purchase_bill")
 public class PurchaseBill {
 

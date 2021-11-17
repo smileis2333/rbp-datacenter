@@ -1,4 +1,4 @@
-package com.regent.rbp.api.core.sendBill;
+package com.regent.rbp.api.core.purchaseBill;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -7,17 +7,18 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * @program: rbp-datacenter
- * @description: 发货单货品明细
+ * @description: 采购单调整后货品明细
  * @author: HaiFeng
- * @create: 2021-11-16 17:31
+ * @create: 2021-11-17 11:04
  */
 @Data
-@ApiModel(description = "发货单货品明细表")
-@TableName(value = "rbp_send_bill_goods")
-public class SendBillGoods {
+@ApiModel(description = "采购单调整后货品明细")
+@TableName(value = "rbp_purchase_bill_goods_final")
+public class PurchaseBillGoodsFinal {
 
     @ApiModelProperty(notes = "编码")
     @TableId("id")
@@ -25,21 +26,6 @@ public class SendBillGoods {
 
     @ApiModelProperty(notes = "单据编码")
     private Long billId;
-
-    @ApiModelProperty(notes = "指令单号")
-    private Long noticeId;
-
-    @ApiModelProperty(notes = "指令单货品明细号")
-    private Long noticeGoodsId;
-
-    @ApiModelProperty(notes = "计划单号")
-    private Long salePlanId;
-
-    @ApiModelProperty(notes = "计划单货品明细号")
-    private Long salePlanGoodsId;
-
-    @ApiModelProperty(notes = "价格类型")
-    private Long priceTypeId;
 
     @ApiModelProperty(notes = "货品编码")
     private Long goodsId;
@@ -50,7 +36,7 @@ public class SendBillGoods {
     @ApiModelProperty(notes = "吊牌价")
     private BigDecimal tagPrice;
 
-    @ApiModelProperty(notes = "结算价")
+    @ApiModelProperty(notes = "采购价")
     private BigDecimal balancePrice;
 
     @ApiModelProperty(notes = "币种价格")
@@ -58,6 +44,15 @@ public class SendBillGoods {
 
     @ApiModelProperty(notes = "汇率")
     private BigDecimal exchangeRate;
+
+    @ApiModelProperty(notes = "交货日期")
+    private Date deliveryDate;
+
+    @ApiModelProperty(notes = "来货超差比例")
+    private BigDecimal receiveDifferentPercent;
+
+    @ApiModelProperty(notes = "来货超差类型")
+    private Integer receiveDifferentType;
 
     @ApiModelProperty(notes = "数量")
     private BigDecimal quantity;

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.sendBill.SendBillDao">
+
+    <select id="querySendBillGoods" resultType="com.regent.rbp.api.core.sendBill.SendBillGoods">
+        select b.notice_id, b.notice_goods_id, b.sale_plan_id, b.sale_plan_goods_id, b.goods_id, b.quantity
+        from rbp_send_bill a
+        inner join rbp_send_bill_goods b on a.id = b.bill_id
+        where a.status = 1
+        <if test="salePlanId != null">
+            and b.sale_plan_id = #{salePlanId}
+        </if>
+        <if test="noticeId != null">
+            and b.notice_id = #{noticeId}
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.purchaseBill.PurchaseBillGoodsFinalDao">
+
+    <select id="queryPurchaseBillGoodsFinal" resultType="com.regent.rbp.api.core.purchaseBill.PurchaseBillGoodsFinal">
+        select a.goods_id, Sum(a.quantity) as quantity
+        from rbp_purchase_bill_goods_final a
+        where a.bill_id in
+        <foreach item="id" collection="billIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        group by a.goods_id
+    </select>
+</mapper>

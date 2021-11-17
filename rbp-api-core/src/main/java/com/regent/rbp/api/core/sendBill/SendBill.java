@@ -1,6 +1,8 @@
 package com.regent.rbp.api.core.sendBill;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.regent.rbp.api.core.base.BillMasterData;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -11,6 +13,8 @@ import lombok.Data;
  * @create: 2021-11-16 17:17
  */
 @Data
+@ApiModel(description = "发货单")
+@TableName(value = "rbp_send_bill")
 public class SendBill extends BillMasterData {
 
     @ApiModelProperty(notes = "业务类型")
