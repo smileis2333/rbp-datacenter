@@ -134,6 +134,7 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
                     RetailReturnNoticeBillSaveParam saveParam = new RetailReturnNoticeBillSaveParam();
                     saveParam.setBillNo(notice.getReturn_sn());
                     saveParam.setManualId(notice.getReturn_sn());
+                    saveParam.setOnlineReturnNoticeCode(notice.getReturn_sn());
                     saveParam.setBillDate(new Date());
                     saveParam.setSaleChannelCode(channel.getCode());
                     saveParam.setReceiveChannelCode(recChannel.getCode());

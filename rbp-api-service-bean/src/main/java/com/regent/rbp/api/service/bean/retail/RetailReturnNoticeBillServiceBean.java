@@ -1,6 +1,7 @@
 package com.regent.rbp.api.service.bean.retail;
 
 import cn.hutool.core.collection.CollUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.regent.rbp.api.core.base.Barcode;
@@ -80,8 +81,19 @@ public class RetailReturnNoticeBillServiceBean extends ServiceImpl<RetailReturnN
 
         // 写入 全渠道退货通知单
         retailReturnNoticeBillDao.insert(context.getBill());
+        // 更新 全渠道订单 售后状态 and 退款状态
+        RetailOrderBill orderBill = retailOrderBillDao.selectById(context.getBill().getRetailOrderBillId());
+        orderBill.setAfterSaleProcessStatus(2);// 同意退货
+        orderBill.setRefundStatus(2);   // 待退货
+        retailOrderBillDao.updateById(orderBill);
+
         for (RetailReturnNoticeBillGoods billGoods : context.getBillGoodsList()) {
             retailReturnNoticeBillGoodsDao.insert(billGoods);
+            // 更新 全渠道订单 货品售后状态 and 货品退款状态
+            RetailOrderBillGoods orderBillGoods = retailOrderBillGoodsDao.selectById(billGoods.getRetailOrderBillGoodsId());
+            orderBillGoods.setRefundStatus(2);
+            orderBillGoods.setAfterSaleProcessStatus(3);
+            retailOrderBillGoodsDao.updateById(orderBillGoods);
         }
         return ModelDataResponse.Success(context.getBill().getBillNo());
     }

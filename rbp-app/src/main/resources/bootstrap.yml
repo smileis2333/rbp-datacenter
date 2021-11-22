@@ -2,7 +2,7 @@ spring:
   application:
     name: datacenter-server
   profiles:
-    active: dev
+    active: hf
   cloud:
     nacos:
       config:

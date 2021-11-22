@@ -48,6 +48,9 @@ public class RetailReturnNoticeBillSaveParam {
     @ApiModelProperty(notes = "备注")
     private String notes;
 
+    @ApiModelProperty(notes = "线上退货单号")
+    private String onlineReturnNoticeCode;
+
     @ApiModelProperty(notes = "自定义字段")
     private List<CustomizeDataDto> customizeData;
 

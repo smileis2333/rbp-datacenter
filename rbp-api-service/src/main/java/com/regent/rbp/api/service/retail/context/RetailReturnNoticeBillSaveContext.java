@@ -44,6 +44,7 @@ public class RetailReturnNoticeBillSaveContext {
         this.bill.setBillNo(param.getBillNo());
         this.bill.setBillDate(param.getBillDate());
         this.bill.setLogisticsBillCode(param.getLogisticsBillCode());
+        this.bill.setOnlineReturnNoticeCode(param.getOnlineReturnNoticeCode());
         this.bill.setStatus(param.getStatus());
         this.bill.setNotes(param.getNotes());
     }
