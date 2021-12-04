@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.task.TaskDao">
+
+    <resultMap id="TaskConsumption" type="com.xxl.job.core.biz.model.Task" >
+        <result column="id" property="id" />
+        <result column="subscriber_id" property="subscriberId" />
+        <result column="subscriber_key" property="subscriberKey" />
+        <result column="task_type" property="taskType" />
+        <result column="bill_type" property="billType" />
+        <result column="content_id" property="contentId" />
+        <result column="content_no" property="contentNo" />
+        <result column="module_id" property="moduleId" />
+        <result column="status_code" property="statusCode" />
+        <result column="status_message" property="statusMessage" />
+        <result column="retry_times" property="retryTimes" />
+        <result column="row_version" property="rowVersion" />
+        <result column="time_locked" property="timeLocked" />
+        <result column="created_by" property="createdBy" />
+        <result column="created_time" property="createdTime" />
+        <result column="updated_by" property="updatedBy" />
+        <result column="updated_time" property="updatedTime" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+        t.subscriber_id,
+        s.code subscriber_key,
+        t.task_type,
+        t.bill_type
+        t.content_id,
+        t.content_no,
+        t.module_id,
+        t.status_code,
+        t.status_message,
+        t.retry_times,
+        t.row_version,
+        t.time_locked,
+        t.created_by,
+        t.created_time,
+        t.updated_by,
+        t.updated_time
+    </sql>
+
+    <select id="selectTaskList" resultMap="TaskConsumption">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM (
+        SELECT tsk.*, row_number () OVER (PARTITION BY concat(tsk.bill_type,'-',tsk.content_id) ORDER BY tsk.content_id ASC ) rn
+        FROM rbp_task_consumption tsk
+        WHERE ifnull(tsk.status_code,-1) != 0
+        AND tsk.time_locked = 0
+        ) t
+        INNER JOIN rbp_task_subscriber As s ON t.subscriber_id = s.id
+        WHERE t.rn = 1
+        ORDER BY t.retry_times ASC
+        <if test="readRecords > 0">
+            LIMIT #{readRecords}
+        </if>
+    </select>
+
+    <select id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM rbp_task_consumption WHERE id = #{id}
+    </select>
+
+    <insert id="update" parameterType="com.xxl.job.core.biz.model.Task" >
+        UPDATE rbp_task_consumption
+        SET `status_code` = #{statusCode},
+        `status_message` = #{statusMessage},
+        `retry_times` = #{retryTimes},
+        `row_version` = #{rowVersion},
+        `time_locked` = #{timeLocked},
+        `updated_time` = now()
+        WHERE id = #{id}
+    </insert>
+
+    <update id="lock" parameterType="com.xxl.job.core.biz.model.Task" >
+        UPDATE rbp_task_consumption
+        SET `time_locked` = #{timeLocked},
+        `row_version` = row_version + 1,
+        `updated_time` = now()
+        WHERE id = #{id}
+        AND ifnull(status_code,-2) != 0
+        AND time_locked = 0
+        AND row_version = #{rowVersion}
+    </update>
+
+    <update id="unlockTimeoutTasks">
+        UPDATE rbp_task_consumption
+        SET time_locked  = 0,
+        row_version  = row_version + 1,
+        updated_time = now()
+        WHERE time_locked > 0
+        AND time_locked &lt; #{maxTimeLocked}
+    </update>
+</mapper>

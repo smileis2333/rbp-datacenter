@@ -32,6 +32,21 @@
 			<groupId>com.regent.rbp.infrastructure</groupId>
 			<artifactId>rbp-infrastructure</artifactId>
 			<version>0.0.0.5</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.xuxueli</groupId>
+					<artifactId>xxl-job-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- xxl-job-core -->
+		<dependency>
+			<groupId>com.xuxueli</groupId>
+			<artifactId>xxl-job-core</artifactId>
+			<version>2.3.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/../lib/xxl-job-core-2.3.0.jar</systemPath>
 		</dependency>
 
 		<dependency>

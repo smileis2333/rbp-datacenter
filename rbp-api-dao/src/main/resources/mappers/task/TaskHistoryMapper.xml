@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.task.TaskHistoryDao">
+
+    <insert id="insert" parameterType="com.xxl.job.core.biz.model.TaskHistory" useGeneratedKeys="true" keyProperty="id" >
+        INSERT rbp_task_consumption_history ( id, task_consumption_id, subscriber_id, task_type, bill_type, content_id, content_no, module_id, status_code, status_message,
+        retry_times, row_version, time_locked, created_by, created_time, updated_by, updated_time)
+        VALUES( #{id}, #{taskConsumptionId}, #{subscriberId}, #{taskType}, #{billType}, #{contentId},
+        #{contentNo}, #{moduleId}, #{statusCode}, #{statusMessage},
+        #{retryTimes}, #{rowVersion}, #{timeLocked}, #{createdBy}, #{createdTime}, #{updatedBy}, #{updatedTime} )
+    </insert>
+
+</mapper>
