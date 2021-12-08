@@ -51,13 +51,25 @@
         ${sql}
     </select>
 
-    <insert id="insertSql">
+    <insert id="insertSql" parameterType="java.lang.String">
         ${sql}
     </insert>
 
-    <insert id="updateSql">
+    <delete id="deleteSql" parameterType="java.lang.String" >
+        ${sql}
+    </delete>
+
+    <insert id="updateSql" parameterType="java.lang.String">
         ${sql}
     </insert>
+
+    <select id="isExistField" resultType="java.lang.Integer">
+        select count(*) from information_schema.columns where `table_schema` ='rbp' and `table_name` = #{tableName} and `column_name` = #{fieldName}
+    </select>
+
+    <select id="isExistTable" resultType="java.lang.Integer">
+        select count(*) from information_schema.tables where `table_schema`= 'rbp' and `table_name`=  #{tableName};
+    </select>
 
     <select id="getOneModuleBusinessType" resultType="com.regent.rbp.api.core.base.ModuleBusinessType">
          SELECT a.id, a.module_id, a.business_type_id FROM rbp_module_business_type a
@@ -67,7 +79,7 @@
             LIMIT 1;
     </select>
 
-    <select id="getListMap" resultType="java.util.Map">
+    <select id="getListMap" parameterType="java.lang.String" resultType="java.util.Map">
         ${sql}
     </select>
 

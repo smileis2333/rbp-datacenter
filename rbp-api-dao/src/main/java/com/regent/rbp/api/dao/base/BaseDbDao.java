@@ -26,9 +26,15 @@ public interface BaseDbDao {
 
     String getStringDataBySql(@Param("sql") String sql);
 
-    void insertSql(@Param("sql") String sql);
+    Integer insertSql(@Param("sql") String sql);
+
+    void deleteSql(@Param("sql") String sql);
 
     void updateSql(@Param("sql") String sql);
+
+    Integer isExistField(@Param("tableName") String tableName, @Param("fieldName") String fieldName);
+
+    Integer isExistTable(@Param("tableName") String tableName);
 
     /**
      * 获取第一个已启用模块业务类型

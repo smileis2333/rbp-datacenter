@@ -34,6 +34,7 @@ import com.regent.rbp.api.dao.noticeBill.NoticeBillSizeDao;
 import com.regent.rbp.api.dao.salePlan.SalePlanBillDao;
 import com.regent.rbp.api.dao.salePlan.SalePlanBillGoodsFinalDao;
 import com.regent.rbp.api.dao.salePlan.SalePlanBillSizeFinalDao;
+import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
@@ -41,7 +42,9 @@ import com.regent.rbp.api.dto.notice.NoticeBillBillGoodsDetailData;
 import com.regent.rbp.api.dto.notice.NoticeBillQueryParam;
 import com.regent.rbp.api.dto.notice.NoticeBillQueryResult;
 import com.regent.rbp.api.dto.notice.NoticeBillSaveParam;
+import com.regent.rbp.api.service.base.BaseDbService;
 import com.regent.rbp.api.service.constants.SystemConstants;
+import com.regent.rbp.api.service.constants.TableConstants;
 import com.regent.rbp.api.service.notice.NoticeBillService;
 import com.regent.rbp.api.service.notice.context.NoticeBillQueryContext;
 import com.regent.rbp.api.service.notice.context.NoticeBillSaveContext;
@@ -104,6 +107,8 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
     private SalePlanBillGoodsFinalDao salePlanBillGoodsFinalDao;
     @Autowired
     private SalePlanBillDao salePlanBillDao;
+    @Autowired
+    private BaseDbService baseDbService;
 
     /**
      * 分页查询
@@ -154,11 +159,14 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         bill.setBillNo(systemCommonService.getBillNo(bill.getModuleId()));
         // 新增订单
         noticeBillDao.insert(bill);
-        // TODO 单据自定义字段
+        // 单据自定义字段
+        baseDbService.saveOrUpdateCustomFieldData(TableConstants.NOTICE_BILL, bill.getId(), bill.getCustomFieldMap());
         // 新增物流信息
         noticeBillLogisticsDao.insert(logistics);
+        // 货品自定义字段
+        List<Map<String, Object>> customFieldMapList = billGoodsList.stream().map(v -> v.getCustomFieldMap()).filter(f -> null != f).collect(Collectors.toList());
+        baseDbService.batchSaveOrUpdateCustomFieldData(TableConstants.NOTICE_BILL_GOODS, customFieldMapList);
         // 批量新增货品明细
-        // TODO 货品自定义字段
         List<NoticeBillGoods> goodsList = new ArrayList<>();
         int i = 0;
         for (NoticeBillGoods goods : billGoodsList) {
@@ -640,6 +648,10 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
                 mapList.forEach(item -> logisticsCompanyMap.put((Long) item.get("id"), (String) item.get("code")));
             }
         }
+        // 单据自定义字段
+        Map<Long, List<CustomizeDataDto>> billCustomMap = baseDbService.getCustomizeColumnMap(TableConstants.NOTICE_BILL, billIdList);
+        // 货品自定义字段
+        Map<Long, List<CustomizeDataDto>> goodsCustomMap = baseDbService.getCustomizeColumnMap(TableConstants.NOTICE_BILL_GOODS, StreamUtil.toList(noticeBillGoodsList, NoticeBillGoods::getId));
         // 填充
         for (NoticeBill bill : list) {
             NoticeBillQueryResult queryResult = new NoticeBillQueryResult();
@@ -654,7 +666,8 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
             queryResult.setCheckTime(bill.getCheckTime());
             queryResult.setCreatedTime(bill.getCreatedTime());
             queryResult.setUpdatedTime(bill.getUpdatedTime());
-            // TODO 自定义字段
+            // 自定义字段
+            queryResult.setCustomizeData(billCustomMap.get(bill.getId()));
             // 物流信息
             NoticeBillLogistics logistics = logisticsMap.get(bill.getId());
             if (null != logistics) {
@@ -675,13 +688,14 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
             queryResult.setGoodsDetailData(goodsQueryResultList);
             // 货品明细
             List<NoticeBillGoods> billGoodsList = billGoodsMap.get(bill.getId());
-            // TODO 货品自定义字段
             Map<Long, NoticeBillGoods> currentGoodsMap = billGoodsList.stream().collect(Collectors.toMap(NoticeBillGoods::getId, Function.identity()));
             // 尺码明细
             List<NoticeBillSize> billSizeList = billSizeMap.get(bill.getId());
             for (NoticeBillSize size : billSizeList) {
                 NoticeBillGoods billGoods = currentGoodsMap.get(size.getBillGoodsId());
                 NoticeBillBillGoodsDetailData detailData = new NoticeBillBillGoodsDetailData();
+                // 货品自定义字段
+                detailData.setGoodsCustomizeData(goodsCustomMap.get(billGoods.getId()));
                 goodsQueryResultList.add(detailData);
 
                 detailData.setColumnId(size.getId());
