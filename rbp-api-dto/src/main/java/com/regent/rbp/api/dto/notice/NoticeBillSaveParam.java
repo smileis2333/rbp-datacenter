@@ -1,7 +1,7 @@
 package com.regent.rbp.api.dto.notice;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.regent.rbp.api.dto.base.CustomizeData;
+import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -90,5 +90,5 @@ public class NoticeBillSaveParam {
     private List<NoticeBillBillGoodsDetailData> goodsDetailData;
 
     @ApiModelProperty(notes = "自定义字段")
-    private List<CustomizeData> customizeData;
+    private List<CustomizeDataDto> customizeData;
 }

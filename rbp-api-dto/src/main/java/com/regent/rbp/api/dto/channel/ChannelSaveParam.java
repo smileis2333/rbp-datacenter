@@ -1,6 +1,6 @@
 package com.regent.rbp.api.dto.channel;
 
-import com.regent.rbp.api.dto.base.CustomizeData;
+import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -39,6 +39,6 @@ public class ChannelSaveParam {
     private ChannelBarrio channelBarrio;
     private Channelorganization channelorganization;
     private List<AddressData> addressData;
-    private List<CustomizeData> customizeData;
+    private List<CustomizeDataDto> customizeData;
 
 }

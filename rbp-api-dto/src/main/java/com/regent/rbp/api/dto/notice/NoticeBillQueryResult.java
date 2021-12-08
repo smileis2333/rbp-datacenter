@@ -1,6 +1,6 @@
 package com.regent.rbp.api.dto.notice;
 
-import com.regent.rbp.api.dto.base.CustomizeData;
+import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -59,7 +59,7 @@ public class NoticeBillQueryResult {
     private Date checkTime;
 
     @ApiModelProperty(notes = "自定义字段")
-    private List<CustomizeData> customizeData;
+    private List<CustomizeDataDto> customizeData;
 
     /**************************** 物流信息 *********************************/
 

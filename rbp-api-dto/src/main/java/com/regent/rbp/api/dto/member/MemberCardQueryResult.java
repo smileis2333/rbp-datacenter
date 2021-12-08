@@ -1,8 +1,7 @@
 package com.regent.rbp.api.dto.member;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.regent.rbp.api.dto.base.CustomizeData;
-import com.regent.rbp.infrastructure.util.LanguageUtil;
+import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import lombok.Data;
 
 import java.util.Date;
@@ -68,7 +67,7 @@ public class MemberCardQueryResult {
     private String uncheckBy;
     private Date uncheckTime;
 
-    private List<CustomizeData> customizeData;
+    private List<CustomizeDataDto> customizeData;
 
     public void setOriginType(Integer originType) {
         this.originType = originType;
