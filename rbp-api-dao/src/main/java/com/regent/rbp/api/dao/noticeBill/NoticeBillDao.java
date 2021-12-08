@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.regent.rbp.api.core.noticeBill.NoticeBill;
 import com.regent.rbp.api.core.noticeBill.NoticeBillGoods;
 import com.regent.rbp.api.core.noticeBill.NoticeBillSize;
+import com.regent.rbp.api.core.salePlan.SalePlanBillSizeFinal;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -27,9 +28,17 @@ public interface NoticeBillDao extends BaseMapper<NoticeBill> {
     /**
      * 批量插入尺码明细
      *
-     * @param billGoodsList
+     * @param billSizeList
      * @return
      */
-    Integer batchInsertSizeList(@Param("billGoodsList") List<NoticeBillSize> billSizeList);
+    Integer batchInsertSizeList(@Param("billSizeList") List<NoticeBillSize> billSizeList);
+
+    /**
+     * @param tableName
+     * @param billSizeList
+     * @return
+     */
+    Integer batchInsertSalePlanBillSizeList(@Param("tableName") String tableName, @Param("billSizeList") List<SalePlanBillSizeFinal> billSizeList);
+
 
 }

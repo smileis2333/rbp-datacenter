@@ -4,6 +4,7 @@ import com.regent.rbp.api.dto.base.CustomizeData;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -28,7 +29,7 @@ public class NoticeBillQueryResult {
     private String manualId;
 
     @ApiModelProperty(notes = "单据日期")
-    private String billDate;
+    private Date billDate;
 
     @ApiModelProperty(notes = "发货渠道编号")
     private String channelCode;
@@ -47,6 +48,18 @@ public class NoticeBillQueryResult {
 
     @ApiModelProperty(notes = "单据状态(0.未审核,1.已审核,2.反审核,3.已作废)")
     private Integer status;
+
+    @ApiModelProperty(notes = "创建时间")
+    private Date createdTime;
+
+    @ApiModelProperty(notes = "更新时间")
+    private Date updatedTime;
+
+    @ApiModelProperty(notes = "审核时间")
+    private Date checkTime;
+
+    @ApiModelProperty(notes = "自定义字段")
+    private List<CustomizeData> customizeData;
 
     /**************************** 物流信息 *********************************/
 
@@ -86,6 +99,4 @@ public class NoticeBillQueryResult {
     @ApiModelProperty(notes = "货品明细")
     private List<NoticeBillBillGoodsDetailData> goodsDetailData;
 
-    @ApiModelProperty(notes = "自定义字段")
-    private List<CustomizeData> customizeData;
 }

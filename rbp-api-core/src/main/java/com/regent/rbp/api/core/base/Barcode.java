@@ -2,6 +2,7 @@ package com.regent.rbp.api.core.base;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.regent.rbp.infrastructure.util.MD5Util;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -34,4 +35,8 @@ public class Barcode {
 
     @ApiModelProperty(notes = "条码规则类型")
     private Long ruleId;
+
+    public String getSingleCode() {
+        return MD5Util.shortenKeyString(this.getGoodsId(), this.getColorId(), this.getLongId(), this.getSizeId());
+    }
 }

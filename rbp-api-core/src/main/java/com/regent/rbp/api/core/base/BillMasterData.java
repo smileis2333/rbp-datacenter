@@ -1,11 +1,13 @@
 package com.regent.rbp.api.core.base;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * @program: rbp-datacenter
@@ -85,6 +87,10 @@ public class BillMasterData {
 
     @ApiModelProperty(notes = "反审核时间")
     private Date uncheckTime;
+
+    @ApiModelProperty(notes = "自定义字段")
+    @TableField(exist = false)
+    private Map<String, Object> customFieldMap;
 
     public void preInsert() {
         Long userId = ThreadLocalGroup.getUserId();

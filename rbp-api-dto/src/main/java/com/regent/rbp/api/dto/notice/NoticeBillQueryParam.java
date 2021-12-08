@@ -1,7 +1,10 @@
 package com.regent.rbp.api.dto.notice;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * @program: rbp-datacenter
@@ -24,8 +27,8 @@ public class NoticeBillQueryParam {
     @ApiModelProperty(notes = "外部单号")
     private String manualId;
 
-    @ApiModelProperty(notes = "单据日期")
-    private String billDate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date billDate;
 
     @ApiModelProperty(notes = "业务类型名称")
     private String[] businessType;
@@ -49,22 +52,28 @@ public class NoticeBillQueryParam {
     private Integer[] status;
 
     @ApiModelProperty(notes = "创建日期(开始日期)")
-    private String createdDateStart;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createdDateStart;
 
     @ApiModelProperty(notes = "创建日期(截止日期)")
-    private String createdDateEnd;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createdDateEnd;
 
     @ApiModelProperty(notes = "审核日期(开始日期)")
-    private String checkDateStart;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date checkDateStart;
 
     @ApiModelProperty(notes = "审核日期(截止日期)")
-    private String checkDateEnd;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date checkDateEnd;
 
     @ApiModelProperty(notes = "修改日期(开始日期)")
-    private String updatedDateStart;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date updatedDateStart;
 
     @ApiModelProperty(notes = "修改日期(截止日期)")
-    private String updatedDateEnd;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date updatedDateEnd;
 
     @ApiModelProperty(notes = "需返回的字段列表")
     private String fields;

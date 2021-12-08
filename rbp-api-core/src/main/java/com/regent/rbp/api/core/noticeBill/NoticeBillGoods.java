@@ -1,5 +1,6 @@
 package com.regent.rbp.api.core.noticeBill;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
@@ -8,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * @program: rbp-datacenter
@@ -53,6 +55,10 @@ public class NoticeBillGoods {
 
     @ApiModelProperty(notes = "备注")
     private String remark;
+
+    @ApiModelProperty(notes = "自定义字段")
+    @TableField(exist = false)
+    private Map<String, Object> customFieldMap;
 
     public static NoticeBillGoods build() {
         NoticeBillGoods item = new NoticeBillGoods();

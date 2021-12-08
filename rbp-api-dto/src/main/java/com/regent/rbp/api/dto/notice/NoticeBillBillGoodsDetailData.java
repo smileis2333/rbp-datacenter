@@ -2,12 +2,14 @@ package com.regent.rbp.api.dto.notice;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.regent.rbp.api.dto.base.CustomizeData;
 import com.regent.rbp.infrastructure.util.MD5Util;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author chenchungui
@@ -64,6 +66,9 @@ public class NoticeBillBillGoodsDetailData {
     @ApiModelProperty(notes = "货品ID")
     @JsonIgnore
     private Long goodsId;
+
+    @ApiModelProperty(notes = "自定义字段")
+    private List<CustomizeData> goodsCustomizeData;
 
     /**
      * 同款多价，根据货品ID+价格分组

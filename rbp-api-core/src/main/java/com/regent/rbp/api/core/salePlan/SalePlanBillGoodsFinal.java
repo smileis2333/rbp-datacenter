@@ -1,5 +1,6 @@
 package com.regent.rbp.api.core.salePlan;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModelProperty;
@@ -7,6 +8,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @program: rbp-datacenter
@@ -51,4 +53,8 @@ public class SalePlanBillGoodsFinal {
 
     @ApiModelProperty(notes = "备注")
     private String remark;
+
+    @ApiModelProperty(notes = "调整后尺码明细")
+    @TableField(exist = false)
+    List<SalePlanBillSizeFinal> finalSizeList;
 }

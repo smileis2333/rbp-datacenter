@@ -4,6 +4,7 @@ import com.regent.rbp.api.core.noticeBill.NoticeBill;
 import com.regent.rbp.api.core.noticeBill.NoticeBillGoods;
 import com.regent.rbp.api.core.noticeBill.NoticeBillLogistics;
 import com.regent.rbp.api.core.noticeBill.NoticeBillSize;
+import com.regent.rbp.api.core.salePlan.SalePlanBillSizeFinal;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -29,5 +30,8 @@ public class NoticeBillSaveContext {
 
     @ApiModelProperty(notes = "物流信息")
     private NoticeBillLogistics logistics;
+
+    @ApiModelProperty(notes = "更新计划单据尺码明细欠数")
+    private List<SalePlanBillSizeFinal> updateSalePlanBillSizeFinalList;
 
 }

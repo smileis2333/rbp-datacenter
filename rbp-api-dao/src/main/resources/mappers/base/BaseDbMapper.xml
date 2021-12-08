@@ -39,6 +39,10 @@
         ${sql}
     </select>
 
+    <select id="getLongListDataBySql" resultType="java.lang.Long">
+        ${sql}
+    </select>
+
     <select id="getIntegerDataBySql" resultType="java.lang.Integer">
         ${sql}
     </select>
@@ -48,6 +52,10 @@
     </select>
 
     <insert id="insertSql">
+        ${sql}
+    </insert>
+
+    <insert id="updateSql">
         ${sql}
     </insert>
 
@@ -76,5 +84,9 @@
         </foreach>
         )
     </select>
+
+    <delete id="dropTemplateTable">
+       drop table if exists ${tableName}
+    </delete>
 
 </mapper>

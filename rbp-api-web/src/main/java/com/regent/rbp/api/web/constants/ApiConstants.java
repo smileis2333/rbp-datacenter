@@ -36,4 +36,6 @@ public class ApiConstants {
     public static final String API_STORED_VALUE_CARD = "api/storedValueCard";
 
     public static final String API_SALES_ORDER = "api/salesOrder";
+
+    public static final String API_NOTICE_BILL = "api/noticeBill";
 }

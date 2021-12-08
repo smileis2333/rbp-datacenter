@@ -20,11 +20,15 @@ public interface BaseDbDao {
 
     Long getLongDataBySql(@Param("sql") String sql);
 
+    List<Long> getLongListDataBySql(@Param("sql") String sql);
+
     Integer getIntegerDataBySql(@Param("sql") String sql);
 
     String getStringDataBySql(@Param("sql") String sql);
 
     void insertSql(@Param("sql") String sql);
+
+    void updateSql(@Param("sql") String sql);
 
     /**
      * 获取第一个已启用模块业务类型
@@ -38,4 +42,6 @@ public interface BaseDbDao {
     List<Map<Object, Object>> getListMap(@Param("sql") String sql);
 
     List<SizeDetail> getSizeNameList(@Param("goodsIdList") List<Long> goodsIdList, @Param("sizeNameList") List<String> sizeNameList);
+
+    void dropTemplateTable(@Param("tableName") String tableName);
 }
