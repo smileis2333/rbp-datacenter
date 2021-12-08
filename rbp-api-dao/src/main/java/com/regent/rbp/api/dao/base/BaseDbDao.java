@@ -1,6 +1,7 @@
 package com.regent.rbp.api.dao.base;
 
 import com.regent.rbp.api.core.base.ModuleBusinessType;
+import com.regent.rbp.api.core.base.SizeDetail;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -33,4 +34,8 @@ public interface BaseDbDao {
      * @return
      */
     ModuleBusinessType getOneModuleBusinessType(@Param("baseModuleId") String baseModuleId, @Param("baseBusinessTypeId") Long baseBusinessTypeId);
+
+    List<Map<Object, Object>> getListMap(@Param("sql") String sql);
+
+    List<SizeDetail> getSizeNameList(@Param("goodsIdList") List<Long> goodsIdList, @Param("sizeNameList") List<String> sizeNameList);
 }

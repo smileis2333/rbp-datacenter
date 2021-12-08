@@ -1,5 +1,6 @@
 package com.regent.rbp.api.core.base;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
@@ -22,6 +23,10 @@ public class SizeDetail {
 
     @ApiModelProperty(notes = "尺码分类编码")
     private Long sizeClassId;
+
+    @ApiModelProperty(notes = "货品编码")
+    @TableField(exist = false)
+    private Long goodsId;
 
     @ApiModelProperty(notes = "名称")
     private String name;

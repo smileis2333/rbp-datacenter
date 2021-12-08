@@ -2,6 +2,7 @@ package com.regent.rbp.api.core.noticeBill;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -52,4 +53,10 @@ public class NoticeBillGoods {
 
     @ApiModelProperty(notes = "备注")
     private String remark;
+
+    public static NoticeBillGoods build() {
+        NoticeBillGoods item = new NoticeBillGoods();
+        item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+        return item;
+    }
 }

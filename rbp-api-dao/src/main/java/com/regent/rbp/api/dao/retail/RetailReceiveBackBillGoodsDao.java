@@ -1,6 +1,7 @@
 package com.regent.rbp.api.dao.retail;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.regent.rbp.api.core.retail.RetailReceiveBackBillGoods;
 
 /**
  * @program: rbp-datacenter
@@ -8,5 +9,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author: HaiFeng
  * @create: 2021-10-14 17:47
  */
-public interface RetailReceiveBackBillGoodsDao extends BaseMapper<RetailReceiveBackBillGoodsDao> {
+public interface RetailReceiveBackBillGoodsDao extends BaseMapper<RetailReceiveBackBillGoods> {
 }

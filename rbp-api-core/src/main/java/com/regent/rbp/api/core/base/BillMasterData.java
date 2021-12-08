@@ -1,6 +1,7 @@
 package com.regent.rbp.api.core.base;
 
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -84,4 +85,14 @@ public class BillMasterData {
 
     @ApiModelProperty(notes = "反审核时间")
     private Date uncheckTime;
+
+    public void preInsert() {
+        Long userId = ThreadLocalGroup.getUserId();
+        this.setCreatedBy(userId);
+        this.setUpdatedBy(userId);
+    }
+
+    public void preUpdate() {
+        this.setUpdatedBy(ThreadLocalGroup.getUserId());
+    }
 }

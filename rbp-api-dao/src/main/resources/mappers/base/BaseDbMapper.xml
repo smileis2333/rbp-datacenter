@@ -9,19 +9,19 @@
         SELECT *
         FROM `${tableName}`
         WHERE 1 = 1
-        <foreach collection="conditionMap.entrySet()"  index="key" item="value" >
+        <foreach collection="conditionMap.entrySet()" index="key" item="value">
             and `${key}`=#{value}
         </foreach>
     </select>
 
     <insert id="insertMap">
         INSERT INTO `${tableName}` (
-        <foreach collection="map.entrySet()"  index="key" item="value" >
+        <foreach collection="map.entrySet()" index="key" item="value">
             `${key}`
         </foreach>
         )
         VALUES(
-        <foreach collection="map.entrySet()"  index="key" item="value" >
+        <foreach collection="map.entrySet()" index="key" item="value">
             #{value}
         </foreach>
         )
@@ -29,7 +29,7 @@
 
     <update id="updateMapById">
         UPDATE `${tableName}` SET
-        <foreach collection="map.entrySet()"  index="key" item="value" >
+        <foreach collection="map.entrySet()" index="key" item="value">
             `${key}`= #{value}
         </foreach>
         WHERE `id` = #{id}
@@ -57,6 +57,24 @@
             WHERE
                  EXISTS(SELECT 1 FROM rbp_business_type rby WHERE rby.base_business_type_id = #{baseBusinessTypeId} AND rby.id = a.business_type_id)
             LIMIT 1;
+    </select>
+
+    <select id="getListMap" resultType="java.util.Map">
+        ${sql}
+    </select>
+
+    <select id="getSizeNameList" resultType="com.regent.rbp.api.core.base.SizeDetail">
+        select a.id, a.size_class_id, a.name, a.field_name, b.id as goodsId from rbp_size_detail a
+        inner join rbp_goods b on b.id in(
+        <foreach item="id" collection="goodsIdList" open="" separator="," close="">
+            #{id}
+        </foreach>
+        ) and b.size_class_id = a.size_class_id
+        where a.name in (
+        <foreach item="id" collection="sizeNameList" open="" separator="," close="">
+            #{id}
+        </foreach>
+        )
     </select>
 
 </mapper>
