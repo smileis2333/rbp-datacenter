@@ -232,8 +232,20 @@
 			<groupId>com.regent.rbp.infrastructure</groupId>
 			<artifactId>rbp-infrastructure</artifactId>
 			<version>0.0.0.5</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.xuxueli</groupId>
+					<artifactId>xxl-job-core</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
+		<!-- xxl-job-core -->
+		<dependency>
+			<groupId>com.regent</groupId>
+			<artifactId>xxl-job-core</artifactId>
+			<version>2.3.0</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
