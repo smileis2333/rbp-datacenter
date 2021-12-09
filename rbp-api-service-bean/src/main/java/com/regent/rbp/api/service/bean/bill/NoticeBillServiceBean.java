@@ -8,8 +8,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.regent.rbp.api.core.base.Barcode;
+import com.regent.rbp.api.core.base.BusinessType;
 import com.regent.rbp.api.core.base.Color;
+import com.regent.rbp.api.core.base.CurrencyType;
 import com.regent.rbp.api.core.base.LongInfo;
+import com.regent.rbp.api.core.base.PriceType;
 import com.regent.rbp.api.core.base.SizeDetail;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.goods.Goods;
@@ -34,6 +37,7 @@ import com.regent.rbp.api.dao.noticeBill.NoticeBillSizeDao;
 import com.regent.rbp.api.dao.salePlan.SalePlanBillDao;
 import com.regent.rbp.api.dao.salePlan.SalePlanBillGoodsFinalDao;
 import com.regent.rbp.api.dao.salePlan.SalePlanBillSizeFinalDao;
+import com.regent.rbp.api.dto.base.CustomizeColumnDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
@@ -48,10 +52,16 @@ import com.regent.rbp.api.service.constants.TableConstants;
 import com.regent.rbp.api.service.notice.NoticeBillService;
 import com.regent.rbp.api.service.notice.context.NoticeBillQueryContext;
 import com.regent.rbp.api.service.notice.context.NoticeBillSaveContext;
+import com.regent.rbp.common.model.basic.dto.IdNameCodeDto;
+import com.regent.rbp.common.model.basic.dto.IdNameDto;
+import com.regent.rbp.common.service.basic.DbService;
 import com.regent.rbp.common.service.basic.SystemCommonService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
+import com.regent.rbp.infrastructure.enums.LanguageTableEnum;
+import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.AppendSqlUtil;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
+import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StreamUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
@@ -65,6 +75,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -109,6 +120,8 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
     private SalePlanBillDao salePlanBillDao;
     @Autowired
     private BaseDbService baseDbService;
+    @Autowired
+    private DbService dbService;
 
     /**
      * 分页查询
@@ -157,15 +170,16 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
 
         // 获取单号
         bill.setBillNo(systemCommonService.getBillNo(bill.getModuleId()));
+        bill.setProcessStatus(StatusEnum.NONE.getStatus());
         // 新增订单
         noticeBillDao.insert(bill);
         // 单据自定义字段
-        baseDbService.saveOrUpdateCustomFieldData(TableConstants.NOTICE_BILL, bill.getId(), bill.getCustomFieldMap());
+        baseDbService.saveOrUpdateCustomFieldData(bill.getModuleId(), TableConstants.NOTICE_BILL, bill.getId(), bill.getCustomFieldMap());
         // 新增物流信息
         noticeBillLogisticsDao.insert(logistics);
         // 货品自定义字段
         List<Map<String, Object>> customFieldMapList = billGoodsList.stream().map(v -> v.getCustomFieldMap()).filter(f -> null != f).collect(Collectors.toList());
-        baseDbService.batchSaveOrUpdateCustomFieldData(TableConstants.NOTICE_BILL_GOODS, customFieldMapList);
+        baseDbService.batchSaveOrUpdateCustomFieldData(bill.getModuleId(), TableConstants.NOTICE_BILL_GOODS, customFieldMapList);
         // 批量新增货品明细
         List<NoticeBillGoods> goodsList = new ArrayList<>();
         int i = 0;
@@ -253,7 +267,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         }
         // 业务类型
         if (StringUtil.isNotEmpty(param.getBusinessType())) {
-            bill.setBusinessTypeId(baseDbDao.getLongDataBySql(String.format("select id from rbp_business_type where code = '%s'", param.getBusinessType())));
+            bill.setBusinessTypeId(baseDbDao.getLongDataBySql(String.format("select id from rbp_business_type where name = '%s'", param.getBusinessType())));
         }
         // 价格类型
         if (StringUtil.isNotEmpty(param.getPriceType())) {
@@ -369,6 +383,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
             sizeList.add(size);
 
             size.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+            size.setBillId(bill.getId());
             size.setQuantity(item.getQuantity());
             size.setOweQuantity(item.getQuantity());
             Barcode barcode = barcodeMap.get(item.getBarcode());
@@ -444,6 +459,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
                 // 自定义字段
                 if (CollUtil.isNotEmpty(detailData.getGoodsCustomizeData())) {
                     Map<String, Object> customFieldMap = new HashMap<>();
+                    customFieldMap.put("id", billGoods.getId());
                     detailData.getGoodsCustomizeData().forEach(item -> customFieldMap.put(item.getCode(), item.getValue()));
                     billGoods.setCustomFieldMap(customFieldMap);
                 }
@@ -482,6 +498,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
                     // 自定义字段
                     if (CollUtil.isNotEmpty(detailData.getGoodsCustomizeData())) {
                         Map<String, Object> customFieldMap = new HashMap<>();
+                        customFieldMap.put("id", billGoods.getId());
                         detailData.getGoodsCustomizeData().forEach(item -> customFieldMap.put(item.getCode(), item.getValue()));
                         billGoods.setCustomFieldMap(customFieldMap);
                     }
@@ -581,12 +598,22 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         queryWrapper.eq(StringUtil.isNotEmpty(context.getManualId()), "manual_id", context.getManualId());
         queryWrapper.eq(StringUtil.isNotEmpty(context.getBillNo()), "bill_no", context.getBillNo());
         queryWrapper.eq(null != context.getSalePlanId(), "sale_plan_id", context.getSalePlanId());
-        queryWrapper.eq(null != context.getStatus() && context.getStatus().length > 0, "status", context.getStatus());
-        queryWrapper.eq(null != context.getBusinessTypeIds() && context.getBusinessTypeIds().length > 0, "business_type_id", context.getBusinessTypeIds());
-        queryWrapper.eq(null != context.getPriceTypeIds() && context.getPriceTypeIds().length > 0, "price_type_id", context.getPriceTypeIds());
-        queryWrapper.eq(null != context.getCurrencyTypeIds() && context.getCurrencyTypeIds().length > 0, "currency_type_id", context.getCurrencyTypeIds());
-        queryWrapper.eq(null != context.getChannelIds() && context.getChannelIds().length > 0, "channel_id", context.getChannelIds());
-        queryWrapper.eq(null != context.getToChannelIds() && context.getToChannelIds().length > 0, "to_channel_id", context.getToChannelIds());
+        queryWrapper.in(null != context.getStatus() && context.getStatus().length > 0, "status", context.getStatus());
+        if (null != context.getBusinessTypeIds() && context.getBusinessTypeIds().length > 0) {
+            queryWrapper.in("business_type_id", context.getBusinessTypeIds());
+        }
+        if (null != context.getPriceTypeIds() && context.getPriceTypeIds().length > 0) {
+            queryWrapper.in("price_type_id", context.getPriceTypeIds());
+        }
+        if (null != context.getCurrencyTypeIds() && context.getCurrencyTypeIds().length > 0) {
+            queryWrapper.in("currency_type_id", context.getCurrencyTypeIds());
+        }
+        if (null != context.getChannelIds() && context.getChannelIds().length > 0) {
+            queryWrapper.in("channel_id", context.getChannelIds());
+        }
+        if (null != context.getToChannelIds() && context.getToChannelIds().length > 0) {
+            queryWrapper.in("to_channel_id", context.getToChannelIds());
+        }
 
         queryWrapper.eq(null != context.getBillDate(), "bill_date", context.getBillDate());
         queryWrapper.ge(null != context.getCreatedDateStart(), "created_time", context.getCreatedDateStart());
@@ -607,7 +634,20 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
      */
     private List<NoticeBillQueryResult> convertQueryResult(List<NoticeBill> list) {
         List<NoticeBillQueryResult> queryResults = new ArrayList<>(list.size());
+        if (CollUtil.isEmpty(list)) {
+            return queryResults;
+        }
         List<Long> billIdList = list.stream().map(NoticeBill::getId).distinct().collect(Collectors.toList());
+        // 发货渠道
+        Set<Long> channelIds = StreamUtil.toSet(list, NoticeBill::getChannelId);
+        channelIds.addAll(StreamUtil.toSet(list, NoticeBill::getToChannelId));
+        Map<Long, IdNameCodeDto> channelMap = dbService.selectIdNameCodeMapByLanguage(new QueryWrapper<Channel>().in("id", channelIds), Channel.class, LanguageTableEnum.CHANNEL);
+        // 业务类型
+        Map<Object, IdNameDto> businessTypeMap = dbService.selectIdNameMapByLanguage(new QueryWrapper<BusinessType>().in("id", StreamUtil.toSet(list, NoticeBill::getBusinessTypeId)), BusinessType.class, LanguageTableEnum.BUSINESS_TYPE);
+        // 价格类型
+        Map<Object, IdNameDto> priceTypeMap = dbService.selectIdNameMapByLanguage(new QueryWrapper<PriceType>().in("id", StreamUtil.toSet(list, NoticeBill::getPriceTypeId)), PriceType.class, LanguageTableEnum.PRICETYPE);
+        // 币种类型
+        Map<Object, IdNameDto> currencyTypeMap = dbService.selectIdNameMapByLanguage(new QueryWrapper<CurrencyType>().in("id", StreamUtil.toSet(list, NoticeBill::getCurrencyTypeId)), CurrencyType.class, LanguageTableEnum.BUSINESS_TYPE);
         // 货品尺码明细
         List<NoticeBillSize> noticeBillSizeList = noticeBillSizeDao.selectList(new LambdaQueryWrapper<NoticeBillSize>().in(NoticeBillSize::getBillId, billIdList));
         List<NoticeBillGoods> noticeBillGoodsList = noticeBillGoodsDao.selectList(new LambdaQueryWrapper<NoticeBillGoods>().in(NoticeBillGoods::getBillId, billIdList));
@@ -615,7 +655,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         Map<Long, List<NoticeBillSize>> billSizeMap = noticeBillSizeList.stream().collect(Collectors.groupingBy(NoticeBillSize::getBillId));
         Map<Long, List<NoticeBillGoods>> billGoodsMap = noticeBillGoodsList.stream().collect(Collectors.groupingBy(NoticeBillGoods::getBillId));
         // 货品
-        List<Goods> goodsList = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getId, StreamUtil.toSet(noticeBillGoodsList, NoticeBillGoods::getId)));
+        List<Goods> goodsList = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getId, StreamUtil.toSet(noticeBillGoodsList, NoticeBillGoods::getGoodsId)));
         Map<Long, String> goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getId, Goods::getCode));
         // 颜色
         List<Color> colorList = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getId, StreamUtil.toSet(noticeBillSizeList, NoticeBillSize::getColorId)));
@@ -627,8 +667,12 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         List<SizeDetail> sizeList = sizeDetailDao.selectList(new LambdaQueryWrapper<SizeDetail>().in(SizeDetail::getId, StreamUtil.toSet(noticeBillSizeList, NoticeBillSize::getSizeId)));
         Map<Long, String> sizeMap = sizeList.stream().collect(Collectors.toMap(SizeDetail::getId, SizeDetail::getName));
         // 条码,默认取第一个
-        List<Barcode> barcodes = barcodeDao.selectList(new QueryWrapper<Barcode>().in("goods_id", goodsMap.keySet()).in("color_id", colorMap.keySet())
-                .in("long_id", longMap.keySet()).in("size_id", sizeMap.keySet()).orderByDesc("barcode").groupBy("goods_id,color_id,long_id,size_id"));
+        List<Barcode> barcodes = barcodeDao.selectList(new QueryWrapper<Barcode>()
+                .in(CollUtil.isNotEmpty(goodsMap.keySet()), "goods_id", goodsMap.keySet())
+                .in(CollUtil.isNotEmpty(colorMap.keySet()), "color_id", colorMap.keySet())
+                .in(CollUtil.isNotEmpty(longMap.keySet()), "long_id", longMap.keySet())
+                .in(CollUtil.isNotEmpty(sizeMap.keySet()), "size_id", sizeMap.keySet())
+                .orderByDesc("barcode").groupBy("goods_id,color_id,long_id,size_id"));
         Map<String, String> barcodeMap = barcodes.stream().collect(Collectors.toMap(Barcode::getSingleCode, Barcode::getBarcode));
         // 计划单
         Map<Long, String> salePlanNoMap = new HashMap<>();
@@ -648,6 +692,8 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
                 mapList.forEach(item -> logisticsCompanyMap.put((Long) item.get("id"), (String) item.get("code")));
             }
         }
+        // 模块自定义字段定义
+        Map<String, List<CustomizeColumnDto>> moduleCustomizeMap = baseDbService.getModuleCustomizeColumnListMap(StreamUtil.toList(list, NoticeBill::getModuleId));
         // 单据自定义字段
         Map<Long, List<CustomizeDataDto>> billCustomMap = baseDbService.getCustomizeColumnMap(TableConstants.NOTICE_BILL, billIdList);
         // 货品自定义字段
@@ -657,17 +703,25 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
             NoticeBillQueryResult queryResult = new NoticeBillQueryResult();
             queryResults.add(queryResult);
 
-            queryResult.setSalePlanNo(salePlanNoMap.get(bill.getSalePlanId()));
+            queryResult.setModuleId(bill.getModuleId());
             queryResult.setManualId(bill.getManualId());
             queryResult.setBillNo(bill.getBillNo());
+            queryResult.setChannelCode(OptionalUtil.ofNullable(channelMap.get(bill.getChannelId()), IdNameCodeDto::getCode));
+            queryResult.setToChannelCode(OptionalUtil.ofNullable(channelMap.get(bill.getToChannelId()), IdNameCodeDto::getCode));
+            queryResult.setPriceType(OptionalUtil.ofNullable(priceTypeMap.get(bill.getPriceTypeId()), IdNameDto::getName));
+            queryResult.setBusinessType(OptionalUtil.ofNullable(businessTypeMap.get(bill.getBusinessTypeId()), IdNameDto::getName));
+            queryResult.setCurrencyType(OptionalUtil.ofNullable(currencyTypeMap.get(bill.getCurrencyTypeId()), IdNameDto::getName));
+            queryResult.setSalePlanNo(salePlanNoMap.get(bill.getSalePlanId()));
             queryResult.setStatus(bill.getStatus());
             queryResult.setNotes(bill.getNotes());
             queryResult.setBillDate(bill.getBillDate());
             queryResult.setCheckTime(bill.getCheckTime());
             queryResult.setCreatedTime(bill.getCreatedTime());
             queryResult.setUpdatedTime(bill.getUpdatedTime());
-            // 自定义字段
-            queryResult.setCustomizeData(billCustomMap.get(bill.getId()));
+            // 模块自定义字段定义
+            List<CustomizeColumnDto> moduleColumnDtoList = moduleCustomizeMap.get(bill.getModuleId());
+            // 过滤未启用的自定义字段，格式化单选类型字段
+            queryResult.setCustomizeData(baseDbService.getAfterFillCustomizeDataList(moduleColumnDtoList, billCustomMap.get(bill.getId())));
             // 物流信息
             NoticeBillLogistics logistics = logisticsMap.get(bill.getId());
             if (null != logistics) {
@@ -694,8 +748,8 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
             for (NoticeBillSize size : billSizeList) {
                 NoticeBillGoods billGoods = currentGoodsMap.get(size.getBillGoodsId());
                 NoticeBillBillGoodsDetailData detailData = new NoticeBillBillGoodsDetailData();
-                // 货品自定义字段
-                detailData.setGoodsCustomizeData(goodsCustomMap.get(billGoods.getId()));
+                // 货品自定义字段，格式化单选类型字段
+                detailData.setGoodsCustomizeData(baseDbService.getAfterFillCustomizeDataList(moduleColumnDtoList, goodsCustomMap.get(billGoods.getId())));
                 goodsQueryResultList.add(detailData);
 
                 detailData.setColumnId(size.getId());

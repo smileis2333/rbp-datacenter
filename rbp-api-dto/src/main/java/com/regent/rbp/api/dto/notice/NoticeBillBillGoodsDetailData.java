@@ -10,6 +10,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author chenchungui
@@ -76,6 +77,6 @@ public class NoticeBillBillGoodsDetailData {
      * @return
      */
     public String getSameGoodsDiffPriceKey() {
-        return MD5Util.shortenKeyString(this.getGoodsId().toString(), this.getBalancePrice().toString());
+        return MD5Util.shortenKeyString(Optional.ofNullable(this.getGoodsId()).orElse(0L).toString(), Optional.ofNullable(this.getBalancePrice()).orElse(BigDecimal.ZERO).toString());
     }
 }

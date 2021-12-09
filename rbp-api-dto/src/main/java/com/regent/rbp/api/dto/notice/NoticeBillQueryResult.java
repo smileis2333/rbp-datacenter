@@ -37,6 +37,9 @@ public class NoticeBillQueryResult {
     @ApiModelProperty(notes = "收货渠道编号")
     private String toChannelCode;
 
+    @ApiModelProperty(notes = "业务类型名称")
+    private String businessType;
+
     @ApiModelProperty(notes = "价格类型名称")
     private String priceType;
 

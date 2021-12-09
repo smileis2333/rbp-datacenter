@@ -64,11 +64,11 @@
     </insert>
 
     <select id="isExistField" resultType="java.lang.Integer">
-        select count(*) from information_schema.columns where `table_schema` ='rbp' and `table_name` = #{tableName} and `column_name` = #{fieldName}
+        select count(*) from information_schema.columns where `table_schema` =database() and `table_name` = #{tableName} and `column_name` = #{fieldName}
     </select>
 
     <select id="isExistTable" resultType="java.lang.Integer">
-        select count(*) from information_schema.tables where `table_schema`= 'rbp' and `table_name`=  #{tableName};
+        select count(*) from information_schema.tables where `table_schema`= database() and `table_name`=  #{tableName};
     </select>
 
     <select id="getOneModuleBusinessType" resultType="com.regent.rbp.api.core.base.ModuleBusinessType">

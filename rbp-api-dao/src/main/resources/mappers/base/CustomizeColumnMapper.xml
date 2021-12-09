@@ -5,11 +5,33 @@
 <mapper namespace="com.regent.rbp.api.dao.base.CustomizeColumnDao">
 
     <select id="selectCustomizeColumnByModuleId" resultType="com.regent.rbp.api.dto.base.CustomizeColumnDto">
-        SELECT a.module_id moduleId, c.`code`, c.`name`, c.type
+        SELECT  c.id, a.group_key as groupKey,a.module_id moduleId, c.`code`, c.`name`, c.type
         FROM rbp_module_customize_group a
             INNER JOIN rbp_module_customize_column b on a.id = b.module_group_id
             INNER JOIN rbp_customize_column c on b.customize_column_id = c.id
         WHERE a.module_id = #{moduleId} and b.user_flag = 1
+    </select>
+
+    <select id="selectCustomizeColumnList" resultType="com.regent.rbp.api.dto.base.CustomizeColumnDto">
+        SELECT c.id, a.group_key as groupKey, a.module_id moduleId, c.`code`, c.`name`, c.type
+        FROM rbp_module_customize_group a
+        INNER JOIN rbp_module_customize_column b on a.id = b.module_group_id
+        INNER JOIN rbp_customize_column c on b.customize_column_id = c.id
+        WHERE b.user_flag = 1 and a.module_id in (
+        <foreach item="id" collection="moduleIdList" open="" separator="," close="">
+            #{id}
+        </foreach>
+        )
+    </select>
+
+    <select id="selectCustomizeColumnValueList" resultType="com.regent.rbp.api.dto.base.CustomizeColumnValueDto">
+        select id,customize_column_id,value,order_number,default_flag
+        from rbp_customize_column_value where user_flag = 1 and
+        customize_column_id in(
+        <foreach item="id" collection="customizeColumnIdList" open="" separator="," close="">
+            #{id}
+        </foreach>
+        )
     </select>
 
     <select id="selectCustomizeColumnCodeByModuleId" resultType="java.lang.String">
