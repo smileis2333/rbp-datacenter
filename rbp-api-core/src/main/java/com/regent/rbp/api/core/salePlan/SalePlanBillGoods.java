@@ -1,12 +1,16 @@
 package com.regent.rbp.api.core.salePlan;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @program: rbp-datacenter
@@ -51,4 +55,29 @@ public class SalePlanBillGoods {
 
     @ApiModelProperty(notes = "备注")
     private String remark;
+
+    @ApiModelProperty(notes = "自定义字段")
+    @TableField(exist = false)
+    private Map<String, Object> goodsCustomizeData;
+
+    @AllArgsConstructor
+    @Data
+    public static class GoodsIdBalancePricePair{
+        private Long goodsId;
+        private BigDecimal balancePrice;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            GoodsIdBalancePricePair that = (GoodsIdBalancePricePair) o;
+            return Objects.equals(getGoodsId(), that.getGoodsId()) && Objects.equals(getBalancePrice(), that.getBalancePrice());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getGoodsId(), getBalancePrice());
+        }
+    }
+
 }
