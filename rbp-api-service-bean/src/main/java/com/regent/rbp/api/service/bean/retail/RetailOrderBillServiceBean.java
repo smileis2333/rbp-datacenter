@@ -23,6 +23,7 @@ import com.regent.rbp.api.service.enums.BaseModuleEnum;
 import com.regent.rbp.api.service.retail.RetailOrderBillService;
 import com.regent.rbp.api.service.retail.context.RetailOrderBillSaveContext;
 import com.regent.rbp.api.service.retail.context.RetailOrderBillUpdateContext;
+import com.regent.rbp.common.service.basic.SystemCommonService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
@@ -55,6 +56,8 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
     private BaseDbDao baseDbDao;
     @Autowired
     private BarcodeDao barcodeDao;
+    @Autowired
+    private SystemCommonService systemCommonService;
 
     /**
      * 创建
@@ -76,8 +79,8 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         if (StringUtil.isNotEmpty(msg)) {
             return new ModelDataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("paramVerifyError", new String[]{msg}));
         }
-        // TODO 获取单号
-        bill.setBillNo(bill.getOnlineOrderCode());
+        // 获取单号
+        bill.setBillNo(systemCommonService.getBillNo(bill.getModuleId()));
         // 新增订单
         retailOrderBillDao.insert(bill);
         // TODO 单据自定义字段
