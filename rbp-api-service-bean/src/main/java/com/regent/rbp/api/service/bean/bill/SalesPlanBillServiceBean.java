@@ -400,7 +400,11 @@ public class SalesPlanBillServiceBean implements SalesPlanBillService {
         context.getSalePlanBillSizeList().forEach(bgs -> salePlanBillSizeDao.insert(bgs));
         if (salePlanBill.getStatus() == 1) {
             context.getSalePlanBillGoodsList().forEach(bg -> salePlanBillGoodsFinalDao.insert(BeanUtil.copyProperties(bg, SalePlanBillGoodsFinal.class)));
-            context.getSalePlanBillSizeList().forEach(bgs -> salePlanBillSizeFinalDao.insert(BeanUtil.copyProperties(bgs, SalePlanBillSizeFinal.class)));
+            context.getSalePlanBillSizeList().forEach(bgs -> {
+                SalePlanBillSizeFinal spbsf = BeanUtil.copyProperties(bgs, SalePlanBillSizeFinal.class);
+                spbsf.setOweQuantity(bgs.getQuantity());
+                salePlanBillSizeFinalDao.insert(spbsf);
+            });
         }
         baseDbService.saveOrUpdateCustomFieldData(salePlanBill.getModuleId(), TableConstants.SALE_PLAN_BILL, salePlanBill.getId(), context.getCustomizeData());
         baseDbService.batchSaveOrUpdateCustomFieldData(salePlanBill.getModuleId(), TableConstants.SALE_PLAN_BILL_GOODS, CollUtil.map(context.getSalePlanBillGoodsList(), SalePlanBillGoods::getGoodsCustomizeData, true));
