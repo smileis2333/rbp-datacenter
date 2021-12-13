@@ -196,6 +196,22 @@ public class SupplierServiceBean implements SupplierService {
         Supplier codeSupplier = supplierDao.selectOne(new QueryWrapper<Supplier>().eq("code", c.supplier.getCode()));
 
         ArrayList<String> errors = new ArrayList<>();
+        if (StrUtil.isEmpty(c.supplier.getCode())) {
+            errors.add("供应商编号(supplierCode)不能为空");
+        }
+        if (StrUtil.isEmpty(c.supplier.getName())) {
+            errors.add("供应商名称(name)不能为空");
+        }
+        if (StrUtil.isEmpty(c.supplier.getFullName())) {
+            errors.add("供应商名称(fullName)不能为空");
+        }
+        if (c.params.getType() != null && (c.params.getType() < 0 || c.params.getType() > 1)) {
+            errors.add("供应商分类(type)必须为: 0.成衣供应商;1.物料供应商");
+        }
+        if (c.params.getReceiveDifferentType() != null && (c.params.getReceiveDifferentType() < 1 || c.params.getReceiveDifferentType() > 3)) {
+            errors.add("来货超差类型(receiveDifferentType)必须为: 1.货品;2.货品+颜色;3.货品+颜色+尺码");
+        }
+
         if (codeSupplier != null) {
             errors.add("供应商编号(supplierCode)不能重复");
         }
@@ -204,6 +220,42 @@ public class SupplierServiceBean implements SupplierService {
         }
         if (StrUtil.isNotEmpty(c.grade) && c.supplier.getGradeId() == null) {
             errors.add("等级(grade)不存在");
+        }
+        Map<String, SupplierArea> areaMap = supplierAreaDao.selectList(new QueryWrapper<>()).stream().collect(Collectors.toMap(e -> String.format("%s_%s", e.getColumnName(), e.getName()), Function.identity()));
+
+        if (StrUtil.isNotEmpty(c.params.getNation()) && !areaMap.containsKey(String.format("%s_%s", "nation", c.params.getNation()))) {
+            errors.add(String.format("国家(nation)%s不存在", c.params.getNation()));
+        }
+        if (StrUtil.isNotEmpty(c.params.getProvince()) && !areaMap.containsKey(String.format("%s_%s", "province", c.params.getProvince()))) {
+            errors.add(String.format("省(province)%s不存在", c.params.getProvince()));
+        }
+        if (StrUtil.isNotEmpty(c.params.getCity()) && !areaMap.containsKey(String.format("%s_%s", "city", c.params.getCity()))) {
+            errors.add(String.format("城市(city)%s不存在", c.params.getCity()));
+        }
+        if (StrUtil.isNotEmpty(c.params.getCounty()) && !areaMap.containsKey(String.format("%s_%s", "country", c.params.getCounty()))) {
+            errors.add(String.format("区/县(country)%s不存在", c.params.getCounty()));
+        }
+
+        if (c.getSupplierSendAddresses().stream().filter(e -> StrUtil.isBlank(e.getNation())).findFirst().isPresent()) {
+            errors.add(String.format("发货地址-国家/地区(nation)不能为空"));
+        }
+        if (c.getSupplierSendAddresses().stream().filter(e -> StrUtil.isBlank(e.getProvince())).findFirst().isPresent()) {
+            errors.add(String.format("发货地址-州/省/地区(province)不能为空"));
+        }
+        if (c.getSupplierSendAddresses().stream().filter(e -> StrUtil.isBlank(e.getCity())).findFirst().isPresent()) {
+            errors.add(String.format("发货地址-市(city)不能为空"));
+        }
+        if (c.getSupplierSendAddresses().stream().filter(e -> StrUtil.isBlank(e.getCounty())).findFirst().isPresent()) {
+            errors.add(String.format("发货地址-县/区(country)不能为空"));
+        }
+        if (c.getSupplierSendAddresses().stream().filter(e -> StrUtil.isBlank(e.getAddress())).findFirst().isPresent()) {
+            errors.add(String.format("发货地址-详细地址(address)不能为空"));
+        }
+        if (c.getSupplierSendAddresses().stream().filter(e -> StrUtil.isBlank(e.getContactsPerson())).findFirst().isPresent()) {
+            errors.add(String.format("发货地址-联系人(contactsPerson)不能为空"));
+        }
+        if (c.getSupplierSendAddresses().stream().filter(e -> e.getMobile() == null).findFirst().isPresent()) {
+            errors.add(String.format("发货地址-手机号码(mobile)不能为空"));
         }
 
         return errors;
