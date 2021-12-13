@@ -1,6 +1,7 @@
 package com.regent.rbp.api.dto.channel;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @program: rbp-datacenter
@@ -9,6 +10,7 @@ import lombok.Data;
  * @create: 2021-09-11 11:50
  */
 @Data
+@NoArgsConstructor
 public class PhysicalRegion {
 
     public PhysicalRegion(String nation, String region, String province, String city, String county) {

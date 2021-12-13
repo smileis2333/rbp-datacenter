@@ -40,4 +40,6 @@ public class ApiConstants {
     public static final String API_NOTICE_BILL = "api/noticeBill";
 
     public static final String API_SALES_PLAN = "api/salePlanBill";
+
+    public static final String API_SUPPLIER = "api/supplier";
 }
