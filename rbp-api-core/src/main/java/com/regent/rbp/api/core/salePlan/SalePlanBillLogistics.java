@@ -1,5 +1,6 @@
 package com.regent.rbp.api.core.salePlan;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -17,6 +18,7 @@ import java.util.Date;
 public class SalePlanBillLogistics {
 
     @ApiModelProperty(notes = "单据编码")
+    @TableId
     private Long billId;
 
     @ApiModelProperty(notes = "物流公司")
