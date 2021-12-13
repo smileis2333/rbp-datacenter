@@ -2,7 +2,6 @@ package com.regent.rbp.api.dto.supplier;
 
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.channel.AddressData;
-import com.regent.rbp.api.dto.channel.PhysicalRegion;
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
 
@@ -33,7 +32,10 @@ public class SupplierSaveParam {
     private String fundAccountCode;
     private BigDecimal taxrate;
     private String notes;
-    private PhysicalRegion physicalRegion;
+    private String nation;
+    private String province;
+    private String city;
+    private String county;
     private List<ContactData> contactsPerson;
     private List<AddressData> addressData;
     private List<CustomizeDataDto> customizeData;

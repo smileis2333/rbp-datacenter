@@ -37,5 +37,10 @@ public class SupplierQueryResult {
     private List<ContactData> contactsPerson;
     private List<AddressData> addressData;
     private List<CustomizeDataDto> customizeData;
+    private String nation;
+    private String region;
+    private String province;
+    private String city;
+    private String county;
 
 }

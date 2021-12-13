@@ -7,16 +7,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.fundAccount.FundAccount;
-import com.regent.rbp.api.core.supplier.Supplier;
-import com.regent.rbp.api.core.supplier.SupplierGrade;
-import com.regent.rbp.api.core.supplier.SupplierNature;
+import com.regent.rbp.api.core.supplier.*;
 import com.regent.rbp.api.dao.fundAccount.FundAccountDao;
-import com.regent.rbp.api.dao.supplier.SupplierContactsPersonDao;
-import com.regent.rbp.api.dao.supplier.SupplierDao;
-import com.regent.rbp.api.dao.supplier.SupplierGradeDao;
-import com.regent.rbp.api.dao.supplier.SupplierNatureDao;
+import com.regent.rbp.api.dao.supplier.*;
+import com.regent.rbp.api.dto.base.CustomizeDataDto;
+import com.regent.rbp.api.dto.channel.AddressData;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
+import com.regent.rbp.api.dto.supplier.ContactData;
 import com.regent.rbp.api.dto.supplier.SupplierQueryParam;
 import com.regent.rbp.api.dto.supplier.SupplierQueryResult;
 import com.regent.rbp.api.dto.supplier.SupplierSaveParam;
@@ -31,11 +29,13 @@ import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,6 +47,8 @@ public class SupplierServiceBean implements SupplierService {
     private final BaseDbService baseDbService;
     private final SupplierNatureDao supplierNatureDao;
     private final SupplierGradeDao supplierGradeDao;
+    private final SupplierAreaDao supplierAreaDao;
+    private final SupplierSendAddressDao supplierSendAddressDao;
 
     @Override
     public PageDataResponse<SupplierQueryResult> query(SupplierQueryParam param) {
@@ -70,18 +72,44 @@ public class SupplierServiceBean implements SupplierService {
         if (records.isEmpty()) {
             return new ArrayList<>();
         }
+        List<Long> supplierIds = CollUtil.map(records, Supplier::getId, true);
         ArrayList<Long> natureIds = CollUtil.distinct(CollUtil.map(records, Supplier::getNatureId, true));
         ArrayList<Long> gradeIds = CollUtil.distinct(CollUtil.map(records, Supplier::getGradeId, true));
         ArrayList<Long> fundAccountIds = CollUtil.distinct(CollUtil.map(records, Supplier::getFundAccountId, true));
         Map<Long, SupplierNature> natureMap = natureIds.isEmpty() ? new HashMap<>() : CollUtil.toMap(supplierNatureDao.selectBatchIds(natureIds), new HashMap<>(), SupplierNature::getId);
         Map<Long, SupplierGrade> supplierGradeMap = gradeIds.isEmpty() ? new HashMap<>() : CollUtil.toMap(supplierGradeDao.selectBatchIds(gradeIds), new HashMap<>(), SupplierGrade::getId);
         Map<Long, FundAccount> fundAccountMap = fundAccountIds.isEmpty() ? new HashMap<>() : CollUtil.toMap(fundAccountDao.selectBatchIds(fundAccountIds), new HashMap<>(), FundAccount::getId);
+        Map<Long, SupplierArea> areaMap = supplierAreaDao.selectList(new QueryWrapper<>()).stream().collect(Collectors.toMap(SupplierArea::getId, Function.identity()));
+        Map<Long, List<SupplierSendAddress>> sendAddressMap = supplierSendAddressDao.selectList(new QueryWrapper<SupplierSendAddress>().in("supplier_id", supplierIds)).stream().collect(Collectors.groupingBy(SupplierSendAddress::getSupplierId));
+        Map<Long, List<SupplierContactsPerson>> contactMap = supplierContactsPersonDao.selectList(new QueryWrapper<SupplierContactsPerson>().in("supplier_id", supplierIds)).stream().collect(Collectors.groupingBy(SupplierContactsPerson::getSupplierId));
+        Map<Long, List<CustomizeDataDto>> customizeColumnMap = baseDbService.getCustomizeColumnMap(TableConstants.SUPPLIER, supplierIds);
+
         return records.stream().map(e -> {
-            SupplierQueryResult item = BeanUtil.copyProperties(e, SupplierQueryResult.class);
+            SupplierQueryResult item = new SupplierQueryResult();
+            BeanUtil.copyProperties(e, item, "nation", "province", "city", "county");
             item.setNature(natureMap.getOrDefault(e.getNatureId(), new SupplierNature()).getName());
             item.setGrade(supplierGradeMap.getOrDefault(e.getGradeId(), new SupplierGrade()).getName());
             item.setFundAccountCode(fundAccountMap.getOrDefault(e.getNatureId(), new FundAccount()).getCode());
             item.setSupplierCode(e.getCode());
+            item.setNation(areaMap.getOrDefault(e.getNation(), new SupplierArea()).getName());
+            item.setProvince(areaMap.getOrDefault(e.getProvince(), new SupplierArea()).getName());
+            item.setCity(areaMap.getOrDefault(e.getCity(), new SupplierArea()).getName());
+            item.setCounty(areaMap.getOrDefault(e.getCounty(), new SupplierArea()).getName());
+
+            List<AddressData> addressData = sendAddressMap.containsKey(e.getId()) ? sendAddressMap.get(e.getId()).stream().map(ele -> {
+                AddressData i = new AddressData();
+                BeanUtil.copyProperties(ele, i);
+                return i;
+            }).collect(Collectors.toList()) : null;
+            item.setAddressData(addressData);
+
+            List<ContactData> contactData = contactMap.containsKey(e.getId()) ? contactMap.get(e.getId()).stream().map(ele -> {
+                ContactData cd = new ContactData();
+                BeanUtil.copyProperties(ele, cd);
+                return cd;
+            }).collect(Collectors.toList()) : null;
+            item.setContactsPerson(contactData);
+            item.setCustomizeData(customizeColumnMap.get(e.getId()));
             return item;
         }).collect(Collectors.toList());
     }
@@ -107,11 +135,10 @@ public class SupplierServiceBean implements SupplierService {
         queryWrapper.ge(null != context.getCheckDateStart(), "check_time", context.getCheckDateStart());
         queryWrapper.le(null != context.getCheckDateEnd(), "check_time", context.getCheckDateEnd());
 
-        queryWrapper.like(StrUtil.isNotEmpty(context.getNation()), "nation", context.getNation());
-        queryWrapper.like(StrUtil.isNotEmpty(context.getRegion()), "region", context.getRegion());
-        queryWrapper.like(StrUtil.isNotEmpty(context.getProvince()), "province", context.getProvince());
-        queryWrapper.like(StrUtil.isNotEmpty(context.getCity()), "city", context.getCity());
-        queryWrapper.like(StrUtil.isNotEmpty(context.getCounty()), "county", context.getCounty());
+        queryWrapper.like(context.getNation() != null, "nation", context.getNation());
+        queryWrapper.like(context.getProvince() != null, "province", context.getProvince());
+        queryWrapper.like(context.getCity() != null, "city", context.getCity());
+        queryWrapper.like(context.getCounty() != null, "county", context.getCounty());
         return queryWrapper;
     }
 
@@ -122,11 +149,26 @@ public class SupplierServiceBean implements SupplierService {
         context.setFundAccountIds(!CollUtil.isEmpty(param.getFundAccountCode()) ? fundAccountDao.selectList(new QueryWrapper<FundAccount>().in("code", param.getFundAccountCode())).stream().map(FundAccount::getId).collect(Collectors.toList()) : null);
         context.setPageNo(OptionalUtil.ofNullable(param, SupplierQueryParam::getPageNo, SystemConstants.PAGE_NO));
         context.setPageSize(OptionalUtil.ofNullable(param, SupplierQueryParam::getPageSize, SystemConstants.PAGE_SIZE));
-        BeanUtil.copyProperties(param.getPhysicalRegion(), context);
+        Map<String, SupplierArea> areaMap = supplierAreaDao.selectList(new QueryWrapper<>()).stream().collect(Collectors.toMap(e -> String.format("%s_%s", e.getColumnName(), e.getName()), Function.identity()));
+        if (StrUtil.isNotEmpty(param.getNation())) {
+            context.setNation(areaMap.getOrDefault(String.format("%s_%s", "nation", param.getNation()), new SupplierArea()).getId());
+        }
+        if (StrUtil.isNotEmpty(param.getProvince())) {
+
+            context.setNation(areaMap.getOrDefault(String.format("%s_%s", "province", param.getProvince()), new SupplierArea()).getId());
+        }
+        if (StrUtil.isNotEmpty(param.getCity())) {
+
+            context.setNation(areaMap.getOrDefault(String.format("%s_%s", "city", param.getCity()), new SupplierArea()).getId());
+        }
+        if (StrUtil.isNotEmpty(param.getCounty())) {
+            context.setNation(areaMap.getOrDefault(String.format("%s_%s", "country", param.getCounty()), new SupplierArea()).getId());
+        }
     }
 
 
     @Override
+    @Transactional
     public DataResponse save(SupplierSaveParam param) {
         SupplierSaveContext context = new SupplierSaveContext(param);
         convertSaveContext(context);
@@ -137,6 +179,7 @@ public class SupplierServiceBean implements SupplierService {
         }
         supplierDao.insert(context.supplier);
         context.getSupplierContactsPersonList().forEach(supplierContactsPersonDao::insert);
+        context.getSupplierSendAddresses().forEach(supplierSendAddressDao::insert);
         baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.SUPPLIER_INFO, TableConstants.SUPPLIER, context.supplier.getId(), context.getCustomizeDataDtos());
         return DataResponse.success();
     }
@@ -145,7 +188,8 @@ public class SupplierServiceBean implements SupplierService {
         SupplierNature nameNature = StrUtil.isNotEmpty(context.nature) ? supplierDao.selectNatureByName(context.nature) : null;
         SupplierGrade nameGrade = StrUtil.isNotEmpty(context.grade) ? supplierDao.selectGradeByName(context.grade) : null;
         FundAccount codeFundAccount = StrUtil.isNotEmpty(context.fundAccountCode) ? fundAccountDao.selectOne(new QueryWrapper<FundAccount>().eq("code", context.fundAccountCode)) : null;
-        context.complete(nameNature, nameGrade, codeFundAccount);
+        Map<String, SupplierArea> areaMap = supplierAreaDao.selectList(new QueryWrapper<>()).stream().collect(Collectors.toMap(e -> String.format("%s_%s", e.getColumnName(), e.getName()), Function.identity()));
+        context.complete(nameNature, nameGrade, codeFundAccount, areaMap);
     }
 
     private List<String> validateContext(SupplierSaveContext c) {

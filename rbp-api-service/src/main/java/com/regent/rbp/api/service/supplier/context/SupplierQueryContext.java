@@ -28,11 +28,10 @@ public class SupplierQueryContext {
     private List<String> fields;
     private Integer pageNo;
     private Integer pageSize;
-    private String nation;
-    private String region;
-    private String province;
-    private String city;
-    private String county;
+    private Long nation;
+    private Long province;
+    private Long city;
+    private Long county;
 
     public boolean isValid() {
         return !isNotValid();

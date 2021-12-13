@@ -1,7 +1,6 @@
 package com.regent.rbp.api.dto.supplier;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.regent.rbp.api.dto.channel.PhysicalRegion;
 import lombok.Data;
 
 import java.util.Date;
@@ -35,5 +34,10 @@ public class SupplierQueryParam {
     private List<String> fields;
     private Integer pageNo;
     private Integer pageSize;
-    private PhysicalRegion physicalRegion;
+    private String nation;
+    private String region;
+    private String province;
+    private String city;
+    private String county;
+
 }

@@ -62,4 +62,5 @@ public class Supplier {
 
     private Long county;
 
+    private Integer status;
 }

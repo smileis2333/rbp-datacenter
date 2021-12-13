@@ -6,7 +6,9 @@ import lombok.Data;
 
 @Data
 @TableName(value = "rbp_supplier_contacts_person")
-public class SupplierContactsPerson{
+public class SupplierContactsPerson {
+    private Long id;
+
     private Long supplierId;
 
     private String name;
