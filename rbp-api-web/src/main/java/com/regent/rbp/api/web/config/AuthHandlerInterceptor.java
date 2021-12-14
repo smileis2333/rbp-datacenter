@@ -3,11 +3,15 @@ package com.regent.rbp.api.web.config;
 import com.alibaba.fastjson.JSON;
 import com.regent.rbp.api.dto.base.TokenResultDto;
 import com.regent.rbp.api.web.constants.DataCenterRedisPrefix;
+import com.regent.rbp.common.constants.InformationConstants;
 import com.regent.rbp.infrastructure.annotation.PassToken;
 import com.regent.rbp.infrastructure.constants.ErrorMessage;
+import com.regent.rbp.infrastructure.constants.ResourceConstant;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
+import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.RedisUtil;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -19,6 +23,7 @@ import java.lang.reflect.Method;
 
 /**
  * API验签
+ *
  * @author xuxing
  */
 public class AuthHandlerInterceptor implements HandlerInterceptor {
@@ -44,13 +49,19 @@ public class AuthHandlerInterceptor implements HandlerInterceptor {
         String token = httpServletRequest.getHeader("Authorization");// 从 http 请求头中取出 token
 
         Object value = redisUtil.get(DataCenterRedisPrefix.DATACENTER_TOKEN_KEY + token);
-        if(value == null) {
+        if (value == null) {
             throw new BusinessException(ResponseCode.TOKEN_EMPTY, ErrorMessage.CODE_MAP.get(ResponseCode.TOKEN_EMPTY));
         }
         TokenResultDto tokenResult = JSON.parseObject(value.toString(), TokenResultDto.class);
-        if(!token.equalsIgnoreCase(tokenResult.getToken())) {
+        if (!token.equalsIgnoreCase(tokenResult.getToken())) {
             throw new BusinessException(ResponseCode.TOKEN_ERROR, ErrorMessage.CODE_MAP.get(ResponseCode.TOKEN_ERROR));
         }
+        //存储当前线程变量
+        ThreadLocalGroup.setUserId(InformationConstants.AdminConstants.ADMIN_CODE);
+        ThreadLocalGroup.set(ResourceConstant.LANG, LanguageUtil.ZH);
+        ThreadLocalGroup.set("sessionId", httpServletRequest.getSession().getId());
+        ThreadLocalGroup.set("token", token);
+
         return true;
     }
 
