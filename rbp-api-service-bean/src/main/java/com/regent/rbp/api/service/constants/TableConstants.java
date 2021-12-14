@@ -18,4 +18,6 @@ public class TableConstants {
     public static final String SALE_PLAN_BILL_GOODS = "rbp_sale_plan_bill_goods";
 
     public static final String SUPPLIER = "rbp_supplier";
+
+    public static final String FUND_ACCOUNT = "rbp_fund_account";
 }

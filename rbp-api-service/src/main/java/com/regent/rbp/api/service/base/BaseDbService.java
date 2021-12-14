@@ -59,4 +59,19 @@ public interface BaseDbService {
     List<CustomizeDataDto> getAfterFillCustomizeDataList(List<CustomizeColumnDto> moduleColumnDtoList, List<CustomizeDataDto> customizeDataList);
 
 
+    /**
+     *  保存自定义字段
+     * @param tableNamePrefix
+     * @param id
+     * @param customFieldMap
+     */
+    boolean saveCustomFieldData(String tableNamePrefix, Long id, Map<String, Object> customFieldMap);
+
+    /**
+     * 查询自定义字段的值
+     * @param tableNamePrefix  表名前缀
+     * @param id
+     * @return
+     */
+    Map<String, Object> queryCustomData(String tableNamePrefix, Long id);
 }
