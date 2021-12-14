@@ -101,4 +101,9 @@
        drop table if exists ${tableName}
     </delete>
 
+    <select id="queryCustomDataById" resultType="java.util.Map" >
+       select *
+       from ${tableName}  where id = ${id}
+    </select>
+
 </mapper>

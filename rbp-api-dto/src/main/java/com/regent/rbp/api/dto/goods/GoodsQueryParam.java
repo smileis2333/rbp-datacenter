@@ -13,6 +13,7 @@ public class GoodsQueryParam {
     private String[] mnemonicCode;
     private int[] type;
     private String[] brand;
+    private String[] unit;
     private String[] category;
     private String[] series;
     private String[] pattern;

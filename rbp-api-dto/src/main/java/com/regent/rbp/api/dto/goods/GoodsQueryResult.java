@@ -20,6 +20,7 @@ public class GoodsQueryResult {
     private int type;
     private String sizeClassName;
     private String brand;
+    private String unit;
     private String category;
     private String series;
     private String pattern;
@@ -36,10 +37,10 @@ public class GoodsQueryResult {
     private String exchangeCategory;
     private String discountCategory;
     private String qrcodeLink;
-    private boolean uniqueCodeFlag;
+    private Boolean uniqueCodeFlag;
     private String supplierCode;
     private String supplierGoodsNo;
-    private boolean metricFlag;
+    private Boolean metricFlag;
 
     private String modelClass;
     private String notes;

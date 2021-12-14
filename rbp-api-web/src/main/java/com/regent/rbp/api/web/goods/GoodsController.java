@@ -8,6 +8,7 @@ import com.regent.rbp.api.dto.goods.GoodsSaveParam;
 import com.regent.rbp.api.dto.goods.GoodsSaveResult;
 import com.regent.rbp.api.service.goods.GoodsService;
 import com.regent.rbp.api.web.constants.ApiConstants;
+import com.regent.rbp.infrastructure.annotation.PassToken;
 import com.regent.rbp.infrastructure.response.BaseResponse;
 import com.regent.rbp.infrastructure.response.PageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ public class GoodsController {
     @Autowired
     GoodsService goodsService;
 
+    @PassToken
     @PostMapping("/query")
     public PageDataResponse<GoodsQueryResult> query(@RequestBody GoodsQueryParam param) {
         PageDataResponse<GoodsQueryResult> result = goodsService.query(param);

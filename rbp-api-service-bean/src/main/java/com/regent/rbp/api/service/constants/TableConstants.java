@@ -19,6 +19,8 @@ public class TableConstants {
 
     public static final String SUPPLIER = "rbp_supplier";
 
+    public static final String FUND_ACCOUNT = "rbp_fund_account";
+
     public static final String CHANNEL = "rbp_channel";
 
     public static final String EMPLOYEE = "rbp_employee";

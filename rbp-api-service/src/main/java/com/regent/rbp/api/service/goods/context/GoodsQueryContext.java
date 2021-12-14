@@ -16,6 +16,7 @@ public class GoodsQueryContext {
     private String[] mnemonicCode;
     private int[] type;
     private long[] brandIds;
+    private long[] unitIds;
     private long[] categoryIds;
     private long[] seriesIds;
     private long[] patternIds;

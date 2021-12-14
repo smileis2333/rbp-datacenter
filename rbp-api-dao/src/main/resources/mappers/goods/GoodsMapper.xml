@@ -5,12 +5,12 @@
 <mapper namespace="com.regent.rbp.api.dao.goods.GoodsDao">
 
     <select id="selectGoodsCustomByGoodsIds" resultType="java.util.Map">
-        SELECT a.goods_id
+        SELECT a.id goods_id
         <foreach item="customizeColumn" collection="customizeColumns" open="" separator="" close="">
             , `${customizeColumn}`
         </foreach>
         FROM rbp_goods_custom a
-        WHERE a.goods_id IN (
+        WHERE a.id IN (
         <foreach item="id" collection="goodsIds" open="" separator="," close="">
             #{id}
         </foreach>

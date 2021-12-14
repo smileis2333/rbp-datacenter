@@ -8,8 +8,10 @@ import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,8 +61,8 @@ public class GoodsSaveContext {
         Date buildDate = DateUtil.getDate(param.getBuildDate(), DateUtil.FULL_DATE_FORMAT);
         this.goods.setBuildDate(buildDate);
         this.goods.setAssistMaterial(param.getAssistMaterial());
-        this.goods.setMnemonicCode(param.getMnemonicCode());
         this.goods.setNotes(param.getNotes());
+        this.goods.setMnemonicCode(param.getMnemonicCode());
         this.goods.setQrcodeLink(param.getQrcodeLink());
         this.goods.setUniqueCodeFlag(param.isUniqueCodeFlag());
         this.goods.setStatus(0);
@@ -72,6 +74,11 @@ public class GoodsSaveContext {
             this.goods.setPlanCostPrice(priceData.getPlanCostPrice());
             this.goods.setMaterialPrice(priceData.getMaterialPrice());
             this.goods.setPurchasePrice(priceData.getPurchasePrice());
+        }
+
+        //自定义字段
+        if(StringUtils.isNotBlank(param.getDesigner())){
+            customizeData.put("designer",param.getDesigner());
         }
     }
 }

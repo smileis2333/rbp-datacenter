@@ -108,6 +108,9 @@ public class GoodsServiceBean implements GoodsService {
     private GoodsLongDao goodsLongDao;
 
     @Autowired
+    private UnitDao unitDao;
+
+    @Autowired
     private GoodsTagPriceDao goodsTagPriceDao;
 
     @Autowired
@@ -181,6 +184,9 @@ public class GoodsServiceBean implements GoodsService {
         }
         if(context.getBrandIds() != null && context.getBrandIds().length > 0 ) {
             queryWrapper.in("brand_id", context.getBrandIds());
+        }
+        if(context.getUnitIds() != null && context.getUnitIds().length > 0 ) {
+            queryWrapper.in("unit_id", context.getUnitIds());
         }
         if(context.getCategoryIds() != null && context.getCategoryIds().length > 0 ) {
             queryWrapper.in("category_id", context.getCategoryIds());
@@ -264,7 +270,7 @@ public class GoodsServiceBean implements GoodsService {
             ArrayList<CustomizeDataDto> details = new ArrayList<>(item.size());
             item.keySet().forEach(key->{
                 if(!"goods_id".equalsIgnoreCase(key.toString())) {
-                    CustomizeDataDto data = new CustomizeDataDto(key.toString(), item.get(key).toString());
+                    CustomizeDataDto data = new CustomizeDataDto(key.toString(), String.valueOf(item.get(key)) );
                     details.add(data);
                 }
             });
@@ -348,6 +354,9 @@ public class GoodsServiceBean implements GoodsService {
         List<Brand> listBrand = brandDao.selectList(new QueryWrapper<Brand>().select("id","name"));
         Map<Long, String> mapBrand = listBrand.stream().collect(Collectors.toMap(Brand::getId, Brand::getName));
 
+        List<Unit> listUnit = unitDao.selectList(new QueryWrapper<Unit>().select("id","name"));
+        Map<Long, String> mapUnit = listUnit.stream().collect(Collectors.toMap(Unit::getId, Unit::getName));
+
         List<Category> listCategory = categoryDao.selectList(new QueryWrapper<Category>().select("id","name"));
         Map<Long, String> mapCategory = listCategory.stream().collect(Collectors.toMap(Category::getId, Category::getName));
 
@@ -390,7 +399,7 @@ public class GoodsServiceBean implements GoodsService {
         List<Supplier> listSupplier = supplierDao.selectList(new QueryWrapper<Supplier>().select("id","code"));
         Map<Long, String> mapSupplier = listSupplier.stream().collect(Collectors.toMap(Supplier::getId, Supplier::getCode));
 
-        List<AgeRange> listAgeRange = ageRangeDao.selectList(new QueryWrapper<AgeRange>().select("id","code"));
+        List<AgeRange> listAgeRange = ageRangeDao.selectList(new QueryWrapper<AgeRange>().select("id"));
         Map<Long, AgeRange> mapAgeRange = listAgeRange.stream().collect(Collectors.toMap(AgeRange::getId, t -> t));
 
         HashMap<Long, GoodsQueryResult> hashMapQueryResult = new HashMap<>(queryResults.size());
@@ -408,6 +417,9 @@ public class GoodsServiceBean implements GoodsService {
             }
             if(goods.getBrandId() != null && mapBrand.containsKey(goods.getBrandId())) {
                 queryResult.setBrand(mapBrand.get(goods.getBrandId()));
+            }
+            if(goods.getUnitId() != null && mapUnit.containsKey(goods.getUnitId())) {
+                queryResult.setUnit(mapUnit.get(goods.getUnitId()));
             }
             if(goods.getCategoryId() != null && mapCategory.containsKey(goods.getCategoryId())) {
                 queryResult.setCategory(mapCategory.get(goods.getCategoryId()));
@@ -479,6 +491,14 @@ public class GoodsServiceBean implements GoodsService {
             if(list!=null && list.size()>0) {
                 long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
                 context.setBrandIds(ids);
+            }
+        }
+        //单位
+        if(param.getUnit() != null && param.getUnit().length > 0) {
+            List<Unit> list = unitDao.selectList(new QueryWrapper<Unit>().in("name", param.getUnit()));
+            if(list!=null && list.size()>0) {
+                long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
+                context.setUnitIds(ids);
             }
         }
         //类别
@@ -727,6 +747,16 @@ public class GoodsServiceBean implements GoodsService {
                 errorMsgList.add("号型(ModelClass)不存在");
             } else {
                 goods.setModelClassId(modelClass.getId());
+            }
+        }
+        //验证单位
+        if (StringUtils.isNotBlank(param.getUnit())) {
+            Unit unit = unitDao.selectOne(new QueryWrapper<Unit>().eq("name", param.getUnit()).last(" limit 1 "));
+            if(unit == null) {
+                //号型不存在，给予提示
+                errorMsgList.add("单位(Unit)不存在");
+            } else {
+                goods.setUnitId(unit.getId());
             }
         }
 

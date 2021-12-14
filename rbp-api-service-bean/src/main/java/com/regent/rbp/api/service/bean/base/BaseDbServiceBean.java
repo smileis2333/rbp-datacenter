@@ -8,6 +8,7 @@ import com.regent.rbp.api.dto.base.CustomizeColumnDto;
 import com.regent.rbp.api.dto.base.CustomizeColumnValueDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.service.base.BaseDbService;
+import com.regent.rbp.common.constants.InformationConstants;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.enums.CustomizeColumnTypeEnum;
 import com.regent.rbp.infrastructure.exception.BusinessException;
@@ -22,8 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -306,6 +309,70 @@ public class BaseDbServiceBean implements BaseDbService {
                 }
             }
         });
+    }
+
+    /**
+     * 保存自定义数据
+     *
+     * @param tableNamePrefix 表名前缀   系统规定自定义字段用 "_custom"做结尾，此处给表名前缀。
+     * @param id              数据id
+     * @param customFieldMap  自定义字段集合
+     */
+    @Override
+    public boolean saveCustomFieldData(String tableNamePrefix, Long id, Map<String, Object> customFieldMap) {
+        if (CollUtil.isEmpty(customFieldMap)) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "CustomFieldNotNull", null);
+        }
+        String tableName = tableNamePrefix + "_custom";
+        if (baseDbDao.isExistTable(tableName) == 0) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "CustomFieldNotNull", null);
+        }
+        StringBuilder insertSqlPrefix = new StringBuilder("Insert into " + tableName + " ( id, ");
+        StringBuilder insertValue = new StringBuilder("values (" + id + ",");
+        for (Map.Entry<String, Object> entry : customFieldMap.entrySet()) {
+            String key = entry.getKey();
+            //数据库存在字段 做处理，不存在直接忽略
+            if (baseDbDao.isExistField(tableName, key) == 0) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "CustomFieldNotExist", null);
+            }
+            //value不能null,也不能为 ""
+            if (null != entry.getValue() && !StrUtil.EMPTY.equals(entry.getValue()) && !InformationConstants.StringConstants.ID.equals(key)) {
+                insertSqlPrefix.append(key).append(",");
+                insertValue.append(" '").append(entry.getValue()).append("',");
+            }
+        }
+        int index = insertSqlPrefix.lastIndexOf(",");
+        insertSqlPrefix.replace(index, index + 1, " ) ");
+        index = insertValue.lastIndexOf(",");
+        insertValue.replace(index, index + 1, " ) ");
+        String insertSql = insertSqlPrefix.append(insertValue).toString();
+        int count = baseDbDao.insertSql(insertSql);
+        return count == 1;
+    }
+
+
+    @Override
+    public Map<String, Object> queryCustomData(String tableNamePrefix, Long id) {
+        String tableName = tableNamePrefix + "_custom";
+        Integer existTableInt = baseDbDao.isExistTable(tableName);
+        boolean existTable = existTableInt == 0 ? false :true ;
+        Map<String, Object> resultMap = new HashMap<>();
+        if (existTable) {
+            resultMap = baseDbDao.queryCustomDataById(tableName, id);
+            if (CollUtil.isNotEmpty(resultMap)) {
+                Iterator<Map.Entry<String, Object>> iteratorMap = resultMap.entrySet().iterator();
+                while (iteratorMap.hasNext()) {
+                    Map.Entry<String, Object> entry = iteratorMap.next();
+                    if (entry.getValue() instanceof Date) {
+                        resultMap.put(entry.getKey(), DateUtil.getDateStr((Date) entry.getValue(), DateUtil.FULL_DATE_FORMAT));
+                    }
+                    if ("id".equalsIgnoreCase(entry.getKey())) {
+                        iteratorMap.remove();
+                    }
+                }
+            }
+        }
+        return resultMap;
     }
 
 }

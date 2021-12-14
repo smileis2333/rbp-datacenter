@@ -1,5 +1,6 @@
 package com.regent.rbp.api.core.goods;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
@@ -10,6 +11,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * @author xuxing
@@ -96,6 +98,9 @@ public class Goods extends Model<Goods> {
     @ApiModelProperty(notes = "二维码链接")
     private String qrcodeLink;
 
+    @ApiModelProperty(notes = "单位")
+    private Long unitId;;
+
     @ApiModelProperty(notes = "启用唯一码  0-未启用 1启用")
     private Boolean uniqueCodeFlag;
 
@@ -169,4 +174,8 @@ public class Goods extends Model<Goods> {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(notes = "反审核时间")
     private Date uncheckTime;
+
+    @ApiModelProperty(notes = "自定义字段")
+    @TableField(exist = false)
+    private Map<String, Object> customFieldMap;
 }

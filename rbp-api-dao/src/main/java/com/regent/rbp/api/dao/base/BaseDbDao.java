@@ -50,4 +50,12 @@ public interface BaseDbDao {
     List<SizeDetail> getSizeNameList(@Param("goodsIdList") List<Long> goodsIdList, @Param("sizeNameList") List<String> sizeNameList);
 
     void dropTemplateTable(@Param("tableName") String tableName);
+
+    /**
+     * 根据id查询自定义数据
+     * @param tableName
+     * @param id
+     * @return
+     */
+    Map<String, Object> queryCustomDataById(@Param("tableName") String tableName, @Param("id") Long id);
 }
