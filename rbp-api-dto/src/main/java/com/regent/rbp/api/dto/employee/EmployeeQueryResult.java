@@ -36,5 +36,5 @@ public class EmployeeQueryResult {
 //    private String message;
 //    private Integer totalCount;
 //    private List<EmployeeDto> employeeData;
-//    private List<CustomizeDataDto> customizeData;
+    private List<CustomizeDataDto> customizeData;
 }

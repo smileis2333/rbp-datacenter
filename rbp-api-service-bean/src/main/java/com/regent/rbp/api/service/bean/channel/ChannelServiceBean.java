@@ -1,24 +1,31 @@
 package com.regent.rbp.api.service.bean.channel;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.regent.rbp.api.core.base.*;
+import com.regent.rbp.api.core.base.BranchCompany;
+import com.regent.rbp.api.core.base.Brand;
+import com.regent.rbp.api.core.base.SaleRange;
+import com.regent.rbp.api.core.base.TagPriceType;
 import com.regent.rbp.api.core.channel.*;
 import com.regent.rbp.api.core.fundAccount.FundAccount;
-import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.api.dao.base.BranchCompanyDao;
 import com.regent.rbp.api.dao.base.BrandDao;
 import com.regent.rbp.api.dao.base.SaleRangeDao;
 import com.regent.rbp.api.dao.base.TagPriceTypeDao;
 import com.regent.rbp.api.dao.channel.*;
 import com.regent.rbp.api.dao.fundAccount.FundAccountDao;
+import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.channel.*;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
+import com.regent.rbp.api.service.base.BaseDbService;
 import com.regent.rbp.api.service.channel.ChannelService;
 import com.regent.rbp.api.service.channel.context.ChannelQueryContext;
 import com.regent.rbp.api.service.channel.context.ChannelSaveContext;
+import com.regent.rbp.api.service.constants.TableConstants;
+import com.regent.rbp.common.constants.InformationConstants;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
@@ -26,10 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -69,6 +73,8 @@ public class ChannelServiceBean implements ChannelService {
     ChannelOrganizationDao channelOrganizationDao;
     @Autowired
     ChannelReceiveInfoDao channelReceiveInfoDao;
+    @Autowired
+    BaseDbService baseDbService;
 
     @Override
     public PageDataResponse<ChannelQueryResult> query(ChannelQueryParam param) {
@@ -82,6 +88,7 @@ public class ChannelServiceBean implements ChannelService {
 
     /**
      * 将查询参数转换成 查询的上下文
+     *
      * @param param
      * @param context
      */
@@ -183,27 +190,27 @@ public class ChannelServiceBean implements ChannelService {
             }
         }
 
-        if(StringUtil.isNotBlank(param.getCreatedDateStart())) {
+        if (StringUtil.isNotBlank(param.getCreatedDateStart())) {
             Date createdDateStart = DateUtil.getDate(param.getCreatedDateStart(), DateUtil.FULL_DATE_FORMAT);
             context.setCreatedDateStart(createdDateStart);
         }
-        if(StringUtil.isNotBlank(param.getCreatedDateEnd())) {
+        if (StringUtil.isNotBlank(param.getCreatedDateEnd())) {
             Date createdDateEnd = DateUtil.getDate(param.getCreatedDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setCreatedDateEnd(createdDateEnd);
         }
-        if(StringUtil.isNotBlank(param.getUpdatedDateStart())) {
+        if (StringUtil.isNotBlank(param.getUpdatedDateStart())) {
             Date updatedDateStart = DateUtil.getDate(param.getUpdatedDateStart(), DateUtil.FULL_DATE_FORMAT);
             context.setUpdatedDateStart(updatedDateStart);
         }
-        if(StringUtil.isNotBlank(param.getUpdatedDateEnd())) {
+        if (StringUtil.isNotBlank(param.getUpdatedDateEnd())) {
             Date updatedDateEnd = DateUtil.getDate(param.getUpdatedDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setUpdatedDateEnd(updatedDateEnd);
         }
-        if(StringUtil.isNotBlank(param.getCheckDateStart())) {
+        if (StringUtil.isNotBlank(param.getCheckDateStart())) {
             Date checkDateStart = DateUtil.getDate(param.getCheckDateStart(), DateUtil.FULL_DATE_FORMAT);
             context.setCheckDateStart(checkDateStart);
         }
-        if(StringUtil.isNotBlank(param.getCheckDateEnd())) {
+        if (StringUtil.isNotBlank(param.getCheckDateEnd())) {
             Date checkDateEnd = DateUtil.getDate(param.getCheckDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setCheckDateEnd(checkDateEnd);
         }
@@ -211,6 +218,7 @@ public class ChannelServiceBean implements ChannelService {
 
     /**
      * 查询渠道数据
+     *
      * @param context
      * @return
      */
@@ -251,7 +259,7 @@ public class ChannelServiceBean implements ChannelService {
         List<Long> branchCompanyIds = channelList.stream().map(Channel::getBranchCompanyId).distinct().collect(Collectors.toList());
         List<BranchCompany> branchCompanyList = branchCompanyDao.selectBatchIds(branchCompanyIds);
         Map<Long, String> mapBranchCompany = branchCompanyList.stream().collect(Collectors.toMap(BranchCompany::getId, BranchCompany::getName));
-        
+
         // 加载所有 渠道等级
         List<Long> channelGradeIds = channelList.stream().map(Channel::getGradeId).distinct().collect(Collectors.toList());
         List<ChannelGrade> channelGradeList = channelGradeDao.selectBatchIds(channelGradeIds);
@@ -295,6 +303,9 @@ public class ChannelServiceBean implements ChannelService {
         // 加载所有 渠道组织架构
         List<ChannelOrganization> organizationList = channelOrganizationDao.selectList(new QueryWrapper<ChannelOrganization>().select("id", "name"));
         Map<Long, String> mapOrganization = organizationList.stream().collect(Collectors.toMap(ChannelOrganization::getId, ChannelOrganization::getName));
+
+        // 自定义字段
+        Map<Long, List<CustomizeDataDto>> customizeColumnMap = baseDbService.getCustomizeColumnMap(TableConstants.CHANNEL, channelIds);
 
         for (Channel channel : channelList) {
             ChannelQueryResult queryResult = new ChannelQueryResult();
@@ -359,11 +370,14 @@ public class ChannelServiceBean implements ChannelService {
             }
 
             // 自定义字段
+            if (customizeColumnMap.containsKey(channel.getId())) {
+                queryResult.setCustomizeData(customizeColumnMap.get(channel.getId()));
+            }
 
             // 品牌
-            if(hashMapChannelBrand.containsKey(channel.getId())) {
+            if (hashMapChannelBrand.containsKey(channel.getId())) {
                 List<String> brandList = hashMapChannelBrand.get(channel.getId()).stream().map(ChannelBrandDto::getBrandName).collect(Collectors.toList());
-                if(brandList.size() > 0) {
+                if (brandList.size() > 0) {
                     queryResult.setBrand(brandList.toArray(new String[brandList.size()]));
                 }
             }
@@ -403,12 +417,14 @@ public class ChannelServiceBean implements ChannelService {
             if (channel.getFundAccountId() != null && mapFundAccount.containsKey(channel.getFundAccountId())) {
                 queryResult.setFundAccount(mapFundAccount.get(channel.getFundAccountId()));
             }
+            queryResults.add(queryResult);
         }
         return queryResults;
     }
 
     /**
      * 整理查询条件构造器
+     *
      * @return
      */
     private QueryWrapper processQueryWrapper(ChannelQueryContext context) {
@@ -465,26 +481,26 @@ public class ChannelServiceBean implements ChannelService {
                 queryWrapper.eq("county", physicalRegion.getCounty());
         }
 
-        if(context.getCreatedDateStart() != null) {
+        if (context.getCreatedDateStart() != null) {
             queryWrapper.ge("created_time", context.getCreatedDateStart());
         }
-        if(context.getCreatedDateEnd() != null) {
+        if (context.getCreatedDateEnd() != null) {
             queryWrapper.le("created_time", context.getCreatedDateEnd());
         }
-        if(context.getUpdatedDateStart() != null) {
+        if (context.getUpdatedDateStart() != null) {
             queryWrapper.ge("updated_time", context.getUpdatedDateStart());
         }
-        if(context.getUpdatedDateEnd() != null) {
+        if (context.getUpdatedDateEnd() != null) {
             queryWrapper.le("updated_time", context.getUpdatedDateEnd());
         }
-        if(context.getCheckDateStart() != null) {
+        if (context.getCheckDateStart() != null) {
             queryWrapper.ge("check_time", context.getCheckDateStart());
         }
-        if(context.getCheckDateEnd() != null) {
+        if (context.getCheckDateEnd() != null) {
             queryWrapper.le("check_time", context.getCheckDateEnd());
         }
 
-        return  queryWrapper;
+        return queryWrapper;
     }
 
     @Override
@@ -494,14 +510,14 @@ public class ChannelServiceBean implements ChannelService {
         ChannelSaveContext context = new ChannelSaveContext(param);
         //判断是新增还是更新
         Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getChannelCode()));
-        if(item != null) {
+        if (item != null) {
             context.getChannel().setId(item.getId());
             createFlag = false;
         }
 
         //验证渠道数据有效性
         List<String> errorMsgList = verificationProperty(param, context);
-        if(errorMsgList.size() > 0 ) {
+        if (errorMsgList.size() > 0) {
             String message = StringUtil.join(errorMsgList, ",");
             //throw new BusinessException(ErrorC, "");
         }
@@ -514,22 +530,26 @@ public class ChannelServiceBean implements ChannelService {
         // 写入渠道收货信息
         saveChannelReceiveInfo(context.getChannel().getId(), context.getChannelReceiveInfoList());
 
+        // 自定义字段
+        baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.CHANNEL_INFO, TableConstants.CHANNEL, context.getChannel().getId(), param.getCustomizeData());
+
         return null;
     }
 
     /**
      * 验证渠道属性
+     *
      * @param param
      */
     private List<String> verificationProperty(ChannelSaveParam param, ChannelSaveContext context) {
         List<String> errorMsgList = new ArrayList<>();
         Channel channel = context.getChannel();
 
-        if(StringUtils.isBlank(param.getChannelCode())) {
+        if (StringUtils.isBlank(param.getChannelCode())) {
             errorMsgList.add("渠道编号(channelCode)不能为空");
         } else {
             Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getChannelCode()));
-            if(item != null) {
+            if (item != null) {
                 channel.setId(item.getId());
             }
         }
@@ -599,6 +619,7 @@ public class ChannelServiceBean implements ChannelService {
 
     /**
      * 自动补充不存在的数据字典
+     *
      * @param param
      */
     private void processAutoCompleteDictionary(ChannelSaveParam param, ChannelSaveContext context) {
@@ -702,6 +723,7 @@ public class ChannelServiceBean implements ChannelService {
 
     /**
      * 行政区域
+     *
      * @param parentId
      * @param depth
      * @param name
@@ -721,6 +743,7 @@ public class ChannelServiceBean implements ChannelService {
 
     /**
      * 写入渠道
+     *
      * @param createFlag
      * @param channel
      */
@@ -734,25 +757,31 @@ public class ChannelServiceBean implements ChannelService {
 
     /**
      * 写入渠道品牌关系表
+     *
      * @param channelId
      * @param channelBrandList
      */
     private void saveChannelBrand(Long channelId, List<ChannelBrand> channelBrandList) {
-        channelBrandDao.delete(new QueryWrapper<ChannelBrand>().eq("channel_id", channelId));
-        for (ChannelBrand channelBrand : channelBrandList) {
-            channelBrandDao.insert(channelBrand);
+        if (CollUtil.isNotEmpty(channelBrandList)) {
+            channelBrandDao.delete(new QueryWrapper<ChannelBrand>().eq("channel_id", channelId));
+            for (ChannelBrand channelBrand : channelBrandList) {
+                channelBrandDao.insert(channelBrand);
+            }
         }
     }
 
     /**
      * 写入渠道收货信息
+     *
      * @param channelId
      * @param channelReceiveInfoList
      */
     private void saveChannelReceiveInfo(Long channelId, List<ChannelReceiveInfo> channelReceiveInfoList) {
-        channelReceiveInfoDao.delete(new QueryWrapper<ChannelReceiveInfo>().eq("channel_id", channelId));
-        for (ChannelReceiveInfo receiveInfo : channelReceiveInfoList) {
-            channelReceiveInfoDao.insert(receiveInfo);
+        if (CollUtil.isNotEmpty(channelReceiveInfoList)) {
+            channelReceiveInfoDao.delete(new QueryWrapper<ChannelReceiveInfo>().eq("channel_id", channelId));
+            for (ChannelReceiveInfo receiveInfo : channelReceiveInfoList) {
+                channelReceiveInfoDao.insert(receiveInfo);
+            }
         }
     }
 }

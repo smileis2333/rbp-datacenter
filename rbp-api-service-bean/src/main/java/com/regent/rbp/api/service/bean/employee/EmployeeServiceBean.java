@@ -13,24 +13,26 @@ import com.regent.rbp.api.dao.base.PositionDao;
 import com.regent.rbp.api.dao.base.SexDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.employee.EmployeeDao;
+import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.employee.EmployeeQueryParam;
 import com.regent.rbp.api.dto.employee.EmployeeQueryResult;
 import com.regent.rbp.api.dto.employee.EmployeeSaveParam;
+import com.regent.rbp.api.service.base.BaseDbService;
+import com.regent.rbp.api.service.constants.TableConstants;
 import com.regent.rbp.api.service.employee.EmployeeService;
 import com.regent.rbp.api.service.employee.context.EmployeeQueryContext;
 import com.regent.rbp.api.service.employee.context.EmployeeSaveContext;
+import com.regent.rbp.common.constants.InformationConstants;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -48,6 +50,8 @@ public class EmployeeServiceBean implements EmployeeService {
     SexDao sexDao;
     @Autowired
     PositionDao positionDao;
+    @Autowired
+    BaseDbService baseDbService;
 
     @Override
     public PageDataResponse<EmployeeQueryResult> query(EmployeeQueryParam param) {
@@ -81,7 +85,7 @@ public class EmployeeServiceBean implements EmployeeService {
             queryWrapper.eq("name", context.getName());
         }
         if (context.getSex() != null && context.getSex().length > 0) {
-            queryWrapper.in("sex_id",context.getSex());
+            queryWrapper.in("sex_id", context.getSex());
         }
         if (StringUtil.isNotEmpty(context.getMobile())) {
             queryWrapper.eq("mobile", context.getMobile());
@@ -128,6 +132,8 @@ public class EmployeeServiceBean implements EmployeeService {
 
     private List<EmployeeQueryResult> converEmployeeQueryResult(List<Employee> employeeList) {
         List<EmployeeQueryResult> resultArrayList = new ArrayList<>(employeeList.size());
+        ArrayList<Long> employeeIds = CollUtil.distinct(CollUtil.map(employeeList, Employee::getId, true));
+        Map<Long, List<CustomizeDataDto>> customizeColumnMap = employeeIds.isEmpty() ? new HashMap<>() : baseDbService.getCustomizeColumnMap(TableConstants.EMPLOYEE, employeeIds);
         for (Employee employee : employeeList) {
             EmployeeQueryResult employeeQueryResult = new EmployeeQueryResult();
             employeeQueryResult.setCode(employee.getCode());
@@ -151,6 +157,9 @@ public class EmployeeServiceBean implements EmployeeService {
             Channel channel = channelDao.selectById(employee.getChannelId());
             if (channel != null) {
                 employeeQueryResult.setChannelCode(channel.getCode());
+            }
+            if (customizeColumnMap.containsKey(employee.getId())){
+                employeeQueryResult.setCustomizeData(customizeColumnMap.get(employee.getId()));
             }
             employeeQueryResult.setBirthdayDate(DateUtil.getDateStr(employee.getCreatedTime()));
             employeeQueryResult.setUpdatedTime(DateUtil.getDateStr(employee.getUpdatedTime()));
@@ -239,6 +248,7 @@ public class EmployeeServiceBean implements EmployeeService {
             //throw new BusinessException();
         }
         saveEmployee(createFlag, context.getEmployee());
+        baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.EMPLOYEE_INFO, TableConstants.EMPLOYEE, context.getEmployee().getId(), param.getCustomizeData());
         return ModelDataResponse.Success(context.getEmployee().getId());
     }
 

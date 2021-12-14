@@ -3,17 +3,12 @@ package com.regent.rbp.api.service.channel.context;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.channel.ChannelBrand;
 import com.regent.rbp.api.core.channel.ChannelReceiveInfo;
-import com.regent.rbp.api.core.goods.Goods;
-import com.regent.rbp.api.dto.channel.AddressData;
 import com.regent.rbp.api.dto.channel.ChannelSaveParam;
-import com.regent.rbp.api.dto.goods.GoodsPriceDto;
-import com.regent.rbp.api.dto.goods.GoodsSaveParam;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -54,7 +49,7 @@ public class ChannelSaveContext {
         }
         this.channel.setCode(param.getChannelCode());
         this.channel.setName(param.getChannelName());
-        this.channel.setFullName(param.getFundAccount());
+        this.channel.setFullName(param.getChannelFullName());
 
         Date buildDate = DateUtil.getDate(param.getChannelBuildDate(), DateUtil.FULL_DATE_FORMAT);
         this.channel.setBuildDate(buildDate);

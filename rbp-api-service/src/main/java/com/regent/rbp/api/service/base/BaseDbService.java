@@ -1,8 +1,10 @@
 package com.regent.rbp.api.service.base;
 
+import cn.hutool.core.collection.CollUtil;
 import com.regent.rbp.api.dto.base.CustomizeColumnDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +23,17 @@ public interface BaseDbService {
      * @param customFieldMap
      */
     boolean saveOrUpdateCustomFieldData(String moduleId, String tableNamePrefix, Long id, Map<String, Object> customFieldMap);
+
+    default boolean saveOrUpdateCustomFieldData(String moduleId, String tableNamePrefix, Long id, List<CustomizeDataDto> customizeDataDtos) {
+        Map<String, Object> customizeData;
+        if (CollUtil.isNotEmpty(customizeDataDtos)) {
+            Map<String, Object> customFieldMap = new HashMap<>();
+            customizeDataDtos.forEach(item -> customFieldMap.put(item.getCode(), item.getValue()));
+            customizeData = customFieldMap;
+            return saveOrUpdateCustomFieldData(moduleId, tableNamePrefix, id, customizeData);
+        }
+        return false;
+    }
 
     /**
      * 批量保存/更新自定义字段
