@@ -1,5 +1,6 @@
 package com.regent.rbp.api.core.channel;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -7,7 +8,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @program: rbp-datacenter
@@ -33,9 +36,6 @@ public class ChannelOrganization {
     @ApiModelProperty(notes = "名称")
     private String name;
 
-    @ApiModelProperty(notes = "字段名")
-    private String columnName;
-
     @ApiModelProperty(notes = "排序")
     private String orderNumber;
 
@@ -52,4 +52,14 @@ public class ChannelOrganization {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(notes = "更新时间")
     private Date updatedTime;
+
+    @TableField(exist = false)
+    private List<ChannelOrganization> childrenData;
+
+    public void addChild(ChannelOrganization co){
+        if (childrenData == null) {
+            childrenData = new ArrayList<>();
+        }
+        childrenData.add(co);
+    }
 }
