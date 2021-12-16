@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,6 +29,10 @@ public class NoticeBillGoods {
 
     @ApiModelProperty(notes = "单据编码")
     private Long billId;
+
+    @ApiModelProperty(notes = "计划单号")
+    @TableField(exist = false)
+    private Long salePlanId;
 
     @ApiModelProperty(notes = "计划单货品明细号")
     private Long salePlanGoodsId;
@@ -55,6 +60,10 @@ public class NoticeBillGoods {
 
     @ApiModelProperty(notes = "备注")
     private String remark;
+
+    @ApiModelProperty(notes = "尺码明细")
+    @TableField(exist = false)
+    List<NoticeBillSize> sizeList;
 
     @ApiModelProperty(notes = "自定义字段")
     @TableField(exist = false)

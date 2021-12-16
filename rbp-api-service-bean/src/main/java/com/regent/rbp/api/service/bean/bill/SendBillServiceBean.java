@@ -18,11 +18,11 @@ import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.api.core.noticeBill.NoticeBill;
 import com.regent.rbp.api.core.noticeBill.NoticeBillGoods;
-import com.regent.rbp.api.core.noticeBill.NoticeBillLogistics;
 import com.regent.rbp.api.core.noticeBill.NoticeBillSize;
-import com.regent.rbp.api.core.salePlan.SalePlanBill;
-import com.regent.rbp.api.core.salePlan.SalePlanBillGoodsFinal;
-import com.regent.rbp.api.core.salePlan.SalePlanBillSizeFinal;
+import com.regent.rbp.api.core.sendBill.SendBill;
+import com.regent.rbp.api.core.sendBill.SendBillGoods;
+import com.regent.rbp.api.core.sendBill.SendBillLogistics;
+import com.regent.rbp.api.core.sendBill.SendBillSize;
 import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.base.ColorDao;
@@ -32,26 +32,26 @@ import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.noticeBill.NoticeBillDao;
 import com.regent.rbp.api.dao.noticeBill.NoticeBillGoodsDao;
-import com.regent.rbp.api.dao.noticeBill.NoticeBillLogisticsDao;
 import com.regent.rbp.api.dao.noticeBill.NoticeBillSizeDao;
-import com.regent.rbp.api.dao.salePlan.SalePlanBillDao;
-import com.regent.rbp.api.dao.salePlan.SalePlanBillGoodsFinalDao;
-import com.regent.rbp.api.dao.salePlan.SalePlanBillSizeFinalDao;
+import com.regent.rbp.api.dao.sendBill.SendBillDao;
+import com.regent.rbp.api.dao.sendBill.SendBillGoodsDao;
+import com.regent.rbp.api.dao.sendBill.SendBillLogisticsDao;
+import com.regent.rbp.api.dao.sendBill.SendBillSizeDao;
 import com.regent.rbp.api.dto.base.CustomizeColumnDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
-import com.regent.rbp.api.dto.notice.NoticeBillGoodsDetailData;
-import com.regent.rbp.api.dto.notice.NoticeBillQueryParam;
-import com.regent.rbp.api.dto.notice.NoticeBillQueryResult;
-import com.regent.rbp.api.dto.notice.NoticeBillSaveParam;
+import com.regent.rbp.api.dto.send.SendBillGoodsDetailData;
+import com.regent.rbp.api.dto.send.SendBillQueryParam;
+import com.regent.rbp.api.dto.send.SendBillQueryResult;
+import com.regent.rbp.api.dto.send.SendBillSaveParam;
 import com.regent.rbp.api.service.base.BaseDbService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.api.service.constants.TableConstants;
-import com.regent.rbp.api.service.notice.NoticeBillService;
-import com.regent.rbp.api.service.notice.context.NoticeBillQueryContext;
-import com.regent.rbp.api.service.notice.context.NoticeBillSaveContext;
+import com.regent.rbp.api.service.send.SendBillService;
+import com.regent.rbp.api.service.send.context.SendBillQueryContext;
+import com.regent.rbp.api.service.send.context.SendBillSaveContext;
 import com.regent.rbp.common.model.basic.dto.IdNameCodeDto;
 import com.regent.rbp.common.model.basic.dto.IdNameDto;
 import com.regent.rbp.common.service.basic.DbService;
@@ -82,20 +82,20 @@ import java.util.stream.Collectors;
 
 /**
  * @author chenchungui
- * @date 2021/12/07
- * @description 指令单 实现类
+ * @date 2021/12/16
+ * @description 发货单 实现类
  */
 @Service
-public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill> implements NoticeBillService {
+public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> implements SendBillService {
 
     @Autowired
-    private NoticeBillDao noticeBillDao;
+    private SendBillDao sendBillDao;
     @Autowired
-    private NoticeBillSizeDao noticeBillSizeDao;
+    private SendBillSizeDao sendBillSizeDao;
     @Autowired
-    private NoticeBillGoodsDao noticeBillGoodsDao;
+    private SendBillGoodsDao sendBillGoodsDao;
     @Autowired
-    private NoticeBillLogisticsDao noticeBillLogisticsDao;
+    private SendBillLogisticsDao sendBillLogisticsDao;
     @Autowired
     private BaseDbDao baseDbDao;
     @Autowired
@@ -113,11 +113,11 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
     @Autowired
     private SystemCommonService systemCommonService;
     @Autowired
-    private SalePlanBillSizeFinalDao salePlanBillSizeFinalDao;
+    private NoticeBillSizeDao noticeBillSizeDao;
     @Autowired
-    private SalePlanBillGoodsFinalDao salePlanBillGoodsFinalDao;
+    private NoticeBillGoodsDao noticeBillGoodsDao;
     @Autowired
-    private SalePlanBillDao salePlanBillDao;
+    private NoticeBillDao noticeBillDao;
     @Autowired
     private BaseDbService baseDbService;
     @Autowired
@@ -130,16 +130,16 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
      * @return
      */
     @Override
-    public PageDataResponse<NoticeBillQueryResult> query(NoticeBillQueryParam param) {
-        NoticeBillQueryContext context = new NoticeBillQueryContext();
+    public PageDataResponse<SendBillQueryResult> query(SendBillQueryParam param) {
+        SendBillQueryContext context = new SendBillQueryContext();
         //将入参转换成查询的上下文对象
         convertQueryContext(param, context);
         //查询数据
-        PageDataResponse<NoticeBillQueryResult> result = new PageDataResponse<>();
-        Page<NoticeBill> pageModel = new Page<>(context.getPageNo(), context.getPageSize());
+        PageDataResponse<SendBillQueryResult> result = new PageDataResponse<>();
+        Page<SendBill> pageModel = new Page<>(context.getPageNo(), context.getPageSize());
         QueryWrapper queryWrapper = this.processQueryWrapper(context);
-        IPage<NoticeBill> salesPageData = noticeBillDao.selectPage(pageModel, queryWrapper);
-        List<NoticeBillQueryResult> list = convertQueryResult(salesPageData.getRecords());
+        IPage<SendBill> salesPageData = sendBillDao.selectPage(pageModel, queryWrapper);
+        List<SendBillQueryResult> list = convertQueryResult(salesPageData.getRecords());
 
         result.setTotalCount(salesPageData.getTotal());
         result.setData(list);
@@ -154,57 +154,57 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
      */
     @Transactional
     @Override
-    public DataResponse save(NoticeBillSaveParam param) {
-        NoticeBillSaveContext context = new NoticeBillSaveContext();
+    public DataResponse save(SendBillSaveParam param) {
+        SendBillSaveContext context = new SendBillSaveContext();
         // 校验并转换
         List<String> messageList = new ArrayList<>();
         this.convertSaveContext(context, param, messageList);
         if (CollUtil.isNotEmpty(messageList)) {
             return new ModelDataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("paramVerifyError", new String[]{String.join(StrUtil.COMMA, messageList)}));
         }
-        NoticeBill bill = context.getBill();
-        List<NoticeBillGoods> billGoodsList = context.getBillGoodsList();
-        List<NoticeBillSize> billSizeList = context.getBillSizeList();
-        List<SalePlanBillSizeFinal> updateSizeFinals = context.getUpdateSalePlanBillSizeFinalList();
-        NoticeBillLogistics logistics = context.getLogistics();
+        SendBill bill = context.getBill();
+        List<SendBillGoods> billGoodsList = context.getBillGoodsList();
+        List<SendBillSize> billSizeList = context.getBillSizeList();
+        List<NoticeBillSize> updateSizes = context.getUpdateNoticeBillSizeList();
+        SendBillLogistics logistics = context.getLogistics();
 
         // 获取单号
         bill.setBillNo(systemCommonService.getBillNo(bill.getModuleId()));
         bill.setProcessStatus(StatusEnum.NONE.getStatus());
         // 新增订单
-        noticeBillDao.insert(bill);
+        sendBillDao.insert(bill);
         // 单据自定义字段
-        baseDbService.saveOrUpdateCustomFieldData(bill.getModuleId(), TableConstants.NOTICE_BILL, bill.getId(), bill.getCustomFieldMap());
+        baseDbService.saveOrUpdateCustomFieldData(bill.getModuleId(), TableConstants.SEND_BILL, bill.getId(), bill.getCustomFieldMap());
         // 新增物流信息
-        noticeBillLogisticsDao.insert(logistics);
+        sendBillLogisticsDao.insert(logistics);
         // 货品自定义字段
         List<Map<String, Object>> customFieldMapList = billGoodsList.stream().map(v -> v.getCustomFieldMap()).filter(f -> null != f).collect(Collectors.toList());
-        baseDbService.batchSaveOrUpdateCustomFieldData(bill.getModuleId(), TableConstants.NOTICE_BILL_GOODS, customFieldMapList);
+        baseDbService.batchSaveOrUpdateCustomFieldData(bill.getModuleId(), TableConstants.SEND_BILL_GOODS, customFieldMapList);
         // 批量新增货品明细
-        List<NoticeBillGoods> goodsList = new ArrayList<>();
+        List<SendBillGoods> goodsList = new ArrayList<>();
         int i = 0;
-        for (NoticeBillGoods goods : billGoodsList) {
+        for (SendBillGoods goods : billGoodsList) {
             i++;
             goodsList.add(goods);
             if (i % SystemConstants.BATCH_SIZE == 0 || i == billGoodsList.size()) {
-                noticeBillDao.batchInsertGoodsList(goodsList);
+                sendBillDao.batchInsertGoodsList(goodsList);
                 goodsList.clear();
             }
         }
         // 批量新增尺码明细
-        List<NoticeBillSize> sizeList = new ArrayList<>();
+        List<SendBillSize> sizeList = new ArrayList<>();
         i = 0;
-        for (NoticeBillSize size : billSizeList) {
+        for (SendBillSize size : billSizeList) {
             i++;
             sizeList.add(size);
             if (i % SystemConstants.BATCH_SIZE == 0 || i == billSizeList.size()) {
-                noticeBillDao.batchInsertSizeList(sizeList);
+                sendBillDao.batchInsertSizeList(sizeList);
                 sizeList.clear();
             }
         }
         // 更新计划单欠数
-        if (CollUtil.isNotEmpty(updateSizeFinals)) {
-            String tmpTableName = "rbp_sale_plan_bill_size_temp" + StringUtil.getUUID();
+        if (CollUtil.isNotEmpty(updateSizes)) {
+            String tmpTableName = "rbp_notice_bill_size_temp" + StringUtil.getUUID();
             try {
                 StringBuilder sb = new StringBuilder();
                 sb.append("CREATE TABLE `" + tmpTableName + "`");
@@ -215,10 +215,10 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
                 // 创建临时表
                 baseDbDao.insertSql(sb.toString());
                 // 插入临时数据
-                noticeBillDao.batchInsertSalePlanBillSizeList(tmpTableName, updateSizeFinals);
+                sendBillDao.batchInsertNoticeBillSizeList(tmpTableName, updateSizes);
                 // 批量更新计划单尺码明细
                 sb.setLength(0);
-                sb.append(" update rbp_sale_plan_bill_size_final a inner join " + tmpTableName + " b on b.id=a.id");
+                sb.append(" update rbp_notice_bill_size a inner join " + tmpTableName + " b on b.id=a.id");
                 sb.append(" set a.owe_quantity = b.owe_quantity");
                 baseDbDao.updateSql(sb.toString());
             } finally {
@@ -235,9 +235,9 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
      * @param context
      * @param param
      */
-    private void convertSaveContext(NoticeBillSaveContext context, NoticeBillSaveParam param, List<String> messageList) {
+    private void convertSaveContext(SendBillSaveContext context, SendBillSaveParam param, List<String> messageList) {
         /****************   订单主体    ******************/
-        NoticeBill bill = new NoticeBill();
+        SendBill bill = new SendBill();
         bill.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         bill.preInsert();
         context.setBill(bill);
@@ -247,32 +247,9 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         bill.setBillDate(param.getBillDate());
         bill.setManualId(param.getManualId());
         bill.setNotes(param.getNotes());
-        // 计划单
-        Map<String, SalePlanBillGoodsFinal> goodsFinalMap = new HashMap<>();
-        if (StringUtil.isNotEmpty(param.getSalePlanNo())) {
-            Long salePlanId = baseDbDao.getLongDataBySql(String.format("select id from rbp_sale_plan_bill where status=1 and bill_no = '%s'", param.getSalePlanNo()));
-            if (null == salePlanId) {
-                messageList.add(getNotExistMessage("salePlanNo"));
-            } else {
-                bill.setSalePlanId(salePlanId);
-                List<SalePlanBillGoodsFinal> finalGoodsList = salePlanBillGoodsFinalDao.selectList(new QueryWrapper<SalePlanBillGoodsFinal>().eq("bill_id", bill.getSalePlanId()));
-                List<SalePlanBillSizeFinal> finalSizeList = salePlanBillSizeFinalDao.selectList(new QueryWrapper<SalePlanBillSizeFinal>().eq("bill_id", bill.getSalePlanId()));
-                if (CollUtil.isEmpty(finalGoodsList) || CollUtil.isEmpty(finalSizeList)) {
-                    messageList.add(getNotExistMessage("salePlanBillGoodsList"));
-                } else {
-                    finalGoodsList.forEach(item -> item.setFinalSizeList(finalSizeList.stream().filter(f -> f.getBillGoodsId().equals(item.getId())).collect(Collectors.toList())));
-                    // 根据货品ID+价格分组
-                    goodsFinalMap = finalGoodsList.stream().collect(Collectors.toMap(v -> v.getGoodsId() + StrUtil.UNDERLINE + v.getBalancePrice(), Function.identity()));
-                }
-            }
-        }
         // 业务类型
         if (StringUtil.isNotEmpty(param.getBusinessType())) {
             bill.setBusinessTypeId(baseDbDao.getLongDataBySql(String.format("select id from rbp_business_type where name = '%s'", param.getBusinessType())));
-        }
-        // 价格类型
-        if (StringUtil.isNotEmpty(param.getPriceType())) {
-            bill.setPriceTypeId(baseDbDao.getLongDataBySql(String.format("select id from rbp_price_type where name = '%s'", param.getPriceType())));
         }
         // 币种
         if (StringUtil.isNotEmpty(param.getCurrencyType())) {
@@ -286,7 +263,6 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         if (StringUtil.isNotEmpty(param.getToChannelCode())) {
             bill.setToChannelId(baseDbDao.getLongDataBySql(String.format("select id from rbp_channel where status = 1 and code = '%s'", param.getToChannelCode())));
         }
-        // TODO 科目编码
         // 自定义字段
         if (CollUtil.isNotEmpty(param.getCustomizeData())) {
             Map<String, Object> customFieldMap = new HashMap<>();
@@ -294,7 +270,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
             bill.setCustomFieldMap(customFieldMap);
         }
         /****************   物流信息    ******************/
-        NoticeBillLogistics logistics = new NoticeBillLogistics();
+        SendBillLogistics logistics = new SendBillLogistics();
         context.setLogistics(logistics);
         logistics.preInsert();
         logistics.setBillId(bill.getId());
@@ -337,7 +313,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         }
         // 判断手工单号是否重复
         if (messageList.size() == 0) {
-            Integer count = noticeBillDao.selectCount(new QueryWrapper<NoticeBill>().eq("manual_id", bill.getManualId()));
+            Integer count = sendBillDao.selectCount(new QueryWrapper<SendBill>().eq("manual_id", bill.getManualId()));
             if (null != count && count > 0) {
                 messageList.add(getMessageByParams("dataExist", new String[]{LanguageUtil.getMessage("manualId")}));
             }
@@ -346,12 +322,12 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
             return;
         }
         /****************   货品明细    ******************/
-        List<NoticeBillGoods> billGoodsList = new ArrayList<>();
+        List<SendBillGoods> billGoodsList = new ArrayList<>();
         context.setBillGoodsList(billGoodsList);
-        List<NoticeBillSize> billSizeList = new ArrayList<>();
+        List<SendBillSize> billSizeList = new ArrayList<>();
         context.setBillSizeList(billSizeList);
-        List<SalePlanBillSizeFinal> updateSizeFinalList = new ArrayList<>();
-        context.setUpdateSalePlanBillSizeFinalList(updateSizeFinalList);
+        List<NoticeBillSize> updateSizeList = new ArrayList<>();
+        context.setUpdateNoticeBillSizeList(updateSizeList);
         // 根据条形码获取货品尺码信息
         Map<String, Barcode> barcodeMap = new HashMap<>();
         // 货品
@@ -375,18 +351,38 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
             List<SizeDetail> sizeClassList = baseDbDao.getSizeNameList(StreamUtil.toList(goodsList, Goods::getId), StreamUtil.toList(param.getGoodsDetailData(), v -> v.getSize()));
             sizeMap = sizeClassList.stream().collect(Collectors.toMap(v -> v.getGoodsId() + StrUtil.UNDERLINE + v.getName(), SizeDetail::getId, (x1, x2) -> x1));
         }
+        // 查询指令单货品、尺码数
+        Map<String, NoticeBillGoods> noticeGoodsMap = new HashMap<>();
+        Set<String> noticeNoSet = param.getGoodsDetailData().stream().filter(f -> StringUtil.isNotEmpty(f.getNoticeNo())).map(v -> v.getNoticeNo()).collect(Collectors.toSet());
+        Map<String, NoticeBill> noticeNoMap = new HashMap<>();
+        if (CollUtil.isNotEmpty(noticeNoSet)) {
+            List<NoticeBill> noticeBills = noticeBillDao.selectList(new QueryWrapper<NoticeBill>().select("id,bill_no,sale_plan_id").in("bill_no", noticeNoSet));
+            if (CollUtil.isEmpty(noticeBills) || noticeNoSet.size() > noticeBills.size()) {
+                messageList.add(getNotExistMessage("noticeNo"));
+            } else {
+                noticeNoMap = noticeBills.stream().collect(Collectors.toMap(NoticeBill::getBillNo, Function.identity(), (x1, x2) -> x1));
+                List<NoticeBillGoods> noticeBillGoodsList = noticeBillGoodsDao.selectList(new QueryWrapper<NoticeBillGoods>().in("bill_id", StreamUtil.toSet(noticeBills, NoticeBill::getId)));
+                List<NoticeBillSize> noticeBillSizeList = noticeBillSizeDao.selectList(new QueryWrapper<NoticeBillSize>().in("bill_id", StreamUtil.toSet(noticeBills, NoticeBill::getId)));
+                if (CollUtil.isEmpty(noticeBillGoodsList) || CollUtil.isEmpty(noticeBillSizeList)) {
+                    messageList.add(getNotExistMessage("salePlanBillGoodsList"));
+                } else {
+                    noticeBillGoodsList.forEach(item -> item.setSizeList(noticeBillSizeList.stream().filter(f -> f.getBillGoodsId().equals(item.getId())).collect(Collectors.toList())));
+                    // 根据单据ID+货品ID+价格分组
+                    noticeGoodsMap = noticeBillGoodsList.stream().collect(Collectors.toMap(v -> String.format("%s_%s_%s", v.getBillId(), v.getGoodsId(), v.getBalancePrice()), Function.identity()));
+                }
+            }
+        }
         // 尺码明细
-        List<NoticeBillSize> sizeList = new ArrayList<>();
+        List<SendBillSize> sizeList = new ArrayList<>();
         AtomicInteger atomicInteger = new AtomicInteger();
-        for (NoticeBillGoodsDetailData item : param.getGoodsDetailData()) {
+        for (SendBillGoodsDetailData item : param.getGoodsDetailData()) {
             atomicInteger.getAndIncrement();
-            NoticeBillSize size = new NoticeBillSize();
+            SendBillSize size = new SendBillSize();
             sizeList.add(size);
 
             size.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
             size.setBillId(bill.getId());
             size.setQuantity(item.getQuantity());
-            size.setOweQuantity(item.getQuantity());
             Barcode barcode = barcodeMap.get(item.getBarcode());
             if (null != barcode) {
                 size.setGoodsId(barcode.getGoodsId());
@@ -418,6 +414,9 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
                 // 设置货品ID
                 item.setGoodsId(size.getGoodsId());
                 item.setColumnId(size.getId());
+                // 设置指令单ID
+                item.setNoticeId(OptionalUtil.ofNullable(noticeNoMap.get(item.getNoticeNo()), NoticeBill::getId));
+                item.setSalePlanId(OptionalUtil.ofNullable(noticeNoMap.get(item.getNoticeNo()), NoticeBill::getSalePlanId));
             }
         }
         if (CollUtil.isNotEmpty(messageList)) {
@@ -427,7 +426,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         List<Long> goodsIdList = param.getGoodsDetailData().stream().filter(f -> null == f.getBalancePrice()).map(v -> v.getGoodsId()).distinct().collect(Collectors.toList());
         // TODO 获取分销价格
         atomicInteger.set(0);
-        for (NoticeBillGoodsDetailData item : param.getGoodsDetailData()) {
+        for (SendBillGoodsDetailData item : param.getGoodsDetailData()) {
             // TODO 结算价不存在,则通过分销价格获取
             if (null == item.getBalancePrice() && goodsIdList.contains(item.getGoodsId())) {
 
@@ -436,65 +435,72 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
                 messageList.add(getNotExistMessage(atomicInteger.get(), "balancePrice"));
             }
         }
+        // 尺码根据行ID分组
+        Map<Long, SendBillSize> sendBillSizeMap = sizeList.stream().collect(Collectors.toMap(v -> v.getId(), Function.identity()));
+
         if (CollUtil.isNotEmpty(messageList)) {
             return;
         }
-        // 尺码根据行ID分组
-        Map<Long, NoticeBillSize> noticeBillSizeMap = sizeList.stream().collect(Collectors.toMap(v -> v.getId(), Function.identity()));
-
-        // 存在计划单，根据货品+结算价匹配,获取计划单货品ID和欠数，不存在或超出欠数报错，更新计划单欠数
-        Map<String, SalePlanBillGoodsFinal> finalGoodsFinalMap = goodsFinalMap;
+        // 存在指令单，根据单据ID+货品+结算价匹配,获取指令单货品ID和欠数，不存在或超出欠数报错，更新指令单欠数
+        Map<String, NoticeBillGoods> finalNoticeGoodsMap = noticeGoodsMap;
         atomicInteger.set(0);
+        // 根据货品+价格分组，支持同款多价
         param.getGoodsDetailData().stream().collect(Collectors.groupingBy(v -> v.getSameGoodsDiffPriceKey())).forEach((key, sizes) -> {
             atomicInteger.getAndIncrement();
-            NoticeBillGoodsDetailData detailData = sizes.get(0);
-            SalePlanBillGoodsFinal goodsFinal = finalGoodsFinalMap.get(key);
-            if (null != bill.getSalePlanId() && null == goodsFinal) {
+            SendBillGoods billGoods = SendBillGoods.build();
+            billGoodsList.add(billGoods);
+
+            billGoods.setBillId(bill.getId());
+            SendBillGoodsDetailData detailData = sizes.get(0);
+            billGoods.setGoodsId(detailData.getGoodsId());
+            billGoods.setTagPrice(detailData.getTagPrice());
+            billGoods.setBalancePrice(detailData.getBalancePrice());
+            billGoods.setDiscount(detailData.getDiscount());
+            billGoods.setCurrencyPrice(detailData.getCurrencyPrice());
+            billGoods.setExchangeRate(detailData.getExchangeRate());
+            billGoods.setQuantity(detailData.getQuantity());
+            billGoods.setRemark(detailData.getRemark());
+            // 自定义字段
+            if (CollUtil.isNotEmpty(detailData.getGoodsCustomizeData())) {
+                Map<String, Object> customFieldMap = new HashMap<>();
+                customFieldMap.put("id", billGoods.getId());
+                detailData.getGoodsCustomizeData().forEach(item -> customFieldMap.put(item.getCode(), item.getValue()));
+                billGoods.setCustomFieldMap(customFieldMap);
+            }
+            // 指令单货品
+            NoticeBillGoods noticeBillGoods = finalNoticeGoodsMap.get(key);
+            Map<String, NoticeBillSize> sizeFinalMap = new HashMap<>();
+            // 引用指令单
+            if (null != detailData.getNoticeId() && null == noticeBillGoods) {
                 messageList.add(getMessageByParams("notReferencedBillGoods", new Object[]{sizes.get(0).getGoodsCode()}));
             } else {
-                NoticeBillGoods billGoods = NoticeBillGoods.build();
-                Map<String, SalePlanBillSizeFinal> sizeFinalMap = new HashMap<>();
-                // 引用销售计划
-                if (null != bill.getSalePlanId()) {
-                    billGoods.setSalePlanGoodsId(goodsFinal.getId());
-                    sizeFinalMap = goodsFinal.getFinalSizeList().stream().collect(Collectors.toMap(SalePlanBillSizeFinal::getSingleCode, Function.identity()));
-                }
-                billGoodsList.add(billGoods);
+                if (null != detailData.getNoticeId()) {
+                    billGoods.setNoticeId(noticeBillGoods.getBillId());
+                    billGoods.setNoticeGoodsId(noticeBillGoods.getId());
+                    billGoods.setSalePlanGoodsId(noticeBillGoods.getSalePlanGoodsId());
+                    billGoods.setSalePlanId(detailData.getSalePlanId());
 
-                billGoods.setBillId(bill.getId());
-                billGoods.setGoodsId(detailData.getGoodsId());
-                billGoods.setTagPrice(detailData.getTagPrice());
-                billGoods.setBalancePrice(detailData.getBalancePrice());
-                billGoods.setDiscount(detailData.getDiscount());
-                billGoods.setCurrencyPrice(detailData.getCurrencyPrice());
-                billGoods.setExchangeRate(detailData.getExchangeRate());
-                billGoods.setQuantity(detailData.getQuantity());
-                billGoods.setRemark(detailData.getRemark());
-                // 自定义字段
-                if (CollUtil.isNotEmpty(detailData.getGoodsCustomizeData())) {
-                    Map<String, Object> customFieldMap = new HashMap<>();
-                    customFieldMap.put("id", billGoods.getId());
-                    detailData.getGoodsCustomizeData().forEach(item -> customFieldMap.put(item.getCode(), item.getValue()));
-                    billGoods.setCustomFieldMap(customFieldMap);
+                    sizeFinalMap = noticeBillGoods.getSizeList().stream().collect(Collectors.toMap(NoticeBillSize::getSingleCode, Function.identity()));
                 }
                 // 尺码明细
-                for (NoticeBillGoodsDetailData item : sizes) {
-                    NoticeBillSize billSize = noticeBillSizeMap.get(item.getColumnId());
-                    SalePlanBillSizeFinal sizeFinal = sizeFinalMap.get(billSize.getSingleCode());
-                    // 引用销售计划
-                    if (null != bill.getSalePlanId()) {
+                for (SendBillGoodsDetailData item : sizes) {
+                    SendBillSize billSize = sendBillSizeMap.get(item.getColumnId());
+                    // 引用指令单
+                    if (StringUtil.isNotEmpty(item.getNoticeNo())) {
+                        NoticeBillSize sizeFinal = sizeFinalMap.get(billSize.getSingleCode());
                         if (null == sizeFinal) {
                             messageList.add(getMessageByParams("notReferencedBillSize", new Object[]{item.getGoodsCode() + StrUtil.COLON + item.getSize()}));
                             continue;
+                        } else {
+                            // 校验指令单欠数
+                            BigDecimal oweQuantity = sizeFinal.getOweQuantity().add(billSize.getQuantity().negate());
+                            sizeFinal.setOweQuantity(oweQuantity);
+                            if (oweQuantity.compareTo(BigDecimal.ZERO) < 0) {
+                                messageList.add(getMessageByParams("billGoodsGtOweQuantity", new Object[]{item.getGoodsCode() + StrUtil.COLON + item.getSize()}));
+                                continue;
+                            }
+                            updateSizeList.add(sizeFinal);
                         }
-                        // 校验计划单欠数
-                        BigDecimal oweQuantity = sizeFinal.getOweQuantity().add(billSize.getQuantity().negate());
-                        if (oweQuantity.compareTo(BigDecimal.ZERO) < 0) {
-                            messageList.add(getMessageByParams("billGoodsGtOweQuantity", new Object[]{item.getGoodsCode() + StrUtil.COLON + item.getSize()}));
-                            continue;
-                        }
-                        sizeFinal.setOweQuantity(oweQuantity);
-                        updateSizeFinalList.add(sizeFinal);
                     }
                     billSizeList.add(billSize);
                     billSize.setBillGoodsId(billGoods.getId());
@@ -510,7 +516,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
      * @param param
      * @param context
      */
-    private void convertQueryContext(NoticeBillQueryParam param, NoticeBillQueryContext context) {
+    private void convertQueryContext(SendBillQueryParam param, SendBillQueryContext context) {
         context.setPageNo(param.getPageNo());
         context.setPageSize(param.getPageSize());
 
@@ -520,10 +526,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         context.setNotes(param.getNotes());
         context.setStatus(param.getStatus());
         context.setFields(param.getFields());
-        // 计划单
-        if (StringUtil.isNotEmpty(param.getSalePlanNo())) {
-            context.setSalePlanId(baseDbDao.getLongDataBySql(String.format("select id from rbp_sale_plan_bill where bill_no = '%s'", param.getSalePlanNo())));
-        }
+
         // 收货渠道
         if (param.getChannelCode() != null && param.getChannelCode().length > 0) {
             List<Channel> idList = channelDao.selectList(new LambdaQueryWrapper<Channel>().in(Channel::getCode, param.getChannelCode()));
@@ -545,13 +548,6 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
                 context.setBusinessTypeIds(idList.stream().mapToLong(Long::longValue).toArray());
             }
         }
-        // 价格类型
-        if (param.getPriceType() != null && param.getPriceType().length > 0) {
-            List<Long> idList = baseDbDao.getLongListDataBySql(String.format("select id from rbp_price_type where 1=1 %s", AppendSqlUtil.getInStrSql("name", Arrays.asList(param.getPriceType()))));
-            if (CollUtil.isNotEmpty(idList)) {
-                context.setPriceTypeIds(idList.stream().mapToLong(Long::longValue).toArray());
-            }
-        }
         // 币种类型
         if (param.getCurrencyType() != null && param.getCurrencyType().length > 0) {
             List<Long> idList = baseDbDao.getLongListDataBySql(String.format("select id from rbp_currency_type where status=100  %s", AppendSqlUtil.getInStrSql("name", Arrays.asList(param.getCurrencyType()))));
@@ -568,19 +564,15 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
      * @param context
      * @return
      */
-    private QueryWrapper processQueryWrapper(NoticeBillQueryContext context) {
-        QueryWrapper queryWrapper = new QueryWrapper<NoticeBill>();
+    private QueryWrapper processQueryWrapper(SendBillQueryContext context) {
+        QueryWrapper queryWrapper = new QueryWrapper<SendBill>();
 
         queryWrapper.eq(StringUtil.isNotEmpty(context.getModuleId()), "module_id", context.getModuleId());
         queryWrapper.eq(StringUtil.isNotEmpty(context.getManualId()), "manual_id", context.getManualId());
         queryWrapper.eq(StringUtil.isNotEmpty(context.getBillNo()), "bill_no", context.getBillNo());
-        queryWrapper.eq(null != context.getSalePlanId(), "sale_plan_id", context.getSalePlanId());
         queryWrapper.in(null != context.getStatus() && context.getStatus().length > 0, "status", context.getStatus());
         if (null != context.getBusinessTypeIds() && context.getBusinessTypeIds().length > 0) {
             queryWrapper.in("business_type_id", context.getBusinessTypeIds());
-        }
-        if (null != context.getPriceTypeIds() && context.getPriceTypeIds().length > 0) {
-            queryWrapper.in("price_type_id", context.getPriceTypeIds());
         }
         if (null != context.getCurrencyTypeIds() && context.getCurrencyTypeIds().length > 0) {
             queryWrapper.in("currency_type_id", context.getCurrencyTypeIds());
@@ -609,39 +601,39 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
      * @param list
      * @return
      */
-    private List<NoticeBillQueryResult> convertQueryResult(List<NoticeBill> list) {
-        List<NoticeBillQueryResult> queryResults = new ArrayList<>(list.size());
+    private List<SendBillQueryResult> convertQueryResult(List<SendBill> list) {
+        List<SendBillQueryResult> queryResults = new ArrayList<>(list.size());
         if (CollUtil.isEmpty(list)) {
             return queryResults;
         }
-        List<Long> billIdList = list.stream().map(NoticeBill::getId).distinct().collect(Collectors.toList());
+        List<Long> billIdList = list.stream().map(SendBill::getId).distinct().collect(Collectors.toList());
         // 发货渠道
-        Set<Long> channelIds = StreamUtil.toSet(list, NoticeBill::getChannelId);
-        channelIds.addAll(StreamUtil.toSet(list, NoticeBill::getToChannelId));
+        Set<Long> channelIds = StreamUtil.toSet(list, SendBill::getChannelId);
+        channelIds.addAll(StreamUtil.toSet(list, SendBill::getToChannelId));
         Map<Long, IdNameCodeDto> channelMap = dbService.selectIdNameCodeMapByLanguage(new QueryWrapper<Channel>().in("id", channelIds), Channel.class, LanguageTableEnum.CHANNEL);
         // 业务类型
-        Map<Object, IdNameDto> businessTypeMap = dbService.selectIdNameMapByLanguage(new QueryWrapper<BusinessType>().in("id", StreamUtil.toSet(list, NoticeBill::getBusinessTypeId)), BusinessType.class, LanguageTableEnum.BUSINESS_TYPE);
-        // 价格类型
-        Map<Object, IdNameDto> priceTypeMap = dbService.selectIdNameMapByLanguage(new QueryWrapper<PriceType>().in("id", StreamUtil.toSet(list, NoticeBill::getPriceTypeId)), PriceType.class, LanguageTableEnum.PRICETYPE);
+        Map<Object, IdNameDto> businessTypeMap = dbService.selectIdNameMapByLanguage(new QueryWrapper<BusinessType>().in("id", StreamUtil.toSet(list, SendBill::getBusinessTypeId)), BusinessType.class, LanguageTableEnum.BUSINESS_TYPE);
         // 币种类型
-        Map<Object, IdNameDto> currencyTypeMap = dbService.selectIdNameMapByLanguage(new QueryWrapper<CurrencyType>().in("id", StreamUtil.toSet(list, NoticeBill::getCurrencyTypeId)), CurrencyType.class, LanguageTableEnum.BUSINESS_TYPE);
+        Map<Object, IdNameDto> currencyTypeMap = dbService.selectIdNameMapByLanguage(new QueryWrapper<CurrencyType>().in("id", StreamUtil.toSet(list, SendBill::getCurrencyTypeId)), CurrencyType.class, LanguageTableEnum.BUSINESS_TYPE);
         // 货品尺码明细
-        List<NoticeBillSize> noticeBillSizeList = noticeBillSizeDao.selectList(new LambdaQueryWrapper<NoticeBillSize>().in(NoticeBillSize::getBillId, billIdList));
-        List<NoticeBillGoods> noticeBillGoodsList = noticeBillGoodsDao.selectList(new LambdaQueryWrapper<NoticeBillGoods>().in(NoticeBillGoods::getBillId, billIdList));
+        List<SendBillSize> sendBillSizeList = sendBillSizeDao.selectList(new LambdaQueryWrapper<SendBillSize>().in(SendBillSize::getBillId, billIdList));
+        List<SendBillGoods> sendBillGoodsList = sendBillGoodsDao.selectList(new LambdaQueryWrapper<SendBillGoods>().in(SendBillGoods::getBillId, billIdList));
+        // 价格类型
+        Map<Object, IdNameDto> priceTypeMap = dbService.selectIdNameMapByLanguage(new QueryWrapper<PriceType>().in("id", StreamUtil.toSet(sendBillGoodsList, SendBillGoods::getPriceTypeId)), PriceType.class, LanguageTableEnum.PRICETYPE);
         // 根据单据分组
-        Map<Long, List<NoticeBillSize>> billSizeMap = noticeBillSizeList.stream().collect(Collectors.groupingBy(NoticeBillSize::getBillId));
-        Map<Long, List<NoticeBillGoods>> billGoodsMap = noticeBillGoodsList.stream().collect(Collectors.groupingBy(NoticeBillGoods::getBillId));
+        Map<Long, List<SendBillSize>> billSizeMap = sendBillSizeList.stream().collect(Collectors.groupingBy(SendBillSize::getBillId));
+        Map<Long, List<SendBillGoods>> billGoodsMap = sendBillGoodsList.stream().collect(Collectors.groupingBy(SendBillGoods::getBillId));
         // 货品
-        List<Goods> goodsList = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getId, StreamUtil.toSet(noticeBillGoodsList, NoticeBillGoods::getGoodsId)));
+        List<Goods> goodsList = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getId, StreamUtil.toSet(sendBillGoodsList, SendBillGoods::getGoodsId)));
         Map<Long, String> goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getId, Goods::getCode));
         // 颜色
-        List<Color> colorList = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getId, StreamUtil.toSet(noticeBillSizeList, NoticeBillSize::getColorId)));
+        List<Color> colorList = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getId, StreamUtil.toSet(sendBillSizeList, SendBillSize::getColorId)));
         Map<Long, String> colorMap = colorList.stream().collect(Collectors.toMap(Color::getId, Color::getName));
         // 内长
-        List<LongInfo> longList = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getId, StreamUtil.toSet(noticeBillSizeList, NoticeBillSize::getLongId)));
+        List<LongInfo> longList = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getId, StreamUtil.toSet(sendBillSizeList, SendBillSize::getLongId)));
         Map<Long, String> longMap = longList.stream().collect(Collectors.toMap(LongInfo::getId, LongInfo::getName));
         // 尺码
-        List<SizeDetail> sizeList = sizeDetailDao.selectList(new LambdaQueryWrapper<SizeDetail>().in(SizeDetail::getId, StreamUtil.toSet(noticeBillSizeList, NoticeBillSize::getSizeId)));
+        List<SizeDetail> sizeList = sizeDetailDao.selectList(new LambdaQueryWrapper<SizeDetail>().in(SizeDetail::getId, StreamUtil.toSet(sendBillSizeList, SendBillSize::getSizeId)));
         Map<Long, String> sizeMap = sizeList.stream().collect(Collectors.toMap(SizeDetail::getId, SizeDetail::getName));
         // 条码,默认取第一个
         List<Barcode> barcodes = barcodeDao.selectList(new QueryWrapper<Barcode>()
@@ -651,33 +643,33 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
                 .in(CollUtil.isNotEmpty(sizeMap.keySet()), "size_id", sizeMap.keySet())
                 .orderByDesc("barcode").groupBy("goods_id,color_id,long_id,size_id"));
         Map<String, String> barcodeMap = barcodes.stream().collect(Collectors.toMap(Barcode::getSingleCode, Barcode::getBarcode));
-        // 计划单
-        Map<Long, String> salePlanNoMap = new HashMap<>();
-        if (CollUtil.isNotEmpty(StreamUtil.toSet(list, NoticeBill::getSalePlanId))) {
-            List<SalePlanBill> salePlanBillList = salePlanBillDao.selectList(new LambdaQueryWrapper<SalePlanBill>().in(SalePlanBill::getId, StreamUtil.toSet(list, NoticeBill::getSalePlanId)));
-            salePlanNoMap = salePlanBillList.stream().collect(Collectors.toMap(SalePlanBill::getId, SalePlanBill::getBillNo));
+        // 指令单
+        Map<Long, String> noticeNoMap = new HashMap<>();
+        if (CollUtil.isNotEmpty(StreamUtil.toSet(sendBillGoodsList, SendBillGoods::getNoticeId))) {
+            List<NoticeBill> noticeBillList = noticeBillDao.selectList(new LambdaQueryWrapper<NoticeBill>().in(NoticeBill::getId, StreamUtil.toSet(sendBillGoodsList, SendBillGoods::getNoticeId)));
+            noticeNoMap = noticeBillList.stream().collect(Collectors.toMap(NoticeBill::getId, NoticeBill::getBillNo));
         }
         // 物流公司
-        Map<Long, NoticeBillLogistics> logisticsMap = new HashMap<>();
+        Map<Long, SendBillLogistics> logisticsMap = new HashMap<>();
         Map<Long, String> logisticsCompanyMap = new HashMap<>();
-        List<NoticeBillLogistics> logisticsList = noticeBillLogisticsDao.selectBatchIds(billIdList);
+        List<SendBillLogistics> logisticsList = sendBillLogisticsDao.selectBatchIds(billIdList);
         if (CollUtil.isNotEmpty(logisticsList)) {
-            logisticsMap = logisticsList.stream().collect(Collectors.toMap(NoticeBillLogistics::getBillId, Function.identity()));
-            List<Object> ids = logisticsList.stream().map(NoticeBillLogistics::getLogisticsCompanyId).distinct().collect(Collectors.toList());
+            logisticsMap = logisticsList.stream().collect(Collectors.toMap(SendBillLogistics::getBillId, Function.identity()));
+            List<Object> ids = logisticsList.stream().map(SendBillLogistics::getLogisticsCompanyId).distinct().collect(Collectors.toList());
             if (CollUtil.isNotEmpty(ids)) {
                 List<Map<Object, Object>> mapList = baseDbDao.getListMap(String.format("select id,code from rbp_logistics_company where status=100 and id in %s", AppendSqlUtil.getInSql(ids)));
                 mapList.forEach(item -> logisticsCompanyMap.put((Long) item.get("id"), (String) item.get("code")));
             }
         }
         // 模块自定义字段定义
-        Map<String, List<CustomizeColumnDto>> moduleCustomizeMap = baseDbService.getModuleCustomizeColumnListMap(StreamUtil.toList(list, NoticeBill::getModuleId));
+        Map<String, List<CustomizeColumnDto>> moduleCustomizeMap = baseDbService.getModuleCustomizeColumnListMap(StreamUtil.toList(list, SendBill::getModuleId));
         // 单据自定义字段
-        Map<Long, List<CustomizeDataDto>> billCustomMap = baseDbService.getCustomizeColumnMap(TableConstants.NOTICE_BILL, billIdList);
+        Map<Long, List<CustomizeDataDto>> billCustomMap = baseDbService.getCustomizeColumnMap(TableConstants.SEND_BILL, billIdList);
         // 货品自定义字段
-        Map<Long, List<CustomizeDataDto>> goodsCustomMap = baseDbService.getCustomizeColumnMap(TableConstants.NOTICE_BILL_GOODS, StreamUtil.toList(noticeBillGoodsList, NoticeBillGoods::getId));
+        Map<Long, List<CustomizeDataDto>> goodsCustomMap = baseDbService.getCustomizeColumnMap(TableConstants.SEND_BILL_GOODS, StreamUtil.toList(sendBillGoodsList, SendBillGoods::getId));
         // 填充
-        for (NoticeBill bill : list) {
-            NoticeBillQueryResult queryResult = new NoticeBillQueryResult();
+        for (SendBill bill : list) {
+            SendBillQueryResult queryResult = new SendBillQueryResult();
             queryResults.add(queryResult);
 
             queryResult.setModuleId(bill.getModuleId());
@@ -685,10 +677,8 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
             queryResult.setBillNo(bill.getBillNo());
             queryResult.setChannelCode(OptionalUtil.ofNullable(channelMap.get(bill.getChannelId()), IdNameCodeDto::getCode));
             queryResult.setToChannelCode(OptionalUtil.ofNullable(channelMap.get(bill.getToChannelId()), IdNameCodeDto::getCode));
-            queryResult.setPriceType(OptionalUtil.ofNullable(priceTypeMap.get(bill.getPriceTypeId()), IdNameDto::getName));
             queryResult.setBusinessType(OptionalUtil.ofNullable(businessTypeMap.get(bill.getBusinessTypeId()), IdNameDto::getName));
             queryResult.setCurrencyType(OptionalUtil.ofNullable(currencyTypeMap.get(bill.getCurrencyTypeId()), IdNameDto::getName));
-            queryResult.setSalePlanNo(salePlanNoMap.get(bill.getSalePlanId()));
             queryResult.setStatus(bill.getStatus());
             queryResult.setNotes(bill.getNotes());
             queryResult.setBillDate(bill.getBillDate());
@@ -700,7 +690,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
             // 过滤未启用的自定义字段，格式化单选类型字段
             queryResult.setCustomizeData(baseDbService.getAfterFillCustomizeDataList(moduleColumnDtoList, billCustomMap.get(bill.getId())));
             // 物流信息
-            NoticeBillLogistics logistics = logisticsMap.get(bill.getId());
+            SendBillLogistics logistics = logisticsMap.get(bill.getId());
             if (null != logistics) {
                 queryResult.setLogisticsCompanyCode(logisticsCompanyMap.get(logistics.getLogisticsCompanyId()));
                 queryResult.setLogisticsBillCode(logistics.getLogisticsBillCode());
@@ -715,20 +705,22 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
                 queryResult.setLogisticsNotes(logistics.getNotes());
             }
             // 货品列表
-            List<NoticeBillGoodsDetailData> goodsQueryResultList = new ArrayList<>();
+            List<SendBillGoodsDetailData> goodsQueryResultList = new ArrayList<>();
             queryResult.setGoodsDetailData(goodsQueryResultList);
             // 货品明细
-            List<NoticeBillGoods> billGoodsList = billGoodsMap.get(bill.getId());
-            Map<Long, NoticeBillGoods> currentGoodsMap = billGoodsList.stream().collect(Collectors.toMap(NoticeBillGoods::getId, Function.identity()));
+            List<SendBillGoods> billGoodsList = billGoodsMap.get(bill.getId());
+            Map<Long, SendBillGoods> currentGoodsMap = billGoodsList.stream().collect(Collectors.toMap(SendBillGoods::getId, Function.identity()));
             // 尺码明细
-            List<NoticeBillSize> billSizeList = billSizeMap.get(bill.getId());
-            for (NoticeBillSize size : billSizeList) {
-                NoticeBillGoods billGoods = currentGoodsMap.get(size.getBillGoodsId());
-                NoticeBillGoodsDetailData detailData = new NoticeBillGoodsDetailData();
+            List<SendBillSize> billSizeList = billSizeMap.get(bill.getId());
+            for (SendBillSize size : billSizeList) {
+                SendBillGoods billGoods = currentGoodsMap.get(size.getBillGoodsId());
+                SendBillGoodsDetailData detailData = new SendBillGoodsDetailData();
                 // 货品自定义字段，格式化单选类型字段
                 detailData.setGoodsCustomizeData(baseDbService.getAfterFillCustomizeDataList(moduleColumnDtoList, goodsCustomMap.get(billGoods.getId())));
                 goodsQueryResultList.add(detailData);
 
+                detailData.setPriceType(OptionalUtil.ofNullable(priceTypeMap.get(billGoods.getPriceTypeId()), IdNameDto::getName));
+                detailData.setNoticeNo(noticeNoMap.get(billGoods.getNoticeId()));
                 detailData.setColumnId(size.getId());
                 detailData.setBalancePrice(billGoods.getBalancePrice());
                 detailData.setTagPrice(billGoods.getTagPrice());

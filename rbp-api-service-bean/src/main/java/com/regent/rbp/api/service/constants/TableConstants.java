@@ -24,4 +24,8 @@ public class TableConstants {
     public static final String CHANNEL = "rbp_channel";
 
     public static final String EMPLOYEE = "rbp_employee";
+
+    public static final String SEND_BILL = "rbp_send_bill";
+
+    public static final String SEND_BILL_GOODS = "rbp_send_bill_goods";
 }

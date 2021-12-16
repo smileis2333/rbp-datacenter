@@ -17,4 +17,34 @@
         </if>
     </select>
 
+    <insert id="batchInsertGoodsList">
+        INSERT INTO rbp_send_bill_goods (id, bill_id,notice_id,notice_goods_id,sale_plan_id, sale_plan_goods_id,
+        goods_id, discount, tag_price, balance_price, currency_price, exchange_rate,quantity, remark)
+        VALUES
+        <foreach item="item" index="index" collection="billGoodsList" separator=",">
+            (#{item.id},#{item.billId},#{item.noticeId},#{item.noticeGoodsId},#{item.salePlanId},#{item.salePlanGoodsId},
+            #{item.goodsId},#{item.discount},#{item.tagPrice},#{item.balancePrice},
+            #{item.currencyPrice},#{item.exchangeRate},#{item.quantity},#{item.remark})
+        </foreach>
+    </insert>
+
+    <insert id="batchInsertSizeList">
+        INSERT INTO rbp_send_bill_size
+        (id, bill_id, bill_goods_id, goods_id, color_id, long_id, size_id, quantity)
+        VALUES
+        <foreach item="item" index="index" collection="billSizeList" separator=",">
+            (#{item.id},#{item.billId},#{item.billGoodsId},#{item.goodsId},#{item.colorId},#{item.longId},#{item.sizeId},
+            #{item.quantity})
+        </foreach>
+    </insert>
+
+    <insert id="batchInsertNoticeBillSizeList">
+        INSERT INTO ${tableName}
+        (id, owe_quantity)
+        VALUES
+        <foreach item="item" index="index" collection="billSizeList" separator=",">
+            (#{item.id},#{item.oweQuantity})
+        </foreach>
+    </insert>
+
 </mapper>

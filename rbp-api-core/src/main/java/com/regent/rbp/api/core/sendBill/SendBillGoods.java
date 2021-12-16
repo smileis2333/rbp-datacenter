@@ -1,12 +1,15 @@
 package com.regent.rbp.api.core.sendBill;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * @program: rbp-datacenter
@@ -65,4 +68,13 @@ public class SendBillGoods {
     @ApiModelProperty(notes = "备注")
     private String remark;
 
+    @ApiModelProperty(notes = "自定义字段")
+    @TableField(exist = false)
+    private Map<String, Object> customFieldMap;
+
+    public static SendBillGoods build() {
+        SendBillGoods item = new SendBillGoods();
+        item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+        return item;
+    }
 }

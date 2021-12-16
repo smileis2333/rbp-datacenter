@@ -100,6 +100,6 @@ public class NoticeBillQueryResult {
     private String logisticsNotes;
 
     @ApiModelProperty(notes = "货品明细")
-    private List<NoticeBillBillGoodsDetailData> goodsDetailData;
+    private List<NoticeBillGoodsDetailData> goodsDetailData;
 
 }

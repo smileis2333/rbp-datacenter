@@ -39,7 +39,6 @@ public class ApiConstants {
 
     public static final String API_FUND_ACCOUNT = "api/fundAccount";
 
-
     public static final String API_NOTICE_BILL = "api/noticeBill";
 
     public static final String API_SALES_PLAN = "api/salePlanBill";
@@ -47,4 +46,7 @@ public class ApiConstants {
     public static final String API_USER = "api/user";
 
     public static final String API_SUPPLIER = "api/supplier";
+
+    public static final String API_SEND_BILL = "api/sendBill";
+
 }

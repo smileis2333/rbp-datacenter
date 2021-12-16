@@ -1,24 +1,28 @@
-package com.regent.rbp.api.dto.notice;
+package com.regent.rbp.api.dto.send;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
-import com.regent.rbp.infrastructure.util.MD5Util;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author chenchungui
- * @date 2021/12/07
+ * @date 2021/12/16
  * @description
  */
 @Data
-public class NoticeBillBillGoodsDetailData {
+public class SendBillGoodsDetailData {
+
+    @ApiModelProperty(notes = "价格类型名称")
+    private String priceType;
+
+    @ApiModelProperty(notes = "指令单号")
+    private String noticeNo;
 
     @ApiModelProperty(notes = "条形码")
     private String barcode;
@@ -64,6 +68,14 @@ public class NoticeBillBillGoodsDetailData {
     @JsonIgnore
     private Long columnId;
 
+    @ApiModelProperty(notes = "指令单ID")
+    @JsonIgnore
+    private Long noticeId;
+
+    @ApiModelProperty(notes = "销售计划ID")
+    @JsonIgnore
+    private Long salePlanId;
+
     @ApiModelProperty(notes = "货品ID")
     @JsonIgnore
     private Long goodsId;
@@ -77,6 +89,6 @@ public class NoticeBillBillGoodsDetailData {
      * @return
      */
     public String getSameGoodsDiffPriceKey() {
-        return MD5Util.shortenKeyString(Optional.ofNullable(this.getGoodsId()).orElse(0L).toString(), Optional.ofNullable(this.getBalancePrice()).orElse(BigDecimal.ZERO).toString());
+        return String.format("%s_%s_%s", this.getNoticeId(), this.getGoodsId(), this.getBalancePrice());
     }
 }
