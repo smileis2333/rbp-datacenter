@@ -86,12 +86,14 @@ public class UserProfile {
     private Long createdBy;
 
     @ApiModelProperty(notes = "创建时间")
+    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     private Date createdTime;
 
     @ApiModelProperty(notes = "更新人")
     private Long updatedBy;
 
     @ApiModelProperty(notes = "更新时间")
+    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     private Date updatedTime;
 
     public static UserProfile build() {

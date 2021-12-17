@@ -10,9 +10,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.regent.rbp.api.core.base.Category;
 import com.regent.rbp.api.core.base.Year;
 import com.regent.rbp.api.core.channel.Channel;
-import com.regent.rbp.api.core.user.UserProfile;
 import com.regent.rbp.api.core.user.UserCashierChannel;
 import com.regent.rbp.api.core.user.UserCashierLowerDiscount;
+import com.regent.rbp.api.core.user.UserProfile;
 import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.user.UserCashierChannelDao;
 import com.regent.rbp.api.dao.user.UserCashierLowerDiscountDao;
@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -83,6 +84,7 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
         PageDataResponse<UserQueryResult> result = new PageDataResponse<>();
         Page<UserProfile> pageModel = new Page<>(context.getPageNo(), context.getPageSize());
         QueryWrapper queryWrapper = this.processQueryWrapper(context);
+        queryWrapper.orderByDesc("updated_time");
         IPage<UserProfile> salesPageData = userProfileDao.selectPage(pageModel, queryWrapper);
         List<UserQueryResult> list = convertQueryResult(salesPageData.getRecords());
 
@@ -92,7 +94,7 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
     }
 
     /**
-     * 创建
+     * 创建/更新
      *
      * @param param
      * @return
@@ -101,17 +103,32 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
     @Override
     public DataResponse save(UserSaveParam param) {
         UserSaveContext context = new UserSaveContext();
+        UserProfile userProfile = null;
+        // 是否创建
+        if (StringUtil.isNotEmpty(param.getCode())) {
+            userProfile = userProfileDao.selectOne(new QueryWrapper<UserProfile>().select("id, code").eq("code", param.getCode()).last(" limit 1"));
+        }
         // 校验并转换
         List<String> messageList = new ArrayList<>();
-        this.convertSaveContext(context, param, messageList);
+        this.convertSaveContext(null == userProfile, Optional.ofNullable(userProfile).orElse(UserProfile.build()), context, param, messageList);
         if (CollUtil.isNotEmpty(messageList)) {
             return new ModelDataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("paramVerifyError", new String[]{String.join(StrUtil.COMMA, messageList)}));
         }
         UserProfile user = context.getUser();
         List<UserCashierChannel> cashierChannelList = context.getChannelList();
         List<UserCashierLowerDiscount> cashierLowerDiscountList = context.getLowerDiscountList();
-        // 新增
-        userProfileDao.insert(user);
+        if (null == userProfile) {
+            // 新增
+            userProfileDao.insert(user);
+        } else {
+            user.setId(userProfile.getId());
+            user.setCreatedBy(userProfile.getCreatedBy());
+            user.setCreatedTime(user.getCreatedTime());
+            userProfileDao.updateById(user);
+            // 删除子表
+            userCashierLowerDiscountDao.delete(new QueryWrapper<UserCashierLowerDiscount>().eq("user_id", user.getId()));
+            userCashierChannelDao.delete(new QueryWrapper<UserCashierChannel>().eq("user_id", user.getId()));
+        }
         if (CollUtil.isNotEmpty(cashierChannelList)) {
             userProfileDao.batchInsertUserCashierChannelList(cashierChannelList);
         }
@@ -126,12 +143,14 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
     /**
      * 创建转换器
      *
+     * @param createFlag 是否创建
+     * @param user
      * @param context
      * @param param
      */
-    private void convertSaveContext(UserSaveContext context, UserSaveParam param, List<String> messageList) {
+    private void convertSaveContext(Boolean createFlag, UserProfile user, UserSaveContext context, UserSaveParam param, List<String> messageList) {
         /****************   主体    ******************/
-        UserProfile user = UserProfile.build();
+
         BeanUtil.copyProperties(param, user);
         // 密码加密
         if (StringUtil.isNotEmpty(user.getPassword())) {
@@ -152,7 +171,7 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
             messageList.add(getNotNullMessage("password"));
         }
         // 判断用户编号是否重复
-        if (messageList.size() == 0) {
+        if (createFlag && messageList.size() == 0) {
             Integer count = userProfileDao.selectCount(new QueryWrapper<UserProfile>().eq("code", user.getCode()));
             if (null != count && count > 0) {
                 messageList.add(getMessageByParams("dataRepeated", new String[]{LanguageUtil.getMessage("userCode")}));
