@@ -7,8 +7,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author chenchungui
@@ -89,6 +91,8 @@ public class SendBillGoodsDetailData {
      * @return
      */
     public String getSameGoodsDiffPriceKey() {
-        return String.format("%s_%s_%s", this.getNoticeId(), this.getGoodsId(), this.getBalancePrice());
+        DecimalFormat decimalFormat = new DecimalFormat("0.0000#");
+        String balancePriceStr = decimalFormat.format(Optional.ofNullable(this.getBalancePrice()).orElse(BigDecimal.ZERO));
+        return String.format("%s_%s_%s", this.getNoticeId(), this.getGoodsId(), balancePriceStr);
     }
 }

@@ -138,6 +138,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         PageDataResponse<NoticeBillQueryResult> result = new PageDataResponse<>();
         Page<NoticeBill> pageModel = new Page<>(context.getPageNo(), context.getPageSize());
         QueryWrapper queryWrapper = this.processQueryWrapper(context);
+        queryWrapper.orderByDesc("updated_time");
         IPage<NoticeBill> salesPageData = noticeBillDao.selectPage(pageModel, queryWrapper);
         List<NoticeBillQueryResult> list = convertQueryResult(salesPageData.getRecords());
 
@@ -160,7 +161,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         List<String> messageList = new ArrayList<>();
         this.convertSaveContext(context, param, messageList);
         if (CollUtil.isNotEmpty(messageList)) {
-            return new ModelDataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("paramVerifyError", new String[]{String.join(StrUtil.COMMA, messageList)}));
+            return new ModelDataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("paramVerifyError", new String[]{String.join(StrUtil.COMMA, messageList.stream().distinct().collect(Collectors.toList()))}));
         }
         NoticeBill bill = context.getBill();
         List<NoticeBillGoods> billGoodsList = context.getBillGoodsList();
@@ -262,7 +263,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
                 } else {
                     finalGoodsList.forEach(item -> item.setFinalSizeList(finalSizeList.stream().filter(f -> f.getBillGoodsId().equals(item.getId())).collect(Collectors.toList())));
                     // 根据货品ID+价格分组
-                    goodsFinalMap = finalGoodsList.stream().collect(Collectors.toMap(v -> v.getGoodsId() + StrUtil.UNDERLINE + v.getBalancePrice(), Function.identity()));
+                    goodsFinalMap = finalGoodsList.stream().collect(Collectors.toMap(v -> v.getSameGoodsDiffPriceKey(), Function.identity()));
                 }
             }
         }
@@ -511,8 +512,8 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
      * @param context
      */
     private void convertQueryContext(NoticeBillQueryParam param, NoticeBillQueryContext context) {
-        context.setPageNo(param.getPageNo());
-        context.setPageSize(param.getPageSize());
+        context.setPageNo(OptionalUtil.ofNullable(param, NoticeBillQueryParam::getPageNo, SystemConstants.PAGE_NO));
+        context.setPageSize(OptionalUtil.ofNullable(param, NoticeBillQueryParam::getPageSize, SystemConstants.PAGE_SIZE));
 
         context.setModuleId(param.getModuleId());
         context.setManualId(param.getManualId());
@@ -636,7 +637,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         Map<Long, String> goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getId, Goods::getCode));
         // 颜色
         List<Color> colorList = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getId, StreamUtil.toSet(noticeBillSizeList, NoticeBillSize::getColorId)));
-        Map<Long, String> colorMap = colorList.stream().collect(Collectors.toMap(Color::getId, Color::getName));
+        Map<Long, String> colorMap = colorList.stream().collect(Collectors.toMap(Color::getId, Color::getCode));
         // 内长
         List<LongInfo> longList = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getId, StreamUtil.toSet(noticeBillSizeList, NoticeBillSize::getLongId)));
         Map<Long, String> longMap = longList.stream().collect(Collectors.toMap(LongInfo::getId, LongInfo::getName));

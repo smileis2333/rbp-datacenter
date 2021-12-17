@@ -138,6 +138,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         PageDataResponse<SendBillQueryResult> result = new PageDataResponse<>();
         Page<SendBill> pageModel = new Page<>(context.getPageNo(), context.getPageSize());
         QueryWrapper queryWrapper = this.processQueryWrapper(context);
+        queryWrapper.orderByDesc("updated_time");
         IPage<SendBill> salesPageData = sendBillDao.selectPage(pageModel, queryWrapper);
         List<SendBillQueryResult> list = convertQueryResult(salesPageData.getRecords());
 
@@ -160,7 +161,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         List<String> messageList = new ArrayList<>();
         this.convertSaveContext(context, param, messageList);
         if (CollUtil.isNotEmpty(messageList)) {
-            return new ModelDataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("paramVerifyError", new String[]{String.join(StrUtil.COMMA, messageList)}));
+            return new ModelDataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("paramVerifyError", new String[]{String.join(StrUtil.COMMA, messageList.stream().distinct().collect(Collectors.toList()))}));
         }
         SendBill bill = context.getBill();
         List<SendBillGoods> billGoodsList = context.getBillGoodsList();
@@ -338,6 +339,12 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         Map<String, Long> longMap = new HashMap<>();
         // 尺码
         Map<String, Long> sizeMap = new HashMap<>();
+        // 价格类型
+        Map<String, Long> priceTypeMap = new HashMap<>();
+        List<IdNameDto> priceTypeList = dbService.selectIdNameList(new QueryWrapper<PriceType>().in("name", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getPriceType())), PriceType.class);
+        if (CollUtil.isNotEmpty(priceTypeList)) {
+            priceTypeMap = priceTypeList.stream().collect(Collectors.toMap(IdNameDto::getName, v -> (Long) v.getId(), (x1, x2) -> x1));
+        }
         if (param.getGoodsDetailData().stream().filter(f -> StringUtil.isNotEmpty(f.getBarcode())).count() > 0) {
             List<Barcode> barcodes = barcodeDao.selectList(new QueryWrapper<Barcode>().in("barcode", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getBarcode())));
             barcodeMap = barcodes.stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity(), (x1, x2) -> x1));
@@ -368,7 +375,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
                 } else {
                     noticeBillGoodsList.forEach(item -> item.setSizeList(noticeBillSizeList.stream().filter(f -> f.getBillGoodsId().equals(item.getId())).collect(Collectors.toList())));
                     // 根据单据ID+货品ID+价格分组
-                    noticeGoodsMap = noticeBillGoodsList.stream().collect(Collectors.toMap(v -> String.format("%s_%s_%s", v.getBillId(), v.getGoodsId(), v.getBalancePrice()), Function.identity()));
+                    noticeGoodsMap = noticeBillGoodsList.stream().collect(Collectors.toMap(v -> v.getSameGoodsDiffPriceKey(), Function.identity()));
                 }
             }
         }
@@ -394,6 +401,9 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
                 size.setLongId(longMap.get(item.getLongName()));
                 size.setColorId(colorMap.get(item.getColorCode()));
                 size.setSizeId(sizeMap.get(size.getGoodsId() + StrUtil.UNDERLINE + item.getSize()));
+            }
+            if (null == priceTypeMap.get(item.getPriceType())) {
+                messageList.add(getNotExistMessage(atomicInteger.get(), "priceType"));
             }
             if (null == size.getGoodsId()) {
                 messageList.add(getNotExistMessage(atomicInteger.get(), "goodsCode"));
@@ -445,6 +455,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         Map<String, NoticeBillGoods> finalNoticeGoodsMap = noticeGoodsMap;
         atomicInteger.set(0);
         // 根据货品+价格分组，支持同款多价
+        Map<String, Long> finalPriceTypeMap = priceTypeMap;
         param.getGoodsDetailData().stream().collect(Collectors.groupingBy(v -> v.getSameGoodsDiffPriceKey())).forEach((key, sizes) -> {
             atomicInteger.getAndIncrement();
             SendBillGoods billGoods = SendBillGoods.build();
@@ -454,6 +465,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
             SendBillGoodsDetailData detailData = sizes.get(0);
             billGoods.setGoodsId(detailData.getGoodsId());
             billGoods.setTagPrice(detailData.getTagPrice());
+            billGoods.setPriceTypeId(finalPriceTypeMap.get(detailData.getPriceType()));
             billGoods.setBalancePrice(detailData.getBalancePrice());
             billGoods.setDiscount(detailData.getDiscount());
             billGoods.setCurrencyPrice(detailData.getCurrencyPrice());
@@ -517,8 +529,8 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
      * @param context
      */
     private void convertQueryContext(SendBillQueryParam param, SendBillQueryContext context) {
-        context.setPageNo(param.getPageNo());
-        context.setPageSize(param.getPageSize());
+        context.setPageNo(OptionalUtil.ofNullable(param, SendBillQueryParam::getPageNo, SystemConstants.PAGE_NO));
+        context.setPageSize(OptionalUtil.ofNullable(param, SendBillQueryParam::getPageSize, SystemConstants.PAGE_SIZE));
 
         context.setModuleId(param.getModuleId());
         context.setManualId(param.getManualId());
@@ -628,7 +640,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         Map<Long, String> goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getId, Goods::getCode));
         // 颜色
         List<Color> colorList = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getId, StreamUtil.toSet(sendBillSizeList, SendBillSize::getColorId)));
-        Map<Long, String> colorMap = colorList.stream().collect(Collectors.toMap(Color::getId, Color::getName));
+        Map<Long, String> colorMap = colorList.stream().collect(Collectors.toMap(Color::getId, Color::getCode));
         // 内长
         List<LongInfo> longList = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getId, StreamUtil.toSet(sendBillSizeList, SendBillSize::getLongId)));
         Map<Long, String> longMap = longList.stream().collect(Collectors.toMap(LongInfo::getId, LongInfo::getName));

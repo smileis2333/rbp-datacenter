@@ -19,11 +19,11 @@
 
     <insert id="batchInsertGoodsList">
         INSERT INTO rbp_send_bill_goods (id, bill_id,notice_id,notice_goods_id,sale_plan_id, sale_plan_goods_id,
-        goods_id, discount, tag_price, balance_price, currency_price, exchange_rate,quantity, remark)
+        price_type_id, goods_id, discount, tag_price, balance_price, currency_price, exchange_rate,quantity, remark)
         VALUES
         <foreach item="item" index="index" collection="billGoodsList" separator=",">
             (#{item.id},#{item.billId},#{item.noticeId},#{item.noticeGoodsId},#{item.salePlanId},#{item.salePlanGoodsId},
-            #{item.goodsId},#{item.discount},#{item.tagPrice},#{item.balancePrice},
+            #{item.priceTypeId}, #{item.goodsId},#{item.discount},#{item.tagPrice},#{item.balancePrice},
             #{item.currencyPrice},#{item.exchangeRate},#{item.quantity},#{item.remark})
         </foreach>
     </insert>

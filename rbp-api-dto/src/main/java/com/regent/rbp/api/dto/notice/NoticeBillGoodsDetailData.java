@@ -1,6 +1,5 @@
 package com.regent.rbp.api.dto.notice;
 
-import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
@@ -8,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -77,6 +77,8 @@ public class NoticeBillGoodsDetailData {
      * @return
      */
     public String getSameGoodsDiffPriceKey() {
-        return Optional.ofNullable(this.getGoodsId()).orElse(0L).toString() + StrUtil.UNDERLINE + Optional.ofNullable(this.getBalancePrice()).orElse(BigDecimal.ZERO).toString();
+        DecimalFormat decimalFormat = new DecimalFormat("0.0000#");
+        String balancePriceStr = decimalFormat.format(Optional.ofNullable(this.getBalancePrice()).orElse(BigDecimal.ZERO));
+        return String.format("%s_%s", this.getGoodsId(), balancePriceStr);
     }
 }

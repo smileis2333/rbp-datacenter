@@ -1,5 +1,6 @@
 package com.regent.rbp.api.dto.send;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -47,12 +48,15 @@ public class SendBillQueryResult {
     private Integer status;
 
     @ApiModelProperty(notes = "创建时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createdTime;
 
     @ApiModelProperty(notes = "更新时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updatedTime;
 
     @ApiModelProperty(notes = "审核时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date checkTime;
 
     @ApiModelProperty(notes = "自定义字段")

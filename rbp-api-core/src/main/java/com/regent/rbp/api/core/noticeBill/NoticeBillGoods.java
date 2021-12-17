@@ -9,8 +9,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @program: rbp-datacenter
@@ -73,5 +75,16 @@ public class NoticeBillGoods {
         NoticeBillGoods item = new NoticeBillGoods();
         item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         return item;
+    }
+
+    /**
+     * 同款多价，根据货品ID+价格分组
+     *
+     * @return
+     */
+    public String getSameGoodsDiffPriceKey() {
+        DecimalFormat decimalFormat = new DecimalFormat("0.0000#");
+        String balancePriceStr = decimalFormat.format(Optional.ofNullable(this.getBalancePrice()).orElse(BigDecimal.ZERO));
+        return String.format("%s_%s_%s", this.getBillId(), this.getGoodsId(), balancePriceStr);
     }
 }
