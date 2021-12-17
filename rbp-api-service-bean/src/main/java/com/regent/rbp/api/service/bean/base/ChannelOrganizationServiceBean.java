@@ -80,15 +80,15 @@ public class ChannelOrganizationServiceBean implements ChannelOrganizationServic
         ArrayList<ChannelOrganization> finalNewCos = new ArrayList<>();
 
         for (String b : newFinalPathMap.keySet()) {
-            int maxSame = 0;
+            int maxSame = -1;
             ChannelOrganization maxSameItem = null;
             String maxSamePath = null;
             for (String a : oldFinalPathMap.keySet()) {
                 String difference = StringUtils.difference(a, b);
                 // 被包含
-                if (difference.length()==0){
-                    context.setCos(new ArrayList<>());
-                    return errors;
+                if (difference.length() == 0) {
+                    maxSame = 0;
+                    break;
                 } else if (!difference.startsWith("/")) {
                     // bias，/开头的的分割
                     difference = b.substring(0, b.replace(difference, "").lastIndexOf("/"));
@@ -98,14 +98,14 @@ public class ChannelOrganizationServiceBean implements ChannelOrganizationServic
                 int same = b.length() - difference.length();
                 if (same < b.length() && same > maxSame) {
                     maxSame = same;
-                    maxSamePath = StringUtils.remove(b,difference);
+                    maxSamePath = StringUtils.remove(b, difference);
                     maxSameItem = allPathMap.get(maxSamePath);
                 }
             }
 
             ChannelOrganization leaf = newFinalPathMap.get(b);
             if (maxSame != 0) {
-                int count = (StrUtil.count(StringUtils.remove(b,maxSamePath), "/"))-1;
+                int count = (StrUtil.count(StringUtils.remove(b, maxSamePath), "/")) - 1;
                 finalNewCos.add(leaf);
 
                 ChannelOrganization middleRoot = leaf;
@@ -115,7 +115,7 @@ public class ChannelOrganizationServiceBean implements ChannelOrganizationServic
                 }
                 middleRoot.setParentId(maxSameItem.getId());
 
-            } else {
+            } else if (maxSame == -1) {
                 // 加全部
                 ChannelOrganization start = leaf;
                 finalNewCos.add(leaf);
