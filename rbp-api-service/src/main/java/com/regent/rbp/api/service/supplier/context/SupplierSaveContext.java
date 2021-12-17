@@ -29,12 +29,12 @@ public class SupplierSaveContext {
     public final String grade;
     public final String fundAccountCode;
 
-    public SupplierSaveContext(SupplierSaveParam param) {
+    public SupplierSaveContext(SupplierSaveParam param, Long id) {
         params = param;
         supplier = new Supplier();
         BeanUtil.copyProperties(param, supplier, "nation", "province", "city", "county");
         supplier.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-        supplier.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+        supplier.setId(id);
         supplier.setCode(param.getSupplierCode());
         supplier.setStatus(0);
 
@@ -42,6 +42,11 @@ public class SupplierSaveContext {
         grade = param.getGrade();
         fundAccountCode = param.getFundAccountCode();
     }
+
+    public SupplierSaveContext(SupplierSaveParam param) {
+        this(param, SnowFlakeUtil.getDefaultSnowFlakeId());
+    }
+
 
     public void addContactsPersonList(ContactData contactsPerson) {
         SupplierContactsPerson item = BeanUtil.copyProperties(contactsPerson, SupplierContactsPerson.class);

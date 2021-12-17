@@ -170,14 +170,22 @@ public class SupplierServiceBean implements SupplierService {
     @Override
     @Transactional
     public DataResponse save(SupplierSaveParam param) {
-        SupplierSaveContext context = new SupplierSaveContext(param);
+        Supplier supplier = supplierDao.selectOne(new QueryWrapper<Supplier>().eq("code", param.getSupplierCode()));
+        SupplierSaveContext context = supplier != null ? new SupplierSaveContext(param, supplier.getId()) : new SupplierSaveContext(param);
         convertSaveContext(context);
         List<String> errors = validateContext(context);
         if (!errors.isEmpty()) {
             String message = StringUtil.join(errors, ",");
             return DataResponse.errorParameter(message);
         }
-        supplierDao.insert(context.supplier);
+        if (supplier != null) {
+            supplierDao.updateById(context.supplier);
+            supplierContactsPersonDao.delete(new QueryWrapper<SupplierContactsPerson>().eq("supplier_id", context.supplier.getId()));
+            supplierSendAddressDao.delete(new QueryWrapper<SupplierSendAddress>().eq("supplier_id", context.supplier.getId()));
+
+        } else {
+            supplierDao.insert(context.supplier);
+        }
         context.getSupplierContactsPersonList().forEach(supplierContactsPersonDao::insert);
         context.getSupplierSendAddresses().forEach(supplierSendAddressDao::insert);
         baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.SUPPLIER_INFO, TableConstants.SUPPLIER, context.supplier.getId(), context.getCustomizeDataDtos());
@@ -193,8 +201,6 @@ public class SupplierServiceBean implements SupplierService {
     }
 
     private List<String> validateContext(SupplierSaveContext c) {
-        Supplier codeSupplier = supplierDao.selectOne(new QueryWrapper<Supplier>().eq("code", c.supplier.getCode()));
-
         ArrayList<String> errors = new ArrayList<>();
         if (StrUtil.isEmpty(c.supplier.getCode())) {
             errors.add("供应商编号(supplierCode)不能为空");
@@ -210,10 +216,6 @@ public class SupplierServiceBean implements SupplierService {
         }
         if (c.params.getReceiveDifferentType() != null && (c.params.getReceiveDifferentType() < 1 || c.params.getReceiveDifferentType() > 3)) {
             errors.add("来货超差类型(receiveDifferentType)必须为: 1.货品;2.货品+颜色;3.货品+颜色+尺码");
-        }
-
-        if (codeSupplier != null) {
-            errors.add("供应商编号(supplierCode)不能重复");
         }
         if (StrUtil.isNotEmpty(c.nature) && c.supplier.getNatureId() == null) {
             errors.add("供应商性质(nature)不存在");
