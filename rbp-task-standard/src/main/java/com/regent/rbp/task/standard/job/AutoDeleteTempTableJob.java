@@ -1,0 +1,149 @@
+package com.regent.rbp.task.standard.job;
+
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
+import com.regent.rbp.api.dao.base.BaseDbDao;
+import com.regent.rbp.api.service.constants.SystemConstants;
+import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.handler.annotation.XxlJob;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ * @program: rbp-datacenter
+ * @description: 自动数据库删除临时表
+ * @author: chenchungui
+ * @create: 2021-12-17
+ */
+@Slf4j
+@Component
+public class AutoDeleteTempTableJob {
+
+    @Autowired
+    private BaseDbDao baseDbDao;
+
+    /**
+     * 自动数据库删除临时表
+     * 入参格式：{ "action": "default"}
+     * 删除逻辑：default-删除今天之前；all-删除所有；DTable-仅删除临时表；DReport-仅删除报表临时表
+     * temp_{模块名称}_{日期+8位流水}，report_{模块名称}_{日期+8位流水}
+     */
+    @XxlJob(SystemConstants.AUTO_DELETE_TEMP_TABLE)
+    public void autoDeleteTempTable() {
+        String tableNamePrefix = "temp_";
+        String reportTableNamePrefix = "report_";
+        Integer nowDateInt = getNowDateInt();
+        try {
+            //读取参数
+            String param = XxlJobHelper.getJobParam();
+            XxlJobHelper.log(param);
+            Map<String, String> map = JSON.parseObject(param, Map.class);
+            ActionTypeEnum actionTypeEnum = ActionTypeEnum.getEnum(map.get("action"));
+            // 类型校验
+            List<String> deleteTableList = new ArrayList<>();
+            switch (actionTypeEnum) {
+                case DEFAULT: {
+                    List<String> tableList = this.getTableList(tableNamePrefix);
+                    List<String> reportList = this.getTableList(reportTableNamePrefix);
+                    tableList.addAll(reportList);
+                    if (CollUtil.isNotEmpty(tableList)) {
+                        tableList.forEach(table -> {
+                            String[] str = table.split(StrUtil.UNDERLINE);
+                            // 小于今天
+                            if (str.length == 3 && Integer.parseInt(str[2].substring(0, 8)) < nowDateInt) {
+                                deleteTableList.add(table);
+                            } else {
+                                deleteTableList.add(table);
+                            }
+                        });
+                    }
+                    break;
+                }
+                case ALL: {
+                    List<String> tableList = this.getTableList(tableNamePrefix);
+                    List<String> reportList = this.getTableList(reportTableNamePrefix);
+                    deleteTableList.addAll(tableList);
+                    deleteTableList.addAll(reportList);
+                    break;
+                }
+                case DELETE_TABLE: {
+                    List<String> tableList = this.getTableList(tableNamePrefix);
+                    deleteTableList.addAll(tableList);
+                    break;
+                }
+                case DELETE_REPORT: {
+                    List<String> reportList = this.getTableList(reportTableNamePrefix);
+                    deleteTableList.addAll(reportList);
+                    break;
+                }
+                default:
+                    break;
+            }
+            if (CollUtil.isNotEmpty(deleteTableList)) {
+                StringBuilder sql = new StringBuilder("drop table if exists ");
+                String lastOne = deleteTableList.get(deleteTableList.size() - 1);
+                for (String table : deleteTableList) {
+                    sql.append(String.format("'%s'", table));
+                    if (!table.equals(lastOne)) {
+                        sql.append(StrUtil.COMMA);
+                    }
+                }
+                // 删除临时表
+                baseDbDao.deleteSql(sql.toString());
+                XxlJobHelper.log(String.format("删除临时表 %s 张: Delete sql [%s]", sql));
+            } else {
+                XxlJobHelper.log("删除临时表 0 张");
+            }
+        } catch (Exception e) {
+            XxlJobHelper.handleFail(e.getMessage());
+        }
+    }
+
+    private List<String> getTableList(String prefix) {
+        String sql = String.format("select table_name from information_schema.tables where table_schema = database() and table_name like '%s'", prefix);
+        return Optional.ofNullable(baseDbDao.getStringListDataBySql(sql)).orElse(new ArrayList<>());
+    }
+
+    public static Integer getNowDateInt() {
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        String dateStr = format.format(new Date());
+
+        return Integer.parseInt(dateStr);
+    }
+
+    /**
+     * 操作类型
+     */
+    enum ActionTypeEnum {
+
+        DEFAULT("default"),
+        ALL("all"),
+        DELETE_TABLE("DTable"),
+        DELETE_REPORT("DReport"),
+        ;
+        private String type;
+
+        public String getType() {
+            return type;
+        }
+
+        ActionTypeEnum(String type) {
+            this.type = type;
+        }
+
+        public static ActionTypeEnum getEnum(String type) {
+            return Arrays.stream(ActionTypeEnum.values()).filter(f -> f.getType().equals(type)).findFirst().orElse(DEFAULT);
+        }
+    }
+
+}

@@ -25,7 +25,7 @@ public class SystemConstants {
 
     public static final Long DEFAULT_TEN_MINUTES = 10 * 60 * 1000L;
 
-    public static final String DOWNLOAD_ONLINE_GOODS_LIST_JOB= "inno.downloadOnlineGoodsListJobHandler";
+    public static final String DOWNLOAD_ONLINE_GOODS_LIST_JOB = "inno.downloadOnlineGoodsListJobHandler";
 
     public static final String DOWNLOAD_ONLINE_ORDER_LIST_JOB = "inno.downloadOnlineOrderListJobHandler";
 
@@ -54,6 +54,8 @@ public class SystemConstants {
     public static final String NOTICE_BILL_AUTO_COMPLETE = "noticeBillAutoComplete";
 
     public static final String PURCHASE_BILL_AUTO_COMPLETE = "purchaseBillAutoComplete";
+
+    public static final String AUTO_DELETE_TEMP_TABLE = "autoDeleteTempTable";
 
     public static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 

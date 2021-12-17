@@ -51,11 +51,15 @@
         ${sql}
     </select>
 
+    <select id="getStringListDataBySql" resultType="java.lang.String">
+        ${sql}
+    </select>
+
     <insert id="insertSql" parameterType="java.lang.String">
         ${sql}
     </insert>
 
-    <delete id="deleteSql" parameterType="java.lang.String" >
+    <delete id="deleteSql" parameterType="java.lang.String">
         ${sql}
     </delete>
 
@@ -101,7 +105,7 @@
        drop table if exists ${tableName}
     </delete>
 
-    <select id="queryCustomDataById" resultType="java.util.Map" >
+    <select id="queryCustomDataById" resultType="java.util.Map">
        select *
        from ${tableName}  where id = ${id}
     </select>

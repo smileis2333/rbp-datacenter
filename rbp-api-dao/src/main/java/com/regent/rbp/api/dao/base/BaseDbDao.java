@@ -26,6 +26,8 @@ public interface BaseDbDao {
 
     String getStringDataBySql(@Param("sql") String sql);
 
+    List<String> getStringListDataBySql(@Param("sql") String sql);
+
     Integer insertSql(@Param("sql") String sql);
 
     void deleteSql(@Param("sql") String sql);
@@ -53,6 +55,7 @@ public interface BaseDbDao {
 
     /**
      * 根据id查询自定义数据
+     *
      * @param tableName
      * @param id
      * @return
