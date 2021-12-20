@@ -36,12 +36,12 @@ public class AutoDeleteTempTableJob {
      * 自动数据库删除临时表
      * 入参格式：{ "action": "default"}
      * 删除逻辑：default-删除今天之前；all-删除所有；DTable-仅删除临时表；DReport-仅删除报表临时表
-     * temp_{模块名称}_{日期+8位流水}，report_{模块名称}_{日期+8位流水}
+     * temp_xxx_table_{模块名称}_{日期+8位流水}，temp_report_xxx_table_{模块名称}_{日期+8位流水}
      */
     @XxlJob(SystemConstants.AUTO_DELETE_TEMP_TABLE)
     public void autoDeleteTempTable() {
-        String tableNamePrefix = "temp_";
-        String reportTableNamePrefix = "report_";
+        String tableNamePrefix = "temp_xxx_table_";
+        String reportTableNamePrefix = "temp_report_xxx_table_";
         Integer nowDateInt = getNowDateInt();
         try {
             //读取参数
@@ -54,26 +54,25 @@ public class AutoDeleteTempTableJob {
             switch (actionTypeEnum) {
                 case DEFAULT: {
                     List<String> tableList = this.getTableList(tableNamePrefix);
-                    List<String> reportList = this.getTableList(reportTableNamePrefix);
-                    tableList.addAll(reportList);
+                    List<String> reportTableList = this.getTableList(reportTableNamePrefix);
+                    tableList.addAll(reportTableList);
                     if (CollUtil.isNotEmpty(tableList)) {
                         tableList.forEach(table -> {
                             String[] str = table.split(StrUtil.UNDERLINE);
                             // 小于今天
-                            if (str.length == 3 && Integer.parseInt(str[2].substring(0, 8)) < nowDateInt) {
-                                deleteTableList.add(table);
-                            } else {
+                            if (Integer.parseInt(str[str.length - 1].substring(0, 8)) < nowDateInt) {
                                 deleteTableList.add(table);
                             }
                         });
                     }
+
                     break;
                 }
                 case ALL: {
                     List<String> tableList = this.getTableList(tableNamePrefix);
-                    List<String> reportList = this.getTableList(reportTableNamePrefix);
                     deleteTableList.addAll(tableList);
-                    deleteTableList.addAll(reportList);
+                    List<String> reportTableList = this.getTableList(reportTableNamePrefix);
+                    deleteTableList.addAll(reportTableList);
                     break;
                 }
                 case DELETE_TABLE: {
@@ -89,18 +88,19 @@ public class AutoDeleteTempTableJob {
                 default:
                     break;
             }
+            // 批量删除
             if (CollUtil.isNotEmpty(deleteTableList)) {
                 StringBuilder sql = new StringBuilder("drop table if exists ");
                 String lastOne = deleteTableList.get(deleteTableList.size() - 1);
                 for (String table : deleteTableList) {
-                    sql.append(String.format("'%s'", table));
+                    sql.append(table);
                     if (!table.equals(lastOne)) {
                         sql.append(StrUtil.COMMA);
                     }
                 }
                 // 删除临时表
                 baseDbDao.deleteSql(sql.toString());
-                XxlJobHelper.log(String.format("删除临时表 %s 张: Delete sql [%s]", sql));
+                XxlJobHelper.log(String.format("删除临时表 %s 张: Delete table sql [%s]", deleteTableList.size(), sql));
             } else {
                 XxlJobHelper.log("删除临时表 0 张");
             }
@@ -110,8 +110,9 @@ public class AutoDeleteTempTableJob {
     }
 
     private List<String> getTableList(String prefix) {
-        String sql = String.format("select table_name from information_schema.tables where table_schema = database() and table_name like '%s'", prefix);
-        return Optional.ofNullable(baseDbDao.getStringListDataBySql(sql)).orElse(new ArrayList<>());
+        StringBuilder sql = new StringBuilder("select table_name from information_schema.tables where table_schema = database() and table_name like ");
+        sql.append("'").append(prefix).append("%'");
+        return Optional.ofNullable(baseDbDao.getStringListDataBySql(sql.toString())).orElse(new ArrayList<>());
     }
 
     public static Integer getNowDateInt() {
@@ -144,6 +145,10 @@ public class AutoDeleteTempTableJob {
         public static ActionTypeEnum getEnum(String type) {
             return Arrays.stream(ActionTypeEnum.values()).filter(f -> f.getType().equals(type)).findFirst().orElse(DEFAULT);
         }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(String.format("======= '%s%' ====", 111));
     }
 
 }
