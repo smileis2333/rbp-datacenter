@@ -26,6 +26,11 @@ public interface BaseDbDao {
 
     String getStringDataBySql(@Param("sql") String sql);
 
+    default Boolean getBooleanDataBySql(String sql){
+        String str = getStringDataBySql(sql);
+        return Boolean.valueOf(str);
+    }
+
     List<String> getStringListDataBySql(@Param("sql") String sql);
 
     Integer insertSql(@Param("sql") String sql);

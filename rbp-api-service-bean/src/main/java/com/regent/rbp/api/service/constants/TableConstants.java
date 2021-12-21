@@ -35,4 +35,7 @@ public class TableConstants {
 
     public static final String PURCHASE_BILL_GOODS_FINAL = "rbp_purchase_bill_goods_final";
 
+    public static final String RECEIVE_BILL = "rbp_receive_bill";
+
+    public static final String RECEIVE_BILL_REAL_GOODS = "rbp_receive_bill_real_goods";
 }
