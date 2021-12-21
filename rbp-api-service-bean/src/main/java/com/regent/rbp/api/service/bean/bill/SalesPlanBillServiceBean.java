@@ -93,10 +93,10 @@ public class SalesPlanBillServiceBean implements SalesPlanBillService {
         Map<Long, SalePlanBillGoods> billGoodsMap = salePlanBillGoodsDao.selectList(new QueryWrapper<SalePlanBillGoods>().in("bill_id", billIds)).stream().collect(Collectors.toMap(SalePlanBillGoods::getId, Function.identity()));
         List<SalePlanBillGoods> billGoods = billGoodsMap.values().stream().collect(Collectors.toList());
         ArrayList<Long> goodsIds = CollUtil.distinct(CollUtil.map(billGoods, SalePlanBillGoods::getGoodsId, true));
-        Map<Long, List<SalePlanBillSize>> billGoodsSizeMap = salePlanBillSizeDao.selectList(new QueryWrapper<SalePlanBillSize>().in("bill_id", billIds)).stream().collect(Collectors.groupingBy(SalePlanBillSize::getBillId));
-        List<SalePlanBillSize> billSizes = billGoodsSizeMap.values().stream().flatMap(p -> p.stream()).collect(Collectors.toList());
-        ArrayList<Long> colorIds = CollUtil.distinct(CollUtil.map(billSizes, SalePlanBillSize::getColorId, true));
-        ArrayList<Long> longIds = CollUtil.distinct(CollUtil.map(billSizes, SalePlanBillSize::getLongId, true));
+        Map<Long, List<SalePlanBillSizeFinal>> billGoodsSizeMap = salePlanBillSizeFinalDao.selectList(new QueryWrapper<SalePlanBillSizeFinal>().in("bill_id", billIds)).stream().collect(Collectors.groupingBy(SalePlanBillSizeFinal::getBillId));
+        List<SalePlanBillSizeFinal> billSizes = billGoodsSizeMap.values().stream().flatMap(p -> p.stream()).collect(Collectors.toList());
+        ArrayList<Long> colorIds = CollUtil.distinct(CollUtil.map(billSizes, SalePlanBillSizeFinal::getColorId, true));
+        ArrayList<Long> longIds = CollUtil.distinct(CollUtil.map(billSizes, SalePlanBillSizeFinal::getLongId, true));
         Map<Long, BusinessType> businessTypeMap = businessTypeDao.selectList(new QueryWrapper<BusinessType>().in("id", CollUtil.distinct(CollUtil.map(records, SalePlanBill::getBusinessTypeId, true)))).stream().collect(Collectors.toMap(BusinessType::getId, Function.identity()));
         Map<Long, PriceType> priceTypeMap = priceTypeDao.selectList(new QueryWrapper<PriceType>().in("id", CollUtil.distinct(CollUtil.map(records, SalePlanBill::getPriceTypeId, true)))).stream().collect(Collectors.toMap(PriceType::getId, Function.identity()));
         Map<Long, String> channelMap = channelDao.selectList(new QueryWrapper<Channel>().in("id", CollUtil.distinct(CollUtil.map(records, SalePlanBill::getChannelId, true)))).stream().collect(Collectors.toMap(Channel::getId, Channel::getCode));
@@ -397,14 +397,12 @@ public class SalesPlanBillServiceBean implements SalesPlanBillService {
         salePlanBillLogisticsDao.insert(context.getSalePlanBillLogistics());
         context.getSalePlanBillGoodsList().forEach(bg -> salePlanBillGoodsDao.insert(bg));
         context.getSalePlanBillSizeList().forEach(bgs -> salePlanBillSizeDao.insert(bgs));
-        if (salePlanBill.getStatus() == 1) {
-            context.getSalePlanBillGoodsList().forEach(bg -> salePlanBillGoodsFinalDao.insert(BeanUtil.copyProperties(bg, SalePlanBillGoodsFinal.class)));
-            context.getSalePlanBillSizeList().forEach(bgs -> {
-                SalePlanBillSizeFinal spbsf = BeanUtil.copyProperties(bgs, SalePlanBillSizeFinal.class);
-                spbsf.setOweQuantity(bgs.getQuantity());
-                salePlanBillSizeFinalDao.insert(spbsf);
-            });
-        }
+        context.getSalePlanBillGoodsList().forEach(bg -> salePlanBillGoodsFinalDao.insert(BeanUtil.copyProperties(bg, SalePlanBillGoodsFinal.class)));
+        context.getSalePlanBillSizeList().forEach(bgs -> {
+            SalePlanBillSizeFinal spbsf = BeanUtil.copyProperties(bgs, SalePlanBillSizeFinal.class);
+            spbsf.setOweQuantity(bgs.getQuantity());
+            salePlanBillSizeFinalDao.insert(spbsf);
+        });
         baseDbService.saveOrUpdateCustomFieldData(salePlanBill.getModuleId(), TableConstants.SALE_PLAN_BILL, salePlanBill.getId(), context.getCustomizeData());
         baseDbService.batchSaveOrUpdateCustomFieldData(salePlanBill.getModuleId(), TableConstants.SALE_PLAN_BILL_GOODS, CollUtil.map(context.getSalePlanBillGoodsList(), SalePlanBillGoods::getGoodsCustomizeData, true));
     }
