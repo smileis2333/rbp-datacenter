@@ -32,4 +32,7 @@ public class SendBill extends BillMasterData {
     @ApiModelProperty(notes = "发货计划单号")
     private Long sendPlanId;
 
+    @ApiModelProperty(notes = "科目编号")
+    private Integer subjectId;
+
 }

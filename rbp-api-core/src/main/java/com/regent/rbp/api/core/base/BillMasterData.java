@@ -55,9 +55,6 @@ public class BillMasterData {
     @ApiModelProperty(notes = "流程编码")
     private String flowId;
 
-    @ApiModelProperty(notes = "科目编号")
-    private Integer subjectId;
-
     @ApiModelProperty(notes = "创建人")
     private Long createdBy;
 

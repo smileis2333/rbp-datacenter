@@ -49,6 +49,8 @@ public class ApiConstants {
 
     public static final String API_SEND_BILL = "api/sendBill";
 
-    public static final String CHANNEL_ORGANIZATION = "/api/organization";
+    public static final String API_CHANNEL_ORGANIZATION = "/api/organization";
+
+    public static final String API_PURCHASE_BILL = "api/purchaseBill";
 
 }

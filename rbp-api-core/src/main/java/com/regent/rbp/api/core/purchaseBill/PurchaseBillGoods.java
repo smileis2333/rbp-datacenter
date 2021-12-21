@@ -14,14 +14,14 @@ import java.util.Map;
 
 /**
  * @program: rbp-datacenter
- * @description: 采购单调整后货品明细
- * @author: HaiFeng
- * @create: 2021-11-17 11:04
+ * @description: 采购单货品明细
+ * @author: chenchungui
+ * @create: 2021-12-21
  */
 @Data
-@ApiModel(description = "采购单调整后货品明细")
-@TableName(value = "rbp_purchase_bill_goods_final")
-public class PurchaseBillGoodsFinal {
+@ApiModel(description = "采购单货品明细")
+@TableName(value = "rbp_purchase_bill_goods")
+public class PurchaseBillGoods {
 
     @ApiModelProperty(notes = "编码")
     @TableId("id")
@@ -67,8 +67,8 @@ public class PurchaseBillGoodsFinal {
     @TableField(exist = false)
     private Map<String, Object> customFieldMap;
 
-    public static PurchaseBillGoodsFinal build() {
-        PurchaseBillGoodsFinal item = new PurchaseBillGoodsFinal();
+    public static PurchaseBillGoods build() {
+        PurchaseBillGoods item = new PurchaseBillGoods();
         item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         return item;
     }

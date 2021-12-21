@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Api(tags = "组织架构")
 @RestController
-@RequestMapping(ApiConstants.CHANNEL_ORGANIZATION)
+@RequestMapping(ApiConstants.API_CHANNEL_ORGANIZATION)
 public class ChannelOrganizationController {
 
     @Autowired

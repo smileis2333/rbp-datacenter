@@ -35,4 +35,7 @@ public class NoticeBill extends BillMasterData {
     @ApiModelProperty(notes = "计划单号")
     private Long salePlanId;
 
+    @ApiModelProperty(notes = "科目编号")
+    private Integer subjectId;
+
 }

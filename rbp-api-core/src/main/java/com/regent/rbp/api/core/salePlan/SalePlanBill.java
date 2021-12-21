@@ -1,12 +1,9 @@
 package com.regent.rbp.api.core.salePlan;
 
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.regent.rbp.api.core.base.BillMasterData;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
-import java.util.Date;
 
 /**
  * @program: rbp-datacenter
@@ -33,6 +30,8 @@ public class SalePlanBill extends BillMasterData {
     @ApiModelProperty(notes = "币种")
     private Long currencyTypeId;
 
+    @ApiModelProperty(notes = "科目编号")
+    private Integer subjectId;
 
 
 }

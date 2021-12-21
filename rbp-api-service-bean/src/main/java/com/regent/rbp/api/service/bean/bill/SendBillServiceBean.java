@@ -75,6 +75,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -172,6 +173,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         // 获取单号
         bill.setBillNo(systemCommonService.getBillNo(bill.getModuleId()));
         bill.setProcessStatus(StatusEnum.NONE.getStatus());
+        bill.setFlowStatus(StatusEnum.NONE.getStatus());
         // 新增订单
         sendBillDao.insert(bill);
         // 单据自定义字段
@@ -345,7 +347,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         if (CollUtil.isNotEmpty(priceTypeList)) {
             priceTypeMap = priceTypeList.stream().collect(Collectors.toMap(IdNameDto::getName, v -> (Long) v.getId(), (x1, x2) -> x1));
         }
-        if (param.getGoodsDetailData().stream().filter(f -> StringUtil.isNotEmpty(f.getBarcode())).count() > 0) {
+        if (StringUtil.isNotEmpty(param.getGoodsDetailData().get(0).getBarcode())) {
             List<Barcode> barcodes = barcodeDao.selectList(new QueryWrapper<Barcode>().in("barcode", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getBarcode())));
             barcodeMap = barcodes.stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity(), (x1, x2) -> x1));
         } else {
@@ -470,7 +472,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
             billGoods.setDiscount(detailData.getDiscount());
             billGoods.setCurrencyPrice(detailData.getCurrencyPrice());
             billGoods.setExchangeRate(detailData.getExchangeRate());
-            billGoods.setQuantity(detailData.getQuantity());
+            billGoods.setQuantity(sizes.stream().map(v -> Optional.ofNullable(v.getQuantity()).orElse(BigDecimal.ZERO)).reduce(BigDecimal.ZERO, BigDecimal::add));
             billGoods.setRemark(detailData.getRemark());
             // 自定义字段
             if (CollUtil.isNotEmpty(detailData.getGoodsCustomizeData())) {

@@ -16,6 +16,7 @@ import com.regent.rbp.infrastructure.util.AppendSqlUtil;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.StreamUtil;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
  * @date 2021/12/8
  * @description
  */
+@Log4j2
 @Service
 public class BaseDbServiceBean implements BaseDbService {
 
@@ -63,7 +65,8 @@ public class BaseDbServiceBean implements BaseDbService {
         }
         String tableName = tableNamePrefix + "_custom";
         if (baseDbDao.isExistTable(tableName) == 0) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExist", new Object[]{tableName});
+            log.error(LanguageUtil.getMessageByParams("dataNotExist", new Object[]{tableName}));
+            return false;
         }
         // 验证模块是否启用当前自定义字段
         Map<String, List<CustomizeColumnDto>> listMap = this.getModuleCustomizeColumnListMap(Arrays.asList(moduleId));
@@ -116,7 +119,8 @@ public class BaseDbServiceBean implements BaseDbService {
         }
         String tableName = tableNamePrefix + "_custom";
         if (baseDbDao.isExistTable(tableName) == 0) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExist", new Object[]{tableName});
+            log.error(LanguageUtil.getMessageByParams("dataNotExist", new Object[]{tableName}));
+            return false;
         }
         // 校验字段是否存在
         Set<String> fields = new HashSet<>();
@@ -189,7 +193,8 @@ public class BaseDbServiceBean implements BaseDbService {
         }
         String tableName = tableNamePrefix + "_custom";
         if (baseDbDao.isExistTable(tableName) == 0) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExist", new Object[]{tableName});
+            log.error(LanguageUtil.getMessageByParams("dataNotExist", new Object[]{tableName}));
+            return new HashMap<>();
         }
         List<CustomizeDataDto> list = new ArrayList<>();
         List<Map<Object, Object>> mapList = baseDbDao.getListMap(String.format("select * from %s where id in %s", tableName, AppendSqlUtil.getInSql(ids.stream().collect(Collectors.toList()))));
@@ -321,11 +326,12 @@ public class BaseDbServiceBean implements BaseDbService {
     @Override
     public boolean saveCustomFieldData(String tableNamePrefix, Long id, Map<String, Object> customFieldMap) {
         if (CollUtil.isEmpty(customFieldMap)) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "CustomFieldNotNull", null);
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "notNull");
         }
         String tableName = tableNamePrefix + "_custom";
         if (baseDbDao.isExistTable(tableName) == 0) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "CustomFieldNotNull", null);
+            log.error(LanguageUtil.getMessageByParams("dataNotExist", new Object[]{tableName}));
+            return false;
         }
         StringBuilder insertSqlPrefix = new StringBuilder("Insert into " + tableName + " ( id, ");
         StringBuilder insertValue = new StringBuilder("values (" + id + ",");
@@ -333,7 +339,7 @@ public class BaseDbServiceBean implements BaseDbService {
             String key = entry.getKey();
             //数据库存在字段 做处理，不存在直接忽略
             if (baseDbDao.isExistField(tableName, key) == 0) {
-                throw new BusinessException(ResponseCode.PARAMS_ERROR, "CustomFieldNotExist", null);
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExist", new Object[]{LanguageUtil.getMessage("customizeColumn")});
             }
             //value不能null,也不能为 ""
             if (null != entry.getValue() && !StrUtil.EMPTY.equals(entry.getValue()) && !InformationConstants.StringConstants.ID.equals(key)) {
@@ -355,20 +361,21 @@ public class BaseDbServiceBean implements BaseDbService {
     public Map<String, Object> queryCustomData(String tableNamePrefix, Long id) {
         String tableName = tableNamePrefix + "_custom";
         Integer existTableInt = baseDbDao.isExistTable(tableName);
-        boolean existTable = existTableInt == 0 ? false :true ;
         Map<String, Object> resultMap = new HashMap<>();
-        if (existTable) {
-            resultMap = baseDbDao.queryCustomDataById(tableName, id);
-            if (CollUtil.isNotEmpty(resultMap)) {
-                Iterator<Map.Entry<String, Object>> iteratorMap = resultMap.entrySet().iterator();
-                while (iteratorMap.hasNext()) {
-                    Map.Entry<String, Object> entry = iteratorMap.next();
-                    if (entry.getValue() instanceof Date) {
-                        resultMap.put(entry.getKey(), DateUtil.getDateStr((Date) entry.getValue(), DateUtil.FULL_DATE_FORMAT));
-                    }
-                    if ("id".equalsIgnoreCase(entry.getKey())) {
-                        iteratorMap.remove();
-                    }
+        if (existTableInt == 0) {
+            log.error(LanguageUtil.getMessageByParams("dataNotExist", new Object[]{tableName}));
+            return resultMap;
+        }
+        resultMap = baseDbDao.queryCustomDataById(tableName, id);
+        if (CollUtil.isNotEmpty(resultMap)) {
+            Iterator<Map.Entry<String, Object>> iteratorMap = resultMap.entrySet().iterator();
+            while (iteratorMap.hasNext()) {
+                Map.Entry<String, Object> entry = iteratorMap.next();
+                if (entry.getValue() instanceof Date) {
+                    resultMap.put(entry.getKey(), DateUtil.getDateStr((Date) entry.getValue(), DateUtil.FULL_DATE_FORMAT));
+                }
+                if ("id".equalsIgnoreCase(entry.getKey())) {
+                    iteratorMap.remove();
                 }
             }
         }
