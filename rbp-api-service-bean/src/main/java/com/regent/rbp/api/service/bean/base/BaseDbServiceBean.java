@@ -2,8 +2,14 @@ package com.regent.rbp.api.service.bean.base;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.regent.rbp.api.core.goods.Goods;
+import com.regent.rbp.api.core.goods.GoodsTagPrice;
 import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.base.CustomizeColumnDao;
+import com.regent.rbp.api.dao.goods.GoodsDao;
+import com.regent.rbp.api.dao.goods.GoodsTagPriceDao;
+import com.regent.rbp.api.dto.base.BaseGoodsPriceDto;
 import com.regent.rbp.api.dto.base.CustomizeColumnDto;
 import com.regent.rbp.api.dto.base.CustomizeColumnValueDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
@@ -22,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -48,6 +55,10 @@ public class BaseDbServiceBean implements BaseDbService {
     private BaseDbDao baseDbDao;
     @Autowired
     private CustomizeColumnDao customizeColumnDao;
+    @Autowired
+    private GoodsDao goodsDao;
+    @Autowired
+    private GoodsTagPriceDao goodsTagPriceDao;
 
     /**
      * 新增/更新自定义字段
@@ -380,6 +391,60 @@ public class BaseDbServiceBean implements BaseDbService {
             }
         }
         return resultMap;
+    }
+
+    /**
+     * 获取货品基础价格
+     *
+     * @param goodsIds
+     * @return
+     */
+    @Override
+    public List<BaseGoodsPriceDto> getBaseGoodsPriceByGoodsIds(List<Long> goodsIds) {
+        List<BaseGoodsPriceDto> resultList = new ArrayList<>();
+        if (CollUtil.isEmpty(goodsIds)) {
+            return resultList;
+        }
+        List<Goods> goodsList = goodsDao.selectBatchIds(goodsIds);
+        // 吊牌价
+        List<GoodsTagPrice> tagPriceList = goodsTagPriceDao.selectList(new QueryWrapper<GoodsTagPrice>().select("goods_id,tag_price,price_type_id").in("goods_id", goodsIds)
+                .orderByDesc("goods_id,price_type_id").groupBy("goods_id"));
+        Map<Long, BigDecimal> goodsTagPriceMap = CollUtil.isEmpty(tagPriceList) ? new HashMap<>() : tagPriceList.stream().collect(Collectors.toMap(GoodsTagPrice::getGoodsId, GoodsTagPrice::getTagPrice, (x1, x2) -> x1));
+        for (Goods goods : goodsList) {
+            BaseGoodsPriceDto discountDto = new BaseGoodsPriceDto(goods.getId(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+            // 采购价
+            if (null != goods.getPlanCostPrice()) {
+                discountDto.setBalancePrice(goods.getPlanCostPrice());
+            }
+            // 默认0
+            BigDecimal tagPrice = goodsTagPriceMap.get(goods.getId());
+            if (null != tagPrice) {
+                discountDto.setTagPrice(tagPrice);
+            }
+            // 采购价为0，默认取吊牌价
+            if (discountDto.getBalancePrice().equals(BigDecimal.ZERO)) {
+                discountDto.setBalancePrice(discountDto.getTagPrice());
+            }
+            // 折扣
+            if (discountDto.getBalancePrice().compareTo(BigDecimal.ZERO) > 0 && discountDto.getTagPrice().compareTo(BigDecimal.ZERO) > 0) {
+                discountDto.setDiscount(discountDto.getBalancePrice().divide(discountDto.getTagPrice(), 4, BigDecimal.ROUND_HALF_UP));
+            }
+            resultList.add(discountDto);
+        }
+
+        return resultList;
+    }
+
+    /**
+     * 获取货品基础价格
+     *
+     * @param goodsIds
+     * @return
+     */
+    @Override
+    public Map<Long, BaseGoodsPriceDto> getBaseGoodsPriceMapByGoodsIds(List<Long> goodsIds) {
+        List<BaseGoodsPriceDto> list = getBaseGoodsPriceByGoodsIds(goodsIds);
+        return CollUtil.isEmpty(list) ? new HashMap<>() : list.stream().collect(Collectors.toMap(BaseGoodsPriceDto::getGoodsId, Function.identity(), (x1, x2) -> x1));
     }
 
 }

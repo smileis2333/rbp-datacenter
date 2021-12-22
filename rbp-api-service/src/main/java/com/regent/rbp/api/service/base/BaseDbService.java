@@ -1,6 +1,7 @@
 package com.regent.rbp.api.service.base;
 
 import cn.hutool.core.collection.CollUtil;
+import com.regent.rbp.api.dto.base.BaseGoodsPriceDto;
 import com.regent.rbp.api.dto.base.CustomizeColumnDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 
@@ -73,7 +74,8 @@ public interface BaseDbService {
 
 
     /**
-     *  保存自定义字段
+     * 保存自定义字段
+     *
      * @param tableNamePrefix
      * @param id
      * @param customFieldMap
@@ -82,9 +84,26 @@ public interface BaseDbService {
 
     /**
      * 查询自定义字段的值
-     * @param tableNamePrefix  表名前缀
+     *
+     * @param tableNamePrefix 表名前缀
      * @param id
      * @return
      */
     Map<String, Object> queryCustomData(String tableNamePrefix, Long id);
+
+    /**
+     * 获取货品基础价格、折扣吊牌价
+     *
+     * @param goodsIds
+     * @return
+     */
+    List<BaseGoodsPriceDto> getBaseGoodsPriceByGoodsIds(List<Long> goodsIds);
+
+    /**
+     * 获取货品基础价格、折扣吊牌价
+     *
+     * @param goodsIds
+     * @return
+     */
+    Map<Long, BaseGoodsPriceDto> getBaseGoodsPriceMapByGoodsIds(List<Long> goodsIds);
 }

@@ -32,6 +32,7 @@ import com.regent.rbp.api.dao.purchaseBill.PurchaseBillDao;
 import com.regent.rbp.api.dao.purchaseBill.PurchaseBillGoodsFinalDao;
 import com.regent.rbp.api.dao.purchaseBill.PurchaseBillSizeFinalDao;
 import com.regent.rbp.api.dao.supplier.SupplierDao;
+import com.regent.rbp.api.dto.base.BaseGoodsPriceDto;
 import com.regent.rbp.api.dto.base.CustomizeColumnDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
@@ -374,14 +375,18 @@ public class PurchaseBillServiceBean extends ServiceImpl<PurchaseBillDao, Purcha
         if (CollUtil.isNotEmpty(messageList)) {
             return;
         }
-        // TODO 不存在采购价的货品
+        // 不存在采购价的货品
         List<Long> goodsIdList = param.getGoodsDetailData().stream().filter(f -> null == f.getBalancePrice()).map(v -> v.getGoodsId()).distinct().collect(Collectors.toList());
-        // TODO 获取货品价格
+        // 获取货品价格
+        Map<Long, BaseGoodsPriceDto> goodsPriceDtoMap = baseDbService.getBaseGoodsPriceMapByGoodsIds(goodsIdList);
         atomicInteger.set(0);
         for (PurchaseBillGoodsDetailData item : param.getGoodsDetailData()) {
-            // TODO 采购价不存在,则通过货品价格获取
-            if (null == item.getBalancePrice() && goodsIdList.contains(item.getGoodsId())) {
-
+            // 采购价不存在,则通过货品价格获取
+            BaseGoodsPriceDto baseGoodsPriceDto = goodsPriceDtoMap.get(item.getGoodsId());
+            if (null == item.getBalancePrice() && goodsIdList.contains(item.getGoodsId()) && null != baseGoodsPriceDto) {
+                item.setBalancePrice(baseGoodsPriceDto.getBalancePrice());
+                item.setTagPrice(baseGoodsPriceDto.getTagPrice());
+                item.setDiscount(baseGoodsPriceDto.getDiscount());
             }
             if (null == item.getBalancePrice()) {
                 messageList.add(getNotExistMessage(atomicInteger.get(), "balancePrice"));

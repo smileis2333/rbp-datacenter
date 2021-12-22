@@ -27,5 +27,5 @@ public class GoodsTagPrice {
     private Long priceTypeId;
 
     @ApiModelProperty(notes = "吊牌价")
-    private BigDecimal price;
+    private BigDecimal tagPrice;
 }
