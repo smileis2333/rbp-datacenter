@@ -10,6 +10,7 @@ import com.regent.rbp.api.web.constants.ApiConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,9 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(ApiConstants.API_SALES_PLAN)
 @Api(tags = "销售计划")
-@RequiredArgsConstructor
 public class SalesPlanController {
-    private final SalesPlanBillService salesPlanBillService;
+    @Autowired
+    private SalesPlanBillService salesPlanBillService;
 
     @ApiOperation(value = "查询")
     @PostMapping("/query")

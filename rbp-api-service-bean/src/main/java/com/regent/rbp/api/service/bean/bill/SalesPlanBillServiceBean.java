@@ -32,7 +32,7 @@ import com.regent.rbp.common.service.basic.SystemCommonService;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,27 +41,44 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class SalesPlanBillServiceBean implements SalesPlanBillService {
 
-    private final PriceTypeDao priceTypeDao;
-    private final BusinessTypeDao businessTypeDao;
-    private final ChannelDao channelDao;
-    private final CurrencyTypeDao currencyTypeDao;
-    private final SalePlanBillDao salePlanBillDao;
-    private final SalePlanBillGoodsDao salePlanBillGoodsDao;
-    private final SalePlanBillGoodsFinalDao salePlanBillGoodsFinalDao;
-    private final SalePlanBillLogisticsDao salePlanBillLogisticsDao;
-    private final SalePlanBillSizeFinalDao salePlanBillSizeFinalDao;
-    private final SalePlanBillSizeDao salePlanBillSizeDao;
-    private final BaseDbDao baseDbDao;
-    private final BarcodeDao barcodeDao;
-    private final LongDao longDao;
-    private final ColorDao colorDao;
-    private final GoodsDao goodsDao;
-    private final SizeDetailDao sizeDetailDao;
-    private final BaseDbService baseDbService;
-    private final SystemCommonService systemCommonService;
+    @Autowired
+    private  PriceTypeDao priceTypeDao;
+    @Autowired
+    private  BusinessTypeDao businessTypeDao;
+    @Autowired
+    private  ChannelDao channelDao;
+    @Autowired
+    private  CurrencyTypeDao currencyTypeDao;
+    @Autowired
+    private  SalePlanBillDao salePlanBillDao;
+    @Autowired
+    private  SalePlanBillGoodsDao salePlanBillGoodsDao;
+    @Autowired
+    private  SalePlanBillGoodsFinalDao salePlanBillGoodsFinalDao;
+    @Autowired
+    private  SalePlanBillLogisticsDao salePlanBillLogisticsDao;
+    @Autowired
+    private  SalePlanBillSizeFinalDao salePlanBillSizeFinalDao;
+    @Autowired
+    private  SalePlanBillSizeDao salePlanBillSizeDao;
+    @Autowired
+    private  BaseDbDao baseDbDao;
+    @Autowired
+    private  BarcodeDao barcodeDao;
+    @Autowired
+    private  LongDao longDao;
+    @Autowired
+    private  ColorDao colorDao;
+    @Autowired
+    private  GoodsDao goodsDao;
+    @Autowired
+    private  SizeDetailDao sizeDetailDao;
+    @Autowired
+    private  BaseDbService baseDbService;
+    @Autowired
+    private  SystemCommonService systemCommonService;
 
     @Override
     public PageDataResponse<SalesPlanBillQueryResult> query(SalePlanQueryParam param) {

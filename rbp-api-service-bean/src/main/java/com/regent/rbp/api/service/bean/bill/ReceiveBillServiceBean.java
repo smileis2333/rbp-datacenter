@@ -66,6 +66,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.regent.rbp.api.core.constants.BusinessTypeConstants.RECEIVE_RETURN_GOODS;
+import static com.regent.rbp.api.core.constants.BusinessTypeConstants.RETURN_GOODS;
+
 /**
  * @author huangjie
  * @date : 2021/12/17
@@ -437,7 +440,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             return;
         }
         // 货品实收明细
-        extractedReadGoodsAndSizes(context, param, messageList, bill);
+        extractedRealGoodsAndSizes(context, param, messageList, bill);
         // 货品原单明细
         if (StrUtil.isNotEmpty(param.getSendNo())) {
             extractedOriginGoodsAndSizesFromSendBill(context, param, messageList, bill);
@@ -501,9 +504,9 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             return;
         } else {
             context.getBill().setSendId(sendBill.getId());
-            if (context.getBaseBusinessTypeId() == 1100000000000023l) {
+            if (context.getBaseBusinessTypeId() == RECEIVE_RETURN_GOODS) {
                 Long sendBillBaseBusinessTypeId = baseDbDao.getLongDataBySql(String.format("select base_business_type_id from rbp_business_type where id = '%s'", sendBill.getBusinessTypeId()));
-                if (sendBillBaseBusinessTypeId != 1100000000000013l) {
+                if (sendBillBaseBusinessTypeId != RETURN_GOODS) {
                     messageList.add(getNotExistMessage("sendNoTypeError"));
                 }
             }
@@ -513,8 +516,9 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             if (sendBill.getChannelId().longValue() != context.getBill().getChannelId() | sendBill.getToChannelId().longValue() != context.getBill().getToChannelId()) {
                 messageList.add(getNotExistMessage("sendNoPathNotMatch"));
             }
-            if (!messageList.isEmpty())
+            if (!messageList.isEmpty()){
                 return;
+            }
         }
         List<ReceiveBillGoods> receiveBillGoods = sendBillGoodsDao.selectList(new QueryWrapper<SendBillGoods>().eq("bill_id", sendBill.getId())).stream().map(e -> BeanUtil.copyProperties(e, ReceiveBillGoods.class)).collect(Collectors.toList());
         List<ReceiveBillSize> receiveBillSizes = sendBillSizeDao.selectList(new QueryWrapper<SendBillSize>().eq("bill_id", sendBill.getId())).stream().map(e -> BeanUtil.copyProperties(e, ReceiveBillSize.class)).collect(Collectors.toList());
@@ -535,7 +539,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
         context.setBillSizeList(receiveBillSizes);
     }
 
-    private void extractedReadGoodsAndSizes(ReceiveBillSaveContext context, ReceiveBillSaveParam param, List<String> messageList, ReceiveBill bill) {
+    private void extractedRealGoodsAndSizes(ReceiveBillSaveContext context, ReceiveBillSaveParam param, List<String> messageList, ReceiveBill bill) {
         List<ReceiveBillRealGoods> billGoodsList = new ArrayList<>();
         context.setBillRealGoodsList(billGoodsList);
         List<ReceiveBillRealSize> billSizeList = new ArrayList<>();

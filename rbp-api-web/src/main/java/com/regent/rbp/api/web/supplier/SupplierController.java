@@ -8,7 +8,7 @@ import com.regent.rbp.api.dto.supplier.SupplierSaveParam;
 import com.regent.rbp.api.service.supplier.SupplierService;
 import com.regent.rbp.api.web.constants.ApiConstants;
 import io.swagger.annotations.Api;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(ApiConstants.API_SUPPLIER)
 @Api(tags = "供应商档案")
-@RequiredArgsConstructor
 public class SupplierController {
-    private final SupplierService supplierService;
+    @Autowired
+    private SupplierService supplierService;
 
     @PostMapping("/query")
     public PageDataResponse<SupplierQueryResult> query(@RequestBody SupplierQueryParam param) {

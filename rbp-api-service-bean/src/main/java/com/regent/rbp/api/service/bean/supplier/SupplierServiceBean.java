@@ -27,7 +27,7 @@ import com.regent.rbp.api.service.supplier.context.SupplierSaveContext;
 import com.regent.rbp.common.constants.InformationConstants;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,16 +39,23 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class SupplierServiceBean implements SupplierService {
-    private final SupplierDao supplierDao;
-    private final SupplierContactsPersonDao supplierContactsPersonDao;
-    private final FundAccountDao fundAccountDao;
-    private final BaseDbService baseDbService;
-    private final SupplierNatureDao supplierNatureDao;
-    private final SupplierGradeDao supplierGradeDao;
-    private final SupplierAreaDao supplierAreaDao;
-    private final SupplierSendAddressDao supplierSendAddressDao;
+    @Autowired
+    private  SupplierDao supplierDao;
+    @Autowired
+    private  SupplierContactsPersonDao supplierContactsPersonDao;
+    @Autowired
+    private  FundAccountDao fundAccountDao;
+    @Autowired
+    private  BaseDbService baseDbService;
+    @Autowired
+    private  SupplierNatureDao supplierNatureDao;
+    @Autowired
+    private  SupplierGradeDao supplierGradeDao;
+    @Autowired
+    private  SupplierAreaDao supplierAreaDao;
+    @Autowired
+    private  SupplierSendAddressDao supplierSendAddressDao;
 
     @Override
     public PageDataResponse<SupplierQueryResult> query(SupplierQueryParam param) {
