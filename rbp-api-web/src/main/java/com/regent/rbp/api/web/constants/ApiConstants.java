@@ -55,4 +55,6 @@ public class ApiConstants {
     
     public static final String API_RECEIVE_BILL = "api/receiveBill";
 
+    public static final String API_PURCHASE_RECEIVE_NOTICE_BILL = "api/purchaseReceiveNoticeBill";
+
 }

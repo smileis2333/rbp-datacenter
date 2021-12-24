@@ -38,4 +38,9 @@ public class TableConstants {
     public static final String RECEIVE_BILL = "rbp_receive_bill";
 
     public static final String RECEIVE_BILL_REAL_GOODS = "rbp_receive_bill_real_goods";
+
+    public static final String PURCHASE_RECEIVE_NOTICE_BILL = "rbp_purchase_receive_notice_bill";
+
+    public static final String PURCHASE_RECEIVE_NOTICE_BILL_GOODS = "rbp_purchase_receive_notice_bill_goods";
+
 }
