@@ -66,31 +66,31 @@ public class PurchaseReceiveNoticeBillController {
 
 @Data
 class PurchaseReceiveNoticeBillSaveParamCheckWrapper extends PurchaseReceiveNoticeBillSaveParam {
-    @NotBlank(message = "{javax.validation.constraints.NotBlank.moduleId.message}")
+    @NotBlank(message = "{javax.NotBlank.moduleId}")
     private String moduleId;
 
-    @NotBlank(message = "{javax.validation.constraints.NotBlank.manualId.message}")
-    @ConflictManualIdCheck(value = PurchaseReceiveNoticeBill.class,message = "{javax.validation.constraints.conflictManualIdCheck.message}")
+    @NotBlank(message = "{javax.NotBlank.manualId}")
+    @ConflictManualIdCheck(value = PurchaseReceiveNoticeBill.class,message = "{regent.conflictManualIdCheck}")
     private String manualId;
 
-    @NotNull(message = "{javax.validation.constraints.NotNull.billDate.message}")
+    @NotNull(message = "{javax.NotNull.billDate}")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date billDate;
 
-    @NotBlank(message = "{javax.validation.constraints.NotBlank.businessType.message}")
-    @BusinessTypeCheck(message = "{regent.validation.constraints.businessTypeCheck.businessTypeNotExist.message}")
+    @NotBlank(message = "{javax.NotBlank.businessType}")
+    @BusinessTypeCheck(message = "{regent.businessTypeCheck.businessTypeNotExist}")
     private String businessType;
 
-    @NotBlank(message = "{javax.validation.constraints.NotBlank.supplierCode.message}")
-    @SupplierCodeCheck(message = "{javax.validation.constraints.supplierCodeCheck.supplierCodeNotExist.message}")
+    @NotBlank(message = "{javax.NotBlank.supplierCode}")
+    @SupplierCodeCheck(message = "{regent.supplierCodeCheck.supplierCodeNotExist}")
     private String supplierCode;
 
-    @NotBlank(message = "{javax.validation.constraints.NotBlank.toChannelCode.message}")
-    @ChannelCodeCheck(message = "{javax.validation.constraints.channelCodeCheck.toChannelCodeNotExist.message}")
+    @NotBlank(message = "{javax.NotBlank.toChannelCode}")
+    @ChannelCodeCheck(message = "{regent.channelCodeCheck.toChannelCodeNotExist}")
     private String toChannelCode;
 
-    @NotNull(message = "{javax.validation.constraints.NotBlank.status.message}")
-    @BillStatus(message = "{javax.validation.constraints.billStatus.statusNotExist.message}")
+    @NotNull(message = "{javax.NotBlank.status}")
+    @BillStatus(message = "{regent.billStatus.statusNotExist}")
     private Integer status;
 
 }
