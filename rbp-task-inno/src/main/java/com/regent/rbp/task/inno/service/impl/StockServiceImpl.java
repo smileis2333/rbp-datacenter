@@ -9,7 +9,6 @@ import com.regent.rbp.api.core.base.LongInfo;
 import com.regent.rbp.api.core.base.SizeClass;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.goods.Goods;
-import com.regent.rbp.api.core.stock.StockDetail;
 import com.regent.rbp.api.dao.base.ColorDao;
 import com.regent.rbp.api.dao.base.LongDao;
 import com.regent.rbp.api.dao.base.SizeClassDao;

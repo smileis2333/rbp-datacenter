@@ -1,10 +1,9 @@
 package com.regent.rbp.api.service.enums;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.regent.rbp.api.core.stock.ForwayStockDetail;
 import com.regent.rbp.api.core.stock.StockDetail;
-import com.regent.rbp.api.core.stock.UsableStockDetail;
-import com.regent.rbp.infrastructure.enums.CheckEnum;
+import com.regent.rbp.common.model.stock.entity.ForwayStockDetail;
+import com.regent.rbp.common.model.stock.entity.UsableStockDetail;
 import org.apache.poi.ss.formula.functions.T;
 
 /**
