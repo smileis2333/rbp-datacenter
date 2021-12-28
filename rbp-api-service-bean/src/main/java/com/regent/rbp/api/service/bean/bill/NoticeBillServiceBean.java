@@ -781,6 +781,7 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         sampleDto.setModuleId(bill.getModuleId());
         sampleDto.setBillId(bill.getId());
         sampleDto.setManualId(bill.getManualId());
+        sampleDto.setBillNo(bill.getBillNo());
         sampleDto.setBillDate(bill.getBillDate());
         sampleDto.setBusinessTypeId(bill.getBusinessTypeId());
         sampleDto.setChannelId(bill.getChannelId());

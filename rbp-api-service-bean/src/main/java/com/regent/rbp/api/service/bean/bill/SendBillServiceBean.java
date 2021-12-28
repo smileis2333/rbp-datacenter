@@ -796,6 +796,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         SendBill bill = context.getBill();
         sampleDto.setModuleId(bill.getModuleId());
         sampleDto.setBillId(bill.getId());
+        sampleDto.setBillNo(bill.getBillNo());
         sampleDto.setManualId(bill.getManualId());
         sampleDto.setBillDate(bill.getBillDate());
         sampleDto.setBusinessTypeId(bill.getBusinessTypeId());
@@ -823,7 +824,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
             systemCommonService.insertGenerateReceivableBalanceDetail(sampleDto, goodsList, true);
         }
         // 临时核算
-        systemCommonService.insertGenerateReceivableBalanceTempDetail(sampleDto, goodsList, false);
+        systemCommonService.insertGenerateReceivableBalanceTempDetail(sampleDto, goodsList, true);
 
     }
 
