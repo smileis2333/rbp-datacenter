@@ -52,19 +52,31 @@ import com.regent.rbp.api.service.constants.TableConstants;
 import com.regent.rbp.api.service.send.SendBillService;
 import com.regent.rbp.api.service.send.context.SendBillQueryContext;
 import com.regent.rbp.api.service.send.context.SendBillSaveContext;
+import com.regent.rbp.common.eum.basic.SendBillReferenceType;
+import com.regent.rbp.common.model.basic.dto.BalanceDetailSampleDto;
 import com.regent.rbp.common.model.basic.dto.IdNameCodeDto;
 import com.regent.rbp.common.model.basic.dto.IdNameDto;
+import com.regent.rbp.common.model.stock.entity.ForwayStockDetail;
+import com.regent.rbp.common.model.stock.entity.StockDetail;
+import com.regent.rbp.common.model.stock.entity.UsableStockDetail;
+import com.regent.rbp.common.model.stock.entity.UsableStockLockDetail;
 import com.regent.rbp.common.service.basic.DbService;
 import com.regent.rbp.common.service.basic.SystemCommonService;
+import com.regent.rbp.common.service.stock.ForwayStockDetailService;
+import com.regent.rbp.common.service.stock.StockDetailService;
+import com.regent.rbp.common.service.stock.UsableStockDetailService;
+import com.regent.rbp.common.service.stock.UsableStockLockDetailService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.enums.LanguageTableEnum;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.AppendSqlUtil;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
+import com.regent.rbp.infrastructure.util.NumberUtil;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StreamUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -73,6 +85,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -123,6 +137,14 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
     private BaseDbService baseDbService;
     @Autowired
     private DbService dbService;
+    @Autowired
+    private UsableStockDetailService usableStockDetailService;
+    @Autowired
+    private UsableStockLockDetailService usableStockLockDetailService;
+    @Autowired
+    private ForwayStockDetailService forwayStockDetailService;
+    @Autowired
+    private StockDetailService stockDetailService;
 
     /**
      * 分页查询
@@ -176,6 +198,14 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         bill.setFlowStatus(StatusEnum.NONE.getStatus());
         // 新增订单
         sendBillDao.insert(bill);
+        // 核算设置
+        this.balanceSetting(context);
+        // 库存调整
+        if (StatusEnum.CHECK.equals(bill.getStatus())) {
+            this.checkModifyStock(context);
+        } else {
+            this.updateStock(context);
+        }
         // 单据自定义字段
         baseDbService.saveOrUpdateCustomFieldData(bill.getModuleId(), TableConstants.SEND_BILL, bill.getId(), bill.getCustomFieldMap());
         // 新增物流信息
@@ -752,6 +782,325 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
 
         }
         return queryResults;
+    }
+
+    /**
+     * 核算设置
+     * 指令单不需要结存，只存临时核算明细
+     *
+     * @param context
+     */
+    private void balanceSetting(SendBillSaveContext context) {
+        // 单据主体
+        BalanceDetailSampleDto sampleDto = new BalanceDetailSampleDto();
+        SendBill bill = context.getBill();
+        sampleDto.setModuleId(bill.getModuleId());
+        sampleDto.setBillId(bill.getId());
+        sampleDto.setManualId(bill.getManualId());
+        sampleDto.setBillDate(bill.getBillDate());
+        sampleDto.setBusinessTypeId(bill.getBusinessTypeId());
+        sampleDto.setChannelId(bill.getChannelId());
+        sampleDto.setToChannelId(bill.getToChannelId());
+        sampleDto.setNotes(bill.getNotes());
+        // 货品明细
+        List<SendBillGoods> billGoodsList = context.getBillGoodsList();
+        List<BalanceDetailSampleDto> goodsList = new ArrayList<>();
+        for (SendBillGoods goods : billGoodsList) {
+            BalanceDetailSampleDto dto = new BalanceDetailSampleDto();
+            goodsList.add(dto);
+            dto.setBillGoodsId(goods.getId());
+            dto.setPriceTypeId(goods.getPriceTypeId());
+            dto.setGoodsId(goods.getGoodsId());
+            dto.setQuantity(goods.getQuantity());
+            dto.setTagPrice(goods.getTagPrice());
+            dto.setTagAmount(NumberUtil.mul(goods.getQuantity(), goods.getTagPrice()));
+            dto.setPrice(goods.getBalancePrice());
+            dto.setAmount(NumberUtil.mul(goods.getQuantity(), goods.getBalancePrice()));
+            dto.setDiscount(goods.getDiscount());
+        }
+        // 核算
+        if (StatusEnum.CHECK.getStatus().equals(bill.getStatus())) {
+            systemCommonService.insertGenerateReceivableBalanceDetail(sampleDto, goodsList, true);
+        }
+        // 临时核算
+        systemCommonService.insertGenerateReceivableBalanceTempDetail(sampleDto, goodsList, false);
+
+    }
+
+    /**
+     * 库存调整
+     *
+     * @param context
+     */
+    private void updateStock(SendBillSaveContext context) {
+        SendBill sendBill = context.getBill();
+
+        List<SendBillGoods> sendBillGoodsList = context.getBillGoodsList();
+        List<SendBillSize> sendBillSizeList = context.getBillSizeList();
+        Long billId = sendBill.getId();
+        String billNo = sendBill.getBillNo();
+        String moduleId = sendBill.getModuleId();
+        Long channelId = sendBill.getChannelId();
+
+        if (sendBillGoodsList.size() == 0) {
+            return;
+        }
+
+        //按指令发货 不需要处理库存
+        SendBillReferenceType sendBillReferenceType = getSendBillReferenceType(sendBill);
+        if ((SendBillReferenceType.NOTICE == sendBillReferenceType || SendBillReferenceType.SEND_PLAN == sendBillReferenceType)) {
+            return;
+        }
+
+        boolean isMustPositive = !systemCommonService.isAllowNegativeInventory(channelId);
+
+        //无指令发货 按单据明细增加可用库存占用数
+        List<UsableStockLockDetail> usableStockLockDetails = getUsableStockLockDetailsBySave(moduleId, billId, billNo, channelId, sendBillGoodsList, sendBillSizeList, false, true);
+        if (usableStockLockDetails.size() > 0) {
+            usableStockLockDetailService.insertUsableStockLockDetailList(usableStockLockDetails);
+        }
+
+        Set<UsableStockDetail> usableStockDetails = getUsableStockDetails(channelId, sendBillSizeList);
+        //无指令发货 (新增-保存 按单据明细减少可用库存。)
+        usableStockDetailService.decreaseUsableStockDetail(usableStockDetails, isMustPositive);
+    }
+
+    /**
+     * 审核单据后更新库存 存在2种场景
+     * 1.引用指令单：按单据明细减少实际库存，按单据明细增加可用库存占用数(负数，用发货明细对冲指令单SKU的配货数)，按单据明细增加在途库存。
+     * 2.不引用指令单: 按单据明细减少实际库存，清空当前单据的占用数，按单据明细增加在途库存。
+     */
+    private void checkModifyStock(SendBillSaveContext context) {
+        SendBill sendBill = context.getBill();
+
+        Long billId = sendBill.getId();
+        String billNo = sendBill.getBillNo();
+        String moduleId = sendBill.getModuleId();
+        Long channelId = sendBill.getChannelId();
+        Long toChannelId = sendBill.getToChannelId();
+
+        List<SendBillSize> sendBillSizes = context.getBillSizeList();
+        Map<Long, Long> noticeMap = context.getBillGoodsList().stream().collect(Collectors.toMap(SendBillGoods::getId, SendBillGoods::getNoticeId));
+        //是否允许负库存
+        boolean isMustPositive = !systemCommonService.isAllowNegativeInventory(channelId);
+
+        //清空当前单据的占用数(不引用指令单)
+        usableStockLockDetailService.deleteUsableStockLockDetailBySourceBillId(moduleId, billId);
+        //插入可用库存占用数(引用单据时，对冲指令单的占用数)
+        boolean increaseFlag = false;//减少指令单的占用数
+        boolean referenceNoticeId = true;//引用单据
+        List<UsableStockLockDetail> usableStockLockDetails = this.getUsableStockLockDetails(moduleId, billId, billNo, channelId, sendBillSizes, noticeMap, referenceNoticeId, increaseFlag);
+        if (usableStockLockDetails.size() > 0) {
+            usableStockLockDetailService.insertUsableStockLockDetailList(usableStockLockDetails);
+        }
+        //减少发货方实际库存
+        Set<StockDetail> stockDetails = this.getStockDetails(channelId, sendBillSizes);
+        stockDetailService.decreaseStockDetail(stockDetails, isMustPositive);
+
+        //增加收货方在途库存
+        //0629添加发货业务收货方不产生在途
+        boolean sendBusinessReceiverNotBuildForWayStock = systemCommonService.isSendBusinessReceiverNotBuildForWayStock(toChannelId);
+        if (!sendBusinessReceiverNotBuildForWayStock) {
+            Set<ForwayStockDetail> forwayStockDetails = this.getForwayStockDetails(toChannelId, sendBillSizes);
+            forwayStockDetailService.increaseForwayStockDetail(forwayStockDetails, isMustPositive);
+        }
+    }
+
+    /**
+     * 获取关联指令单的需要占用的明细
+     *
+     * @param sourceModuleId    来源模块
+     * @param sourceBillId      来源单据
+     * @param sourceBillNo      来源单号
+     * @param channelId         渠道
+     * @param sendBillSizeList  发货明细
+     * @param referenceNoticeId 引用标记：true/只获取引用指令单的明细；false/只获取未引用指令单的明细；
+     * @param increaseFlag      增加标记：true/增加; false/减少；
+     * @return
+     */
+    private List<UsableStockLockDetail> getUsableStockLockDetails(String sourceModuleId, Long sourceBillId, String sourceBillNo,
+                                                                  Long channelId, List<SendBillSize> sendBillSizeList, Map<Long, Long> noticeMap,
+                                                                  boolean referenceNoticeId, boolean increaseFlag) {
+        List<UsableStockLockDetail> usableStockLockDetails = new ArrayList<>(sendBillSizeList.size());
+        for (SendBillSize sendBillSize : sendBillSizeList) {
+            Long noticeId = noticeMap.get(sendBillSize.getBillGoodsId());
+            //只获取引用指令单的明细的情况下,指令单号为空，则跳过该记录
+            if (referenceNoticeId && noticeId == null) {
+                continue;
+            }
+            //只获取未引用指令单的明细的情况下,指令单号不为空，则跳过该记录
+            if (!referenceNoticeId && noticeId != null) {
+                continue;
+            }
+            UsableStockLockDetail usableStockLockDetail = new UsableStockLockDetail();
+            BeanUtils.copyProperties(sendBillSize, usableStockLockDetail);
+            usableStockLockDetail.setChannelId(channelId);
+            //来源单据是发货单
+            usableStockLockDetail.setSourceModuleId(sourceModuleId);
+            usableStockLockDetail.setSourceBillId(sourceBillId);
+            usableStockLockDetail.setSourceBillNo(sourceBillNo);
+
+            if (noticeId != null) {
+                //有指令单发货，查询指令单
+                NoticeBill noticeBill = noticeBillDao.selectById(noticeId);
+                usableStockLockDetail.setModuleId(noticeBill.getModuleId());
+                usableStockLockDetail.setBillId(noticeBill.getId());
+                usableStockLockDetail.setBillNo(noticeBill.getBillNo());
+            } else {
+                usableStockLockDetail.setModuleId(sourceModuleId);
+                usableStockLockDetail.setBillId(sourceBillId);
+                usableStockLockDetail.setBillNo(sourceBillNo);
+            }
+
+            if (increaseFlag) {
+                //增加占用数(正数，不引用单据的情况下)
+                usableStockLockDetail.setQuantity(sendBillSize.getQuantity());
+            } else {
+                //减少占用数（负数对冲 指令单的占用数）
+                usableStockLockDetail.setQuantity(sendBillSize.getQuantity().negate());
+            }
+            usableStockLockDetails.add(usableStockLockDetail);
+        }
+        return usableStockLockDetails;
+    }
+
+
+    /**
+     * 获取需要调整的实际库存明细
+     *
+     * @param channelId
+     * @param sendBillSizeList
+     * @return
+     */
+    private Set<StockDetail> getStockDetails(Long channelId, List<SendBillSize> sendBillSizeList) {
+        Set<StockDetail> stockDetails = new HashSet<>();
+        for (SendBillSize billSize : sendBillSizeList) {
+            StockDetail stockDetail = new StockDetail();
+            BeanUtils.copyProperties(billSize, stockDetail);
+            stockDetail.setChannelId(channelId);
+            stockDetail.setReduceQuantity(BigDecimal.ZERO);
+            stockDetails.add(stockDetail);
+        }
+        return stockDetails;
+    }
+
+    /**
+     * 获取需要调整的在途库存明细
+     *
+     * @param channelId
+     * @param sendBillSizeList
+     * @return
+     */
+    private Set<ForwayStockDetail> getForwayStockDetails(Long channelId, List<SendBillSize> sendBillSizeList) {
+        Set<ForwayStockDetail> stockDetails = new HashSet<>();
+        for (SendBillSize billSize : sendBillSizeList) {
+            ForwayStockDetail stockDetail = new ForwayStockDetail();
+            BeanUtils.copyProperties(billSize, stockDetail);
+            stockDetail.setChannelId(channelId);
+            stockDetail.setReduceQuantity(BigDecimal.ZERO);
+            stockDetails.add(stockDetail);
+        }
+        return stockDetails;
+    }
+
+    /**
+     * 获取发货单需要占用的明细
+     *
+     * @param sourceModuleId
+     * @param sourceBillId
+     * @param sourceBillNo
+     * @param channelId
+     * @param sendBillGoodsList
+     * @param sendBillSizeList
+     * @param referenceNoticeId
+     * @param increaseFlag
+     * @return
+     */
+    private List<UsableStockLockDetail> getUsableStockLockDetailsBySave(String sourceModuleId, Long sourceBillId, String sourceBillNo, Long channelId,
+                                                                        List<SendBillGoods> sendBillGoodsList, List<SendBillSize> sendBillSizeList,
+                                                                        boolean referenceNoticeId, boolean increaseFlag) {
+        List<UsableStockLockDetail> usableStockLockDetails = new ArrayList<>();
+        Hashtable<Long, SendBillGoods> hashSendBillGoods = new Hashtable<>(sendBillGoodsList.size());
+        for (SendBillGoods sendBillGoods : sendBillGoodsList) {
+            //只获取引用指令单的明细的情况下,指令单号为空，则跳过该记录
+            if (referenceNoticeId && sendBillGoods.getNoticeId() == null) {
+                continue;
+            }
+            //只获取未引用指令单的明细的情况下,指令单号不为空，则跳过该记录
+            if (!referenceNoticeId && sendBillGoods.getNoticeId() != null) {
+                continue;
+            }
+            hashSendBillGoods.put(sendBillGoods.getId(), sendBillGoods);
+        }
+        for (SendBillSize sendBillSize : sendBillSizeList) {
+            Long billGoodsId = sendBillSize.getBillGoodsId();
+            if (hashSendBillGoods.containsKey(billGoodsId)) {
+                SendBillGoods sendBillGoods = hashSendBillGoods.get(billGoodsId);
+                Long noticeId = sendBillGoods.getNoticeId();
+
+                UsableStockLockDetail usableStockLockDetail = new UsableStockLockDetail();
+                BeanUtils.copyProperties(sendBillSize, usableStockLockDetail);
+                usableStockLockDetail.setChannelId(channelId);
+                //来源单据是发货单
+                usableStockLockDetail.setSourceModuleId(sourceModuleId);
+                usableStockLockDetail.setSourceBillId(sourceBillId);
+                usableStockLockDetail.setSourceBillNo(sourceBillNo);
+                //有指令单发货，查询指令单
+                if (noticeId != null) {
+                    NoticeBill noticeBill = noticeBillDao.selectById(noticeId);
+                    usableStockLockDetail.setModuleId(noticeBill.getModuleId());
+                    usableStockLockDetail.setBillId(noticeBill.getId());
+                    usableStockLockDetail.setBillNo(noticeBill.getBillNo());
+                } else {
+                    usableStockLockDetail.setModuleId(sourceModuleId);
+                    usableStockLockDetail.setBillId(sourceBillId);
+                    usableStockLockDetail.setBillNo(sourceBillNo);
+                }
+
+                if (increaseFlag) {
+                    //增加占用数(正数，不引用单据的情况下)
+                    usableStockLockDetail.setQuantity(sendBillSize.getQuantity());
+                } else {
+                    //减少占用数（负数对冲 指令单的占用数）
+                    usableStockLockDetail.setQuantity(sendBillSize.getQuantity().negate());
+                }
+                usableStockLockDetails.add(usableStockLockDetail);
+            }
+        }
+        return usableStockLockDetails;
+    }
+
+    /**
+     * 获取需要调整的可用库存明细
+     *
+     * @param channelId
+     * @param sendBillSizeList
+     * @return
+     */
+    private Set<UsableStockDetail> getUsableStockDetails(Long channelId, List<SendBillSize> sendBillSizeList) {
+        Set<UsableStockDetail> stockDetails = new HashSet<>();
+        for (SendBillSize billSize : sendBillSizeList) {
+            UsableStockDetail stockDetail = new UsableStockDetail();
+            BeanUtils.copyProperties(billSize, stockDetail);
+            stockDetail.setChannelId(channelId);
+            stockDetail.setReduceQuantity(BigDecimal.ZERO);
+            stockDetails.add(stockDetail);
+        }
+        return stockDetails;
+    }
+
+    /**
+     * 获取发货单引用单据类型
+     *
+     * @param sendBill
+     * @return
+     */
+    private SendBillReferenceType getSendBillReferenceType(SendBill sendBill) {
+        SendBillReferenceType sendBillReferenceType = SendBillReferenceType.NONE;
+        if (null != sendBill.getSendPlanId()) {
+            sendBillReferenceType = SendBillReferenceType.SEND_PLAN;
+        }
+        return sendBillReferenceType;
     }
 
     /**

@@ -52,19 +52,27 @@ import com.regent.rbp.api.service.constants.TableConstants;
 import com.regent.rbp.api.service.notice.NoticeBillService;
 import com.regent.rbp.api.service.notice.context.NoticeBillQueryContext;
 import com.regent.rbp.api.service.notice.context.NoticeBillSaveContext;
+import com.regent.rbp.common.model.basic.dto.BalanceDetailSampleDto;
 import com.regent.rbp.common.model.basic.dto.IdNameCodeDto;
 import com.regent.rbp.common.model.basic.dto.IdNameDto;
+import com.regent.rbp.common.model.stock.entity.UsableStockDetail;
+import com.regent.rbp.common.model.stock.entity.UsableStockLockDetail;
 import com.regent.rbp.common.service.basic.DbService;
 import com.regent.rbp.common.service.basic.SystemCommonService;
+import com.regent.rbp.common.service.stock.UsableStockDetailService;
+import com.regent.rbp.common.service.stock.UsableStockLockDetailService;
+import com.regent.rbp.common.utils.StockUtils;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.enums.LanguageTableEnum;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.AppendSqlUtil;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
+import com.regent.rbp.infrastructure.util.NumberUtil;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StreamUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -73,6 +81,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -123,6 +132,10 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
     private BaseDbService baseDbService;
     @Autowired
     private DbService dbService;
+    @Autowired
+    private UsableStockDetailService usableStockDetailService;
+    @Autowired
+    private UsableStockLockDetailService usableStockLockDetailService;
 
     /**
      * 分页查询
@@ -176,6 +189,10 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
         bill.setFlowStatus(StatusEnum.NONE.getStatus());
         // 新增订单
         noticeBillDao.insert(bill);
+        // 核算设置
+        this.balanceTempSetting(context);
+        // 库存调整
+        this.updateStock(context);
         // 单据自定义字段
         baseDbService.saveOrUpdateCustomFieldData(bill.getModuleId(), TableConstants.NOTICE_BILL, bill.getId(), bill.getCustomFieldMap());
         // 新增物流信息
@@ -749,6 +766,137 @@ public class NoticeBillServiceBean extends ServiceImpl<NoticeBillDao, NoticeBill
 
         }
         return queryResults;
+    }
+
+    /**
+     * 核算设置
+     * 指令单不需要结存，只存临时核算明细
+     *
+     * @param context
+     */
+    private void balanceTempSetting(NoticeBillSaveContext context) {
+        // 单据主体
+        BalanceDetailSampleDto sampleDto = new BalanceDetailSampleDto();
+        NoticeBill bill = context.getBill();
+        sampleDto.setModuleId(bill.getModuleId());
+        sampleDto.setBillId(bill.getId());
+        sampleDto.setManualId(bill.getManualId());
+        sampleDto.setBillDate(bill.getBillDate());
+        sampleDto.setBusinessTypeId(bill.getBusinessTypeId());
+        sampleDto.setChannelId(bill.getChannelId());
+        sampleDto.setToChannelId(bill.getToChannelId());
+        sampleDto.setPriceTypeId(bill.getPriceTypeId());
+        sampleDto.setNotes(bill.getNotes());
+        // 货品明细
+        List<NoticeBillGoods> billGoodsList = context.getBillGoodsList();
+        List<BalanceDetailSampleDto> goodsList = new ArrayList<>();
+        for (NoticeBillGoods goods : billGoodsList) {
+            BalanceDetailSampleDto dto = new BalanceDetailSampleDto();
+            goodsList.add(dto);
+            dto.setBillGoodsId(goods.getId());
+            dto.setGoodsId(goods.getGoodsId());
+            dto.setQuantity(goods.getQuantity());
+            dto.setTagPrice(goods.getTagPrice());
+            dto.setTagAmount(NumberUtil.mul(goods.getQuantity(), goods.getTagPrice()));
+            dto.setPrice(goods.getBalancePrice());
+            dto.setAmount(NumberUtil.mul(goods.getQuantity(), goods.getBalancePrice()));
+            dto.setDiscount(goods.getDiscount());
+        }
+        // 创建临时核算
+        systemCommonService.insertGenerateReceivableBalanceTempDetail(sampleDto, goodsList, false);
+    }
+
+    /**
+     * 库存调整
+     *
+     * @param context
+     */
+    private void updateStock(NoticeBillSaveContext context) {
+        NoticeBill bill = context.getBill();
+        List<NoticeBillSize> billSizeList = context.getBillSizeList();
+        boolean isMustPositive = !systemCommonService.isAllowNegativeInventory(bill.getChannelId());
+
+        //按单据明细增加可用库存占用数
+        List<UsableStockLockDetail> usableStockLockDetails = this.getUsableStockLockDetails(bill, billSizeList, true);
+        if (usableStockLockDetails.size() > 0) {
+            usableStockLockDetailService.insertUsableStockLockDetailList(usableStockLockDetails);
+        }
+
+        //按单据明细减少可用库存
+        Set<UsableStockDetail> usableStockDetails = this.getUsableStockDetails(bill.getChannelId(), billSizeList);
+        usableStockDetailService.decreaseUsableStockDetail(usableStockDetails, isMustPositive);
+    }
+
+    /**
+     * 获取需要调整的可用库存占用明细
+     *
+     * @param noticeBill
+     * @param noticeBillSizeList
+     * @param increaseFlag
+     * @return
+     */
+    private List<UsableStockLockDetail> getUsableStockLockDetails(NoticeBill noticeBill, List<NoticeBillSize> noticeBillSizeList, boolean increaseFlag) {
+        List<UsableStockLockDetail> usableStockLockDetails = new ArrayList<>(noticeBillSizeList.size());
+        for (NoticeBillSize billSize : noticeBillSizeList) {
+            UsableStockLockDetail usableStockLockDetail = new UsableStockLockDetail();
+            BeanUtils.copyProperties(billSize, usableStockLockDetail);
+            usableStockLockDetail.setChannelId(noticeBill.getChannelId());
+            //来源单据是发货单
+            usableStockLockDetail.setSourceModuleId(noticeBill.getModuleId());
+            usableStockLockDetail.setSourceBillId(noticeBill.getId());
+            usableStockLockDetail.setSourceBillNo(noticeBill.getBillNo());
+
+            usableStockLockDetail.setModuleId(noticeBill.getModuleId());
+            usableStockLockDetail.setBillId(noticeBill.getId());
+            usableStockLockDetail.setBillNo(noticeBill.getBillNo());
+
+            if (increaseFlag) {
+                //增加占用数(正数，不引用单据的情况下)
+                usableStockLockDetail.setQuantity(billSize.getQuantity());
+            } else {
+                //减少占用数（负数对冲 指令单的占用数）
+                usableStockLockDetail.setQuantity(billSize.getQuantity().negate());
+            }
+            usableStockLockDetail.setHashCode(StockUtils.calculateHashCode(usableStockLockDetail));
+            usableStockLockDetail.setSkuHashCode(StockUtils.calculateSkuHashCode(usableStockLockDetail));
+
+            usableStockLockDetails.add(usableStockLockDetail);
+        }
+        return usableStockLockDetails;
+    }
+
+    /**
+     * 获取需要调整的可用库存明细
+     *
+     * @param channelId
+     * @param noticeBillSizeList
+     * @return
+     */
+    private Set<UsableStockDetail> getUsableStockDetails(Long channelId, List<NoticeBillSize> noticeBillSizeList) {
+        Hashtable<String, UsableStockDetail> hashUsableStockDetails = new Hashtable<>();
+        for (NoticeBillSize billSize : noticeBillSizeList) {
+            String hashCode = StockUtils.calculateHashCode(channelId, billSize.getGoodsId(), billSize.getColorId(), billSize.getLongId(), billSize.getSizeId());
+            String skuHashCode = StockUtils.calculateSkuHashCode(billSize.getGoodsId(), billSize.getColorId(), billSize.getLongId(), billSize.getSizeId());
+
+            UsableStockDetail usableStockDetail = null;
+            BigDecimal quantity = billSize.getQuantity();
+            if (hashUsableStockDetails.containsKey(hashCode)) {
+                usableStockDetail = hashUsableStockDetails.get(hashCode);
+            } else {
+                usableStockDetail = new UsableStockDetail();
+                BeanUtils.copyProperties(billSize, usableStockDetail);
+                usableStockDetail.setChannelId(channelId);
+                usableStockDetail.setQuantity(BigDecimal.ZERO);
+                usableStockDetail.setReduceQuantity(BigDecimal.ZERO);
+                usableStockDetail.setHashCode(hashCode);
+                usableStockDetail.setSkuHashCode(skuHashCode);
+                hashUsableStockDetails.put(hashCode, usableStockDetail);
+            }
+            usableStockDetail.setQuantity(usableStockDetail.getQuantity().add(quantity));
+        }
+        Set<UsableStockDetail> usableStockDetails = hashUsableStockDetails.values().stream().collect(Collectors.toSet());
+        hashUsableStockDetails.clear();
+        return usableStockDetails;
     }
 
     /**
