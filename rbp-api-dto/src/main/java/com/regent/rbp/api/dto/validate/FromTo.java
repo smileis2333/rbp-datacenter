@@ -1,7 +1,12 @@
 package com.regent.rbp.api.dto.validate;
 
+import com.regent.rbp.api.dto.validate.group.Complex;
+
+import javax.validation.Constraint;
 import javax.validation.Payload;
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.TYPE;
@@ -18,6 +23,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  */
 @Retention(RUNTIME)
 @Target(TYPE)
+@Constraint(validatedBy = { })
 public @interface FromTo {
     String message() default "转换失败";
 

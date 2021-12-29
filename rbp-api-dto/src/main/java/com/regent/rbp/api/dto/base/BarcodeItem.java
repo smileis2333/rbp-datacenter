@@ -1,6 +1,6 @@
 package com.regent.rbp.api.dto.base;
 
-import com.regent.rbp.api.dto.validate.Complex;
+import com.regent.rbp.api.dto.validate.group.Complex;
 import com.regent.rbp.api.dto.validate.FromTo;
 import com.regent.rbp.api.dto.validate.RuleIdCheck;
 import lombok.Data;
@@ -17,7 +17,7 @@ import java.util.Objects;
 @Data
 @FromTo.List({
         @FromTo(fromField = "goodsCode", toField = "goodsId",groups = Complex.class,message = "{regent.FromTo.goodsCodeNotExist}"),
-        @FromTo(fromField = "colorCode", toField = "colorId",groups = Complex.class,message = "{regent.colorCode.colorCodeNotExist}"),
+        @FromTo(fromField = "colorCode", toField = "colorId",groups = Complex.class,message = "{regent.FromTo.colorCodeNotExist}"),
         @FromTo(fromField = "longName", toField = "longId",groups = Complex.class,message = "{regent.FromTo.longNameNotExist}"),
         @FromTo(fromField = "size", toField = "sizeId",groups = Complex.class,message = "{regent.FromTo.sizeNotExist}"),
 })
@@ -62,4 +62,7 @@ public class BarcodeItem {
     public int hashCode() {
         return Objects.hash(barcode);
     }
+
+    private Integer idx;
+
 }

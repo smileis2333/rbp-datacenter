@@ -1,4 +1,6 @@
-package com.regent.rbp.api.web.bill.validate;
+package com.regent.rbp.api.web.validators;
+
+import com.regent.rbp.api.dto.validate.BillStatus;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;

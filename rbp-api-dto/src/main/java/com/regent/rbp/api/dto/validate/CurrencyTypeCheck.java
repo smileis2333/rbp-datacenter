@@ -1,4 +1,4 @@
-package com.regent.rbp.api.web.bill.validate;
+package com.regent.rbp.api.dto.validate;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -9,14 +9,14 @@ import java.lang.annotation.Target;
 
 /**
  * @author huangjie
- * @date : 2021/12/22
+ * @date : 2021/12/23
  * @description
  */
-@Constraint(validatedBy = {SupplierCodeValidatorForSingle.class, SupplierCodeValidatorForQueryList.class})
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface SupplierCodeCheck {
-    String message() default "输入渠道不能为且必须存在";
+@Constraint(validatedBy = { })
+public @interface CurrencyTypeCheck {
+    String message() default "币种类型非法";
 
     Class<?>[] groups() default {};
 

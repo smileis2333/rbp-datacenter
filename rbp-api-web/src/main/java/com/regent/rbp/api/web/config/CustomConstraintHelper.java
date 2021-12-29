@@ -1,14 +1,11 @@
 package com.regent.rbp.api.web.config;
 
-import com.regent.rbp.api.dto.validate.ColorCode;
-import com.regent.rbp.api.dto.validate.FromTo;
-import com.regent.rbp.api.web.validators.ColorCodeValidator;
-import com.regent.rbp.api.dto.validate.RuleIdCheck;
-import com.regent.rbp.api.web.validators.RuleIdCheckValidator;
-import com.regent.rbp.api.web.validators.FromToValidator;
+import com.regent.rbp.api.dto.validate.*;
+import com.regent.rbp.api.web.validators.*;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.validator.internal.engine.constraintvalidation.ConstraintValidatorDescriptor;
 import org.hibernate.validator.internal.metadata.core.ConstraintHelper;
+import org.hibernate.validator.internal.util.CollectionHelper;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.spi.ValidationProvider;
@@ -18,10 +15,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author huangjie
  * @date : 2021/12/29
+ * @description
  * @see ValidationProvider
  * for unreasonable/excess package arrangement(split the transport object from context),
  * so we need to split validate annotations and concrete validator,
@@ -30,7 +30,6 @@ import java.util.Map;
  * the key point is the jsr303 SPI.
  *
  * META-INF/services/javax.validation.spi.ValidationProvider
- * @description
  */
 @Log4j2
 public class CustomConstraintHelper extends ConstraintHelper {
@@ -53,9 +52,19 @@ public class CustomConstraintHelper extends ConstraintHelper {
             Map<Class<? extends Annotation>, List<ConstraintValidatorDescriptor<?>>> tmpConstraints = new HashMap<>();
             tmpConstraints.putAll((Map<Class<? extends Annotation>, List<ConstraintValidatorDescriptor<?>>>) o);
             // 在这里注册我们自定义的注解和注解处理器
+            putConstraint(tmpConstraints, BarcodeCheck.class, BarcodeValidatorForQueryList.class);
+            putConstraint(tmpConstraints, BarcodeRelationCheck.class, BarcodeRelationCheckValidator.class);
+            putConstraint(tmpConstraints, BarcodeOrGoodsCode.class, BarcodeOrGoodsCodeValidator.class);
+            putConstraints(tmpConstraints, BillStatus.class, BillStatusValidator.class, BillStatusValidatorForQueryList.class);
+            putConstraints(tmpConstraints, BusinessTypeCheck.class, BusinessTypeValidatorForSingle.class, BusinessTypeValidatorForQueryList.class);
+            putConstraints(tmpConstraints, ChannelCodeCheck.class, ChannelCodeValidatorForSingle.class, ChannelCodeValidatorForQueryList.class);
             putConstraint(tmpConstraints, ColorCode.class, ColorCodeValidator.class);
-            putConstraint(tmpConstraints, RuleIdCheck.class, RuleIdCheckValidator.class);
+            putConstraint(tmpConstraints, ConflictManualIdCheck.class, ConflictManualIdValidator.class);
+            putConstraints(tmpConstraints, CurrencyTypeCheck.class, CurrencyTypeCheckValidatorForQueryList.class,CurrencyTypeCheckValidatorForSingle.class);
             putConstraint(tmpConstraints, FromTo.class, FromToValidator.class);
+            putConstraint(tmpConstraints, PurchaseNo.class, PurchaseNoValidator.class);
+            putConstraint(tmpConstraints, RuleIdCheck.class, RuleIdCheckValidator.class);
+            putConstraints(tmpConstraints, SupplierCodeCheck.class, SupplierCodeValidatorForSingle.class, SupplierCodeValidatorForQueryList.class);
             /**
              * 设置回field
              */
@@ -70,4 +79,14 @@ public class CustomConstraintHelper extends ConstraintHelper {
                                                              Class<A> constraintType, Class<? extends ConstraintValidator<A, ?>> validatorType) {
         validators.put(constraintType, Collections.singletonList(ConstraintValidatorDescriptor.forClass(validatorType, constraintType)));
     }
+
+    private static <A extends Annotation> void putConstraints(Map<Class<? extends Annotation>, List<ConstraintValidatorDescriptor<?>>> validators,
+                                                              Class<A> constraintType, Class<? extends ConstraintValidator<A, ?>> validatorType1, Class<? extends ConstraintValidator<A, ?>> validatorType2) {
+        List<ConstraintValidatorDescriptor<?>> descriptors = Stream.of(validatorType1, validatorType2)
+                .map(vt -> ConstraintValidatorDescriptor.forClass(vt, constraintType))
+                .collect(Collectors.toList());
+
+        validators.put(constraintType, CollectionHelper.toImmutableList(descriptors));
+    }
+
 }

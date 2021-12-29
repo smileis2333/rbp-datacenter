@@ -1,8 +1,9 @@
-package com.regent.rbp.api.web.bill.validate;
+package com.regent.rbp.api.web.validators;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.regent.rbp.api.dao.base.BaseDbDao;
+import com.regent.rbp.api.dto.validate.ConflictManualIdCheck;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,8 +24,9 @@ public class ConflictManualIdValidator implements ConstraintValidator<ConflictMa
 
     @Override
     public void initialize(ConflictManualIdCheck constraintAnnotation) {
-        Class entityClass = constraintAnnotation.value();
+        String className = constraintAnnotation.targetClass();
         try {
+            Class<?> entityClass = Class.forName(className);
             String tableName = (String) TableName.class.getDeclaredMethod("value").invoke(entityClass.getAnnotation(TableName.class));
             this.tableName = tableName;
         } catch (IllegalAccessException e) {
@@ -32,6 +34,8 @@ public class ConflictManualIdValidator implements ConstraintValidator<ConflictMa
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
 

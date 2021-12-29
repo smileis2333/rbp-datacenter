@@ -1,5 +1,6 @@
 package com.regent.rbp.api.service.bean.bill;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -9,7 +10,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.*;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.goods.Goods;
-import com.regent.rbp.api.core.purchaseBill.PurchaseBill;
 import com.regent.rbp.api.core.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBill;
 import com.regent.rbp.api.core.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBillGoods;
 import com.regent.rbp.api.core.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBillSize;
@@ -17,7 +17,6 @@ import com.regent.rbp.api.core.supplier.Supplier;
 import com.regent.rbp.api.dao.base.*;
 import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
-import com.regent.rbp.api.dao.purchaseBill.PurchaseBillDao;
 import com.regent.rbp.api.dao.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBillDao;
 import com.regent.rbp.api.dao.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBillGoodsDao;
 import com.regent.rbp.api.dao.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBillSizeDao;
@@ -33,25 +32,33 @@ import com.regent.rbp.api.dto.purchase.PurchaseReceiveNoticeBillGoodsDetailData;
 import com.regent.rbp.api.dto.purchase.PurchaseReceiveNoticeBillQueryParam;
 import com.regent.rbp.api.dto.purchase.PurchaseReceiveNoticeBillQueryResult;
 import com.regent.rbp.api.dto.purchase.PurchaseReceiveNoticeBillSaveParam;
+import com.regent.rbp.api.dto.validate.group.Complex;
 import com.regent.rbp.api.service.base.BaseDbService;
 import com.regent.rbp.api.service.constants.TableConstants;
 import com.regent.rbp.api.service.purchase.PurchaseReceiveNoticeBillService;
 import com.regent.rbp.api.service.purchase.context.PurchaseReceiveNoticeBillQueryContext;
 import com.regent.rbp.api.service.purchase.context.PurchaseReceiveNoticeBillSaveContext;
+import com.regent.rbp.common.constants.InformationConstants;
+import com.regent.rbp.common.model.basic.dto.BalanceDetailSampleDto;
+import com.regent.rbp.common.model.basic.dto.BaseGoodsSizeDto;
 import com.regent.rbp.common.model.basic.dto.IdNameCodeDto;
 import com.regent.rbp.common.model.basic.dto.IdNameDto;
 import com.regent.rbp.common.service.basic.DbService;
 import com.regent.rbp.common.service.basic.SystemCommonService;
-import com.regent.rbp.infrastructure.constants.ResponseCode;
+import com.regent.rbp.common.utils.ValidateReceiveDifferenceTool;
 import com.regent.rbp.infrastructure.enums.CheckEnum;
 import com.regent.rbp.infrastructure.enums.LanguageTableEnum;
-import com.regent.rbp.infrastructure.util.*;
+import com.regent.rbp.infrastructure.enums.StatusEnum;
+import com.regent.rbp.infrastructure.util.OptionalUtil;
+import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
+import com.regent.rbp.infrastructure.util.StreamUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -95,7 +102,9 @@ public class PurchaseReceiveNoticeBillServiceBean implements PurchaseReceiveNoti
     @Autowired
     private SizeDetailDao sizeDetailDao;
     @Autowired
-    private PurchaseBillDao purchaseBillDao;
+    private ValidateReceiveDifferenceTool validateReceiveDifferenceTool;
+    @Autowired
+    private Validator validator;
 
     @Override
     public PageDataResponse<PurchaseReceiveNoticeBillQueryResult> query(PurchaseReceiveNoticeBillQueryParam param) {
@@ -123,7 +132,7 @@ public class PurchaseReceiveNoticeBillServiceBean implements PurchaseReceiveNoti
         Set<Long> supplierIds = StreamUtil.toSet(list, PurchaseReceiveNoticeBill::getSupplierId);
         channelIds.addAll(StreamUtil.toSet(list, PurchaseReceiveNoticeBill::getToChannelId));
         Map<Long, IdNameCodeDto> channelMap = dbService.selectIdNameCodeMapByLanguage(new QueryWrapper<Channel>().in("id", channelIds), Channel.class, LanguageTableEnum.CHANNEL);
-        Map<Long, IdNameCodeDto> supplierMap = dbService.selectIdNameCodeMapByLanguage(new QueryWrapper<Supplier>().in("id",supplierIds ), Supplier.class, LanguageTableEnum.CHANNEL);
+        Map<Long, IdNameCodeDto> supplierMap = dbService.selectIdNameCodeMapByLanguage(new QueryWrapper<Supplier>().in("id", supplierIds), Supplier.class, LanguageTableEnum.CHANNEL);
         // 业务类型
         Map<Object, IdNameDto> businessTypeMap = dbService.selectIdNameMapByLanguage(new QueryWrapper<BusinessType>().in("id", StreamUtil.toSet(list, PurchaseReceiveNoticeBill::getBusinessTypeId)), BusinessType.class, LanguageTableEnum.BUSINESS_TYPE);
         // 币种类型
@@ -271,18 +280,40 @@ public class PurchaseReceiveNoticeBillServiceBean implements PurchaseReceiveNoti
         List<String> messageList = new ArrayList<>();
         convertSaveContext(context, param, messageList);
         if (!messageList.isEmpty()) {
-            return new ModelDataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("paramVerifyError", new String[]{String.join(StrUtil.COMMA, messageList.stream().distinct().collect(Collectors.toList()))}));
+            return ModelDataResponse.errorParameter(messageList.stream().collect(Collectors.joining(",")));
         }
         purchaseReceiveNoticeBillDao.insert(context.getBill());
         context.getBillGoodsList().forEach(purchaseReceiveNoticeBillGoodsDao::insert);
         context.getBillSizeList().forEach(purchaseReceiveNoticeBillSizeDao::insert);
         baseDbService.saveOrUpdateCustomFieldData(param.getModuleId(), TableConstants.PURCHASE_RECEIVE_NOTICE_BILL, context.getBill().getId(), context.getBillCustomizeDataDtos());
         baseDbService.batchSaveOrUpdateCustomFieldData(param.getModuleId(), TableConstants.PURCHASE_RECEIVE_NOTICE_BILL_GOODS, context.getGoodsCustomizeData());
-
-        // todo 来货超差
-
-        //todo 核算设置
+        validateReceiveDifferenceTool.checkGoodsReceiveDifferent(null, convertToBaseGoodsSizeDto(context.getBillSizeList()), context.getBill().getPurchaseId(), InformationConstants.ModuleConstants.PURCHASE_RECEIVE_NOTICE_BILL);
+        balanceSetting(context);
         return DataResponse.success();
+    }
+
+    private void balanceSetting(PurchaseReceiveNoticeBillSaveContext context) {
+        Supplier supplier = supplierDao.selectOne(new QueryWrapper<Supplier>().eq("id", context.getBill().getSupplierId()));
+        // 单据主体
+        BalanceDetailSampleDto sampleDto = new BalanceDetailSampleDto();
+        PurchaseReceiveNoticeBill bill = context.getBill();
+        sampleDto.setModuleId(bill.getModuleId());
+        sampleDto.setBillId(bill.getId());
+        sampleDto.setBillNo(bill.getBillNo());
+        sampleDto.setManualId(bill.getManualId());
+        sampleDto.setBillDate(bill.getBillDate());
+        sampleDto.setBusinessTypeId(bill.getBusinessTypeId());
+        sampleDto.setToChannelId(bill.getToChannelId());
+        sampleDto.setNotes(bill.getNotes());
+        sampleDto.setFundAccountId(supplier.getFundAccountId());
+        sampleDto.setSupplierId(supplier.getId());
+        // 核算
+        if (StatusEnum.CHECK.getStatus().equals(bill.getStatus())) {
+            systemCommonService.insertGeneratePayableBalanceDetail(sampleDto, true);
+        }
+        // 临时核算
+        systemCommonService.insertGeneratePayableBalanceTempDetail(sampleDto, true);
+
     }
 
     private void convertSaveContext(PurchaseReceiveNoticeBillSaveContext context, PurchaseReceiveNoticeBillSaveParam param, List<String> messageList) {
@@ -304,169 +335,88 @@ public class PurchaseReceiveNoticeBillServiceBean implements PurchaseReceiveNoti
         if (StrUtil.isNotEmpty(param.getPurchaseNo())) {
             bill.setPurchaseId(baseDbDao.getLongDataBySql(String.format("select id from rbp_purchase_bill where bill_no  = '%s'", param.getPurchaseNo())));
         }
-
-        if (StrUtil.isNotEmpty(param.getPurchaseNo())){
-            PurchaseBill purchaseBill = purchaseBillDao.selectOne(new QueryWrapper<PurchaseBill>().eq("bill_no", param.getPurchaseNo()));
-            if (purchaseBill!=null){
-                context.getBill().setPurchaseId(purchaseBill.getId());
-            } else {
-                messageList.add("采购单号不存在");
-            }
-        }
-
-        // 货品明细
-        if (CollUtil.isEmpty(param.getGoodsDetailData())) {
-            messageList.add(getNotNullMessage("goodsDetailData"));
-        }
-        if (CollUtil.isNotEmpty(messageList)) {
-            return;
-        }
-
-        extractedGoodsAndSizes(context, param, messageList, bill);
-
         context.setBill(bill);
+        extractedGoodsAndSizes(context, param, messageList);
+
         context.setBillCustomizeDataDtos(param.getCustomizeData());
     }
 
-    private void extractedGoodsAndSizes(PurchaseReceiveNoticeBillSaveContext context, PurchaseReceiveNoticeBillSaveParam param, List<String> messageList, PurchaseReceiveNoticeBill bill) {
-        List<PurchaseReceiveNoticeBillGoods> billGoodsList = new ArrayList<>();
-        context.setBillGoodsList(billGoodsList);
-        List<PurchaseReceiveNoticeBillSize> billSizeList = new ArrayList<>();
-        context.setBillSizeList(billSizeList);
-        // 根据条形码获取货品尺码信息
-        Map<String, Barcode> barcodeMap = new HashMap<>();
-        // 货品
-        Map<String, Long> goodsMap = new HashMap<>();
-        // 颜色
-        Map<String, Long> colorMap = new HashMap<>();
-        // 内长
-        Map<String, Long> longMap = new HashMap<>();
-        // 尺码
-        Map<String, Long> sizeMap = new HashMap<>();
-        if (param.getGoodsDetailData().stream().filter(f -> StringUtil.isNotEmpty(f.getBarcode())).count() > 0) {
-            List<Barcode> barcodes = barcodeDao.selectList(new QueryWrapper<Barcode>().in("barcode", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getBarcode())));
-            barcodeMap = barcodes.stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity(), (x1, x2) -> x1));
-        } else {
-            List<Goods> goodsList = goodsDao.selectList(new QueryWrapper<Goods>().in("code", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getGoodsCode())));
-            goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId, (x1, x2) -> x1));
-            List<Color> colorList = colorDao.selectList(new QueryWrapper<Color>().in("code", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getColorCode())));
-            colorMap = colorList.stream().collect(Collectors.toMap(Color::getCode, Color::getId, (x1, x2) -> x1));
-            List<LongInfo> longList = longDao.selectList(new QueryWrapper<LongInfo>().in("name", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getLongName())));
-            longMap = longList.stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId, (x1, x2) -> x1));
-            List<SizeDetail> sizeClassList = baseDbDao.getSizeNameList(StreamUtil.toList(goodsList, Goods::getId), StreamUtil.toList(param.getGoodsDetailData(), v -> v.getSize()));
-            sizeMap = sizeClassList.stream().collect(Collectors.toMap(v -> v.getGoodsId() + StrUtil.UNDERLINE + v.getName(), SizeDetail::getId, (x1, x2) -> x1));
-        }
-        // 尺码明细
-        List<PurchaseReceiveNoticeBillSize> sizeList = new ArrayList<>();
-        AtomicInteger atomicInteger = new AtomicInteger();
-        for (PurchaseReceiveNoticeBillGoodsDetailData item : param.getGoodsDetailData()) {
-            atomicInteger.getAndIncrement();
-            PurchaseReceiveNoticeBillSize size = new PurchaseReceiveNoticeBillSize();
-            sizeList.add(size);
+    private void extractedGoodsAndSizes(PurchaseReceiveNoticeBillSaveContext context, PurchaseReceiveNoticeBillSaveParam param, List<String> messageList) {
+        List<PurchaseReceiveNoticeBillGoodsDetailData> goodsDetailData = param.getGoodsDetailData();
+        List<String> barcodes = CollUtil.map(goodsDetailData, e -> StrUtil.isNotBlank(e.getBarcode()) ? e.getBarcode() : null, true);
+        List<String> goodsCode = CollUtil.map(goodsDetailData, e -> StrUtil.isNotBlank(e.getGoodsCode()) ? e.getGoodsCode() : null, true);
+        List<Goods> goodsList = goodsDao.selectList(new QueryWrapper<Goods>().in("code", goodsCode));
+        List<Long> goodsIdsList = CollUtil.map(goodsList, Goods::getId, true);
+        List<String> colorCodes = CollUtil.distinct(CollUtil.map(goodsDetailData, PurchaseReceiveNoticeBillGoodsDetailData::getColorCode, true));
+        List<String> longNames = CollUtil.distinct(CollUtil.map(goodsDetailData, PurchaseReceiveNoticeBillGoodsDetailData::getLongName, true));
+        List<String> sizeNames = CollUtil.map(goodsDetailData, PurchaseReceiveNoticeBillGoodsDetailData::getSize, true); // don't distinct, must align
 
-            size.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-            size.setBillId(bill.getId());
-            size.setQuantity(item.getQuantity());
+        Map<String, Barcode> barcodeMap = barcodes.isEmpty() ? Collections.emptyMap() : barcodeDao.selectList(new QueryWrapper<Barcode>().in("barcode", barcodes)).stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
+        Map<String, Long> goodsMap = goodsIdsList.isEmpty() ? Collections.emptyMap() : goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
+        Map<String, Long> colorMap = colorCodes.isEmpty() ? Collections.emptyMap() : colorDao.selectList(new QueryWrapper<Color>().in("code", colorCodes)).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
+        Map<String, Long> longMap = longDao.selectList(new QueryWrapper<LongInfo>().in("name", longNames)).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
+        // todo 矫正，在补一层校验确保完整性
+        Map<String, Long> sizeMap = baseDbDao.getSizeNameList(goodsIdsList, sizeNames).stream().collect(Collectors.toMap(v -> v.getGoodsId() + StrUtil.UNDERLINE + v.getName(), SizeDetail::getId, (x1, x2) -> x1));
 
-            Barcode barcode = barcodeMap.get(item.getBarcode());
-            if (null != barcode) {
-                size.setGoodsId(barcode.getGoodsId());
-                size.setLongId(barcode.getLongId());
-                size.setColorId(barcode.getColorId());
-                size.setSizeId(barcode.getSizeId());
+        goodsDetailData.forEach(e -> {
+            if (StrUtil.isNotBlank(e.getBarcode())) {
+                Barcode barcode = null;
+                if ((barcode = barcodeMap.get(e.getBarcode())) != null) {
+                    e.setGoodsId(barcode.getGoodsId());
+                    e.setColorId(barcode.getColorId());
+                    e.setLongId(barcode.getLongId());
+                    e.setSizeId(barcode.getSizeId());
+                }
             } else {
-                size.setGoodsId(goodsMap.get(item.getGoodsCode()));
-                size.setLongId(longMap.get(item.getLongName()));
-                size.setColorId(colorMap.get(item.getColorCode()));
-                size.setSizeId(sizeMap.get(size.getGoodsId() + StrUtil.UNDERLINE + item.getSize()));
+                e.setGoodsId(goodsMap.get(e.getGoodsCode()));
+                e.setColorId(colorMap.get(e.getColorCode()));
+                e.setLongId(longMap.get(e.getLongName()));
+                e.setSizeId(sizeMap.get(e.getGoodsId() + StrUtil.UNDERLINE + e.getSize()));
             }
-            if (null == size.getGoodsId()) {
-                messageList.add(getNotExistMessage(atomicInteger.get(), "goodsCode"));
-            }
-            if (null == size.getColorId()) {
-                messageList.add(getNotExistMessage(atomicInteger.get(), "colorCode"));
-            }
-            if (null == size.getLongId()) {
-                messageList.add(getNotExistMessage(atomicInteger.get(), "longName"));
-            }
-            if (null == size.getSizeId()) {
-                messageList.add(getNotExistMessage(atomicInteger.get(), "size"));
-            }
-            if (null == size.getQuantity()) {
-                messageList.add(getNotNullMessage(atomicInteger.get(), "quantity"));
-            }
-            if (CollUtil.isEmpty(messageList)) {
-                // 设置货品ID
-                item.setGoodsId(size.getGoodsId());
-                item.setColumnId(size.getId());
-            }
-        }
-        if (CollUtil.isNotEmpty(messageList)) {
+        });
+
+        Set<ConstraintViolation<PurchaseReceiveNoticeBillSaveParam>> validate = validator.validate(param, Complex.class);
+        validate.forEach(e -> {
+            messageList.add(e.getMessage());
+        });
+
+        if (!messageList.isEmpty()) {
             return;
         }
-        // TODO 不存在结算价的货品
-        List<Long> goodsIdList = param.getGoodsDetailData().stream().filter(f -> null == f.getBalancePrice()).map(v -> v.getGoodsId()).distinct().collect(Collectors.toList());
-        // TODO 获取分销价格
-        atomicInteger.set(0);
-        for (PurchaseReceiveNoticeBillGoodsDetailData item : param.getGoodsDetailData()) {
-            // TODO 结算价不存在,则通过分销价格获取
-            if (null == item.getBalancePrice() && goodsIdList.contains(item.getGoodsId())) {
-
-            }
-            if (null == item.getBalancePrice()) {
-                messageList.add(getNotExistMessage(atomicInteger.get(), "balancePrice"));
-            }
-        }
-        // 尺码根据行ID分组
-        Map<Long, PurchaseReceiveNoticeBillSize> receiveBillSizeMap = sizeList.stream().collect(Collectors.toMap(PurchaseReceiveNoticeBillSize::getId, Function.identity()));
-
-        atomicInteger.set(0);
         // 根据货品+价格分组，支持同款多价
         param.getGoodsDetailData().stream().collect(Collectors.groupingBy(v -> v.getSameGoodsDiffPriceKey())).forEach((key, sizes) -> {
-            atomicInteger.getAndIncrement();
-            PurchaseReceiveNoticeBillGoods billGoods = new PurchaseReceiveNoticeBillGoods();
-            billGoodsList.add(billGoods);
-
-            billGoods.setId(systemCommonService.getId());
-            billGoods.setBillId(bill.getId());
-            PurchaseReceiveNoticeBillGoodsDetailData detailData = sizes.get(0);
-            billGoods.setGoodsId(detailData.getGoodsId());
-            billGoods.setTagPrice(detailData.getTagPrice());
-            billGoods.setBalancePrice(detailData.getBalancePrice());
-            billGoods.setDiscount(detailData.getDiscount());
-            billGoods.setCurrencyPrice(detailData.getCurrencyPrice());
-            billGoods.setExchangeRate(detailData.getExchangeRate());
-            billGoods.setQuantity(detailData.getQuantity());
-            billGoods.setRemark(detailData.getRemark());
+            PurchaseReceiveNoticeBillGoods billGoods = BeanUtil.copyProperties(sizes.get(0), PurchaseReceiveNoticeBillGoods.class);
+            context.addBillGoods(billGoods);
             context.addGoodsDetailCustomData(sizes.get(0).getGoodsCustomizeData(), billGoods.getId());
-            // 尺码明细
-            for (PurchaseReceiveNoticeBillGoodsDetailData item : sizes) {
-                PurchaseReceiveNoticeBillSize billSize = receiveBillSizeMap.get(item.getColumnId());
-                billSizeList.add(billSize);
+            sizes.forEach(size -> {
+                PurchaseReceiveNoticeBillSize billSize = BeanUtil.copyProperties(size, PurchaseReceiveNoticeBillSize.class);
                 billSize.setBillGoodsId(billGoods.getId());
-            }
+                context.addBillSize(billSize);
+            });
         });
 
     }
 
-    private static String getNotNullMessage(String key) {
-        return getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage(key)});
+    protected <T extends BillGoodsSizeData> List<BaseGoodsSizeDto> convertToBaseGoodsSizeDto(List<T> sourceList) {
+        List<BaseGoodsSizeDto> targetList = new ArrayList<>();
+        if (CollUtil.isEmpty(sourceList)) {
+            return targetList;
+        }
+        sourceList.forEach(item -> {
+            BaseGoodsSizeDto sizeDto = new BaseGoodsSizeDto();
+            targetList.add(sizeDto);
+
+            sizeDto.setId(item.getId());
+            sizeDto.setBillId(item.getBillId());
+            sizeDto.setBillGoodsId(item.getBillGoodsId());
+            sizeDto.setGoodsId(item.getGoodsId());
+            sizeDto.setColorId(item.getColorId());
+            sizeDto.setLongId(item.getLongId());
+            sizeDto.setSizeId(item.getSizeId());
+            sizeDto.setQuantity(item.getQuantity());
+        });
+        return targetList;
     }
 
-    private static String getNotExistMessage(String key) {
-        return getMessageByParams("dataNotExist", new String[]{LanguageUtil.getMessage(key)});
-    }
-
-    private static String getNotNullMessage(Integer index, String key) {
-        return getMessageByParams("dataWhichRow", new Object[]{index, getNotNullMessage(key)});
-    }
-
-    private static String getNotExistMessage(Integer index, String key) {
-        return getMessageByParams("dataWhichRow", new Object[]{index, getNotExistMessage(key)});
-    }
-
-    public static String getMessageByParams(String languageKey, Object[] params) {
-        return LanguageUtil.getMessage(LanguageUtil.ZH, languageKey, params);
-    }
 
 }

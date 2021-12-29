@@ -1,7 +1,7 @@
 package com.regent.rbp.api.dto.purchase;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.annotations.ApiModelProperty;
+import com.regent.rbp.api.dto.validate.*;
 import lombok.Data;
 
 import java.util.Date;
@@ -10,17 +10,22 @@ import java.util.List;
 
 @Data
 public class PurchaseReceiveNoticeBillQueryParam {
+    @BusinessTypeCheck
+    private List<String> businessType;
+    @SupplierCodeCheck
+    private List<String> supplierCode;
+    @ChannelCodeCheck
+    private List<String> toChannelCode;
+    @CurrencyTypeCheck
+    private List<String> currencyType;
+    @BillStatus
+    private List<Integer> status;
     private String moduleId;
     private String billNo;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date billDate;
-    private List<String> businessType;
-    private List<String> supplierCode;
-    private List<String> toChannelCode;
     private String manualId;
-    private List<String> currencyType;
     private String notes;
-    private List<Integer> status;
     private Integer pageNo;
     private Integer pageSize;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

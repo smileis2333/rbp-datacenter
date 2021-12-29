@@ -1,4 +1,4 @@
-package com.regent.rbp.api.web.bill.validate;
+package com.regent.rbp.api.dto.validate;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -12,9 +12,9 @@ import java.lang.annotation.Target;
  * @date : 2021/12/23
  * @description
  */
-@Constraint(validatedBy = {BillStatusValidator.class, BillStatusValidatorForQueryList.class})
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
+@Constraint(validatedBy = { })
 public @interface BillStatus {
     String message() default "单据状态非法";
 

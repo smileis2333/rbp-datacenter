@@ -19,7 +19,7 @@ import com.regent.rbp.api.dto.base.BarcodeSaveParam;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
-import com.regent.rbp.api.dto.validate.Complex;
+import com.regent.rbp.api.dto.validate.group.Complex;
 import com.regent.rbp.api.service.barcode.BarcodeService;
 import com.regent.rbp.api.service.barcode.context.BarcodeQueryContext;
 import com.regent.rbp.api.service.barcode.context.BarcodeSaveContext;

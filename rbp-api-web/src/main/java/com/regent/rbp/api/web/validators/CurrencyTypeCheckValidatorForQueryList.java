@@ -1,9 +1,10 @@
-package com.regent.rbp.api.web.bill.validate;
+package com.regent.rbp.api.web.validators;
 
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.base.CurrencyType;
 import com.regent.rbp.api.dao.salePlan.CurrencyTypeDao;
+import com.regent.rbp.api.dto.validate.CurrencyTypeCheck;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,7 @@ import java.util.List;
  * @description
  */
 @Component
-public class CurrencyTypeCheckValidator implements ConstraintValidator<CurrencyTypeCheck, List<String>> {
+public class CurrencyTypeCheckValidatorForQueryList implements ConstraintValidator<CurrencyTypeCheck, List<String>> {
     @Autowired
     private CurrencyTypeDao currencyTypeDao;
 
