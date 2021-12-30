@@ -48,5 +48,5 @@ public class PurchaseReceiveBillGoods {
     private BigDecimal quantity;
 
     @ApiModelProperty(notes = "备注")
-    private Long remark;
+    private String remark;
 }

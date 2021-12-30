@@ -59,4 +59,5 @@ public class ApiConstants {
 
     public static final String API_BARCODE = "api/barcode";
 
+    public static final String API_PURCHASE_RECEIVE_BILL = "api/purchaseReceiveBill";
 }

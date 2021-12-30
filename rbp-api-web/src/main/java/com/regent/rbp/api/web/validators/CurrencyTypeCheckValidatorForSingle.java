@@ -24,7 +24,7 @@ public class CurrencyTypeCheckValidatorForSingle implements ConstraintValidator<
 
     @Override
     public boolean isValid(String currencyType, ConstraintValidatorContext context) {
-        if (StrUtil.isNotBlank(currencyType)) {
+        if (StrUtil.isBlank(currencyType)) {
             return true;
         }
         if (CollUtil.isNotEmpty(currencyTypeDao.selectList(new QueryWrapper<CurrencyType>().eq("name", currencyType)))) {
