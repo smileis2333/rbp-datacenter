@@ -9,7 +9,7 @@
         INSERT INTO rbp_size_detail (id,`name`,size_class_id,order_number,field_name)
         VALUES
         <foreach item="item" index="index" collection="list" separator=",">
-            (#{item.id}, #{item.name},#{item.sizeClassId},#{item.orderNumber,#{item.fieldName})
+            (#{item.id}, #{item.name},#{item.sizeClassId},#{item.orderNumber},#{item.fieldName})
         </foreach>
     </insert>
 
