@@ -141,7 +141,9 @@ public class ColorServiceBean extends ServiceImpl<ColorDao, Color> implements Co
         // 批量新增颜色
         List<Color> colorList = new ArrayList<>();
         for (ColorData entity : context.getList()) {
-            colorList.add(Color.build(entity.getColorCode(), entity.getColorName(), groupMap.get(entity.getColorGroup())));
+            Color color=  Color.build(entity.getColorCode(), entity.getColorName(), groupMap.get(entity.getColorGroup()));
+            color.setStatus(StatusEnum.ENABLE.getStatus());
+            colorList.add(color);
         }
         this.saveBatch(colorList);
         return DataResponse.success();

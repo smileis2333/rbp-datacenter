@@ -109,8 +109,8 @@ public class SizeClassServiceBean extends ServiceImpl<SizeClassDao, SizeClass> i
             return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("size")}));
         }
         SizeClass sizeClass = sizeClassDao.selectOne(new QueryWrapper<SizeClass>().eq("name", context.getSizeClassName()).last("limit 1"));
-        if (null == sizeClass) {
-            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataNotExist", new String[]{LanguageUtil.getMessage("sizeClassName")}));
+        if (null != sizeClass) {
+            return new DataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("dataExist", new String[]{LanguageUtil.getMessage("sizeClassName")}));
         }
         // 判断尺码是否重复
         Set<String> set = new HashSet<>();
