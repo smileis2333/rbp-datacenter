@@ -1,4 +1,4 @@
-package com.regent.rbp.api.dto.validate;
+package com.regent.rbp.api.dto.validate.group;
 
 /**
  * @author huangjie

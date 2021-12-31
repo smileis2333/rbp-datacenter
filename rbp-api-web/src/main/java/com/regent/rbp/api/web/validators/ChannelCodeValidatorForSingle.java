@@ -1,9 +1,10 @@
-package com.regent.rbp.api.web.bill.validate;
+package com.regent.rbp.api.web.validators;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.dao.channel.ChannelDao;
+import com.regent.rbp.api.dto.validate.ChannelCodeCheck;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

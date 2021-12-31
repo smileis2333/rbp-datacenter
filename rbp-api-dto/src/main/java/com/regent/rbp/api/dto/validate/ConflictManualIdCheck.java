@@ -9,16 +9,24 @@ import java.lang.annotation.Target;
 
 /**
  * @author huangjie
- * @date : 2021/12/28
+ * @date : 2021/12/22
  * @description
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = { })
-public @interface RuleIdCheck {
-    String message() default "条形码生成规则编号非法";
+public @interface ConflictManualIdCheck {
+    String message() default "手工单号重复";
 
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
+
+    /**
+     * 检测手工单号的目标表
+     *
+     * @return
+     */
+    String targetClass();
+
 }

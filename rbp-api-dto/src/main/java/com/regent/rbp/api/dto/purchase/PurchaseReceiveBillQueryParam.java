@@ -7,9 +7,13 @@ import lombok.Data;
 import java.util.Date;
 import java.util.List;
 
-
+/**
+ * @author huangjie
+ * @date : 2021/12/30
+ * @description
+ */
 @Data
-public class PurchaseReceiveNoticeBillQueryParam {
+public class PurchaseReceiveBillQueryParam {
     @BusinessTypeCheck
     private List<String> businessType;
     @SupplierCodeCheck

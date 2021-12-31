@@ -1,9 +1,10 @@
-package com.regent.rbp.api.web.bill.validate;
+package com.regent.rbp.api.web.validators;
 
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.supplier.Supplier;
 import com.regent.rbp.api.dao.supplier.SupplierDao;
+import com.regent.rbp.api.dto.validate.SupplierCodeCheck;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

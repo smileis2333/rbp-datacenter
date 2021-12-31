@@ -1,4 +1,4 @@
-package com.regent.rbp.api.web.bill.validate;
+package com.regent.rbp.api.dto.validate;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -9,14 +9,14 @@ import java.lang.annotation.Target;
 
 /**
  * @author huangjie
- * @date : 2021/12/22
+ * @date : 2021/12/23
  * @description
  */
-@Constraint(validatedBy = {BusinessTypeValidatorForSingle.class, BusinessTypeValidatorForQueryList.class})
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface BusinessTypeCheck {
-    String message() default "业务类型参数输入非法";
+@Constraint(validatedBy = { })
+public @interface BillStatus {
+    String message() default "单据状态非法";
 
     Class<?>[] groups() default {};
 

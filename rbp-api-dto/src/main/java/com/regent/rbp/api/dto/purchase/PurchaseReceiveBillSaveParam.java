@@ -15,13 +15,13 @@ import java.util.List;
 
 
 @Data
-public class PurchaseReceiveNoticeBillSaveParam {
+public class PurchaseReceiveBillSaveParam {
 
     @NotBlank(message = "{javax.NotBlank.moduleId}")
     private String moduleId;
 
     @NotBlank(message = "{javax.NotBlank.manualId}")
-    @ConflictManualIdCheck(targetClass = "com.regent.rbp.api.core.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBill", message = "{regent.conflictManualIdCheck}")
+    @ConflictManualIdCheck(targetClass = "com.regent.rbp.api.core.purchaseReceiveBill.PurchaseReceiveBill", message = "{regent.conflictManualIdCheck}")
     private String manualId;
 
     @NotNull(message = "{javax.NotNull.billDate}")
@@ -40,24 +40,31 @@ public class PurchaseReceiveNoticeBillSaveParam {
     @ChannelCodeCheck(message = "{regent.channelCodeCheck.toChannelCodeNotExist}")
     private String toChannelCode;
 
+    @PurchaseNo
+    private String purchaseNo;
+
+    @PurchaseReceiveNoticeNo
+    private String noticeNo;
+
+    private BigDecimal taxRate;
+
+    @CurrencyTypeCheck(message = "{regent.currencyTypeCheck.currencyTypeNotExist}")
+    private String currencyType;
+
+    private String notes;
+
     @NotNull(message = "{javax.NotBlank.status}")
     @BillStatus(message = "{regent.billStatus.statusNotExist}")
     private Integer status;
 
-    @PurchaseNo
-    private String purchaseNo;
-    private BigDecimal taxRate;
-    @CurrencyTypeCheck(message = "{regent.currencyTypeCheck.currencyTypeNotExist}")
-    private String currencyType;
-    private String notes;
     private List<CustomizeDataDto> customizeData;
     @Valid
-    @NotEmpty(message =  "{javax.NotEmpty.goodsDetailData}")
-    private List<PurchaseReceiveNoticeBillGoodsDetailData> goodsDetailData;
+    @NotEmpty(message = "{javax.NotEmpty.goodsDetailData}")
+    private List<PurchaseReceiveBillGoodsDetailData> goodsDetailData;
 
-    public void setGoodsDetailData(List<PurchaseReceiveNoticeBillGoodsDetailData> goodsDetailData) {
+    public void setGoodsDetailData(List<PurchaseReceiveBillGoodsDetailData> goodsDetailData) {
         int i = 1;
-        for (PurchaseReceiveNoticeBillGoodsDetailData goodsDetailDatum : goodsDetailData) {
+        for (PurchaseReceiveBillGoodsDetailData goodsDetailDatum : goodsDetailData) {
             goodsDetailDatum.setIdx(i++);
         }
         this.goodsDetailData = goodsDetailData;

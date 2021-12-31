@@ -3,10 +3,10 @@ package com.regent.rbp.api.web.bill;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
-import com.regent.rbp.api.dto.purchase.PurchaseReceiveNoticeBillQueryParam;
-import com.regent.rbp.api.dto.purchase.PurchaseReceiveNoticeBillQueryResult;
-import com.regent.rbp.api.dto.purchase.PurchaseReceiveNoticeBillSaveParam;
-import com.regent.rbp.api.service.purchase.PurchaseReceiveNoticeBillService;
+import com.regent.rbp.api.dto.purchase.PurchaseReceiveBillQueryParam;
+import com.regent.rbp.api.dto.purchase.PurchaseReceiveBillQueryResult;
+import com.regent.rbp.api.dto.purchase.PurchaseReceiveBillSaveParam;
+import com.regent.rbp.api.service.purchase.PurchaseReceiveBillService;
 import com.regent.rbp.api.web.constants.ApiConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -25,34 +25,35 @@ import java.util.stream.Collectors;
 
 /**
  * @author huangjie
- * @date : 2021/12/22
+ * @date : 2021/12/30
  * @description
  */
 @RestController
-@RequestMapping(ApiConstants.API_PURCHASE_RECEIVE_NOTICE_BILL)
-@Api(tags = "采购到货通知单")
-public class PurchaseReceiveNoticeBillController {
+@RequestMapping(ApiConstants.API_PURCHASE_RECEIVE_BILL)
+@Api(tags = "采购入库单")
+public class PurchaseReceiveBillController {
 
     @Autowired
-    private PurchaseReceiveNoticeBillService purchaseReceiveNoticeBillService;
+    private PurchaseReceiveBillService purchaseReceiveBillService;
 
     @ApiOperation(value = "查询")
     @PostMapping("/query")
-    public PageDataResponse<PurchaseReceiveNoticeBillQueryResult> query(@RequestBody @Valid PurchaseReceiveNoticeBillQueryParam param, BindingResult bindingResult) {
+    public PageDataResponse<PurchaseReceiveBillQueryResult> query(@RequestBody @Valid PurchaseReceiveBillQueryParam param, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return new PageDataResponse<>(0, Collections.emptyList());
         }
-        return purchaseReceiveNoticeBillService.query(param);
+        return purchaseReceiveBillService.query(param);
     }
 
     @ApiOperation(value = "新增")
     @PostMapping("/save")
-    public DataResponse save(@RequestBody @Valid PurchaseReceiveNoticeBillSaveParam param, BindingResult bindingResult) {
+    public DataResponse save(@RequestBody @Valid PurchaseReceiveBillSaveParam param, BindingResult bindingResult) {
         if (!bindingResult.hasErrors()) {
-            return purchaseReceiveNoticeBillService.save(param);
+            return purchaseReceiveBillService.save(param);
         }
         List<ObjectError> allErrors = bindingResult.getAllErrors();
         String messages = allErrors.stream().map(ObjectError::getDefaultMessage).collect(Collectors.joining(","));
         return ModelDataResponse.errorParameter(messages);
     }
+
 }

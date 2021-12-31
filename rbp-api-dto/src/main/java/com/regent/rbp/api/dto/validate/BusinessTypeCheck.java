@@ -1,4 +1,4 @@
-package com.regent.rbp.api.web.bill.validate;
+package com.regent.rbp.api.dto.validate;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -12,11 +12,11 @@ import java.lang.annotation.Target;
  * @date : 2021/12/22
  * @description
  */
-@Constraint(validatedBy = {ChannelCodeValidatorForSingle.class, ChannelCodeValidatorForQueryList.class})
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface ChannelCodeCheck {
-    String message() default "渠道编号非法";
+@Constraint(validatedBy = { })
+public @interface BusinessTypeCheck {
+    String message() default "业务类型参数输入非法";
 
     Class<?>[] groups() default {};
 

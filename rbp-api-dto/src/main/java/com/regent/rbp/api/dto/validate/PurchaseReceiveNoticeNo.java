@@ -1,4 +1,4 @@
-package com.regent.rbp.api.web.bill.validate;
+package com.regent.rbp.api.dto.validate;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -9,14 +9,14 @@ import java.lang.annotation.Target;
 
 /**
  * @author huangjie
- * @date : 2021/12/23
+ * @date : 2021/12/30
  * @description
  */
-@Constraint(validatedBy = CurrencyTypeCheckValidator.class )
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface CurrencyTypeCheck {
-    String message() default "币种类型非法";
+@Constraint(validatedBy = { })
+public @interface PurchaseReceiveNoticeNo {
+    String message() default "采购到货通知单不存在";
 
     Class<?>[] groups() default {};
 

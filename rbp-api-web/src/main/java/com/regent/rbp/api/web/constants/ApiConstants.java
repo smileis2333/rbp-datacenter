@@ -59,7 +59,5 @@ public class ApiConstants {
 
     public static final String API_BARCODE = "api/barcode";
 
-    /**采购退货通知**/
-    public static final String API_PURCHASE_RETURN_NOTICE_BILL = "api/purchaseReceiveNoticeBill";
-
+    public static final String API_PURCHASE_RECEIVE_BILL = "api/purchaseReceiveBill";
 }

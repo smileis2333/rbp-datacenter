@@ -9,14 +9,14 @@ import java.lang.annotation.Target;
 
 /**
  * @author huangjie
- * @date : 2021/12/28
+ * @date : 2021/12/29
  * @description
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = { })
-public @interface RuleIdCheck {
-    String message() default "条形码生成规则编号非法";
+public @interface PurchaseNo {
+    String message() default "采购单号不存在";
 
     Class<?>[] groups() default {};
 
