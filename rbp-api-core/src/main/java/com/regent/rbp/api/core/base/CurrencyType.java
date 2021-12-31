@@ -19,4 +19,7 @@ public class CurrencyType {
     @ApiModelProperty(notes = "名称")
     private String name;
 
+    @ApiModelProperty(notes = "(100-启用 101-禁用)")
+    private Integer status;
+
 }
