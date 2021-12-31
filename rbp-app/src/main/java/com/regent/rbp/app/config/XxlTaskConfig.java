@@ -13,13 +13,13 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class XxlTaskConfig {
-    private Logger logger = LoggerFactory.getLogger(XxlTaskConfig.class);
-
-    @Bean
-    public TaskSpringExecutor taskSpringExecutor() {
-        logger.info(">>>>>>>>>>> xxl-job taskSpringExecutor init.");
-        TaskSpringExecutor taskSpringExecutor = new TaskSpringExecutor();
-
-        return taskSpringExecutor;
-    }
+//    private Logger logger = LoggerFactory.getLogger(XxlTaskConfig.class);
+//
+//    @Bean
+//    public TaskSpringExecutor taskSpringExecutor() {
+//        logger.info(">>>>>>>>>>> xxl-job taskSpringExecutor init.");
+//        TaskSpringExecutor taskSpringExecutor = new TaskSpringExecutor();
+//
+//        return taskSpringExecutor;
+//    }
 }

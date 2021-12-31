@@ -20,26 +20,26 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 public class TestTask {
-
-    public void initTask() {
-        log.info("TestTask init");
-    }
-
-    public void destroyTask() {
-        log.info("TestTask destroy");
-    }
-
-    @TaskJob(billType = TaskBillType.SEND_BILL, taskType = TaskType.CREATE, subscriberKey = SubscriberKey.WMS_SHUNFENG,
-            init = "initTask", destroy = "destroyTask" )
-    public TaskResult SendBillCreate(Task task) {
-        TaskResult taskResult = new TaskResult();
-        try {
-            log.info("task execute begin:{}", task);
-            TimeUnit.SECONDS.sleep(10);
-            log.info("task execute end:{}", task);
-        }catch (Exception ex){
-            log.info("task execute error:{}", task);
-        }
-        return taskResult;
-    }
+//
+//    public void initTask() {
+//        log.info("TestTask init");
+//    }
+//
+//    public void destroyTask() {
+//        log.info("TestTask destroy");
+//    }
+//
+//    @TaskJob(billType = TaskBillType.SEND_BILL, taskType = TaskType.CREATE, subscriberKey = SubscriberKey.WMS_SHUNFENG,
+//            init = "initTask", destroy = "destroyTask" )
+//    public TaskResult SendBillCreate(Task task) {
+//        TaskResult taskResult = new TaskResult();
+//        try {
+//            log.info("task execute begin:{}", task);
+//            TimeUnit.SECONDS.sleep(10);
+//            log.info("task execute end:{}", task);
+//        }catch (Exception ex){
+//            log.info("task execute error:{}", task);
+//        }
+//        return taskResult;
+//    }
 }
