@@ -60,6 +60,7 @@ import com.regent.rbp.api.service.send.context.SendBillSaveContext;
 import com.regent.rbp.common.model.basic.dto.IdNameCodeDto;
 import com.regent.rbp.common.model.basic.dto.IdNameDto;
 import com.regent.rbp.common.service.basic.DbService;
+import com.regent.rbp.common.service.basic.SystemCommonService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.enums.LanguageTableEnum;
 import com.regent.rbp.infrastructure.util.*;
@@ -113,6 +114,8 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
     DbService dbService;
     @Autowired
     BaseDbService baseDbService;
+    @Autowired
+    private SystemCommonService systemCommonService;
 
 
     @Override
@@ -146,16 +149,30 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
         context.setBillNo(param.getBillNo());
 
         /******** 日期 ********/
-        context.setBillDate(DateUtil.getDate(param.getBillDate(), DateUtil.SHORT_DATE_FORMAT));
+        if (null != param.getBillDate()) {
+            context.setBillDate(DateUtil.getDate(param.getBillDate(), DateUtil.SHORT_DATE_FORMAT));
+        }
         // 创建日期
-        context.setCreatedDateStart(DateUtil.getDate(param.getCreatedDateStart(), DateUtil.FULL_DATE_FORMAT));
-        context.setCreatedDateEnd(DateUtil.getDate(param.getCreatedDateEnd(), DateUtil.FULL_DATE_FORMAT));
+        if (null != param.getCreatedDateStart()) {
+            context.setCreatedDateStart(DateUtil.getDate(param.getCreatedDateStart(), DateUtil.FULL_DATE_FORMAT));
+        }
+        if (null != param.getCreatedDateEnd()) {
+            context.setCreatedDateEnd(DateUtil.getDate(param.getCreatedDateEnd(), DateUtil.FULL_DATE_FORMAT));
+        }
         // 审核日期
-        context.setCheckDateStart(DateUtil.getDate(param.getCheckDateStart(), DateUtil.FULL_DATE_FORMAT));
-        context.setCheckDateEnd(DateUtil.getDate(param.getCheckDateEnd(), DateUtil.FULL_DATE_FORMAT));
+        if (null != param.getCheckDateStart()) {
+            context.setCheckDateStart(DateUtil.getDate(param.getCheckDateStart(), DateUtil.FULL_DATE_FORMAT));
+        }
+        if (null != param.getCheckDateEnd()) {
+            context.setCheckDateEnd(DateUtil.getDate(param.getCheckDateEnd(), DateUtil.FULL_DATE_FORMAT));
+        }
         // 修改日期
-        context.setUpdatedDateStart(DateUtil.getDate(param.getUpdatedDateStart(), DateUtil.FULL_DATE_FORMAT));
-        context.setUpdatedDateEnd(DateUtil.getDate(param.getUpdatedDateEnd(), DateUtil.FULL_DATE_FORMAT));
+        if (null != param.getUpdatedDateStart()) {
+            context.setUpdatedDateStart(DateUtil.getDate(param.getUpdatedDateStart(), DateUtil.FULL_DATE_FORMAT));
+        }
+        if (null != param.getUpdatedDateEnd()) {
+            context.setUpdatedDateEnd(DateUtil.getDate(param.getUpdatedDateEnd(), DateUtil.FULL_DATE_FORMAT));
+        }
 
         // 业务类型
         if (param.getBusinessType() != null && param.getBusinessType().length > 0) {
@@ -166,21 +183,21 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
         }
         // 供应商
         if (param.getSupplierCode() != null && param.getSupplierCode().length > 0) {
-            List<Supplier> supplierList = supplierDao.selectList(new LambdaQueryWrapper<Supplier>().eq(Supplier::getStatus, 1).in(Supplier::getCode, param.getSupplierCode()));
+            List<Supplier> supplierList = supplierDao.selectList(new LambdaQueryWrapper<Supplier>().in(Supplier::getCode, param.getSupplierCode()));
             if (CollUtil.isNotEmpty(supplierList)) {
                 context.setSupplierCodeIds(supplierList.stream().mapToLong(map -> map.getId()).toArray());
             }
         }
         // 收货渠道
         if (param.getToChannelCode() != null && param.getToChannelCode().length > 0) {
-            List<Channel> channelList = channelDao.selectList(new LambdaQueryWrapper<Channel>().eq(Channel::getStatus, 1).in(Channel::getCode, param.getToChannelCode()));
+            List<Channel> channelList = channelDao.selectList(new LambdaQueryWrapper<Channel>().in(Channel::getCode, param.getToChannelCode()));
             if (CollUtil.isNotEmpty(channelList)) {
                 context.setToChannelCodeIds(channelList.stream().mapToLong(map -> map.getId()).toArray());
             }
         }
         // 币种类型
         if (param.getCurrencyType() != null && param.getCurrencyType().length > 0) {
-            List<CurrencyType> currencyTypeList = currencyTypeDao.selectList(new LambdaQueryWrapper<CurrencyType>().eq(CurrencyType::getStatus, 100).in(CurrencyType::getName, param.getCurrencyType()));
+            List<CurrencyType> currencyTypeList = currencyTypeDao.selectList(new LambdaQueryWrapper<CurrencyType>().in(CurrencyType::getName, param.getCurrencyType()));
             if (CollUtil.isNotEmpty(currencyTypeList)) {
                 context.setCurrencyTypeIds(currencyTypeList.stream().mapToLong(map -> map.getId()).toArray());
             }
@@ -365,19 +382,21 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
         List<PurchaseReturnNoticeBillGoods> billGoodsList = context.getBillGoodsList();
         List<PurchaseReturnNoticeBillSize> billSizeList = context.getBillSizeList();
 
-        if (StringUtil.isNotEmpty(param.getModuleId())) {
+        if (StringUtil.isEmpty(param.getModuleId())) {
             errorMsgList.add("模块编号(moduleId)不能为空");
         }
-        if (StringUtil.isNotEmpty(param.getManualId())) {
+        if (StringUtil.isEmpty(param.getManualId())) {
             errorMsgList.add("模块编号(moduleId)不能为空");
+        } else {
+            bill.setBillNo(systemCommonService.getBillNo(bill.getModuleId()));
         }
-        if (StringUtil.isNotEmpty(param.getBillDate())) {
+        if (StringUtil.isEmpty(param.getBillDate())) {
             errorMsgList.add("单据日期(billDate)不能为空");
         } else {
             bill.setBillDate(DateUtil.getDate(param.getBillDate(), DateUtil.SHORT_DATE_FORMAT));
         }
         // 业务类型
-        if (StringUtil.isNotEmpty(param.getBusinessType())) {
+        if (StringUtil.isEmpty(param.getBusinessType())) {
             errorMsgList.add("业务类型名称(businessType)不能为空");
         } else {
             Long businessTypeId = baseDbDao.getLongDataBySql(String.format("select id from rbp_business_type where name = '%s'", param.getBusinessType()));
@@ -388,7 +407,7 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
             }
         }
         // 供应商
-        if (StringUtil.isNotEmpty(param.getSupplierCode())) {
+        if (StringUtil.isEmpty(param.getSupplierCode())) {
             errorMsgList.add("供应商编码(supplierCode)不能为空");
         } else {
             Supplier supplier = supplierDao.selectOne(new LambdaQueryWrapper<Supplier>().eq(Supplier::getCode, param.getSupplierCode()));
@@ -399,7 +418,7 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
             }
         }
         // 退货渠道
-        if (StringUtil.isNotEmpty(param.getChannelCode())) {
+        if (StringUtil.isEmpty(param.getChannelCode())) {
             errorMsgList.add("退货渠道编号(channelCode)不能为空");
         } else {
             Channel channel = channelDao.selectOne(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getChannelCode()));

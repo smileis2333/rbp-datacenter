@@ -38,9 +38,14 @@ public class PurchaseReturnNoticeBillSaveContext {
         this.bill.preInsert();
         this.bill.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         this.bill.setManualId(param.getManualId());
+        this.bill.setModuleId(param.getModuleId());
         this.bill.setTaxRate(param.getTaxRate());
         this.bill.setNotes(param.getNotes());
         this.bill.setStatus(param.getStatus());
+        this.bill.setProcessStatus(0);
+        this.bill.setFinishFlag(0);
+        this.bill.setFlowStatus(0);
+        this.bill.setFlowType(1);
 
         this.billGoodsList = new ArrayList<>();
         this.billSizeList = new ArrayList<>();

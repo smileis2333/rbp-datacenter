@@ -23,7 +23,7 @@ public class PurchaseReturnNoticeBillQueryContext {
 
     @ApiModelProperty(notes = "单据日期")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date billDate;
+    private Date billDate = null;
 
     @ApiModelProperty(notes = "业务类型名称")
     private long[] businessTypeIds;
@@ -48,27 +48,27 @@ public class PurchaseReturnNoticeBillQueryContext {
 
     @ApiModelProperty(notes = "创建日期(开始日期)")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date createdDateStart;
+    private Date createdDateStart = null;
 
     @ApiModelProperty(notes = "创建日期(截止日期)")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date createdDateEnd;
+    private Date createdDateEnd = null;
 
     @ApiModelProperty(notes = "审核日期(开始日期)")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date checkDateStart;
+    private Date checkDateStart = null;
 
     @ApiModelProperty(notes = "审核日期(截止日期)")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date checkDateEnd;
+    private Date checkDateEnd = null;
 
     @ApiModelProperty(notes = "修改日期(开始日期)")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date updatedDateStart;
+    private Date updatedDateStart = null;
 
     @ApiModelProperty(notes = "修改日期(截止日期)")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date updatedDateEnd;
+    private Date updatedDateEnd = null;
 
     @ApiModelProperty(notes = "需返回的字段列表")
     private String fields;

@@ -20,7 +20,6 @@ public class PurchaseReturnNoticeBillQueryParam {
     private String billNo;
 
     @ApiModelProperty(notes = "单据日期")
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private String billDate;
 
     @ApiModelProperty(notes = "业务类型名称")
@@ -45,27 +44,21 @@ public class PurchaseReturnNoticeBillQueryParam {
     private Integer[] status;
 
     @ApiModelProperty(notes = "创建日期(开始日期)")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String createdDateStart;
 
     @ApiModelProperty(notes = "创建日期(截止日期)")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String createdDateEnd;
 
     @ApiModelProperty(notes = "审核日期(开始日期)")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String checkDateStart;
 
     @ApiModelProperty(notes = "审核日期(截止日期)")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String checkDateEnd;
 
     @ApiModelProperty(notes = "修改日期(开始日期)")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String updatedDateStart;
 
     @ApiModelProperty(notes = "修改日期(截止日期)")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String updatedDateEnd;
 
     @ApiModelProperty(notes = "需返回的字段列表")
