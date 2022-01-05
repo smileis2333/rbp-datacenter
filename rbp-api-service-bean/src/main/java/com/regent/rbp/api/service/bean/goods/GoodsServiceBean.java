@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -129,6 +130,9 @@ public class GoodsServiceBean implements GoodsService {
 
     @Autowired
     private SizeDetailDao sizeDetailDao;
+
+    @Autowired
+    private TagPriceTypeDao tagPriceTypeDao;
 
     @Override
     public PageDataResponse<GoodsQueryResult> query(GoodsQueryParam param) {
@@ -934,6 +938,27 @@ public class GoodsServiceBean implements GoodsService {
                 sizeDisableList.add(item);
                 context.setSizeDisableList(sizeDisableList);
             }
+        }
+
+        if (param.getPriceData() != null && CollUtil.isNotEmpty(param.getPriceData().getTagPrice())) {
+            ArrayList<GoodsTagPrice> goodsTagPrices = new ArrayList<>();
+            List<String> tagPriceCodes = CollUtil.map(param.getPriceData().getTagPrice(), GoodsTagPriceDto::getCode, true);
+            Map<String, TagPriceType> tagPriceTypeMap = tagPriceTypeDao.selectList(new QueryWrapper<TagPriceType>().in("code", tagPriceCodes)).stream().collect(Collectors.toMap(TagPriceType::getCode, Function.identity()));
+            for (int i = 0; i < tagPriceCodes.size(); i++) {
+                String e = tagPriceCodes.get(i);
+                TagPriceType tagPriceType = null;
+                if ((tagPriceType = tagPriceTypeMap.get(e)) == null) {
+                    errorMsgList.add(String.format("吊牌价(%s)不存在", e));
+                } else {
+                    GoodsTagPrice goodsTagPrice = new GoodsTagPrice();
+                    goodsTagPrice.setGoodsId(context.getGoods().getId());
+                    goodsTagPrice.setPriceTypeId(tagPriceType.getId());
+                    goodsTagPrice.setTagPrice(param.getPriceData().getTagPrice().get(i).getValue());
+                    goodsTagPrice.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                    goodsTagPrices.add(goodsTagPrice);
+                }
+            }
+            context.setGoodsTagPriceList(goodsTagPrices);
         }
 
         //自定义字段

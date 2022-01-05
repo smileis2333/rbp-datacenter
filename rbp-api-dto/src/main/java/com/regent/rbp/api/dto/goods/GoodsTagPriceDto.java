@@ -13,5 +13,6 @@ public class GoodsTagPriceDto {
     @JsonIgnore
     private Long goodsId;
     private String name;
+    private String code;
     private BigDecimal value;
 }
