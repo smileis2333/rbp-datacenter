@@ -943,7 +943,7 @@ public class GoodsServiceBean implements GoodsService {
         if (param.getPriceData() != null && CollUtil.isNotEmpty(param.getPriceData().getTagPrice())) {
             ArrayList<GoodsTagPrice> goodsTagPrices = new ArrayList<>();
             List<String> tagPriceCodes = CollUtil.map(param.getPriceData().getTagPrice(), GoodsTagPriceDto::getCode, true);
-            Map<String, TagPriceType> tagPriceTypeMap = tagPriceTypeDao.selectList(new QueryWrapper<TagPriceType>().in("code", tagPriceCodes)).stream().collect(Collectors.toMap(TagPriceType::getCode, Function.identity()));
+            Map<String, TagPriceType> tagPriceTypeMap = tagPriceCodes.isEmpty() ? Collections.emptyMap() : tagPriceTypeDao.selectList(new QueryWrapper<TagPriceType>().in("code", tagPriceCodes)).stream().collect(Collectors.toMap(TagPriceType::getCode, Function.identity()));
             for (int i = 0; i < tagPriceCodes.size(); i++) {
                 String e = tagPriceCodes.get(i);
                 TagPriceType tagPriceType = null;
@@ -957,6 +957,9 @@ public class GoodsServiceBean implements GoodsService {
                     goodsTagPrice.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
                     goodsTagPrices.add(goodsTagPrice);
                 }
+            }
+            if (CollUtil.isEmpty(goodsTagPrices)) {
+                errorMsgList.add(String.format("至少需要设置一个吊牌价，请检查吊牌是否存在以及吊牌价code是否设置"));
             }
             context.setGoodsTagPriceList(goodsTagPrices);
         }
