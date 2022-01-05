@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.Brand;
 import com.regent.rbp.api.dto.base.BaseData;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -20,4 +21,11 @@ public interface BrandDao extends BaseMapper<Brand> {
     List<String> getExistBaseDataList(@Param("tableName") String tableName, @Param("columnName") String columnName, @Param("list") List<String> list);
 
     Integer batchInsert(@Param("tableName") String tableName, @Param("list") List<Brand> list);
+
+    @Select("select\n" +
+            "\t*\n" +
+            "from\n" +
+            "\trbp_brand\n" +
+            "where name = binary #{name}")
+    Brand selectOneByName(@Param("name")String name);
 }
