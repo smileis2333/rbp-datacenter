@@ -14,7 +14,7 @@ public class GoodsSaveParam {
     private String goodsCode;
     private String goodsName;
     private String mnemonicCode;
-    private int type;
+    private Integer type;
     private String sizeClassName;
     private String brand;
     private String category;

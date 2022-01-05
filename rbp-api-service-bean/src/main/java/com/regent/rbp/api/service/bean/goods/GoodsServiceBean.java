@@ -750,6 +750,10 @@ public class GoodsServiceBean implements GoodsService {
             }
         }
 
+        if (param.getType() == null) {
+            errorMsgList.add("货品类型(type)不能为空");
+        }
+
         //验证尺码列表
         if (StringUtils.isBlank(param.getSizeClassName())) {
             errorMsgList.add("尺码类别(SizeClassName)不能为空");
@@ -791,7 +795,7 @@ public class GoodsServiceBean implements GoodsService {
                 //品牌不存在，给予提示
                 errorMsgList.add("品牌(Brand)不存在");
             } else {
-                goods.setSupplierId(brand.getId());
+                goods.setBrandId(brand.getId());
             }
         }
 
@@ -808,8 +812,8 @@ public class GoodsServiceBean implements GoodsService {
 
         //验证颜色列表(货品颜色 只追加，不替换)
         if (StringUtil.isNotEmpty(param.getColorList())) {
+            List<GoodsColor> goodsColors = new ArrayList<>(param.getColorList().length);
             for (String colorCode : param.getColorList()) {
-                List<GoodsColor> goodsColors = new ArrayList<>(param.getColorList().length);
                 Color color = colorDao.selectOne(new QueryWrapper<Color>().eq("code", colorCode));
                 if (color == null) {
                     //颜色不存在，给予提示
@@ -1019,7 +1023,7 @@ public class GoodsServiceBean implements GoodsService {
         if (StringUtils.isNotBlank(param.getBand())) {
             Band band = bandDao.selectOne(new QueryWrapper<Band>().eq("name", param.getBand()));
             if (band == null) {
-                band = Band.build(param.getSeason());
+                band = Band.build(param.getBand());
                 bandDao.insert(band);
             }
             goods.setBandId(band.getId());
