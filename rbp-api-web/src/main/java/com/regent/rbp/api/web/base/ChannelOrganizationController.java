@@ -1,6 +1,6 @@
 package com.regent.rbp.api.web.base;
 
-import com.regent.rbp.api.dto.base.ChannelOrganizationSaveParam;
+import com.regent.rbp.api.dto.base.ChannelOrganizationSaveParamList;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.service.base.ChannelOrganizationService;
@@ -28,8 +28,8 @@ public class ChannelOrganizationController {
 
     @PostMapping
     @ApiOperation(value = "组织架构新增")
-    public DataResponse create(@RequestBody ChannelOrganizationSaveParam param) {
-        return channelOrganizationService.create(param);
+    public DataResponse create(@RequestBody ChannelOrganizationSaveParamList param) {
+        return channelOrganizationService.save(param);
     }
 
     @PostMapping("/query")
@@ -39,3 +39,4 @@ public class ChannelOrganizationController {
     }
 
 }
+

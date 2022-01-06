@@ -1,6 +1,7 @@
 package com.regent.rbp.api.service.base;
 
 import com.regent.rbp.api.dto.base.ChannelOrganizationSaveParam;
+import com.regent.rbp.api.dto.base.ChannelOrganizationSaveParamList;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 
@@ -10,11 +11,12 @@ import com.regent.rbp.api.dto.core.PageDataResponse;
  * @description 组织架构
  */
 public interface ChannelOrganizationService {
+
     /**
      * 添加组织架构
      * @return
      */
-    DataResponse create(ChannelOrganizationSaveParam param);
+    DataResponse save(ChannelOrganizationSaveParamList param);
 
     /**
      * 查询
