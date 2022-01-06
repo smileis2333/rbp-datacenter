@@ -2,18 +2,16 @@ package com.regent.rbp.api.service.goods.context;
 
 import com.regent.rbp.api.core.base.Barcode;
 import com.regent.rbp.api.core.goods.*;
+import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.goods.GoodsPriceDto;
 import com.regent.rbp.api.dto.goods.GoodsSaveParam;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import lombok.Data;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 货品保存上下文对象
@@ -28,7 +26,7 @@ public class GoodsSaveContext {
     private List<Barcode> barcodeList;
     private List<SizeDisable> sizeDisableList;
     private List<GoodsTagPrice> goodsTagPriceList;
-    private Map customizeData;
+    private List<CustomizeDataDto>customizeData;
 
     public GoodsSaveContext() {
         this(null);
@@ -65,7 +63,7 @@ public class GoodsSaveContext {
         this.goods.setMnemonicCode(param.getMnemonicCode());
         this.goods.setQrcodeLink(param.getQrcodeLink());
         this.goods.setUniqueCodeFlag(param.isUniqueCodeFlag());
-        this.goods.setStatus(0);
+        this.goods.setStatus(param.getStatus());
         this.goods.setSupplierGoodsNo(param.getSupplierGoodsNo());
         this.goods.setMetricFlag(param.isMetricFlag());
         GoodsPriceDto priceData = param.getPriceData();
@@ -74,11 +72,6 @@ public class GoodsSaveContext {
             this.goods.setPlanCostPrice(priceData.getPlanCostPrice());
             this.goods.setMaterialPrice(priceData.getMaterialPrice());
             this.goods.setPurchasePrice(priceData.getPurchasePrice());
-        }
-
-        //自定义字段
-        if(StringUtils.isNotBlank(param.getDesigner())){
-            customizeData.put("designer",param.getDesigner());
         }
     }
 }

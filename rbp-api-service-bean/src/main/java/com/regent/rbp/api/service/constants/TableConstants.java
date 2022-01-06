@@ -6,8 +6,7 @@ package com.regent.rbp.api.service.constants;
  * @author xuxing
  */
 public class TableConstants {
-
-    public static final String GOODS_CUSTOM = "rbp_goods_custom";
+    public static final String GOODS = "rbp_goods";
 
     public static final String NOTICE_BILL = "rbp_notice_bill";
 

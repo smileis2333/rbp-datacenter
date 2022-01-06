@@ -16,11 +16,13 @@ import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.goods.*;
+import com.regent.rbp.api.service.base.BaseDbService;
 import com.regent.rbp.api.service.constants.TableConstants;
 import com.regent.rbp.api.service.enums.BaseModuleEnum;
 import com.regent.rbp.api.service.goods.GoodsService;
 import com.regent.rbp.api.service.goods.context.GoodsQueryContext;
 import com.regent.rbp.api.service.goods.context.GoodsSaveContext;
+import com.regent.rbp.common.constants.InformationConstants;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
@@ -134,6 +136,9 @@ public class GoodsServiceBean implements GoodsService {
 
     @Autowired
     private TagPriceTypeDao tagPriceTypeDao;
+
+    @Autowired
+    private BaseDbService baseDbService;
 
     @Override
     public PageDataResponse<GoodsQueryResult> query(GoodsQueryParam param) {
@@ -627,12 +632,16 @@ public class GoodsServiceBean implements GoodsService {
         //写入货品表
         saveGoods(createFlag, context.getGoods());
         //写入颜色
-        saveGoodsColor(createFlag, context.getGoodsColorList());
+        if (CollUtil.isNotEmpty(context.getGoodsColorList())) {
+            saveGoodsColor(createFlag, context.getGoodsColorList());
+        }
         //写入内长
-        saveGoodsLong(createFlag, context.getGoodsLongList());
+        if (CollUtil.isNotEmpty(context.getGoodsLongList())) {
+            saveGoodsLong(createFlag, context.getGoodsLongList());
+        }
         //写入自定义字段
         if (CollUtil.isNotEmpty(context.getCustomizeData())) {
-            saveCustomizeData(createFlag, context.getCustomizeData());
+            baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.GOODS_INFO, TableConstants.GOODS, context.getGoods().getId(), context.getCustomizeData());
         }
         //写入尺码停用
         if (CollUtil.isNotEmpty(context.getSizeDisableList())) {
@@ -685,19 +694,6 @@ public class GoodsServiceBean implements GoodsService {
     private void saveGoodsLong(boolean createFlag, List<GoodsLong> goodsLongList) {
         for (GoodsLong goodsLong : goodsLongList) {
             goodsLongDao.insert(goodsLong);
-        }
-    }
-
-    /**
-     * 保存货品自定义字段
-     *
-     * @param createFlag
-     */
-    private void saveCustomizeData(boolean createFlag, Map map) {
-        if (createFlag) {
-            baseDbDao.insertMap(TableConstants.GOODS_CUSTOM, map);
-        } else {
-            baseDbDao.updateMapById(TableConstants.GOODS_CUSTOM, map);
         }
     }
 
@@ -848,8 +844,8 @@ public class GoodsServiceBean implements GoodsService {
 
         //验证条码列表
         if (StringUtil.isNotEmpty(param.getBarcodeData())) {
+            List<Barcode> barcodeList = new ArrayList<>(param.getBarcodeData().size());
             for (BarcodeDto barcodeDto : param.getBarcodeData()) {
-                List<Barcode> barcodeList = new ArrayList<>(param.getBarcodeData().size());
                 Barcode item = barcodeDao.selectOne(new QueryWrapper<Barcode>().eq("barcode", barcodeDto.getBarcode()));
 
                 if (item != null) {
@@ -899,8 +895,8 @@ public class GoodsServiceBean implements GoodsService {
 
         //验证尺码停用列表
         if (StringUtil.isNotEmpty(param.getDisableSizeData())) {
+            List<SizeDisable> sizeDisableList = new ArrayList<>(param.getDisableSizeData().size());
             for (DisableSizeDto disableSizeDto : param.getDisableSizeData()) {
-                List<SizeDisable> sizeDisableList = new ArrayList<>(param.getDisableSizeData().size());
                 SizeDisable item = new SizeDisable();
                 item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
                 item.setGoodsId(goods.getId());
@@ -956,13 +952,8 @@ public class GoodsServiceBean implements GoodsService {
         }
 
         //自定义字段
-        if (StringUtil.isNotEmpty(param.getCustomizeData())) {
-            Map<String, Object> map = new HashMap<>(param.getCustomizeData().size());
-            map.put("id", goods.getId());
-            for (CustomizeDataDto item : param.getCustomizeData()) {
-                map.put(item.getCode(), item.getValue());
-            }
-            context.setCustomizeData(map);
+        if (CollUtil.isNotEmpty(param.getCustomizeData())) {
+            context.setCustomizeData(param.getCustomizeData());
         }
         return errorMsgList;
     }
@@ -1099,8 +1090,8 @@ public class GoodsServiceBean implements GoodsService {
         if (StrUtil.isNotBlank(param.getUnit())) {
             Unit unit = unitDao.selectOne(new QueryWrapper<Unit>().eq("name", param.getUnit()).last(" limit 1 "));
             if (unit == null) {
-                Unit nunit = Unit.build(param.getUnit());
-                unitDao.insert(nunit);
+                unit = Unit.build(param.getUnit());
+                unitDao.insert(unit);
             }
             goods.setUnitId(unit.getId());
         }
