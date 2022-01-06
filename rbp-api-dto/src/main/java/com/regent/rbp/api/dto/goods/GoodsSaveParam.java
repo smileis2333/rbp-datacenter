@@ -42,7 +42,7 @@ public class GoodsSaveParam {
     private String supplierGoodsNo;
     private boolean metricFlag;
     private String unit;
-    private Integer status;
+    private Integer status = 0;
 
     private String modelClass;
     private String notes;
