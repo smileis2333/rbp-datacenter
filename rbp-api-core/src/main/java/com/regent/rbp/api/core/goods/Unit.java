@@ -1,6 +1,8 @@
 package com.regent.rbp.api.core.goods;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
@@ -39,4 +41,14 @@ public class Unit {
      * 更新时间
      */
     private Date updatedTime;
+
+    public static Unit build(String name) {
+        Long userId = ThreadLocalGroup.getUserId();
+        Unit unit = new Unit();
+        unit.setName(name);
+        unit.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+        unit.setCreatedBy(userId);
+        unit.setUpdatedBy(userId);
+        return unit;
+    }
 }

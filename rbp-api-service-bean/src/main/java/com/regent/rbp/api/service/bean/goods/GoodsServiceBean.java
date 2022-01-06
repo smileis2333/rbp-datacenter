@@ -1,6 +1,7 @@
 package com.regent.rbp.api.service.bean.goods;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -781,16 +782,6 @@ public class GoodsServiceBean implements GoodsService {
                 goods.setModelClassId(modelClass.getId());
             }
         }
-        //验证单位
-        if (StringUtils.isNotBlank(param.getUnit())) {
-            Unit unit = unitDao.selectOne(new QueryWrapper<Unit>().eq("name", param.getUnit()).last(" limit 1 "));
-            if (unit == null) {
-                //号型不存在，给予提示
-                errorMsgList.add("单位(Unit)不存在");
-            } else {
-                goods.setUnitId(unit.getId());
-            }
-        }
 
         //验证品牌
         if (StringUtils.isNotBlank(param.getBrand())) {
@@ -1103,5 +1094,16 @@ public class GoodsServiceBean implements GoodsService {
             }
             goods.setAgeRangeId(ageRange.getId());
         }
+
+        //单位
+        if (StrUtil.isNotBlank(param.getUnit())) {
+            Unit unit = unitDao.selectOne(new QueryWrapper<Unit>().eq("name", param.getUnit()).last(" limit 1 "));
+            if (unit == null) {
+                Unit nunit = Unit.build(param.getUnit());
+                unitDao.insert(nunit);
+            }
+            goods.setUnitId(unit.getId());
+        }
+
     }
 }
