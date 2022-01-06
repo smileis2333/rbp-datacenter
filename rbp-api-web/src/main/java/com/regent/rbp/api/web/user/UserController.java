@@ -37,7 +37,7 @@ public class UserController {
     }
 
     @ApiOperation(value = "新增")
-    @PostMapping("/save")
+    @PostMapping
     public DataResponse save(@RequestBody UserSaveParam param) {
         DataResponse result = userService.save(param);
         return result;
