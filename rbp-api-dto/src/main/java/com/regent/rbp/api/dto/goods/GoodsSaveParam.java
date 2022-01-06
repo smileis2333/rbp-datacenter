@@ -1,10 +1,14 @@
 package com.regent.rbp.api.dto.goods;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.BarcodeDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
+
+import static com.regent.rbp.infrastructure.util.DateUtil.SHORT_DATE_FORMAT;
 
 /**
  * @author xuxing
@@ -42,7 +46,8 @@ public class GoodsSaveParam {
 
     private String modelClass;
     private String notes;
-    private String buildDate;
+    @JsonFormat(pattern = SHORT_DATE_FORMAT)
+    private Date buildDate;
     private String[] colorList;
     private String[] longList;
     private GoodsPriceDto priceData;
