@@ -1,7 +1,6 @@
 package com.regent.rbp.api.web.bill;
 
 import com.regent.rbp.api.dto.core.DataResponse;
-import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.purchase.PurchaseReceiveBillQueryParam;
 import com.regent.rbp.api.dto.purchase.PurchaseReceiveBillQueryResult;
@@ -12,7 +11,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,8 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author huangjie
@@ -47,13 +43,8 @@ public class PurchaseReceiveBillController {
 
     @ApiOperation(value = "新增")
     @PostMapping("/save")
-    public DataResponse save(@RequestBody @Valid PurchaseReceiveBillSaveParam param, BindingResult bindingResult) {
-        if (!bindingResult.hasErrors()) {
-            return purchaseReceiveBillService.save(param);
-        }
-        List<ObjectError> allErrors = bindingResult.getAllErrors();
-        String messages = allErrors.stream().map(ObjectError::getDefaultMessage).collect(Collectors.joining(","));
-        return ModelDataResponse.errorParameter(messages);
+    public DataResponse save(@RequestBody @Valid PurchaseReceiveBillSaveParam param) {
+        return purchaseReceiveBillService.save(param);
     }
 
 }

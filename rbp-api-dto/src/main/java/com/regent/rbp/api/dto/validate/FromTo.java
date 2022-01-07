@@ -25,21 +25,21 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target(TYPE)
 @Constraint(validatedBy = { })
 public @interface FromTo {
-    String message() default "转换失败";
+    String message() default "{}";
 
-    Class<?>[] groups() default {};
+    Class<?>[] groups() default {Complex.class};
 
     Class<? extends Payload>[] payload() default {};
 
     /**
-     * 入参类型
+     * 入参字段
      *
      * @return
      */
     String fromField();
 
     /**
-     * 需要转出的类型
+     * 转换的字段
      *
      * @return
      */

@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = { })
 public @interface ChannelCodeCheck {
-    String message() default "渠道编号非法";
+    String message() default "{regent.validation.constraints.mapNotFound}";
 
     Class<?>[] groups() default {};
 

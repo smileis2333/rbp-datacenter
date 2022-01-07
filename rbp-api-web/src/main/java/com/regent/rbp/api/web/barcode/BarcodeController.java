@@ -1,17 +1,15 @@
 package com.regent.rbp.api.web.barcode;
 
-import com.regent.rbp.api.dto.base.BarcodeQueryResult;
 import com.regent.rbp.api.dto.base.BarcodeQueryParam;
+import com.regent.rbp.api.dto.base.BarcodeQueryResult;
 import com.regent.rbp.api.dto.base.BarcodeSaveParam;
 import com.regent.rbp.api.dto.core.DataResponse;
-import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.service.barcode.BarcodeService;
 import com.regent.rbp.api.web.constants.ApiConstants;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,8 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author huangjie
@@ -44,16 +40,9 @@ public class BarcodeController {
     }
 
     @PostMapping("/save")
-    public DataResponse save(@RequestBody @Valid BarcodeSaveParam param, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            List<ObjectError> allErrors = bindingResult.getAllErrors();
-            String messages = allErrors.stream().map(ObjectError::getDefaultMessage).collect(Collectors.joining(","));
-            return ModelDataResponse.errorParameter(messages);
-        }
-        DataResponse result = barcodeService.batchCreate(param);
-        return result;
+    public DataResponse save(@RequestBody @Valid BarcodeSaveParam param) {
+        return barcodeService.batchCreate(param);
     }
-
 
 }
 

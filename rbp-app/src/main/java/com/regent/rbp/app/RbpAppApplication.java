@@ -20,8 +20,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, SecurityAutoConfiguration.class})
 public class RbpAppApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(RbpAppApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(RbpAppApplication.class, args);
+    }
 
 }

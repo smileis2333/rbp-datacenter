@@ -26,6 +26,6 @@ public class SupplierCodeValidatorForSingle implements ConstraintValidator<Suppl
             Supplier name = supplierDao.selectOne(new QueryWrapper<Supplier>().eq("code", value));
             return name != null;
         }
-        return false;
+        return true;
     }
 }

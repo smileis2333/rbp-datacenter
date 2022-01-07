@@ -17,49 +17,43 @@ import java.util.List;
 @Data
 public class PurchaseReceiveNoticeBillSaveParam {
 
-    @NotBlank(message = "{javax.NotBlank.moduleId}")
+    @NotBlank
     private String moduleId;
 
-    @NotBlank(message = "{javax.NotBlank.manualId}")
-    @ConflictManualIdCheck(targetClass = "com.regent.rbp.api.core.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBill", message = "{regent.conflictManualIdCheck}")
+    @NotBlank
+    @ConflictManualIdCheck(targetTable = "rbp_purchase_receive_notice_bill")
     private String manualId;
 
-    @NotNull(message = "{javax.NotNull.billDate}")
+    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date billDate;
 
-    @NotBlank(message = "{javax.NotBlank.businessType}")
-    @BusinessTypeCheck(message = "{regent.businessTypeCheck.businessTypeNotExist}")
+    @NotBlank
+    @BusinessTypeCheck
     private String businessType;
 
-    @NotBlank(message = "{javax.NotBlank.supplierCode}")
-    @SupplierCodeCheck(message = "{regent.supplierCodeCheck.supplierCodeNotExist}")
+    @NotBlank
+    @SupplierCodeCheck
     private String supplierCode;
 
-    @NotBlank(message = "{javax.NotBlank.toChannelCode}")
-    @ChannelCodeCheck(message = "{regent.channelCodeCheck.toChannelCodeNotExist}")
+    @NotBlank
+    @ChannelCodeCheck
     private String toChannelCode;
 
-    @NotNull(message = "{javax.NotBlank.status}")
-    @BillStatus(message = "{regent.billStatus.statusNotExist}")
+    @NotNull
+    @BillStatus
     private Integer status;
 
-    @PurchaseNo
+    @BillNo(targetTable = "rbp_purchase_bill")
     private String purchaseNo;
+
     private BigDecimal taxRate;
-    @CurrencyTypeCheck(message = "{regent.currencyTypeCheck.currencyTypeNotExist}")
+    @CurrencyTypeCheck
     private String currencyType;
     private String notes;
     private List<CustomizeDataDto> customizeData;
     @Valid
-    @NotEmpty(message =  "{javax.NotEmpty.goodsDetailData}")
+    @NotEmpty
     private List<PurchaseReceiveNoticeBillGoodsDetailData> goodsDetailData;
 
-    public void setGoodsDetailData(List<PurchaseReceiveNoticeBillGoodsDetailData> goodsDetailData) {
-        int i = 1;
-        for (PurchaseReceiveNoticeBillGoodsDetailData goodsDetailDatum : goodsDetailData) {
-            goodsDetailDatum.setIdx(i++);
-        }
-        this.goodsDetailData = goodsDetailData;
-    }
 }

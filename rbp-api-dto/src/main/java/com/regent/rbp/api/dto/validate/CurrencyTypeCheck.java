@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = { })
 public @interface CurrencyTypeCheck {
-    String message() default "币种类型非法";
+    String message() default "{regent.validation.constraints.mapNotFound}";
 
     Class<?>[] groups() default {};
 

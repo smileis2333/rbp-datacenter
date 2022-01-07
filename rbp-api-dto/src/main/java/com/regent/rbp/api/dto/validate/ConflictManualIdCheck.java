@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = { })
 public @interface ConflictManualIdCheck {
-    String message() default "手工单号重复";
+    String message() default "{regent.validation.constraints.notAllowRepeat}";
 
     Class<?>[] groups() default {};
 
@@ -27,6 +27,6 @@ public @interface ConflictManualIdCheck {
      *
      * @return
      */
-    String targetClass();
+    String targetTable();
 
 }

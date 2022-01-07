@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Constraint(validatedBy = { })
 public @interface BarcodeOrGoodsCode {
-    String message() default "条形码和货品码二选一";
+    String message() default "{regent.barcodeOrGoodsCode.onlyAllowOne}";
 
     Class<?>[] groups() default {};
 

@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = { })
 public @interface BusinessTypeCheck {
-    String message() default "业务类型参数输入非法";
+    String message() default "{regent.validation.constraints.mapNotFound}";
 
     Class<?>[] groups() default {};
 

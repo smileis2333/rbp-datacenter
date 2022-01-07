@@ -1,5 +1,7 @@
 package com.regent.rbp.api.dto.validate;
 
+import com.regent.rbp.api.dto.validate.group.Complex;
+
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import java.lang.annotation.ElementType;
@@ -16,11 +18,11 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Constraint(validatedBy = { })
+@Constraint(validatedBy = {})
 public @interface BarcodeRelationCheck {
-    String message() default "单据状态非法";
+    String message() default "{regent.BarcodeRelationCheck.invalidBarcode}";
 
-    Class<?>[] groups() default {};
+    Class<?>[] groups() default {Complex.class};
 
     Class<? extends Payload>[] payload() default {};
 }

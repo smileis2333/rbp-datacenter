@@ -153,7 +153,7 @@ public class Jsr303Config implements WebMvcConfigurer {
         ReloadableResourceBundleMessageSource messageSource
                 = new ReloadableResourceBundleMessageSource();
 
-        messageSource.setBasename("classpath:language/message");
+        messageSource.setBasename("classpath:validation/message");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }

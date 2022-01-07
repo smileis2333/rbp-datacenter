@@ -9,16 +9,19 @@ import java.lang.annotation.Target;
 
 /**
  * @author huangjie
- * @date : 2021/12/30
+ * @date : 2022/01/08
  * @description
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = { })
-public @interface PurchaseReceiveNoticeNo {
-    String message() default "采购到货通知单不存在";
+public @interface BillNo {
+    String message() default "{regent.validation.constraints.mapNotFound}";
 
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
+
+    String targetTable();
+
 }

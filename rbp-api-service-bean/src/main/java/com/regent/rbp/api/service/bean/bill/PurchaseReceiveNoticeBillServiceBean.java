@@ -46,7 +46,6 @@ import com.regent.rbp.common.model.basic.dto.IdNameDto;
 import com.regent.rbp.common.service.basic.DbService;
 import com.regent.rbp.common.service.basic.SystemCommonService;
 import com.regent.rbp.common.utils.ValidateReceiveDifferenceTool;
-import com.regent.rbp.infrastructure.enums.CheckEnum;
 import com.regent.rbp.infrastructure.enums.LanguageTableEnum;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
@@ -56,7 +55,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.util.*;
 import java.util.function.Function;
@@ -206,8 +204,6 @@ public class PurchaseReceiveNoticeBillServiceBean implements PurchaseReceiveNoti
                 // 货品自定义字段，格式化单选类型字段
                 detailData.setGoodsCustomizeData(baseDbService.getAfterFillCustomizeDataList(moduleColumnDtoList, goodsCustomMap.get(billGoods.getId())));
                 goodsQueryResultList.add(detailData);
-
-                detailData.setColumnId(size.getId());
                 detailData.setBalancePrice(billGoods.getBalancePrice());
                 detailData.setTagPrice(billGoods.getTagPrice());
                 detailData.setCurrencyPrice(billGoods.getCurrencyPrice());
@@ -374,14 +370,8 @@ public class PurchaseReceiveNoticeBillServiceBean implements PurchaseReceiveNoti
             }
         });
 
-        Set<ConstraintViolation<PurchaseReceiveNoticeBillSaveParam>> validate = validator.validate(param, Complex.class);
-        validate.forEach(e -> {
-            messageList.add(e.getMessage());
-        });
+        if (!ValidateMessageUtil.pass(validator.validate(param, Complex.class), messageList)) return;
 
-        if (!messageList.isEmpty()) {
-            return;
-        }
         // 根据货品+价格分组，支持同款多价
         param.getGoodsDetailData().stream().collect(Collectors.groupingBy(v -> v.getSameGoodsDiffPriceKey())).forEach((key, sizes) -> {
             PurchaseReceiveNoticeBillGoods billGoods = BeanUtil.copyProperties(sizes.get(0), PurchaseReceiveNoticeBillGoods.class);

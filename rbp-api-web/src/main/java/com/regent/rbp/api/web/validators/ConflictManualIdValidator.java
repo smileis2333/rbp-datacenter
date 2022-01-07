@@ -1,15 +1,15 @@
 package com.regent.rbp.api.web.validators;
 
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dto.validate.ConflictManualIdCheck;
+import com.regent.rbp.infrastructure.constants.ResponseCode;
+import com.regent.rbp.infrastructure.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * @author huangjie
@@ -24,21 +24,10 @@ public class ConflictManualIdValidator implements ConstraintValidator<ConflictMa
 
     @Override
     public void initialize(ConflictManualIdCheck constraintAnnotation) {
-        String className = constraintAnnotation.targetClass();
-        try {
-            Class<?> entityClass = Class.forName(className);
-            String tableName = (String) TableName.class.getDeclaredMethod("value").invoke(entityClass.getAnnotation(TableName.class));
-            this.tableName = tableName;
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        if (StrUtil.isBlank(constraintAnnotation.targetTable())){
+            throw new BusinessException(ResponseCode.INTERNAL_ERROR);
         }
-
+        this.tableName = constraintAnnotation.targetTable();
     }
 
     @Override

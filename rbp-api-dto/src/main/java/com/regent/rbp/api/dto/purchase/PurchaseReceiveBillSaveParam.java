@@ -17,56 +17,49 @@ import java.util.List;
 @Data
 public class PurchaseReceiveBillSaveParam {
 
-    @NotBlank(message = "{javax.NotBlank.moduleId}")
+    @NotBlank
     private String moduleId;
 
-    @NotBlank(message = "{javax.NotBlank.manualId}")
-    @ConflictManualIdCheck(targetClass = "com.regent.rbp.api.core.purchaseReceiveBill.PurchaseReceiveBill", message = "{regent.conflictManualIdCheck}")
+    @NotBlank
+    @ConflictManualIdCheck(targetTable = "rbp_purchase_receive_bill")
     private String manualId;
 
-    @NotNull(message = "{javax.NotNull.billDate}")
+    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date billDate;
 
-    @NotBlank(message = "{javax.NotBlank.businessType}")
-    @BusinessTypeCheck(message = "{regent.businessTypeCheck.businessTypeNotExist}")
+    @NotBlank
+    @BusinessTypeCheck
     private String businessType;
 
-    @NotBlank(message = "{javax.NotBlank.supplierCode}")
-    @SupplierCodeCheck(message = "{regent.supplierCodeCheck.supplierCodeNotExist}")
+    @NotBlank
+    @SupplierCodeCheck
     private String supplierCode;
 
-    @NotBlank(message = "{javax.NotBlank.toChannelCode}")
-    @ChannelCodeCheck(message = "{regent.channelCodeCheck.toChannelCodeNotExist}")
+    @NotBlank
+    @ChannelCodeCheck
     private String toChannelCode;
 
-    @PurchaseNo
+    @BillNo(targetTable = "rbp_purchase_bill")
     private String purchaseNo;
 
-    @PurchaseReceiveNoticeNo
+    @BillNo(targetTable = "rbp_notice_bill")
     private String noticeNo;
 
     private BigDecimal taxRate;
 
-    @CurrencyTypeCheck(message = "{regent.currencyTypeCheck.currencyTypeNotExist}")
+    @CurrencyTypeCheck
     private String currencyType;
 
     private String notes;
 
-    @NotNull(message = "{javax.NotBlank.status}")
-    @BillStatus(message = "{regent.billStatus.statusNotExist}")
+    @NotNull
+    @BillStatus
     private Integer status;
 
     private List<CustomizeDataDto> customizeData;
     @Valid
-    @NotEmpty(message = "{javax.NotEmpty.goodsDetailData}")
+    @NotEmpty
     private List<PurchaseReceiveBillGoodsDetailData> goodsDetailData;
 
-    public void setGoodsDetailData(List<PurchaseReceiveBillGoodsDetailData> goodsDetailData) {
-        int i = 1;
-        for (PurchaseReceiveBillGoodsDetailData goodsDetailDatum : goodsDetailData) {
-            goodsDetailDatum.setIdx(i++);
-        }
-        this.goodsDetailData = goodsDetailData;
-    }
 }

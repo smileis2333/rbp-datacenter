@@ -62,8 +62,7 @@ public class CustomConstraintHelper extends ConstraintHelper {
             putConstraint(tmpConstraints, ConflictManualIdCheck.class, ConflictManualIdValidator.class);
             putConstraints(tmpConstraints, CurrencyTypeCheck.class, CurrencyTypeCheckValidatorForQueryList.class,CurrencyTypeCheckValidatorForSingle.class);
             putConstraint(tmpConstraints, FromTo.class, FromToValidator.class);
-            putConstraint(tmpConstraints, PurchaseNo.class, PurchaseNoValidator.class);
-            putConstraint(tmpConstraints, PurchaseReceiveNoticeNo.class, PurchaseReceiveNoticeNoValidator.class);
+            putConstraint(tmpConstraints, BillNo.class, BillNoValidator.class);
             putConstraint(tmpConstraints, RuleIdCheck.class, RuleIdCheckValidator.class);
             putConstraints(tmpConstraints, SupplierCodeCheck.class, SupplierCodeValidatorForSingle.class, SupplierCodeValidatorForQueryList.class);
             /**

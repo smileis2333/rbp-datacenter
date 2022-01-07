@@ -212,7 +212,6 @@ public class PurchaseReceiveBillServiceBean implements PurchaseReceiveBillServic
                     detailData.setGoodsCustomizeData(baseDbService.getAfterFillCustomizeDataList(moduleColumnDtoList, goodsCustomMap.get(billGoods.getId())));
                     goodsQueryResultList.add(detailData);
 
-                    detailData.setColumnId(size.getId());
                     detailData.setBalancePrice(billGoods.getBalancePrice());
                     detailData.setTagPrice(billGoods.getTagPrice());
                     detailData.setCurrencyPrice(billGoods.getCurrencyPrice());
