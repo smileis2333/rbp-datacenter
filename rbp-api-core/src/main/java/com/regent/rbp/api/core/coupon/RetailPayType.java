@@ -33,6 +33,7 @@ public class RetailPayType extends Model<RetailPayType> {
     private String retailPayPlatform;
 
     @ApiModelProperty(notes = "是否可用")
+    @TableField(value = "useable")
     private Integer useAble;
     @ApiModelProperty(notes = "是否显示")
     private Integer visible;
