@@ -178,7 +178,7 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
             }
         }
         // 判断是否为收银员
-        if (null != param.getCashierTag() && param.getCashierTag().equals(0) && null == param.getDiscount()) {
+        if (null != param.getCashierTag() && param.getCashierTag().equals(1) && null == param.getDiscount()) {
             messageList.add(getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("discount")}));
         }
         if (CollUtil.isNotEmpty(messageList)) {

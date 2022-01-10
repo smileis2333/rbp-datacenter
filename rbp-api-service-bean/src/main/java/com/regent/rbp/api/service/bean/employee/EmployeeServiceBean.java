@@ -245,7 +245,7 @@ public class EmployeeServiceBean implements EmployeeService {
         List<String> errorMsgList = verificationProperty(param, context);
         if (errorMsgList.size() > 0) {
             String message = StringUtil.join(errorMsgList, ",");
-            //throw new BusinessException();
+            return DataResponse.errorParameter(message);
         }
         saveEmployee(createFlag, context.getEmployee());
         baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.EMPLOYEE_INFO, TableConstants.EMPLOYEE, context.getEmployee().getId(), param.getCustomizeData());
