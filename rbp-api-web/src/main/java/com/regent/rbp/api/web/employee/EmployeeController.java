@@ -30,7 +30,7 @@ public class EmployeeController {
         return result;
     }
 
-    @PostMapping("/save")
+    @PostMapping
     public DataResponse save(@RequestBody EmployeeSaveParam param) {
         DataResponse result = employeeService.save(param);
         return result;
