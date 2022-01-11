@@ -534,7 +534,7 @@ public class ChannelServiceBean implements ChannelService {
         // 自定义字段
         baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.CHANNEL_INFO, TableConstants.CHANNEL, context.getChannel().getId(), param.getCustomizeData());
 
-        return null;
+        return ModelDataResponse.Success(context.getChannel().getId());
     }
 
     /**
