@@ -30,7 +30,7 @@ public class FundAccountController {
         return result;
     }
 
-    @PostMapping("/save")
+    @PostMapping
     public DataResponse save(@RequestBody FundAccountSaveParam param) {
         DataResponse result = fundAccountService.save(param);
         return result;

@@ -23,7 +23,7 @@ public class EmployeeSaveParam {
     private String leaveDate;
     private String jobNumber;
     private String notes;
-    private Integer positionCode;
+    private String positionName;
     private Integer workStatus;
     private String channelCode;
     private List<CustomizeDataDto> customizeData;

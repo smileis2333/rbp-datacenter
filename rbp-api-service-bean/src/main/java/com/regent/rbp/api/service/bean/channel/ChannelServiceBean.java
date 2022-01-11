@@ -19,6 +19,7 @@ import com.regent.rbp.api.dao.fundAccount.FundAccountDao;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.channel.*;
 import com.regent.rbp.api.dto.core.DataResponse;
+import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.service.base.BaseDbService;
 import com.regent.rbp.api.service.channel.ChannelService;
@@ -519,7 +520,7 @@ public class ChannelServiceBean implements ChannelService {
         List<String> errorMsgList = verificationProperty(param, context);
         if (errorMsgList.size() > 0) {
             String message = StringUtil.join(errorMsgList, ",");
-            //throw new BusinessException(ErrorC, "");
+            return ModelDataResponse.errorParameter(message);
         }
         // 自动补充不存在的数据字典
         processAutoCompleteDictionary(param, context);
@@ -581,18 +582,6 @@ public class ChannelServiceBean implements ChannelService {
         //验证 渠道收货信息
         if (param.getAddressData() != null && param.getAddressData().size() > 0) {
             for (AddressData addressData : param.getAddressData()) {
-                if (StringUtils.isBlank(addressData.getNation())) {
-                    errorMsgList.add("国家/地区(nation)不能为空");
-                }
-                if (StringUtils.isBlank(addressData.getProvince())) {
-                    errorMsgList.add("州/省/地区(province)不能为空");
-                }
-                if (StringUtils.isBlank(addressData.getCity())) {
-                    errorMsgList.add("市(city)不能为空");
-                }
-                if (StringUtils.isBlank(addressData.getCity())) {
-                    errorMsgList.add("县/区(county)不能为空");
-                }
                 if (StringUtils.isBlank(addressData.getAddress())) {
                     errorMsgList.add("详细地址(address)不能为空");
                 }

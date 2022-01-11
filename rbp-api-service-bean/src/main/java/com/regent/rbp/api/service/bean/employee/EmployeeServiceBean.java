@@ -1,6 +1,7 @@
 package com.regent.rbp.api.service.bean.employee;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -278,6 +279,14 @@ public class EmployeeServiceBean implements EmployeeService {
             } else {
                 context.getEmployee().setChannelId(channelList.get(0).getId());
             }
+        }
+
+        if (StrUtil.isNotEmpty(param.getPositionName())){
+            Position position = positionDao.selectOne(new QueryWrapper<Position>().eq("name", param.getPositionName()));
+            if (position == null) {
+                errorMsgList.add("职位(positionName)不存在");
+            }
+            context.getEmployee().setPositionId(position.getId());
         }
         return errorMsgList;
     }

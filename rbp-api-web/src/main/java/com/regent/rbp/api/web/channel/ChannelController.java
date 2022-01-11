@@ -34,7 +34,7 @@ public class ChannelController {
         return result;
     }
 
-    @PostMapping("/save")
+    @PostMapping
     public DataResponse save(@RequestBody ChannelSaveParam param) {
         DataResponse result = channelService.save(param);
         return result;
