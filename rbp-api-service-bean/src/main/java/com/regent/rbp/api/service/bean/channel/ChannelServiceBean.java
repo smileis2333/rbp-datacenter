@@ -1,5 +1,6 @@
 package com.regent.rbp.api.service.bean.channel;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -522,6 +523,7 @@ public class ChannelServiceBean implements ChannelService {
             String message = StringUtil.join(errorMsgList, ",");
             return ModelDataResponse.errorParameter(message);
         }
+
         // 自动补充不存在的数据字典
         processAutoCompleteDictionary(param, context);
         // 写入渠道表
@@ -568,6 +570,8 @@ public class ChannelServiceBean implements ChannelService {
             ChannelBusinessFormat item = channelBusinessFormatDao.selectOne(new QueryWrapper<ChannelBusinessFormat>().eq("name", param.getBusinessFormat()));
             if (item != null) {
                 channel.setBusinessFormatId(item.getId());
+            }else {
+                errorMsgList.add("经营性质(businessNature)不存在");
             }
         }
         //验证 经营性质
@@ -600,6 +604,27 @@ public class ChannelServiceBean implements ChannelService {
                 errorMsgList.add("资金号(fundAccount)不存在");
             } else {
                 channel.setFundAccountId(fundAccount.getId());
+            }
+        }
+
+        List<ChannelReceiveInfo> channelReceiveInfos = param.getAddressData().stream().map(e -> BeanUtil.copyProperties(e, ChannelReceiveInfo.class)).collect(Collectors.toList());
+        context.setChannelReceiveInfoList(channelReceiveInfos);
+
+        if(null !=  param.getChannelorganization()){
+            if((Object)param.getChannelorganization().getOrganization1() instanceof Long){
+                channel.setOrganization1(Long.valueOf(param.getChannelorganization().getOrganization1()));
+            }
+            if((Object)param.getChannelorganization().getOrganization2() instanceof Long){
+                channel.setOrganization2(Long.valueOf(param.getChannelorganization().getOrganization2()));
+            }
+            if((Object)param.getChannelorganization().getOrganization3() instanceof Long){
+                channel.setOrganization3(Long.valueOf(param.getChannelorganization().getOrganization3()));
+            }
+            if((Object)param.getChannelorganization().getOrganization4() instanceof Long){
+                channel.setOrganization4(Long.valueOf(param.getChannelorganization().getOrganization4()));
+            }
+            if((Object)param.getChannelorganization().getOrganization5() instanceof Long){
+                channel.setOrganization5(Long.valueOf(param.getChannelorganization().getOrganization5()));
             }
         }
 
@@ -769,6 +794,7 @@ public class ChannelServiceBean implements ChannelService {
         if (CollUtil.isNotEmpty(channelReceiveInfoList)) {
             channelReceiveInfoDao.delete(new QueryWrapper<ChannelReceiveInfo>().eq("channel_id", channelId));
             for (ChannelReceiveInfo receiveInfo : channelReceiveInfoList) {
+                receiveInfo.setChannelId(channelId);
                 channelReceiveInfoDao.insert(receiveInfo);
             }
         }

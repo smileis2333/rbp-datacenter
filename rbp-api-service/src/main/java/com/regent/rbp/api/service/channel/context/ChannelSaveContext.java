@@ -4,12 +4,10 @@ import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.channel.ChannelBrand;
 import com.regent.rbp.api.core.channel.ChannelReceiveInfo;
 import com.regent.rbp.api.dto.channel.ChannelSaveParam;
-import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import lombok.Data;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -51,8 +49,7 @@ public class ChannelSaveContext {
         this.channel.setName(param.getChannelName());
         this.channel.setFullName(param.getChannelFullName());
 
-        Date buildDate = DateUtil.getDate(param.getChannelBuildDate(), DateUtil.FULL_DATE_FORMAT);
-        this.channel.setBuildDate(buildDate);
+        this.channel.setBuildDate(param.getChannelBuildDate());
 
         this.channel.setAddress(param.getChannelAddress());
         this.channel.setLinkMan(param.getLinkMan());
@@ -67,6 +64,6 @@ public class ChannelSaveContext {
             this.channel.setCity(param.getPhysicalRegion().getCity());
             this.channel.setCounty(param.getPhysicalRegion().getCounty());
         }
-        this.channel.setStatus(0);
+        this.channel.setStatus(param.getStatus());
     }
 }

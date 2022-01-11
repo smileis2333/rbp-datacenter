@@ -1,9 +1,11 @@
 package com.regent.rbp.api.dto.channel;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -18,7 +20,8 @@ public class ChannelSaveParam {
     private String channelCode;
     private String channelName;
     private String channelFullName;
-    private String channelBuildDate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date channelBuildDate;
     private String channelAddress;
     private String[] brand;
     private String branchCompany;
@@ -40,5 +43,6 @@ public class ChannelSaveParam {
     private Channelorganization channelorganization;
     private List<AddressData> addressData;
     private List<CustomizeDataDto> customizeData;
+    private Integer status = 0;
 
 }
