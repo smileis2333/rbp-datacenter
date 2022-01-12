@@ -57,13 +57,6 @@ public class ChannelSaveContext {
 
         this.channel.setMinPrice(param.getMinPrice());
         this.channel.setMaxPrice(param.getMaxPrice());
-        if (param.getPhysicalRegion() != null) {
-            this.channel.setNation(param.getPhysicalRegion().getNation());
-            this.channel.setRegion(param.getPhysicalRegion().getRegion());
-            this.channel.setProvince(param.getPhysicalRegion().getProvince());
-            this.channel.setCity(param.getPhysicalRegion().getCity());
-            this.channel.setCounty(param.getPhysicalRegion().getCounty());
-        }
         this.channel.setStatus(param.getStatus());
     }
 }

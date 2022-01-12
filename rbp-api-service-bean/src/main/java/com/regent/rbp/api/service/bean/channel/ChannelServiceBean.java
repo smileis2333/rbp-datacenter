@@ -5,16 +5,10 @@ import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.regent.rbp.api.core.base.BranchCompany;
-import com.regent.rbp.api.core.base.Brand;
-import com.regent.rbp.api.core.base.SaleRange;
-import com.regent.rbp.api.core.base.TagPriceType;
+import com.regent.rbp.api.core.base.*;
 import com.regent.rbp.api.core.channel.*;
 import com.regent.rbp.api.core.fundAccount.FundAccount;
-import com.regent.rbp.api.dao.base.BranchCompanyDao;
-import com.regent.rbp.api.dao.base.BrandDao;
-import com.regent.rbp.api.dao.base.SaleRangeDao;
-import com.regent.rbp.api.dao.base.TagPriceTypeDao;
+import com.regent.rbp.api.dao.base.*;
 import com.regent.rbp.api.dao.channel.*;
 import com.regent.rbp.api.dao.fundAccount.FundAccountDao;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
@@ -77,6 +71,8 @@ public class ChannelServiceBean implements ChannelService {
     ChannelReceiveInfoDao channelReceiveInfoDao;
     @Autowired
     BaseDbService baseDbService;
+    @Autowired
+    AreaDao areaDao;
 
     @Override
     public PageDataResponse<ChannelQueryResult> query(ChannelQueryParam param) {
@@ -570,7 +566,7 @@ public class ChannelServiceBean implements ChannelService {
             ChannelBusinessFormat item = channelBusinessFormatDao.selectOne(new QueryWrapper<ChannelBusinessFormat>().eq("name", param.getBusinessFormat()));
             if (item != null) {
                 channel.setBusinessFormatId(item.getId());
-            }else {
+            } else {
                 errorMsgList.add("经营性质(businessNature)不存在");
             }
         }
@@ -607,24 +603,76 @@ public class ChannelServiceBean implements ChannelService {
             }
         }
 
-        List<ChannelReceiveInfo> channelReceiveInfos = param.getAddressData().stream().map(e -> BeanUtil.copyProperties(e, ChannelReceiveInfo.class)).collect(Collectors.toList());
-        context.setChannelReceiveInfoList(channelReceiveInfos);
+        if (CollUtil.isNotEmpty(param.getAddressData())) {
+            List<ChannelReceiveInfo> channelReceiveInfos = param.getAddressData().stream().map(e -> BeanUtil.copyProperties(e, ChannelReceiveInfo.class)).collect(Collectors.toList());
+            context.setChannelReceiveInfoList(channelReceiveInfos);
+        }
 
-        if(null !=  param.getChannelorganization()){
-            if((Object)param.getChannelorganization().getOrganization1() instanceof Long){
-                channel.setOrganization1(Long.valueOf(param.getChannelorganization().getOrganization1()));
+        if (null != param.getChannelorganization()) {
+            Channelorganization channelorganization = param.getChannelorganization();
+            if (StringUtils.isNotBlank(channelorganization.getOrganization1())) {
+                ChannelOrganization co1 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 0).eq("name", channelorganization.getOrganization1()).eq("parent_id", 0));
+                channel.setOrganization1(co1!=null?co1.getId():null);
+                if (co1!=null&&StringUtils.isNotBlank(channelorganization.getOrganization2())) {
+                    ChannelOrganization co2 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 1).eq("name", channelorganization.getOrganization2()).eq("parent_id", co1.getId()));
+                    channel.setOrganization2(co2!=null?co2.getId():null);
+                    if (co2!=null&&StringUtils.isNotBlank(channelorganization.getOrganization3())) {
+                        ChannelOrganization co3 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 2).eq("name", channelorganization.getOrganization3()).eq("parent_id", co2.getId()));
+                        channel.setOrganization3(co3!=null?co3.getId():null);
+                        if (co3!=null&&StringUtils.isNotBlank(channelorganization.getOrganization4())) {
+                            ChannelOrganization co4 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 3).eq("name", channelorganization.getOrganization4()).eq("parent_id", co3.getId()));
+                            channel.setOrganization4(co4!=null?co4.getId():null);
+                            if (co4!=null&&StringUtils.isNotBlank(channelorganization.getOrganization5())) {
+                                ChannelOrganization co5 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 4).eq("name", channelorganization.getOrganization5()).eq("parent_id", co4.getId()));
+                                channel.setOrganization4(co5!=null?co5.getId():null);
+                            }
+                        }
+                    }
+                }
             }
-            if((Object)param.getChannelorganization().getOrganization2() instanceof Long){
-                channel.setOrganization2(Long.valueOf(param.getChannelorganization().getOrganization2()));
+        }
+
+        if (null != param.getPhysicalRegion()) {
+            PhysicalRegion physicalRegion = param.getPhysicalRegion();
+            if (StringUtils.isNotBlank(physicalRegion.getNation())) {
+                Area nation = areaDao.selectOne(new QueryWrapper<Area>().eq("name", physicalRegion.getNation()).eq("column_name", "nation"));
+                if (nation != null) {
+                    channel.setNation(nation.getId().toString());
+                } else {
+                    errorMsgList.add("nation" + physicalRegion.getNation() + "不存在");
+                }
             }
-            if((Object)param.getChannelorganization().getOrganization3() instanceof Long){
-                channel.setOrganization3(Long.valueOf(param.getChannelorganization().getOrganization3()));
+            if (StringUtils.isNotBlank(physicalRegion.getRegion())) {
+                Area region = areaDao.selectOne(new QueryWrapper<Area>().eq("name", physicalRegion.getRegion()).eq("column_name", "region"));
+                if (region != null) {
+                    channel.setRegion(region.getId().toString());
+                } else {
+                    errorMsgList.add("region" + physicalRegion.getRegion() + "不存在");
+                }
             }
-            if((Object)param.getChannelorganization().getOrganization4() instanceof Long){
-                channel.setOrganization4(Long.valueOf(param.getChannelorganization().getOrganization4()));
+            if (StringUtils.isNotBlank(physicalRegion.getProvince())) {
+                Area province = areaDao.selectOne(new QueryWrapper<Area>().eq("name", physicalRegion.getProvince()).eq("column_name", "province"));
+                if (province != null) {
+                    channel.setRegion(province.getId().toString());
+                } else {
+                    errorMsgList.add("province" + physicalRegion.getProvince() + "不存在");
+                }
             }
-            if((Object)param.getChannelorganization().getOrganization5() instanceof Long){
-                channel.setOrganization5(Long.valueOf(param.getChannelorganization().getOrganization5()));
+            if (StringUtils.isNotBlank(physicalRegion.getCity())) {
+                Area city = areaDao.selectOne(new QueryWrapper<Area>().eq("name", physicalRegion.getCity()).eq("column_name", "city"));
+                if (city != null) {
+                    channel.setRegion(city.getId().toString());
+                } else {
+                    errorMsgList.add("city" + physicalRegion.getCity() + "不存在");
+                }
+            }
+            if (StringUtils.isNotBlank(physicalRegion.getCounty())) {
+                Area county = areaDao.selectOne(new QueryWrapper<Area>().eq("name", physicalRegion.getCounty()).eq("column_name", "county"));
+                if (county != null) {
+                    channel.setRegion(county.getId().toString());
+                } else {
+                    errorMsgList.add("country" + physicalRegion.getCounty() + "不存在");
+                }
             }
         }
 
