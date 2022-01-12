@@ -449,18 +449,15 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
 
             salesOrderBill.setChannelId(channel.getId());
         }
-        if (param.getShiftNo() == null || param.getShiftNo().length() == 0) {
-            errorMsgList.add("班次编号(shiftNo)不能为空");
+
+        PosClass posClass = posClassDao.selectOne(new LambdaQueryWrapper<PosClass>().eq(PosClass::getCode, param.getShiftNo()));
+        if (posClass == null) {
+            errorMsgList.add("班次编号(shiftNo)不存在");
         } else {
-            PosClass posClass = posClassDao.selectOne(new LambdaQueryWrapper<PosClass>().eq(PosClass::getCode, param.getShiftNo()));
-            if (posClass == null) {
-                errorMsgList.add("班次编号(shiftNo)不存在");
-            } else {
-                salesOrderBill.setShiftId(posClass.getId());
-            }
+            salesOrderBill.setShiftId(posClass.getId());
         }
 
-        if (param.getMemberCode() != null && param.getMemberCode().length() > 0) {
+        if (StrUtil.isNotBlank(param.getMemberCode())) {
             MemberCard memberCard = memberCardDao.selectOne(new LambdaQueryWrapper<MemberCard>().eq(MemberCard::getCode, param.getMemberCode()));
             if (memberCard == null) {
                 errorMsgList.add("会员编号(memberCode)不存在");
@@ -476,21 +473,10 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         }
         if (StringUtils.isBlank(param.getGoodsDetailData().get(0).getBarcode())) {
             // 货品+颜色+内长+尺码
-            List<String> goodsNos = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getGoodsCode).distinct().collect(Collectors.toList());
-            List<Goods> goodsList = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getCode, goodsNos));
-            Map<String, Goods> goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getCode, t -> t));
-
-            List<String> colorNos = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getColorCode).distinct().collect(Collectors.toList());
-            List<Color> colorList = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getCode, colorNos));
-            Map<String, Color> colorMap = colorList.stream().collect(Collectors.toMap(Color::getCode, t -> t));
-
-            List<String> longNos = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getLongName).distinct().collect(Collectors.toList());
-            List<LongInfo> longList = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getName, longNos));
-            Map<String, LongInfo> longMap = longList.stream().collect(Collectors.toMap(LongInfo::getName, t -> t));
-
-            List<String> sizeNos = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getSize).distinct().collect(Collectors.toList());
-            List<SizeClass> sizeList = sizeClassDao.selectList(new LambdaQueryWrapper<SizeClass>().in(SizeClass::getName, sizeNos));
-            Map<String, SizeClass> sizeMap = sizeList.stream().collect(Collectors.toMap(SizeClass::getName, t -> t));
+            Map<String, Goods> goodsMap = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getCode, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getGoodsCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Goods::getCode, t -> t));
+            Map<String, Color> colorMap = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getCode, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getColorCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Color::getCode, t -> t));
+            Map<String, LongInfo> longMap = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getName, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getLongName).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(LongInfo::getName, t -> t));
+            Map<String, SizeClass> sizeMap = sizeClassDao.selectList(new LambdaQueryWrapper<SizeClass>().in(SizeClass::getName, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getSize).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(SizeClass::getName, t -> t));
 
             Integer rowIndex = 1;
             for (SalesOrderBillGoodsResult goodsResult : param.getGoodsDetailData()) {

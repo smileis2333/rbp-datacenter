@@ -44,41 +44,41 @@ import java.util.stream.Collectors;
 public class SalesPlanBillServiceBean implements SalesPlanBillService {
 
     @Autowired
-    private  PriceTypeDao priceTypeDao;
+    private PriceTypeDao priceTypeDao;
     @Autowired
-    private  BusinessTypeDao businessTypeDao;
+    private BusinessTypeDao businessTypeDao;
     @Autowired
-    private  ChannelDao channelDao;
+    private ChannelDao channelDao;
     @Autowired
-    private  CurrencyTypeDao currencyTypeDao;
+    private CurrencyTypeDao currencyTypeDao;
     @Autowired
-    private  SalePlanBillDao salePlanBillDao;
+    private SalePlanBillDao salePlanBillDao;
     @Autowired
-    private  SalePlanBillGoodsDao salePlanBillGoodsDao;
+    private SalePlanBillGoodsDao salePlanBillGoodsDao;
     @Autowired
-    private  SalePlanBillGoodsFinalDao salePlanBillGoodsFinalDao;
+    private SalePlanBillGoodsFinalDao salePlanBillGoodsFinalDao;
     @Autowired
-    private  SalePlanBillLogisticsDao salePlanBillLogisticsDao;
+    private SalePlanBillLogisticsDao salePlanBillLogisticsDao;
     @Autowired
-    private  SalePlanBillSizeFinalDao salePlanBillSizeFinalDao;
+    private SalePlanBillSizeFinalDao salePlanBillSizeFinalDao;
     @Autowired
-    private  SalePlanBillSizeDao salePlanBillSizeDao;
+    private SalePlanBillSizeDao salePlanBillSizeDao;
     @Autowired
-    private  BaseDbDao baseDbDao;
+    private BaseDbDao baseDbDao;
     @Autowired
-    private  BarcodeDao barcodeDao;
+    private BarcodeDao barcodeDao;
     @Autowired
-    private  LongDao longDao;
+    private LongDao longDao;
     @Autowired
-    private  ColorDao colorDao;
+    private ColorDao colorDao;
     @Autowired
-    private  GoodsDao goodsDao;
+    private GoodsDao goodsDao;
     @Autowired
-    private  SizeDetailDao sizeDetailDao;
+    private SizeDetailDao sizeDetailDao;
     @Autowired
-    private  BaseDbService baseDbService;
+    private BaseDbService baseDbService;
     @Autowired
-    private  SystemCommonService systemCommonService;
+    private SystemCommonService systemCommonService;
 
     @Override
     public PageDataResponse<SalesPlanBillQueryResult> query(SalePlanQueryParam param) {
@@ -240,7 +240,7 @@ public class SalesPlanBillServiceBean implements SalesPlanBillService {
         convertSaveContext(param, context);
 
         List<String> errorMsgList = validate(context);
-        if (errorMsgList.size() > 0) {
+        if (CollUtil.isNotEmpty(errorMsgList)) {
             String message = StringUtil.join(errorMsgList, ",");
             return DataResponse.errorParameter(message);
         }
@@ -252,40 +252,8 @@ public class SalesPlanBillServiceBean implements SalesPlanBillService {
         SalePlanSaveParam param = context.getParam();
         List<String> errorMsgList = new ArrayList<>();
         SalePlanBill csp = context.getSalePlanBill();
-        if (StrUtil.isEmpty(csp.getModuleId())) {
-            errorMsgList.add("模块编号(moduleId)不能为空");
-        }
-        if (StrUtil.isEmpty(csp.getManualId())) {
-            errorMsgList.add("外部单号(moduleId)不能为空");
-        } else {
-            SalePlanBill salePlanBill = salePlanBillDao.selectOne(new QueryWrapper<SalePlanBill>().eq("manual_id", csp.getManualId()));
-            if (salePlanBill != null) {
-                errorMsgList.add("外部单号(moduleId)不能重复");
-            }
-        }
-        if (csp.getBillDate() == null) {
-            errorMsgList.add("单据日期(billDate)不能为空");
-        }
-        if (StrUtil.isEmpty(context.getBusinessType())) {
-            errorMsgList.add("业务类型名称(businessType)不能为空");
-        } else if (csp.getBusinessTypeId() == null) {
-            errorMsgList.add("业务类型名称(businessType)不存在");
-        }
-        if (StrUtil.isEmpty(context.getChannelCode())) {
-            errorMsgList.add("渠道编号(channelCode)不能为空");
-        } else if (csp.getChannelId() == null) {
-            errorMsgList.add("渠道编号(channelCode)不存在");
-        }
         if (!StrUtil.isEmpty(context.getPriceType()) && csp.getPriceTypeId() == null) {
             errorMsgList.add("价格类型名称(priceType)不存在");
-        }
-        if (StrUtil.isNotEmpty(context.getCurrencyType()) && csp.getCurrencyTypeId() == null) {
-            errorMsgList.add("币种名称(currencyType)不存在");
-        }
-        if (csp.getStatus() == null) {
-            errorMsgList.add("单据状态(status)不能为空");
-        } else if (!(csp.getStatus() >= 0 && csp.getStatus() <= 2)) {
-            errorMsgList.add("单据状态(status)不存在，单据状态-->(0.未审核,1.已审核,2.反审核)");
         }
         if (StrUtil.isNotEmpty(context.getLogisticsCompanyCode()) && context.getSalePlanBillLogistics().getLogisticsCompanyId() == null) {
             errorMsgList.add("物流公司编号(logisticsCompanyCode)不存在");

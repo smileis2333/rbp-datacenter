@@ -22,6 +22,7 @@ public class ReceiveBillSaveParam {
     @NotBlank
     private String moduleId;
 
+    @NotBlank
     @ConflictManualIdCheck(targetTable = "com.regent.rbp.api.core.receiveBill.ReceiveBill")
     private String manualId;
 
@@ -29,12 +30,15 @@ public class ReceiveBillSaveParam {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date billDate;
 
+    @NotNull
     @BusinessTypeCheck
     private String businessType;
 
+    @NotBlank
     @SupplierCodeCheck
     private String channelCode;
 
+    @NotBlank
     @SupplierCodeCheck
     private String toChannelCode;
 
@@ -42,9 +46,14 @@ public class ReceiveBillSaveParam {
     private String currencyType;
 
     private String notes;
+
+    @BillNo(targetTable = "rbp_send_bill")
     private String sendNo;
+
+    @BillNo(targetTable = "rbp_notice_bill")
     private String noticeNo;
 
+    @NotNull
     @BillStatus
     private Integer status;
     private List<CustomizeDataDto> customizeData;

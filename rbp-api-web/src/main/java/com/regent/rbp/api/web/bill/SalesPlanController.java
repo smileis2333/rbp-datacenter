@@ -9,12 +9,13 @@ import com.regent.rbp.api.service.sale.SalesPlanBillService;
 import com.regent.rbp.api.web.constants.ApiConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
 
 
 @RestController
@@ -33,7 +34,7 @@ public class SalesPlanController {
 
     @ApiOperation(value = "新增")
     @PostMapping
-    public DataResponse save(@RequestBody SalePlanSaveParam param) {
+    public DataResponse save(@RequestBody @Valid SalePlanSaveParam param) {
         DataResponse result = salesPlanBillService.save(param);
         return result;
     }

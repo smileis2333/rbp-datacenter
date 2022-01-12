@@ -46,6 +46,7 @@ public class SaleOrderSaveParam {
     @BillNo(targetTable = "rbp_sales_order_bill")
     private String originBillNo;
 
+    @NotBlank
     private String shiftNo;
 
     @NotNull
@@ -60,7 +61,6 @@ public class SaleOrderSaveParam {
     @Range(min = 0,max = 4,message = "(0.线下销售 1.全渠道发货 2.线上发货 3.线上退货 4.定金)") // todo extract annotation to prevent future change
     private Integer billType;
 
-    @NotNull(message = "{javax.validation.constraints.DecimalMax.message}")
     private String notes;
 
     @NotEmpty

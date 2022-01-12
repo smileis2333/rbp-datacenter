@@ -1,8 +1,8 @@
 package com.regent.rbp.api.dto.sale;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -14,12 +14,12 @@ import java.math.BigDecimal;
 @Data
 public class SalesOrderBillPaymentResult {
 
-    @ApiModelProperty(notes = "付款方式")
+    @NotNull
     private String retailPayTypeCode;
 
-    @ApiModelProperty(notes = "支付金额")
+    @NotNull
     private BigDecimal payMoney;
 
-    @ApiModelProperty(notes = "找零金额")
+    @NotNull
     private BigDecimal returnMoney;
 }

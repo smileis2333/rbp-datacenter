@@ -2,47 +2,54 @@ package com.regent.rbp.api.dto.sale;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
+import com.regent.rbp.api.dto.validate.*;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
 
 @Data
 public class SalePlanSaveParam {
-    @ApiModelProperty(notes = "模块编号")
+    @NotBlank
     private String moduleId;
 
-    @ApiModelProperty(notes = "手工单号")
+    @NotNull
+    @ConflictManualIdCheck(targetTable = "rbp_sale_plan_bill")
     private String manualId;
 
-    @ApiModelProperty(notes = "单据日期")
-    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
+    @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date billDate;
 
-    @ApiModelProperty(notes = "业务类型名称")
+    @NotNull
+    @BusinessTypeCheck
     private String businessType;
 
-    @ApiModelProperty(notes = "渠道编号")
+    @NotNull
+    @ChannelCodeCheck
     private String channelCode;
 
     @ApiModelProperty(notes = "价格类型名称")
     private String priceType;
 
-    @ApiModelProperty(notes = "币种名称")
+    @CurrencyTypeCheck
     private String currencyType;
 
-    @ApiModelProperty(notes = "备注")
     private String notes;
 
-    @ApiModelProperty(notes = "单据状态(0.未审核,1.已审核,2.反审核,3.已作废)")
+    @NotNull
+    @BillStatus
     private Integer status;
 
     @ApiModelProperty(notes = "自定义字段")
     private List<CustomizeDataDto> customizeData;
 
-    @ApiModelProperty(notes = "货品明细")
+    @NotEmpty
     private List<SalesPlanBillGoodsResult> goodsDetailData;
 
     // ---- 物流信息

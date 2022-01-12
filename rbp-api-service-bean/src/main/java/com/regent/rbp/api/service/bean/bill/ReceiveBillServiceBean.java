@@ -407,35 +407,6 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
         }
         /****************   物流信息    ******************/
         // 订单主体校验
-        if (null == bill.getBillDate()) {
-            messageList.add(getNotNullMessage("buildDate"));
-        }
-        if (null == bill.getBusinessTypeId()) {
-            messageList.add(getNotNullMessage("businessTypeId"));
-        }
-        if (StringUtil.isEmpty(bill.getManualId())) {
-            messageList.add(getNotNullMessage("manualId"));
-        }
-        if (null == bill.getChannelId()) {
-            messageList.add(getNotNullMessage("channelCode"));
-        }
-        if (null == bill.getToChannelId()) {
-            messageList.add(getNotNullMessage("toChannelCode"));
-        }
-        if (null == bill.getStatus()) {
-            messageList.add(getNotNullMessage("status"));
-        }
-        // 货品明细
-        if (CollUtil.isEmpty(param.getGoodsDetailData())) {
-            messageList.add(getNotNullMessage("goodsDetailData"));
-        }
-        // 判断手工单号是否重复
-        if (messageList.size() == 0) {
-            Integer count = receiveBillDao.selectCount(new QueryWrapper<ReceiveBill>().eq("manual_id", bill.getManualId()));
-            if (null != count && count > 0) {
-                messageList.add(getMessageByParams("dataExist", new String[]{LanguageUtil.getMessage("manualId")}));
-            }
-        }
         if (CollUtil.isNotEmpty(messageList)) {
             return;
         }
