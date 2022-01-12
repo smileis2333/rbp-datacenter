@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = { })
 public @interface BillStatus {
-    String message() default "{regent.validation.constraints.mapNotFound}";
+    String message() default "{regent.validation.constraints.billStatus}";
 
     Class<?>[] groups() default {};
 

@@ -31,9 +31,9 @@ public class ConflictManualIdValidator implements ConstraintValidator<ConflictMa
     }
 
     @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
-        if (StrUtil.isNotEmpty(value) && StrUtil.isNotEmpty(tableName)) {
-            String existRow = baseDbDao.getStringDataBySql(String.format("select manual_id from %s where manual_id = '%s' limit 1", tableName, value));
+    public boolean isValid(String mannualId, ConstraintValidatorContext context) {
+        if (StrUtil.isNotEmpty(mannualId) && StrUtil.isNotEmpty(tableName)) {
+            String existRow = baseDbDao.getStringDataBySql(String.format("select manual_id from %s where manual_id = '%s' limit 1", tableName, mannualId));
             return StrUtil.isEmpty(existRow);
         }
         return true;

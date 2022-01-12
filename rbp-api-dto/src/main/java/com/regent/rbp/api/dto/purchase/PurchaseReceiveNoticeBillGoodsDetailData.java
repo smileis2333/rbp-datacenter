@@ -15,10 +15,10 @@ import java.util.List;
 
 @Data
 @FromTo.List({
-        @FromTo(fromField = "goodsCode", toField = "goodsId",  message = "{regent.FromTo.goodsCodeNotExist}"),
-        @FromTo(fromField = "colorCode", toField = "colorId", message = "{regent.FromTo.colorCodeNotExist}"),
-        @FromTo(fromField = "longName", toField = "longId",  message = "{regent.FromTo.longNameNotExist}"),
-        @FromTo(fromField = "size", toField = "sizeId", message = "{regent.FromTo.sizeNotExist}"),
+        @FromTo(fromField = "goodsCode", toField = "goodsId"),
+        @FromTo(fromField = "colorCode", toField = "colorId"),
+        @FromTo(fromField = "longName", toField = "longId"),
+        @FromTo(fromField = "size", toField = "sizeId"),
 })
 @BarcodeRelationCheck
 @BarcodeOrGoodsCode

@@ -1,9 +1,18 @@
 package com.regent.rbp.api.dto.sale;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
-import io.swagger.annotations.ApiModelProperty;
+import com.regent.rbp.api.dto.validate.BillNo;
+import com.regent.rbp.api.dto.validate.BillStatus;
+import com.regent.rbp.api.dto.validate.ChannelCodeCheck;
+import com.regent.rbp.api.dto.validate.ConflictManualIdCheck;
 import lombok.Data;
+import org.hibernate.validator.constraints.Range;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -15,48 +24,49 @@ import java.util.List;
 @Data
 public class SaleOrderSaveParam {
 
-    @ApiModelProperty(notes = "单号")
+    @NotBlank
     private String billNo;
 
-    @ApiModelProperty(notes = "外部单号（RBP手工单号），唯一。")
+    @ConflictManualIdCheck(targetTable = "rbp_sales_order_bill")
     private String manualId;
 
-    @ApiModelProperty(notes = "单据日期")
-    private String billDate;
+    @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date billDate;
 
-    @ApiModelProperty(notes = "销售渠道编号")
+    @NotBlank
+    @ChannelCodeCheck
     private String saleChannelCode;
 
-    @ApiModelProperty(notes = "渠道编号")
+    @ChannelCodeCheck
     private String channelCode;
 
-    @ApiModelProperty(notes = "会员编号")
     private String memberCode;
 
-    @ApiModelProperty(notes = "原单号")
+    @BillNo(targetTable = "rbp_sales_order_bill")
     private String originBillNo;
 
-    @ApiModelProperty(notes = "班次编号")
     private String shiftNo;
 
-    @ApiModelProperty(notes = "来源(0.Pos;1.后台;2.第三方平台)")
+    @NotNull
+    @Range(min = 0,max = 2,message = "(0.Pos;1.后台;2.第三方平台)") // todo extract annotation to prevent future change
     private Integer origin;
 
-    @ApiModelProperty(notes = "单据状态(0.未审核,1.已审核,2.反审核,3.已作废)")
+    @NotNull
+    @BillStatus
     private Integer status;
 
-    @ApiModelProperty(notes = "单据类型(0.线下销售 1.全渠道发货 2.线上发货 3.线上退货 4.定金)")
+    @NotNull
+    @Range(min = 0,max = 4,message = "(0.线下销售 1.全渠道发货 2.线上发货 3.线上退货 4.定金)") // todo extract annotation to prevent future change
     private Integer billType;
 
-    @ApiModelProperty(notes = "备注")
+    @NotNull(message = "{javax.validation.constraints.DecimalMax.message}")
     private String notes;
 
-    @ApiModelProperty(notes = "货品明细")
+    @NotEmpty
     private List<SalesOrderBillGoodsResult> goodsDetailData;
 
-    @ApiModelProperty(notes = "支付方式")
     private List<SalesOrderBillPaymentResult> retailPayTypeData;
 
-    @ApiModelProperty(notes = "自定义字段")
     private List<CustomizeDataDto> customizeData;
 }

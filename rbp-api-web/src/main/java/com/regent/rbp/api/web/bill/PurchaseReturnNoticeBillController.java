@@ -37,7 +37,7 @@ public class PurchaseReturnNoticeBillController {
     }
 
     @ApiOperation(value = "新增")
-    @PostMapping("/save")
+    @PostMapping
     public DataResponse save(@RequestBody PurchaseReturnNoticeBillSaveParam param) {
         DataResponse result = purchaseReturnNoticeBillService.save(param);
         return result;

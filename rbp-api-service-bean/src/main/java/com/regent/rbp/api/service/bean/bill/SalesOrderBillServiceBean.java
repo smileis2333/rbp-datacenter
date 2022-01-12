@@ -1,5 +1,6 @@
 package com.regent.rbp.api.service.bean.bill;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -34,7 +35,6 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -92,6 +92,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
 
     /**
      * 将查询参数转换成 查询的上下文
+     *
      * @param param
      * @param context
      */
@@ -137,29 +138,29 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
             context.setBillDate(billDate);
         }
         // 创建日期
-        if(StringUtil.isNotBlank(param.getCreatedDateStart())) {
+        if (StringUtil.isNotBlank(param.getCreatedDateStart())) {
             Date createdDateStart = DateUtil.getDate(param.getCreatedDateStart(), DateUtil.FULL_DATE_FORMAT);
             context.setCreatedDateStart(createdDateStart);
         }
-        if(StringUtil.isNotBlank(param.getCreatedDateEnd())) {
+        if (StringUtil.isNotBlank(param.getCreatedDateEnd())) {
             Date createdDateEnd = DateUtil.getDate(param.getCreatedDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setCreatedDateEnd(createdDateEnd);
         }
         // 修改日期
-        if(StringUtil.isNotBlank(param.getUpdatedDateStart())) {
+        if (StringUtil.isNotBlank(param.getUpdatedDateStart())) {
             Date updatedDateStart = DateUtil.getDate(param.getUpdatedDateStart(), DateUtil.FULL_DATE_FORMAT);
             context.setUpdatedDateStart(updatedDateStart);
         }
-        if(StringUtil.isNotBlank(param.getUpdatedDateEnd())) {
+        if (StringUtil.isNotBlank(param.getUpdatedDateEnd())) {
             Date updatedDateEnd = DateUtil.getDate(param.getUpdatedDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setUpdatedDateEnd(updatedDateEnd);
         }
         // 审核日期
-        if(StringUtil.isNotBlank(param.getCheckDateStart())) {
+        if (StringUtil.isNotBlank(param.getCheckDateStart())) {
             Date checkDateStart = DateUtil.getDate(param.getCheckDateStart(), DateUtil.FULL_DATE_FORMAT);
             context.setCheckDateStart(checkDateStart);
         }
-        if(StringUtil.isNotBlank(param.getCheckDateEnd())) {
+        if (StringUtil.isNotBlank(param.getCheckDateEnd())) {
             Date checkDateEnd = DateUtil.getDate(param.getCheckDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setCheckDateEnd(checkDateEnd);
         }
@@ -167,6 +168,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
 
     /**
      * 查询渠道数据
+     *
      * @param context
      * @return
      */
@@ -187,6 +189,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
 
     /**
      * 整理查询条件构造器
+     *
      * @param context
      * @return
      */
@@ -216,22 +219,22 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         if (context.getBillType() != null)
             queryWrapper.in("bill_type", context.getBillType());
 
-        if(context.getCreatedDateStart() != null) {
+        if (context.getCreatedDateStart() != null) {
             queryWrapper.ge("created_time", context.getCreatedDateStart());
         }
-        if(context.getCreatedDateEnd() != null) {
+        if (context.getCreatedDateEnd() != null) {
             queryWrapper.le("created_time", context.getCreatedDateEnd());
         }
-        if(context.getUpdatedDateStart() != null) {
+        if (context.getUpdatedDateStart() != null) {
             queryWrapper.ge("updated_time", context.getUpdatedDateStart());
         }
-        if(context.getUpdatedDateEnd() != null) {
+        if (context.getUpdatedDateEnd() != null) {
             queryWrapper.le("updated_time", context.getUpdatedDateEnd());
         }
-        if(context.getCheckDateStart() != null) {
+        if (context.getCheckDateStart() != null) {
             queryWrapper.ge("check_time", context.getCheckDateStart());
         }
-        if(context.getCheckDateEnd() != null) {
+        if (context.getCheckDateEnd() != null) {
             queryWrapper.le("check_time", context.getCheckDateEnd());
         }
         return queryWrapper;
@@ -239,6 +242,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
 
     /**
      * 处理查询结果的属性
+     *
      * @param list
      * @return
      */
@@ -297,7 +301,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         List<MemberCard> memberCardList = memberCardDao.selectList(new LambdaQueryWrapper<MemberCard>().in(MemberCard::getId, memberIds));
         Map<Long, String> memberCardMap = memberCardList.stream().collect(Collectors.toMap(MemberCard::getId, MemberCard::getCode));
 
-        
+
         for (SalesOrderBill bill : list) {
             SalesOrderBillQueryResult queryResult = new SalesOrderBillQueryResult();
             queryResult.setManualId(bill.getManualId());
@@ -413,7 +417,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
 
         // 验证属性
         List<String> errorMsgList = verificationProperty(param, context);
-        if(errorMsgList.size() > 0 ) {
+        if (errorMsgList.size() > 0) {
             String message = StringUtil.join(errorMsgList, ",");
             return DataResponse.errorParameter(message);
         }
@@ -424,6 +428,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
 
     /**
      * 验证属性
+     *
      * @param param
      * @param context
      * @return
@@ -435,29 +440,14 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         List<SalesOrderBillSize> salesOrderBillSizeList = context.getSalesOrderBillSizeList();
         List<SalesOrderBillPayment> salesOrderBillPaymentList = context.getSalesOrderBillPaymentList();
 
-        if (param.getBillNo() == null || param.getBillNo().length() == 0) {
-            errorMsgList.add("单号(billNo)不能为空");
-        }
-        if (param.getBillDate() == null || param.getBillDate().length() == 0) {
-            errorMsgList.add("单据日期(billDate)不能为空");
-        }
-        if (param.getSaleChannelCode() == null || param.getSaleChannelCode().length() == 0) {
-            errorMsgList.add("销售渠道编号(saleChannelCode)不能为空");
-        } else {
-            Channel channel = channelDao.selectOne(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getSaleChannelCode()));
-            if (channel == null) {
-                errorMsgList.add("销售渠道编号(saleChannelCode)不存在");
-            } else {
-                salesOrderBill.setSaleChannelId(channel.getId());
-            }
-        }
-        if (param.getChannelCode() != null && param.getChannelCode().length() > 0) {
+        Channel saleChannel = channelDao.selectOne(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getSaleChannelCode()));
+
+        salesOrderBill.setSaleChannelId(saleChannel.getId());
+
+        if (StrUtil.isNotBlank(param.getChannelCode())) {
             Channel channel = channelDao.selectOne(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getChannelCode()));
-            if (channel == null) {
-                errorMsgList.add("渠道编号(channelCode)不存在");
-            } else {
-                salesOrderBill.setChannelId(channel.getId());
-            }
+
+            salesOrderBill.setChannelId(channel.getId());
         }
         if (param.getShiftNo() == null || param.getShiftNo().length() == 0) {
             errorMsgList.add("班次编号(shiftNo)不能为空");
@@ -478,100 +468,78 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                 salesOrderBill.setMemberId(memberCard.getId());
             }
         }
-        if (param.getOriginBillNo() != null && param.getOriginBillNo().length() > 0) {
+        if (StrUtil.isNotBlank(param.getOriginBillNo())) {
             SalesOrderBill sale = salesOrderBillDao.selectOne(new LambdaQueryWrapper<SalesOrderBill>().eq(SalesOrderBill::getBillNo, param.getOriginBillNo()));
-            if (sale == null) {
-                errorMsgList.add("原单号(originBillNo)不存在");
-            } else {
-                salesOrderBill.setOriginBillId(sale.getId());
-                salesOrderBill.setOriginBillNo(sale.getBillNo());
-            }
+
+            salesOrderBill.setOriginBillId(sale.getId());
+            salesOrderBill.setOriginBillNo(sale.getBillNo());
         }
-        if (param.getOrigin() == null) {
-            errorMsgList.add("来源(origin)不能为空");
-        } else {
-            List<Integer> originList = new ArrayList<>();
-            originList.add(0);
-            originList.add(1);
-            originList.add(2);
-            if (originList.stream().filter(f -> f.equals(param.getOrigin())).count() == 0) {
-                errorMsgList.add("来源(origin)内容必须是 (0.Pos;1.后台;2.第三方平台)");
+        if (StringUtils.isBlank(param.getGoodsDetailData().get(0).getBarcode())) {
+            // 货品+颜色+内长+尺码
+            List<String> goodsNos = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getGoodsCode).distinct().collect(Collectors.toList());
+            List<Goods> goodsList = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getCode, goodsNos));
+            Map<String, Goods> goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getCode, t -> t));
+
+            List<String> colorNos = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getColorCode).distinct().collect(Collectors.toList());
+            List<Color> colorList = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getCode, colorNos));
+            Map<String, Color> colorMap = colorList.stream().collect(Collectors.toMap(Color::getCode, t -> t));
+
+            List<String> longNos = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getLongName).distinct().collect(Collectors.toList());
+            List<LongInfo> longList = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getName, longNos));
+            Map<String, LongInfo> longMap = longList.stream().collect(Collectors.toMap(LongInfo::getName, t -> t));
+
+            List<String> sizeNos = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getSize).distinct().collect(Collectors.toList());
+            List<SizeClass> sizeList = sizeClassDao.selectList(new LambdaQueryWrapper<SizeClass>().in(SizeClass::getName, sizeNos));
+            Map<String, SizeClass> sizeMap = sizeList.stream().collect(Collectors.toMap(SizeClass::getName, t -> t));
+
+            Integer rowIndex = 1;
+            for (SalesOrderBillGoodsResult goodsResult : param.getGoodsDetailData()) {
+                Barcode barcode = new Barcode();
+                // 货品
+                if (!goodsMap.containsKey(goodsResult.getGoodsCode())) {
+                    errorMsgList.add(String.format("货号(goodsCode) %s 不存在", goodsResult.getGoodsCode()));
+                } else {
+                    barcode.setGoodsId(goodsMap.get(goodsResult.getGoodsCode()).getId());
+                }
+                // 颜色
+                if (!colorMap.containsKey(goodsResult.getColorCode())) {
+                    errorMsgList.add(String.format("颜色编号(colorCode) %s 不存在", goodsResult.getColorCode()));
+                } else {
+                    barcode.setColorId(colorMap.get(goodsResult.getColorCode()).getId());
+                }
+                // 内长
+                if (!longMap.containsKey(goodsResult.getLongName())) {
+                    errorMsgList.add(String.format("内长(longName) %s 不存在", goodsResult.getLongName()));
+                } else {
+                    barcode.setColorId(longMap.get(goodsResult.getLongName()).getId());
+                }
+                // 尺码
+                if (!sizeMap.containsKey(goodsResult.getSize())) {
+                    errorMsgList.add(String.format("尺码(size) %s 不存在", goodsResult.getSize()));
+                } else {
+                    barcode.setColorId(sizeMap.get(goodsResult.getSize()).getId());
+                }
+
+                SalesOrderBillGoods billGoods = this.giveSalesOrderBillGoods(salesOrderBill, goodsResult, barcode.getGoodsId());
+                salesOrderBillGoodsList.add(billGoods);
+
+                SalesOrderBillSize billSize = this.giveSalesOrderBillSize(salesOrderBill, barcode);
+                billSize.setBillGoodsId(billGoods.getId());
+                billSize.setQuantity(goodsResult.getQuantity());
+                billSize.setRowIndex(rowIndex);
+                salesOrderBillSizeList.add(billSize);
             }
-        }
-        if (param.getStatus() == null) {
-            errorMsgList.add("单据状态(status)不能为空");
         } else {
-            List<Integer> statusList = new ArrayList<>();
-            statusList.add(0);
-            statusList.add(1);
-            statusList.add(2);
-            statusList.add(3);
-            if (statusList.stream().filter(f -> f.equals(param.getStatus())).count() == 0) {
-                errorMsgList.add("单据状态(status)内容必须是 (0.未审核,1.已审核,2.反审核,3.已作废)");
-            }
-        }
-        if (param.getBillType() == null) {
-            errorMsgList.add("单据类型(billType)不能为空");
-        } else {
-            List<Integer> billTypeList = new ArrayList<>();
-            billTypeList.add(0);
-            billTypeList.add(1);
-            billTypeList.add(2);
-            billTypeList.add(3);
-            billTypeList.add(4);
-            if (billTypeList.stream().filter(f -> f.equals(param.getBillType())).count() == 0) {
-                errorMsgList.add("单据类型(billType)内容必须是 (0.线下销售 1.全渠道发货 2.线上发货 3.线上退货 4.定金)");
-            }
-        }
-        if (param.getGoodsDetailData() == null || param.getGoodsDetailData().size() == 0) {
-            errorMsgList.add("货品明细(goodsDetailData)不能为空");
-        } else {
-            if (StringUtils.isBlank(param.getGoodsDetailData().get(0).getBarcode())) {
-                // 货品+颜色+内长+尺码
-                List<String> goodsNos = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getGoodsCode).distinct().collect(Collectors.toList());
-                List<Goods> goodsList = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getCode, goodsNos));
-                Map<String, Goods> goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getCode, t->t));
-
-                List<String> colorNos = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getColorCode).distinct().collect(Collectors.toList());
-                List<Color> colorList = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getCode, colorNos));
-                Map<String, Color> colorMap = colorList.stream().collect(Collectors.toMap(Color::getCode, t->t));
-
-                List<String> longNos = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getLongName).distinct().collect(Collectors.toList());
-                List<LongInfo> longList = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getName, longNos));
-                Map<String, LongInfo> longMap = longList.stream().collect(Collectors.toMap(LongInfo::getName, t->t));
-
-                List<String> sizeNos = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getSize).distinct().collect(Collectors.toList());
-                List<SizeClass> sizeList = sizeClassDao.selectList(new LambdaQueryWrapper<SizeClass>().in(SizeClass::getName, sizeNos));
-                Map<String, SizeClass> sizeMap = sizeList.stream().collect(Collectors.toMap(SizeClass::getName, t->t));
-
-                Integer rowIndex = 1;
-                for (SalesOrderBillGoodsResult goodsResult : param.getGoodsDetailData()) {
-                    Barcode barcode = new Barcode();
-                    // 货品
-                    if (!goodsMap.containsKey(goodsResult.getGoodsCode())) {
-                        errorMsgList.add(String.format("货号(goodsCode) %s 不存在", goodsResult.getGoodsCode()));
-                    } else {
-                        barcode.setGoodsId(goodsMap.get(goodsResult.getGoodsCode()).getId());
-                    }
-                    // 颜色
-                    if (!colorMap.containsKey(goodsResult.getColorCode())) {
-                        errorMsgList.add(String.format("颜色编号(colorCode) %s 不存在", goodsResult.getColorCode()));
-                    } else {
-                        barcode.setColorId(colorMap.get(goodsResult.getColorCode()).getId());
-                    }
-                    // 内长
-                    if (!longMap.containsKey(goodsResult.getLongName())) {
-                        errorMsgList.add(String.format("内长(longName) %s 不存在", goodsResult.getLongName()));
-                    } else {
-                        barcode.setColorId(longMap.get(goodsResult.getLongName()).getId());
-                    }
-                    // 尺码
-                    if (!sizeMap.containsKey(goodsResult.getSize())) {
-                        errorMsgList.add(String.format("尺码(size) %s 不存在", goodsResult.getSize()));
-                    } else {
-                        barcode.setColorId(sizeMap.get(goodsResult.getSize()).getId());
-                    }
-
+            // 条码
+            List<String> barcodes = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getBarcode).distinct().collect(Collectors.toList());
+            List<Barcode> barcodeList = barcodeDao.selectList(new LambdaQueryWrapper<Barcode>().in(Barcode::getBarcode, barcodes));
+            Map<String, Barcode> barcodeMap = barcodeList.stream().collect(Collectors.toMap(Barcode::getBarcode, t -> t));
+            Integer rowIndex = 1;
+            for (SalesOrderBillGoodsResult goodsResult : param.getGoodsDetailData()) {
+                if (!barcodeMap.containsKey(goodsResult.getBarcode())) {
+                    errorMsgList.add(String.format("条形码(barcode) %s 不存在", goodsResult.getBarcode()));
+                } else {
+                    Barcode barcode = barcodeMap.get(goodsResult.getBarcode());
                     SalesOrderBillGoods billGoods = this.giveSalesOrderBillGoods(salesOrderBill, goodsResult, barcode.getGoodsId());
                     salesOrderBillGoodsList.add(billGoods);
 
@@ -581,31 +549,10 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                     billSize.setRowIndex(rowIndex);
                     salesOrderBillSizeList.add(billSize);
                 }
-            } else {
-                // 条码
-                List<String> barcodes =  param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getBarcode).distinct().collect(Collectors.toList());
-                List<Barcode> barcodeList = barcodeDao.selectList(new LambdaQueryWrapper<Barcode>().in(Barcode::getBarcode, barcodes));
-                Map<String, Barcode> barcodeMap = barcodeList.stream().collect(Collectors.toMap(Barcode::getBarcode, t -> t));
-                Integer rowIndex = 1;
-                for (SalesOrderBillGoodsResult goodsResult : param.getGoodsDetailData()) {
-                    if (!barcodeMap.containsKey(goodsResult.getBarcode())) {
-                        errorMsgList.add(String.format("条形码(barcode) %s 不存在", goodsResult.getBarcode()));
-                    } else {
-                        Barcode barcode = barcodeMap.get(goodsResult.getBarcode());
-                        SalesOrderBillGoods billGoods = this.giveSalesOrderBillGoods(salesOrderBill, goodsResult, barcode.getGoodsId());
-                        salesOrderBillGoodsList.add(billGoods);
-
-                        SalesOrderBillSize billSize = this.giveSalesOrderBillSize(salesOrderBill, barcode);
-                        billSize.setBillGoodsId(billGoods.getId());
-                        billSize.setQuantity(goodsResult.getQuantity());
-                        billSize.setRowIndex(rowIndex);
-                        salesOrderBillSizeList.add(billSize);
-                    }
-                    rowIndex++;
-                }
+                rowIndex++;
             }
         }
-        if (param.getRetailPayTypeData() != null ) {
+        if (param.getRetailPayTypeData() != null) {
             for (SalesOrderBillPaymentResult paymentResult : param.getRetailPayTypeData()) {
                 RetailPayType payType = retailPayTypeDao.selectOne(new LambdaQueryWrapper<RetailPayType>().eq(RetailPayType::getCode, paymentResult.getRetailPayTypeCode()));
                 if (payType == null) {
@@ -626,7 +573,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                 }
             }
         }
-        
+
         return errorMsgList;
     }
 
@@ -673,6 +620,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
 
     /**
      * 写入销售单
+     *
      * @param context
      */
     private void save(SalesOrderBillSaveContext context) {
@@ -687,7 +635,6 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
             salesOrderBillPaymentDao.insert(payment);
         }
     }
-
 
 
 }

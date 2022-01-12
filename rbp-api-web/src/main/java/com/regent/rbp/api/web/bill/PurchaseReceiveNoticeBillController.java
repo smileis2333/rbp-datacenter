@@ -42,7 +42,7 @@ public class PurchaseReceiveNoticeBillController {
     }
 
     @ApiOperation(value = "新增")
-    @PostMapping("/save")
+    @PostMapping
     public DataResponse save(@RequestBody @Valid PurchaseReceiveNoticeBillSaveParam param) {
         return purchaseReceiveNoticeBillService.save(param);
     }

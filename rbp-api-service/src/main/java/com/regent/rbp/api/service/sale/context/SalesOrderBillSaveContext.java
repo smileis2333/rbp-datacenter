@@ -5,14 +5,11 @@ import com.regent.rbp.api.core.salesOrder.SalesOrderBillGoods;
 import com.regent.rbp.api.core.salesOrder.SalesOrderBillPayment;
 import com.regent.rbp.api.core.salesOrder.SalesOrderBillSize;
 import com.regent.rbp.api.dto.sale.SaleOrderSaveParam;
-import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import lombok.Data;
-import org.w3c.dom.stylesheets.LinkStyle;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -54,8 +51,6 @@ public class SalesOrderBillSaveContext {
         this.salesOrderBill.setBillNo(param.getBillNo());
         this.salesOrderBill.setManualId(param.getManualId());
         this.salesOrderBill.setNotes(param.getNotes());
-
-        Date billDate = DateUtil.getDate(param.getBillDate(), DateUtil.SHORT_DATE_FORMAT);
-        this.salesOrderBill.setBillDate(billDate);
+        this.salesOrderBill.setBillDate(param.getBillDate());
     }
 }

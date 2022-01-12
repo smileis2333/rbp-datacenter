@@ -25,7 +25,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target(TYPE)
 @Constraint(validatedBy = { })
 public @interface FromTo {
-    String message() default "{}";
+    String message() default "{regent.validation.FromTo}";
 
     Class<?>[] groups() default {Complex.class};
 

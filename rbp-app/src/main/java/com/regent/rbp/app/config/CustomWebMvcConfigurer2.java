@@ -29,7 +29,7 @@ import java.util.Locale;
  * copy from com.regent.rbp.app.adapter.CustomWebMvcConfigurer,
  * but modify
  * @see CustomWebMvcConfigurer#getValidator() to retutrn null and replace it with the
- * @see Jsr303Config#validator()
+ * @see CustomWebMvcConfigurer2#validator()
  * othe changes is about the @ComponentScan aboute main class
  * @see RbpAppApplication
  *
@@ -38,7 +38,7 @@ import java.util.Locale;
  * @description
  */
 @Configuration
-public class Jsr303Config implements WebMvcConfigurer {
+public class CustomWebMvcConfigurer2 implements WebMvcConfigurer {
     static Logger logger = LoggerFactory.getLogger(CustomWebMvcConfigurer.class);
 
     /**

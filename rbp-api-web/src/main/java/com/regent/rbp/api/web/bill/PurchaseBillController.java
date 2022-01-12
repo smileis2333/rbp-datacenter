@@ -37,7 +37,7 @@ public class PurchaseBillController {
     }
 
     @ApiOperation(value = "新增")
-    @PostMapping("/save")
+    @PostMapping
     public DataResponse save(@RequestBody PurchaseBillSaveParam param) {
         DataResponse result = purchaseBillService.save(param);
         return result;
