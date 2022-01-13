@@ -65,6 +65,7 @@ public class CustomConstraintHelper extends ConstraintHelper {
             putConstraint(tmpConstraints, BillNo.class, BillNoValidator.class);
             putConstraint(tmpConstraints, RuleIdCheck.class, RuleIdCheckValidator.class);
             putConstraints(tmpConstraints, SupplierCodeCheck.class, SupplierCodeValidatorForSingle.class, SupplierCodeValidatorForQueryList.class);
+            putConstraint(tmpConstraints, ChannelOrganizationCheck.class, ChannelOrganizationCheckValidator.class);
             /**
              * 设置回field
              */

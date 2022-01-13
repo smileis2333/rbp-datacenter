@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 /**
  * @Description 资金号
  * @Author shaoqidong
@@ -31,7 +33,7 @@ public class FundAccountController {
     }
 
     @PostMapping
-    public DataResponse save(@RequestBody FundAccountSaveParam param) {
+    public DataResponse save(@RequestBody @Valid FundAccountSaveParam param) {
         DataResponse result = fundAccountService.save(param);
         return result;
     }

@@ -1,9 +1,15 @@
 package com.regent.rbp.api.dto.sale;
 
+import cn.hutool.core.collection.CollUtil;
+import com.regent.rbp.api.dto.validate.BarcodeOrGoodsCode;
+import com.regent.rbp.api.dto.validate.FromTo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Null;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @program: rbp-datacenter
@@ -11,7 +17,15 @@ import java.math.BigDecimal;
  * @author: HaiFeng
  * @create: 2021-11-08 14:29
  */
+@FromTo.List({
+        @FromTo(fromField = "goodsCode", toField = "goodsId"),
+        @FromTo(fromField = "colorCode", toField = "colorId"),
+        @FromTo(fromField = "longName", toField = "longId"),
+        @FromTo(fromField = "size", toField = "sizeId"),
+        @FromTo(fromField = "barcode", toField = "barcodeId"),
+})
 @Data
+@BarcodeOrGoodsCode
 public class SalesOrderBillGoodsResult {
 
     @ApiModelProperty(notes = "条形码。注：条形码和「货号、颜色编号、内长、尺码」二选一。")
@@ -61,4 +75,28 @@ public class SalesOrderBillGoodsResult {
 
     @ApiModelProperty(notes = "结算折扣")
     private BigDecimal balanceDiscount;
+
+    @Valid
+    private List<EmployeeAchievement> employeeGoodsAchievement;
+
+    @Null
+    private Long goodsId;
+
+    @Null
+    private Long colorId;
+
+    @Null
+    private Long longId;
+
+    @Null
+    private Long sizeId;
+
+    @Null
+    private Long barcodeId;
+
+    public void setRowIndex(Integer rowIndex) {
+        if (CollUtil.isNotEmpty(employeeGoodsAchievement)) {
+            employeeGoodsAchievement.forEach(e -> e.setRowIndex(rowIndex));
+        }
+    }
 }

@@ -1,9 +1,6 @@
 package com.regent.rbp.api.service.sale.context;
 
-import com.regent.rbp.api.core.salesOrder.SalesOrderBill;
-import com.regent.rbp.api.core.salesOrder.SalesOrderBillGoods;
-import com.regent.rbp.api.core.salesOrder.SalesOrderBillPayment;
-import com.regent.rbp.api.core.salesOrder.SalesOrderBillSize;
+import com.regent.rbp.api.core.salesOrder.*;
 import com.regent.rbp.api.dto.sale.SaleOrderSaveParam;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
@@ -25,8 +22,12 @@ public class SalesOrderBillSaveContext {
     private List<SalesOrderBillGoods> salesOrderBillGoodsList;
     private List<SalesOrderBillSize> salesOrderBillSizeList;
     private List<SalesOrderBillPayment> salesOrderBillPaymentList;
+    private List<EmployeeGoodsAchievement> employeeGoodsAchievements;
+    private List<EmployeeBillAchievement> employeeBillAchievements;
 
-    public SalesOrderBillSaveContext() { this(null); }
+    public SalesOrderBillSaveContext() {
+        this(null);
+    }
 
     public SalesOrderBillSaveContext(SaleOrderSaveParam param) {
         this.salesOrderBill = new SalesOrderBill();
@@ -38,7 +39,7 @@ public class SalesOrderBillSaveContext {
         this.salesOrderBillSizeList = new ArrayList<>();
         this.salesOrderBillPaymentList = new ArrayList<>();
 
-        if(param != null) {
+        if (param != null) {
             this.readProperties(param);
         }
     }

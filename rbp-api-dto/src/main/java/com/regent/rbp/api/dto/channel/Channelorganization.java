@@ -16,4 +16,5 @@ public class Channelorganization {
     private String organization3;
     private String organization4;
     private String organization5;
+
 }

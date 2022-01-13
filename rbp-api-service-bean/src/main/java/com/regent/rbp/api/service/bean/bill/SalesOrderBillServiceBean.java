@@ -1,6 +1,8 @@
 package com.regent.rbp.api.service.bean.bill;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -9,20 +11,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.*;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.coupon.RetailPayType;
+import com.regent.rbp.api.core.employee.Employee;
 import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.api.core.member.MemberCard;
-import com.regent.rbp.api.core.salesOrder.SalesOrderBill;
-import com.regent.rbp.api.core.salesOrder.SalesOrderBillGoods;
-import com.regent.rbp.api.core.salesOrder.SalesOrderBillPayment;
-import com.regent.rbp.api.core.salesOrder.SalesOrderBillSize;
+import com.regent.rbp.api.core.salesOrder.*;
 import com.regent.rbp.api.dao.base.*;
 import com.regent.rbp.api.dao.channel.ChannelDao;
+import com.regent.rbp.api.dao.employee.EmployeeDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.member.MemberCardDao;
-import com.regent.rbp.api.dao.salesOrder.SalesOrderBillDao;
-import com.regent.rbp.api.dao.salesOrder.SalesOrderBillGoodsDao;
-import com.regent.rbp.api.dao.salesOrder.SalesOrderBillPaymentDao;
-import com.regent.rbp.api.dao.salesOrder.SalesOrderBillSizeDao;
+import com.regent.rbp.api.dao.salesOrder.*;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.sale.*;
@@ -39,10 +37,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -82,7 +78,12 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
     SalesOrderBillPaymentDao salesOrderBillPaymentDao;
     @Autowired
     private Validator validator;
-
+    @Autowired
+    private EmployeeDao employeeDao;
+    @Autowired
+    EmployeeBillAchievementDao employeeBillAchievementDao;
+    @Autowired
+    EmployeeGoodsAchievementDao employeeGoodsAchievementDao;
 
     @Override
     public PageDataResponse<SalesOrderBillQueryResult> query(SaleOrderQueryParam param) {
@@ -450,10 +451,8 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         Channel saleChannel = channelDao.selectOne(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getSaleChannelCode()));
         salesOrderBill.setSaleChannelId(saleChannel.getId());
 
-        if (StrUtil.isNotBlank(param.getChannelCode())) {
-            Channel channel = channelDao.selectOne(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getChannelCode()));
-            salesOrderBill.setChannelId(channel.getId());
-        }
+        Channel channel = channelDao.selectOne(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getChannelCode()));
+        salesOrderBill.setChannelId(channel.getId());
 
         PosClass posClass = posClassDao.selectOne(new LambdaQueryWrapper<PosClass>().eq(PosClass::getCode, param.getShiftNo()));
         if (posClass == null) {
@@ -477,98 +476,132 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
             salesOrderBill.setOriginBillNo(sale.getBillNo());
         }
 
-        if (StringUtils.isBlank(param.getGoodsDetailData().get(0).getBarcode())) {
-            // 货品+颜色+内长+尺码
-            Map<String, Goods> goodsMap = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getCode, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getGoodsCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Goods::getCode, t -> t));
-            Map<String, Color> colorMap = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getCode, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getColorCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Color::getCode, t -> t));
-            Map<String, LongInfo> longMap = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getName, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getLongName).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(LongInfo::getName, t -> t));
-            Map<String, SizeClass> sizeMap = sizeClassDao.selectList(new LambdaQueryWrapper<SizeClass>().in(SizeClass::getName, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getSize).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(SizeClass::getName, t -> t));
-
-            Integer rowIndex = 1;
-            for (SalesOrderBillGoodsResult goodsResult : param.getGoodsDetailData()) {
-                Barcode barcode = new Barcode();
-                // 货品
-                if (!goodsMap.containsKey(goodsResult.getGoodsCode())) {
-                    errorMsgList.add(String.format("货号(goodsCode) %s 不存在", goodsResult.getGoodsCode()));
-                } else {
-                    barcode.setGoodsId(goodsMap.get(goodsResult.getGoodsCode()).getId());
-                }
-                // 颜色
-                if (!colorMap.containsKey(goodsResult.getColorCode())) {
-                    errorMsgList.add(String.format("颜色编号(colorCode) %s 不存在", goodsResult.getColorCode()));
-                } else {
-                    barcode.setColorId(colorMap.get(goodsResult.getColorCode()).getId());
-                }
-                // 内长
-                if (!longMap.containsKey(goodsResult.getLongName())) {
-                    errorMsgList.add(String.format("内长(longName) %s 不存在", goodsResult.getLongName()));
-                } else {
-                    barcode.setColorId(longMap.get(goodsResult.getLongName()).getId());
-                }
-                // 尺码
-                if (!sizeMap.containsKey(goodsResult.getSize())) {
-                    errorMsgList.add(String.format("尺码(size) %s 不存在", goodsResult.getSize()));
-                } else {
-                    barcode.setColorId(sizeMap.get(goodsResult.getSize()).getId());
-                }
-
-                SalesOrderBillGoods billGoods = this.giveSalesOrderBillGoods(salesOrderBill, goodsResult, barcode.getGoodsId());
-                salesOrderBillGoodsList.add(billGoods);
-
-                SalesOrderBillSize billSize = this.giveSalesOrderBillSize(salesOrderBill, barcode);
-                billSize.setBillGoodsId(billGoods.getId());
-                billSize.setQuantity(goodsResult.getQuantity());
-                billSize.setRowIndex(rowIndex);
-                salesOrderBillSizeList.add(billSize);
-            }
+        // inject config
+        List<String> employeeCodes = param.getAllEmployeeCodes();
+        Map<String, Long> employeeCodeIdMap = CollUtil.isEmpty(employeeCodes) ? Collections.emptyMap() : employeeDao.selectList(new QueryWrapper<Employee>().in(CollUtil.isNotEmpty(employeeCodes), "code", employeeCodes)).stream().collect(Collectors.toMap(Employee::getCode, Employee::getId));
+        if (CollUtil.isNotEmpty(param.getEmployeeBillAchievement())) {
+            param.getEmployeeBillAchievement().forEach(em -> em.setEmployeeId(employeeCodeIdMap.get(em.getEmployeeCode())));
         } else {
-            // 条码
-            List<String> barcodes = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getBarcode).distinct().collect(Collectors.toList());
-            List<Barcode> barcodeList = barcodeDao.selectList(new LambdaQueryWrapper<Barcode>().in(Barcode::getBarcode, barcodes));
-            Map<String, Barcode> barcodeMap = barcodeList.stream().collect(Collectors.toMap(Barcode::getBarcode, t -> t));
-            Integer rowIndex = 1;
-            for (SalesOrderBillGoodsResult goodsResult : param.getGoodsDetailData()) {
-                if (!barcodeMap.containsKey(goodsResult.getBarcode())) {
-                    errorMsgList.add(String.format("条形码(barcode) %s 不存在", goodsResult.getBarcode()));
-                } else {
-                    Barcode barcode = barcodeMap.get(goodsResult.getBarcode());
-                    SalesOrderBillGoods billGoods = this.giveSalesOrderBillGoods(salesOrderBill, goodsResult, barcode.getGoodsId());
-                    salesOrderBillGoodsList.add(billGoods);
-
-                    SalesOrderBillSize billSize = this.giveSalesOrderBillSize(salesOrderBill, barcode);
-                    billSize.setBillGoodsId(billGoods.getId());
-                    billSize.setQuantity(goodsResult.getQuantity());
-                    billSize.setRowIndex(rowIndex);
-                    salesOrderBillSizeList.add(billSize);
-                }
-                rowIndex++;
-            }
+            param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getEmployeeGoodsAchievement).filter(ObjectUtil::isNotNull).flatMap(Collection::stream).forEach(em -> {
+                em.setEmployeeId(employeeCodeIdMap.get(em.getEmployeeCode()));
+            });
         }
+
+        // inject employee info
         if (CollUtil.isNotEmpty(param.getRetailPayTypeData())) {
             Map<String, Long> payTypeIdMap = retailPayTypeDao.selectList(new LambdaQueryWrapper<RetailPayType>().in(RetailPayType::getCode, CollUtil.distinct(CollUtil.map(param.getRetailPayTypeData(), SalesOrderBillPaymentResult::getRetailPayTypeCode, true)))).stream().collect(Collectors.toMap(RetailPayType::getCode, RetailPayType::getId));
-            param.getRetailPayTypeData().forEach(e->{
+            param.getRetailPayTypeData().forEach(e -> {
                 e.setRetailPayTypeId(payTypeIdMap.get(e.getRetailPayTypeCode()));
             });
         }
 
-        if (ValidateMessageUtil.pass(validator.validate(param, Complex.class),errorMsgList)) {
-            if (CollUtil.isNotEmpty(param.getRetailPayTypeData())){
-                param.getRetailPayTypeData().forEach(e->{
-                    SalesOrderBillPayment payment = new SalesOrderBillPayment();
-                    payment.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-                    payment.setBillId(salesOrderBill.getId());
-                    payment.setRetailPayTypeId(e.getRetailPayTypeId());
-                    payment.setPayMoney(e.getPayMoney());
-                    payment.setReturnMoney(e.getReturnMoney());
-                    payment.setCreatedBy(salesOrderBill.getCreatedBy());
-                    payment.setCreatedTime(salesOrderBill.getCreatedTime());
-                    payment.setUpdatedBy(salesOrderBill.getUpdatedBy());
-                    payment.setUpdatedTime(salesOrderBill.getUpdatedTime());
-                    salesOrderBillPaymentList.add(payment);
-                });
+        // inject goods info
+        boolean runBarcodeAsGoodInfoSource = StringUtils.isBlank(param.getGoodsDetailData().get(0).getBarcode());
+        if (runBarcodeAsGoodInfoSource) {
+            List<String> barcodes = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getBarcode).filter(ObjectUtil::isNotNull).distinct().collect(Collectors.toList());
+            Map<String, Barcode> barcodeMap = CollUtil.isEmpty(barcodes) ? Collections.emptyMap() : barcodeDao.selectList(new QueryWrapper<Barcode>().in("code", barcodes)).stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
+            param.getGoodsDetailData().forEach(e -> {
+                Barcode barcode;
+                if ((barcode = barcodeMap.get(e.getBarcode())) != null) {
+                    e.setGoodsId(barcode.getGoodsId());
+                    e.setColorId(barcode.getColorId());
+                    e.setLongId(barcode.getLongId());
+                    e.setSizeId(barcode.getSizeId());
+                }
+            });
+        } else {
+            // 货品+颜色+内长+尺码
+            Map<String, Long> goodsCodeIdMap = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getCode, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getGoodsCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
+            Map<String, Long> colorCodeIdMap = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getCode, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getColorCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
+            Map<String, Long> longNameIdMap = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getName, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getLongName).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
+            Map<String, Long> sizeIdMap = sizeClassDao.selectList(new LambdaQueryWrapper<SizeClass>().in(SizeClass::getName, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getSize).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(SizeClass::getName, SizeClass::getId));
+
+            param.getGoodsDetailData().forEach(e -> {
+                e.setGoodsId(goodsCodeIdMap.get(e.getGoodsCode()));
+                e.setColorId(colorCodeIdMap.get(e.getColorCode()));
+                e.setLongId(longNameIdMap.get(e.getLongName()));
+                e.setSizeId(sizeIdMap.get(e.getSize()));
+            });
+        }
+
+        // manual trigger validate
+        if (!ValidateMessageUtil.pass(validator.validate(param, Complex.class), errorMsgList)) return errorMsgList;
+
+        // process convert
+        if (CollUtil.isNotEmpty(param.getRetailPayTypeData())) {
+            param.getRetailPayTypeData().forEach(e -> {
+                SalesOrderBillPayment payment = new SalesOrderBillPayment();
+                payment.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                payment.setBillId(salesOrderBill.getId());
+                payment.setRetailPayTypeId(e.getRetailPayTypeId());
+                payment.setPayMoney(e.getPayMoney());
+                payment.setReturnMoney(e.getReturnMoney());
+                payment.setCreatedBy(salesOrderBill.getCreatedBy());
+                payment.setCreatedTime(salesOrderBill.getCreatedTime());
+                payment.setUpdatedBy(salesOrderBill.getUpdatedBy());
+                payment.setUpdatedTime(salesOrderBill.getUpdatedTime());
+                salesOrderBillPaymentList.add(payment);
+            });
+        }
+
+        if (runBarcodeAsGoodInfoSource) {
+            // 条码
+            Integer rowIndex = 1;
+            for (SalesOrderBillGoodsResult goodsResult : param.getGoodsDetailData()) {
+                Barcode realBarcode = BeanUtil.copyProperties(goodsResult, Barcode.class);
+                realBarcode.setId(goodsResult.getBarcodeId());
+                SalesOrderBillGoods billGoods = giveSalesOrderBillGoods(salesOrderBill, goodsResult, realBarcode.getGoodsId());
+                salesOrderBillGoodsList.add(billGoods);
+                SalesOrderBillSize billSize = giveSalesOrderBillSize(salesOrderBill, realBarcode);
+                billSize.setBillGoodsId(billGoods.getId());
+                billSize.setQuantity(goodsResult.getQuantity());
+                billSize.setRowIndex(rowIndex);
+                salesOrderBillSizeList.add(billSize);
+                goodsResult.setRowIndex(rowIndex);
+                rowIndex++;
+            }
+        } else {
+            Integer rowIndex = 1;
+            for (SalesOrderBillGoodsResult goodsResult : param.getGoodsDetailData()) {
+                Barcode fakeBarcode = BeanUtil.copyProperties(goodsResult, Barcode.class);
+                SalesOrderBillGoods billGoods = giveSalesOrderBillGoods(salesOrderBill, goodsResult, fakeBarcode.getGoodsId());
+                salesOrderBillGoodsList.add(billGoods);
+                SalesOrderBillSize billSize = giveSalesOrderBillSize(salesOrderBill, fakeBarcode);
+                billSize.setBillGoodsId(billGoods.getId());
+                billSize.setQuantity(goodsResult.getQuantity());
+                billSize.setRowIndex(rowIndex);
+                salesOrderBillSizeList.add(billSize);
+                goodsResult.setRowIndex(rowIndex);
+                rowIndex++;
             }
         }
 
+        if (CollUtil.isNotEmpty(param.getEmployeeBillAchievement())) {
+            context.setEmployeeBillAchievements(
+                    param.getEmployeeBillAchievement().stream().map(e -> {
+                        EmployeeBillAchievement employeeBillAchievement = new EmployeeBillAchievement();
+                        employeeBillAchievement.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                        employeeBillAchievement.setEmployeeId(e.getEmployeeId());
+                        employeeBillAchievement.setBillId(salesOrderBill.getId());
+                        employeeBillAchievement.setBillType(1);
+                        employeeBillAchievement.setShareAmount(e.getShareAmount());
+                        employeeBillAchievement.setShareRate(e.getShareRate());
+                        return employeeBillAchievement;
+                    }).collect(Collectors.toList()));
+        }
+
+        context.setEmployeeGoodsAchievements(param.getGoodsDetailData().stream().map(gds -> {
+            List<EmployeeAchievement> employeeGoodsAchievements = gds.getEmployeeGoodsAchievement();
+            return CollUtil.isEmpty(employeeGoodsAchievements) ? null : employeeGoodsAchievements.stream().map(e -> {
+                EmployeeGoodsAchievement employeeGoodsAchievement = BeanUtil.copyProperties(e, EmployeeGoodsAchievement.class);
+                employeeGoodsAchievement.setGoodsId(gds.getGoodsId());
+                employeeGoodsAchievement.setColorId(gds.getColorId());
+                employeeGoodsAchievement.setSizeId(gds.getSizeId());
+                employeeGoodsAchievement.setLongId(gds.getLongId());
+                employeeGoodsAchievement.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                return employeeGoodsAchievement;
+            }).collect(Collectors.toList());
+        }).filter(ObjectUtil::isNotNull).flatMap(Collection::stream).collect(Collectors.toList()));
         return errorMsgList;
     }
 
@@ -620,16 +653,21 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
      */
     private void save(SalesOrderBillSaveContext context) {
         salesOrderBillDao.insert(context.getSalesOrderBill());
-        for (SalesOrderBillGoods goods : context.getSalesOrderBillGoodsList()) {
-            salesOrderBillGoodsDao.insert(goods);
+        if (CollUtil.isNotEmpty(context.getSalesOrderBillGoodsList())) {
+            context.getSalesOrderBillGoodsList().forEach(salesOrderBillGoodsDao::insert);
         }
-        for (SalesOrderBillSize size : context.getSalesOrderBillSizeList()) {
-            salesOrderBillSizeDao.insert(size);
+        if (CollUtil.isNotEmpty(context.getSalesOrderBillSizeList())) {
+            context.getSalesOrderBillSizeList().forEach(salesOrderBillSizeDao::insert);
         }
-        for (SalesOrderBillPayment payment : context.getSalesOrderBillPaymentList()) {
-            salesOrderBillPaymentDao.insert(payment);
+        if (CollUtil.isNotEmpty(context.getSalesOrderBillPaymentList())) {
+            context.getSalesOrderBillPaymentList().forEach(salesOrderBillPaymentDao::insert);
+        }
+        if (CollUtil.isNotEmpty(context.getEmployeeBillAchievements())) {
+            context.getEmployeeBillAchievements().forEach(employeeBillAchievementDao::insert);
+        }
+        if (CollUtil.isNotEmpty(context.getEmployeeGoodsAchievements())) {
+            context.getEmployeeGoodsAchievements().forEach(employeeGoodsAchievementDao::insert);
         }
     }
-
 
 }

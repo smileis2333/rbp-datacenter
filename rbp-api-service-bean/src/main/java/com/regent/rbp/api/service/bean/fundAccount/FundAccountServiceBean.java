@@ -1,6 +1,7 @@
 package com.regent.rbp.api.service.bean.fundAccount;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -37,14 +38,12 @@ import com.regent.rbp.api.service.fundAccount.context.FundAccountSaveContext;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -105,7 +104,7 @@ public class FundAccountServiceBean implements FundAccountService {
 
     private List<FundAccountQueryResult> convertQueryResult(List<FundAccount> records) {
         List<FundAccountQueryResult> results = new ArrayList<>();
-        if(CollUtil.isNotEmpty(records)){
+        if (CollUtil.isNotEmpty(records)) {
             List<Long> fundAccountIdList = records.stream().map(FundAccount::getId).collect(Collectors.toList());
             //资金号价格政策
             List<FundAccountPricePolicy> fundAccountPricePolicies = fundAccountPricePolicyDao.selectList(new LambdaQueryWrapper<FundAccountPricePolicy>().eq(FundAccountPricePolicy::getFundAccountId, fundAccountIdList));
@@ -122,7 +121,7 @@ public class FundAccountServiceBean implements FundAccountService {
             List<PriceType> priceTypeList = priceTypeDao.selectList(new QueryWrapper<>());
             Map<Long, String> hashMapPriceType = priceTypeList.stream().collect(Collectors.toMap(PriceType::getId, x -> x.getName()));
             //折扣类型
-            List<DiscountCategory> listDiscountCategory = discountCategoryDao.selectList(new QueryWrapper<DiscountCategory>().select("id","name"));
+            List<DiscountCategory> listDiscountCategory = discountCategoryDao.selectList(new QueryWrapper<DiscountCategory>().select("id", "name"));
             Map<Long, String> mapDiscountCategory = listDiscountCategory.stream().collect(Collectors.toMap(DiscountCategory::getId, DiscountCategory::getName));
             //品牌
             List<Brand> brands = brandDao.selectList(new QueryWrapper<>());
@@ -141,15 +140,15 @@ public class FundAccountServiceBean implements FundAccountService {
                 result.setTaxRate(record.getTaxRate());
                 result.setType(record.getType());
                 //上级资金号
-                if(record.getParentId() != null){
+                if (record.getParentId() != null) {
                     FundAccount fundAccount = fundAccountDao.selectById(record.getParentId());
-                    result.setParentCode(fundAccount != null ? fundAccount.getCode():null);
+                    result.setParentCode(fundAccount != null ? fundAccount.getCode() : null);
                 }
 
                 //资金号价格政策
                 if (record.getId() != null && hashMapPricePolicie.containsKey(record.getId())) {
                     List<FundAccountPricePolicy> policyList = hashMapPricePolicie.get(record.getId());
-                    if(CollUtil.isNotEmpty(listCustomizeColumn)){
+                    if (CollUtil.isNotEmpty(listCustomizeColumn)) {
                         FundAccountPricePolicy fundAccountPricePolicy = policyList.get(0);
                         PricePolicy pricePolicy = new PricePolicy();
                         pricePolicy.setDiscount(fundAccountPricePolicy.getDiscount());
@@ -161,7 +160,7 @@ public class FundAccountServiceBean implements FundAccountService {
                 //资金号品牌价格政策
                 if (record.getId() != null && hashMapBrandPricePolicy.containsKey(record.getId())) {
                     List<FundAccountBrandPricePolicy> brandPricePolicyList = hashMapBrandPricePolicy.get(record.getId());
-                    if(CollUtil.isNotEmpty(listCustomizeColumn)){
+                    if (CollUtil.isNotEmpty(listCustomizeColumn)) {
                         FundAccountBrandPricePolicy fundAccountBrandPricePolicy = brandPricePolicyList.get(0);
                         BrandPricePolicy brandPricePolicy = new BrandPricePolicy();
                         brandPricePolicy.setBrandName(mapBrand.get(fundAccountBrandPricePolicy.getBrandId()));
@@ -175,7 +174,7 @@ public class FundAccountServiceBean implements FundAccountService {
                 //资金号银行账号
                 if (record.getId() != null && hashMapBank.containsKey(record.getId())) {
                     List<FundAccountBank> fundAccountBanks = hashMapBank.get(record.getId());
-                    if(CollUtil.isNotEmpty(listCustomizeColumn)){
+                    if (CollUtil.isNotEmpty(listCustomizeColumn)) {
                         FundAccountBank fundAccountBank = fundAccountBanks.get(0);
                         BankAccount bankAccount = new BankAccount();
                         bankAccount.setAccount(fundAccountBank.getAccount());
@@ -207,7 +206,7 @@ public class FundAccountServiceBean implements FundAccountService {
                 Map<String, Object> map = baseDbService.queryCustomData(TableConstants.FUND_ACCOUNT, record.getId());
                 if (CollUtil.isNotEmpty(map)) {
                     List<CustomizeDataDto> customizeDataDtoList = new ArrayList<>();
-                    map.forEach((k,v)->{
+                    map.forEach((k, v) -> {
                         CustomizeDataDto customizeDataDto = new CustomizeDataDto();
                         customizeDataDto.setCode(k);
                         customizeDataDto.setValue((String) v);
@@ -223,43 +222,43 @@ public class FundAccountServiceBean implements FundAccountService {
 
     private QueryWrapper processQueryWrapper(FundAccountQueryContext context) {
         QueryWrapper queryWrapper = new QueryWrapper<FundAccount>();
-        if(context.getCode() != null && context.getCode().length > 0 ) {
+        if (context.getCode() != null && context.getCode().length > 0) {
             queryWrapper.in("code", context.getCode());
         }
-        if(context.getName() != null && context.getName().length > 0 ) {
+        if (context.getName() != null && context.getName().length > 0) {
             queryWrapper.in("name", context.getName());
         }
-        if(context.getParentId() != null && context.getParentId().size() > 0 ) {
+        if (context.getParentId() != null && context.getParentId().size() > 0) {
             queryWrapper.in("parent_id", context.getParentId());
         }
-        if(context.getLegalPerson() != null && context.getLegalPerson().length > 0 ) {
+        if (context.getLegalPerson() != null && context.getLegalPerson().length > 0) {
             queryWrapper.in("legal_person", context.getLegalPerson());
         }
-        if(context.getTaxNumber() != null && context.getTaxNumber().length > 0 ) {
+        if (context.getTaxNumber() != null && context.getTaxNumber().length > 0) {
             queryWrapper.in("tax_number", context.getTaxNumber());
         }
-        if(context.getType() != null && context.getType().length > 0 ) {
+        if (context.getType() != null && context.getType().length > 0) {
             queryWrapper.in("type", context.getType());
         }
-        if(context.getStatus() != null && context.getStatus().length > 0 ) {
+        if (context.getStatus() != null && context.getStatus().length > 0) {
             queryWrapper.in("status", context.getStatus());
         }
-        if(context.getCreatedDateStart() != null) {
+        if (context.getCreatedDateStart() != null) {
             queryWrapper.ge("created_time", context.getCreatedDateStart());
         }
-        if(context.getCreatedDateEnd() != null) {
+        if (context.getCreatedDateEnd() != null) {
             queryWrapper.le("created_time", context.getCreatedDateEnd());
         }
-        if(context.getUpdatedDateStart() != null) {
+        if (context.getUpdatedDateStart() != null) {
             queryWrapper.ge("updated_time", context.getUpdatedDateStart());
         }
-        if(context.getUpdatedDateEnd() != null) {
+        if (context.getUpdatedDateEnd() != null) {
             queryWrapper.le("updated_time", context.getUpdatedDateEnd());
         }
-        if(context.getCheckDateStart() != null) {
+        if (context.getCheckDateStart() != null) {
             queryWrapper.ge("check_time", context.getCheckDateStart());
         }
-        if(context.getCheckDateEnd() != null) {
+        if (context.getCheckDateEnd() != null) {
             queryWrapper.le("check_time", context.getCheckDateEnd());
         }
         return queryWrapper;
@@ -275,33 +274,33 @@ public class FundAccountServiceBean implements FundAccountService {
         context.setType(param.getType());
         context.setStatus(param.getStatus());
 
-        if(param.getParentCode() != null && param.getParentCode().length > 0){
+        if (param.getParentCode() != null && param.getParentCode().length > 0) {
             List<FundAccount> codeList = fundAccountDao.selectList(new QueryWrapper<FundAccount>().in("code", param.getParentCode()));
             context.setParentId(codeList.stream().map(FundAccount::getId).collect(Collectors.toList()));
         }
-        if(StringUtil.isNotBlank(param.getCreatedDateStart())) {
+        if (StringUtil.isNotBlank(param.getCreatedDateStart())) {
             Date createdDateStart = DateUtil.getDate(param.getCreatedDateStart(), DateUtil.FULL_DATE_FORMAT);
             context.setCreatedDateStart(createdDateStart);
         }
-        if(StringUtil.isNotBlank(param.getCreatedDateEnd())) {
+        if (StringUtil.isNotBlank(param.getCreatedDateEnd())) {
             Date createdDateend = DateUtil.getDate(param.getCreatedDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setCreatedDateEnd(createdDateend);
         }
 
-        if(StringUtil.isNotBlank(param.getCheckDateStart())) {
+        if (StringUtil.isNotBlank(param.getCheckDateStart())) {
             Date checkDateStart = DateUtil.getDate(param.getCheckDateStart(), DateUtil.FULL_DATE_FORMAT);
             context.setCheckDateStart(checkDateStart);
         }
-        if(StringUtil.isNotBlank(param.getCheckDateEnd())) {
+        if (StringUtil.isNotBlank(param.getCheckDateEnd())) {
             Date checkDateend = DateUtil.getDate(param.getCheckDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setCheckDateEnd(checkDateend);
         }
 
-        if(StringUtil.isNotBlank(param.getUpdatedDateStart())) {
+        if (StringUtil.isNotBlank(param.getUpdatedDateStart())) {
             Date updateDateStart = DateUtil.getDate(param.getUpdatedDateStart(), DateUtil.FULL_DATE_FORMAT);
             context.setUpdatedDateStart(updateDateStart);
         }
-        if(StringUtil.isNotBlank(param.getUpdatedDateEnd())) {
+        if (StringUtil.isNotBlank(param.getUpdatedDateEnd())) {
             Date updateDateend = DateUtil.getDate(param.getUpdatedDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setUpdatedDateEnd(updateDateend);
         }
@@ -327,13 +326,11 @@ public class FundAccountServiceBean implements FundAccountService {
         }
 
         //保存资金号价格政策
-        savaFundAccountPricePolicy(createFlag,context);
+        savaFundAccountPricePolicy(createFlag, context);
         //保存品牌价格政策
-        savaBrandPricePolicy(createFlag,context);
+        savaBrandPricePolicy(createFlag, context);
         //保存银行账号
-        savaBankAccount(createFlag,context);
-        //保存价格政策
-        savePricePolicy(createFlag,context);
+        savaBankAccount(createFlag, context);
         //保存资金号
         saveFundAccount(createFlag, context.getFundAccount());
         //保存单据自定义字段
@@ -343,20 +340,17 @@ public class FundAccountServiceBean implements FundAccountService {
         return ModelDataResponse.Success(null);
     }
 
-    private void savePricePolicy(boolean createFlag, FundAccountSaveContext context) {
-        fundAccountPricePolicyDao.insert(context.getFundAccountPricePolicy());
-    }
-
     private void savaBankAccount(boolean createFlag, FundAccountSaveContext context) {
-        fundAccountBankDao.insert(context.getFundAccountBank());
+        if (context.getFundAccountBank() != null)
+            fundAccountBankDao.insert(context.getFundAccountBank());
     }
 
     private void savaBrandPricePolicy(boolean createFlag, FundAccountSaveContext context) {
-        fundAccountBrandPricePolicyDao.insert(context.getFundAccountBrandPricePolicy());
+        context.getFundAccountBrandPricePolicies().forEach(fundAccountBrandPricePolicyDao::insert);
     }
 
     private void savaFundAccountPricePolicy(boolean createFlag, FundAccountSaveContext context) {
-            fundAccountPricePolicyDao.insert(context.getFundAccountPricePolicy());
+        context.getFundAccountPricePolicies().forEach(fundAccountPricePolicyDao::insert);
     }
 
     private void saveFundAccount(boolean createFlag, FundAccount fundAccount) {
@@ -370,45 +364,53 @@ public class FundAccountServiceBean implements FundAccountService {
     private List<String> verificationProperty(FundAccountSaveParam param, FundAccountSaveContext context) {
         List<String> errorMsgList = new ArrayList<>();
         FundAccount fundAccount = context.getFundAccount();
-        if(StringUtil.isEmpty(param.getCode())){
-            errorMsgList.add("资金号(code)不能为空");
-        }else{
-            FundAccount item = fundAccountDao.selectOne(new QueryWrapper<FundAccount>().eq("code", param.getCode()));
-            if(item != null) {
-                fundAccount.setId(item.getId());
-            }
+
+        FundAccount item = fundAccountDao.selectOne(new QueryWrapper<FundAccount>().eq("code", param.getCode()));
+        if (item != null) {
+            fundAccount.setId(item.getId());
         }
-        if(StringUtil.isEmpty(param.getName())){
-            errorMsgList.add("资金号名称(name)不能为空");
-        }else{
-            List<FundAccount> code = fundAccountDao.selectList(new QueryWrapper<FundAccount>().eq("code", param.getCode()));
-            if(CollUtil.isEmpty(code)){
-                errorMsgList.add("上级资金号(parentCode)不存在");
+
+        List<FundAccount> code = fundAccountDao.selectList(new QueryWrapper<FundAccount>().eq("code", param.getName()));
+        if (CollUtil.isNotEmpty(code)) {
+            errorMsgList.add("资金号名称(name)已存在");
+        }
+
+        if (StrUtil.isNotBlank(param.getParentCode())) {
+            FundAccount parentItem = fundAccountDao.selectOne(new QueryWrapper<FundAccount>().eq("code", param.getParentCode()));
+            if (parentItem != null) {
+                fundAccount.setParentId(parentItem.getId());
+            } else {
+                errorMsgList.add("上级资金号编号(parentCode)不存在");
             }
         }
 
         //价格政策
-        PricePolicy pricePolicy = param.getPricePolicy();
-        if(null != pricePolicy){
-            if (StringUtil.isEmpty(pricePolicy.getPriceTypeName())) {
-                errorMsgList.add("价格类型名称(priceTypeName)不存在");
-            }else{
-                List<PriceType> priceTypeList = priceTypeDao.selectList(new QueryWrapper<PriceType>().eq("name", pricePolicy.getPriceTypeName()));
-                if(CollUtil.isNotEmpty(priceTypeList)){
+        List<PricePolicy> pricePolicies = CollUtil.isNotEmpty(param.getPricePolicy()) ? param.getPricePolicy() : Collections.emptyList();
+        for (PricePolicy pricePolicy : pricePolicies) {
+            if (null != pricePolicy) {
+                if (StringUtil.isEmpty(pricePolicy.getPriceTypeName())) {
                     errorMsgList.add("价格类型名称(priceTypeName)不存在");
-                }else{
-                    PriceType priceType = priceTypeList.get(0);
-                    context.getFundAccountPricePolicy().setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-                    context.getFundAccountPricePolicy().setPriceTypeId(priceType.getId());
-                    context.getFundAccountPricePolicy().setDiscount(param.getPricePolicy().getDiscount());
-                    context.getFundAccountPricePolicy().preInsert();;
+                } else {
+                    List<PriceType> priceTypeList = priceTypeDao.selectList(new QueryWrapper<PriceType>().eq("name", pricePolicy.getPriceTypeName()));
+                    if (CollUtil.isEmpty(priceTypeList)) {
+                        errorMsgList.add("价格类型名称(priceTypeName)不存在");
+                    } else {
+                        PriceType priceType = priceTypeList.get(0);
+                        FundAccountPricePolicy fundAccountPricePolicy = new FundAccountPricePolicy();
+                        fundAccountPricePolicy.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                        fundAccountPricePolicy.setPriceTypeId(priceType.getId());
+                        fundAccountPricePolicy.setDiscount(pricePolicy.getDiscount());
+                        fundAccountPricePolicy.preInsert();
+                        fundAccountPricePolicy.setFundAccountId(fundAccount.getId());
+                        context.getFundAccountPricePolicies().add(fundAccountPricePolicy);
+                    }
                 }
             }
         }
 
         //资金号银行账号
         BankAccount bankAccount = param.getBankAccount();
-        if(null != bankAccount){
+        if (null != bankAccount) {
             context.getFundAccountBank().setId(SnowFlakeUtil.getDefaultSnowFlakeId());
             context.getFundAccountBank().setFundAccountId(fundAccount.getId());
             context.getFundAccountBank().setAccount(bankAccount.getAccount());
@@ -419,39 +421,68 @@ public class FundAccountServiceBean implements FundAccountService {
         }
 
         //资金号品牌价格政策
-        BrandPricePolicy brandPricePolicy = param.getBrandPricePolicy();
-        if(null != brandPricePolicy){
-            context.getFundAccountBrandPricePolicy().setFundAccountId(fundAccount.getId());
-            context.getFundAccountBrandPricePolicy().setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-            context.getFundAccountBrandPricePolicy().setDiscount(brandPricePolicy.getDiscount());
-            context.getFundAccountBrandPricePolicy().preInsert();
-            if (StringUtil.isNotEmpty(brandPricePolicy.getBrandName())) {
-                List<Brand> priceTypeList = brandDao.selectList(new QueryWrapper<Brand>().eq("name", brandPricePolicy.getBrandName()));
-                if(CollUtil.isNotEmpty(priceTypeList)){
-                    errorMsgList.add("品牌名称(brandName)不存在");
-                }else{
-                    Brand brand = priceTypeList.get(0);
-                    context.getFundAccountBrandPricePolicy().setBrandId(brand.getId());
+        List<BrandPricePolicy> brandPricePolicies = CollUtil.isNotEmpty(param.getBrandPricePolicy()) ? param.getBrandPricePolicy() : Collections.emptyList();
+        for (BrandPricePolicy brandPricePolicy : brandPricePolicies) {
+            if (null != brandPricePolicy) {
+                FundAccountBrandPricePolicy fundAccountBrandPricePolicy = new FundAccountBrandPricePolicy();
+                fundAccountBrandPricePolicy.setFundAccountId(fundAccount.getId());
+                fundAccountBrandPricePolicy.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                fundAccountBrandPricePolicy.setDiscount(brandPricePolicy.getDiscount());
+                fundAccountBrandPricePolicy.preInsert();
+                fundAccountBrandPricePolicy.setFundAccountId(fundAccount.getId());
+                context.getFundAccountBrandPricePolicies().add(fundAccountBrandPricePolicy);
+                if (StringUtil.isNotEmpty(brandPricePolicy.getBrandName())) {
+                    List<Brand> priceTypeList = brandDao.selectList(new QueryWrapper<Brand>().eq("name", brandPricePolicy.getBrandName()));
+                    if (CollUtil.isEmpty(priceTypeList)) {
+                        errorMsgList.add("品牌名称(brandName)不存在");
+                    } else {
+                        Brand brand = priceTypeList.get(0);
+                        fundAccountBrandPricePolicy.setBrandId(brand.getId());
+                    }
+                }
+
+                if (StringUtil.isNotEmpty(brandPricePolicy.getDiscountCategoryName())) {
+                    List<DiscountCategory> discountCategoryList = discountCategoryDao.selectList(new QueryWrapper<DiscountCategory>().eq("name", brandPricePolicy.getDiscountCategoryName()));
+                    if (CollUtil.isEmpty(discountCategoryList)) {
+                        errorMsgList.add("折扣类别(discountCategoryName)不存在");
+                    } else {
+                        DiscountCategory discountCategory = discountCategoryList.get(0);
+                        fundAccountBrandPricePolicy.setDiscountCategoryId(discountCategory.getId());
+                    }
+                }
+
+                if (StringUtil.isNotEmpty(brandPricePolicy.getPriceTypeName())) {
+                    List<PriceType> priceTypeList = priceTypeDao.selectList(new QueryWrapper<PriceType>().eq("name", brandPricePolicy.getPriceTypeName()));
+                    if (CollUtil.isEmpty(priceTypeList)) {
+                        errorMsgList.add("价格类型(priceTypeName)不存在");
+                    } else {
+                        PriceType priceType = priceTypeList.get(0);
+                        fundAccountBrandPricePolicy.setPriceTypeId(priceType.getId());
+                    }
                 }
             }
+        }
 
-            if (StringUtil.isNotEmpty(brandPricePolicy.getDiscountCategoryName())) {
-                List<DiscountCategory> discountCategoryList = discountCategoryDao.selectList(new QueryWrapper<DiscountCategory>().eq("name", brandPricePolicy.getDiscountCategoryName()));
-                if(CollUtil.isNotEmpty(discountCategoryList)){
-                    errorMsgList.add("折扣类别(discountCategoryName)不存在");
-                }else{
-                    DiscountCategory discountCategory = discountCategoryList.get(0);
-                    context.getFundAccountBrandPricePolicy().setDiscountCategoryId(discountCategory.getId());
-                }
-            }
-
-            if (StringUtil.isNotEmpty(brandPricePolicy.getPriceTypeName())) {
-                List<PriceType> priceTypeList = priceTypeDao.selectList(new QueryWrapper<PriceType>().eq("name", brandPricePolicy.getPriceTypeName()));
-                if(CollUtil.isNotEmpty(priceTypeList)){
-                    errorMsgList.add("价格类型(priceTypeName)不存在");
-                }else{
-                    PriceType priceType = priceTypeList.get(0);
-                    context.getFundAccountBrandPricePolicy().setPriceTypeId(priceType.getId());
+        if (null != param.getOrganization()) {
+            Channelorganization channelorganization = param.getOrganization();
+            if (StringUtils.isNotBlank(channelorganization.getOrganization1())) {
+                ChannelOrganization co1 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 0).eq("name", channelorganization.getOrganization1()).eq("parent_id", 0));
+                fundAccount.setOrganization1(co1 != null ? co1.getId() : null);
+                if (co1 != null && StringUtils.isNotBlank(channelorganization.getOrganization2())) {
+                    ChannelOrganization co2 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 1).eq("name", channelorganization.getOrganization2()).eq("parent_id", co1.getId()));
+                    fundAccount.setOrganization2(co2 != null ? co2.getId() : null);
+                    if (co2 != null && StringUtils.isNotBlank(channelorganization.getOrganization3())) {
+                        ChannelOrganization co3 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 2).eq("name", channelorganization.getOrganization3()).eq("parent_id", co2.getId()));
+                        fundAccount.setOrganization3(co3 != null ? co3.getId() : null);
+                        if (co3 != null && StringUtils.isNotBlank(channelorganization.getOrganization4())) {
+                            ChannelOrganization co4 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 3).eq("name", channelorganization.getOrganization4()).eq("parent_id", co3.getId()));
+                            fundAccount.setOrganization4(co4 != null ? co4.getId() : null);
+                            if (co4 != null && StringUtils.isNotBlank(channelorganization.getOrganization5())) {
+                                ChannelOrganization co5 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 4).eq("name", channelorganization.getOrganization5()).eq("parent_id", co4.getId()));
+                                fundAccount.setOrganization4(co5 != null ? co5.getId() : null);
+                            }
+                        }
+                    }
                 }
             }
         }

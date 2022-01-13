@@ -11,6 +11,8 @@ import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -22,8 +24,8 @@ import java.util.stream.Collectors;
 @Data
 public class FundAccountSaveContext {
     private FundAccount fundAccount;
-    private FundAccountPricePolicy fundAccountPricePolicy;
-    private FundAccountBrandPricePolicy fundAccountBrandPricePolicy;
+    private List<FundAccountPricePolicy> fundAccountPricePolicies = new ArrayList<>();
+    private List<FundAccountBrandPricePolicy> fundAccountBrandPricePolicies = new ArrayList<>();
     private FundAccountBank fundAccountBank;
     private Map customizeData;
 
@@ -50,24 +52,7 @@ public class FundAccountSaveContext {
         this.fundAccount.setTaxNumber(param.getTaxNumber());
         this.fundAccount.setType(param.getType());
         this.fundAccount.setType(param.getType());
-
-        if(null != param.getOrganization()){
-            if((Object)param.getOrganization().getOrganization1() instanceof Long){
-                this.fundAccount.setOrganization1(Long.valueOf(param.getOrganization().getOrganization1()));
-            }
-            if((Object)param.getOrganization().getOrganization2() instanceof Long){
-                this.fundAccount.setOrganization2(Long.valueOf(param.getOrganization().getOrganization2()));
-            }
-            if((Object)param.getOrganization().getOrganization3() instanceof Long){
-                this.fundAccount.setOrganization3(Long.valueOf(param.getOrganization().getOrganization3()));
-            }
-            if((Object)param.getOrganization().getOrganization4() instanceof Long){
-                this.fundAccount.setOrganization4(Long.valueOf(param.getOrganization().getOrganization4()));
-            }
-            if((Object)param.getOrganization().getOrganization5() instanceof Long){
-                this.fundAccount.setOrganization5(Long.valueOf(param.getOrganization().getOrganization5()));
-            }
-        }
+        this.fundAccount.setStatus(param.getStatus());
         //自定义字段
         if(CollUtil.isNotEmpty(param.getCustomizeData())){
             this.customizeData = param.getCustomizeData().stream().collect(Collectors.toMap(CustomizeDataDto::getCode,x->x.getValue()));

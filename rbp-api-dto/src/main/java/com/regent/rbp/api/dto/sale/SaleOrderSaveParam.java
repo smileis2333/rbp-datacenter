@@ -1,5 +1,7 @@
 package com.regent.rbp.api.dto.sale;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.validate.BillNo;
@@ -13,9 +15,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @program: rbp-datacenter
@@ -36,6 +37,7 @@ public class SaleOrderSaveParam {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date billDate;
 
+    @NotBlank
     @ChannelCodeCheck
     private String saleChannelCode;
 
@@ -52,7 +54,7 @@ public class SaleOrderSaveParam {
     private String shiftNo;
 
     @NotNull
-    @Range(min = 0,max = 2,message = "(0.Pos;1.后台;2.第三方平台)") // todo extract annotation to prevent future change
+    @Range(min = 0, max = 2, message = "(0.Pos;1.后台;2.第三方平台)") // todo extract annotation to prevent future change
     private Integer origin;
 
     @NotNull
@@ -60,16 +62,32 @@ public class SaleOrderSaveParam {
     private Integer status;
 
     @NotNull
-    @Range(min = 0,max = 4,message = "(0.线下销售 1.全渠道发货 2.线上发货 3.线上退货 4.定金)") // todo extract annotation to prevent future change
+    @Range(min = 0, max = 4, message = "(0.线下销售 1.全渠道发货 2.线上发货 3.线上退货 4.定金)")
+    // todo extract annotation to prevent future change
     private Integer billType;
 
     private String notes;
 
     @NotEmpty
+    @Valid
     private List<SalesOrderBillGoodsResult> goodsDetailData;
 
     @Valid
     private List<SalesOrderBillPaymentResult> retailPayTypeData = Collections.emptyList();
 
     private List<CustomizeDataDto> customizeData;
+
+    @Valid
+    private List<EmployeeAchievement> employeeBillAchievement;
+
+    public List<String> getAllEmployeeCodes() {
+        ArrayList<String> ans = new ArrayList<>();
+        if (CollUtil.isNotEmpty(employeeBillAchievement)) {
+            ans.addAll(CollUtil.map(employeeBillAchievement, EmployeeAchievement::getEmployeeCode, true));
+        }
+        if (CollUtil.isNotEmpty(goodsDetailData)) {
+            ans.addAll(goodsDetailData.stream().map(SalesOrderBillGoodsResult::getEmployeeGoodsAchievement).filter(ObjectUtil::isNotNull).flatMap(Collection::stream).map(EmployeeAchievement::getEmployeeCode).collect(Collectors.toList()));
+        }
+        return CollUtil.distinct(ans);
+    }
 }
