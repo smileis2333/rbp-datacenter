@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.regent.rbp.api.core.base.*;
-import com.regent.rbp.api.core.channel.*;
+import com.regent.rbp.api.core.base.Sex;
+import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.employee.Employee;
 import com.regent.rbp.api.core.integral.MemberIntegral;
 import com.regent.rbp.api.core.member.MemberCard;
@@ -21,7 +21,6 @@ import com.regent.rbp.api.dao.member.*;
 import com.regent.rbp.api.dao.storedvaluecard.StoredValueCardAssetsDao;
 import com.regent.rbp.api.dao.storedvaluecard.StoredValueCardDao;
 import com.regent.rbp.api.dto.core.DataResponse;
-import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.member.MemberCardQueryParam;
 import com.regent.rbp.api.dto.member.MemberCardQueryResult;
@@ -31,9 +30,10 @@ import com.regent.rbp.api.service.member.context.MemberCardQueryContext;
 import com.regent.rbp.api.service.member.context.MemberCardSaveContext;
 import com.regent.rbp.common.dao.UserDao;
 import com.regent.rbp.common.model.system.entity.User;
-import com.regent.rbp.infrastructure.constants.ResponseCode;
-import com.regent.rbp.infrastructure.exception.BusinessException;
-import com.regent.rbp.infrastructure.util.*;
+import com.regent.rbp.infrastructure.util.DateUtil;
+import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
+import com.regent.rbp.infrastructure.util.StringUtil;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -91,6 +91,7 @@ public class MemberCardServiceBean implements MemberCardService {
 
     /**
      * 将查询参数转换成 查询的上下文
+     *
      * @param param
      * @param context
      */
@@ -137,7 +138,7 @@ public class MemberCardServiceBean implements MemberCardService {
         }
         // 发卡渠道
         if (param.getChannelCode() != null && param.getChannelCode().length > 0) {
-            List<Channel> list =channelDao.selectList(new QueryWrapper<Channel>().in("code", param.getChannelCode()));
+            List<Channel> list = channelDao.selectList(new QueryWrapper<Channel>().in("code", param.getChannelCode()));
             if (list != null && list.size() > 0) {
                 long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
                 context.setChannelCode(ids);
@@ -146,47 +147,47 @@ public class MemberCardServiceBean implements MemberCardService {
 
 
         // 生效日期
-        if(StringUtil.isNotBlank(param.getBeginDateStart())) {
+        if (StringUtil.isNotBlank(param.getBeginDateStart())) {
             Date date = DateUtil.getDate(param.getBeginDateStart(), DateUtil.FULL_DATE_FORMAT);
             context.setBeginDateStart(date);
         }
-        if(StringUtil.isNotBlank(param.getBeginDateEnd())) {
+        if (StringUtil.isNotBlank(param.getBeginDateEnd())) {
             Date date = DateUtil.getDate(param.getBeginDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setBeginDateEnd(date);
         }
         // 失效日期
-        if(StringUtil.isNotBlank(param.getEndDateStart())) {
+        if (StringUtil.isNotBlank(param.getEndDateStart())) {
             Date date = DateUtil.getDate(param.getEndDateStart(), DateUtil.FULL_DATE_FORMAT);
             context.setEndDateStart(date);
         }
-        if(StringUtil.isNotBlank(param.getEndDateEnd())) {
+        if (StringUtil.isNotBlank(param.getEndDateEnd())) {
             Date date = DateUtil.getDate(param.getEndDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setEndDateEnd(date);
         }
         // 创建日期
-        if(StringUtil.isNotBlank(param.getCreatedDateStart())) {
+        if (StringUtil.isNotBlank(param.getCreatedDateStart())) {
             Date date = DateUtil.getDate(param.getCreatedDateStart(), DateUtil.FULL_DATE_FORMAT);
             context.setCreatedDateStart(date);
         }
-        if(StringUtil.isNotBlank(param.getCreatedDateEnd())) {
+        if (StringUtil.isNotBlank(param.getCreatedDateEnd())) {
             Date date = DateUtil.getDate(param.getCreatedDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setCreatedDateEnd(date);
         }
         // 审核日期
-        if(StringUtil.isNotBlank(param.getCheckDateStart())) {
+        if (StringUtil.isNotBlank(param.getCheckDateStart())) {
             Date date = DateUtil.getDate(param.getCheckDateStart(), DateUtil.FULL_DATE_FORMAT);
             context.setCheckDateStart(date);
         }
-        if(StringUtil.isNotBlank(param.getCheckDateEnd())) {
+        if (StringUtil.isNotBlank(param.getCheckDateEnd())) {
             Date date = DateUtil.getDate(param.getCheckDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setCheckDateEnd(date);
         }
         // 修改日期
-        if(StringUtil.isNotBlank(param.getUpdatedDateStart())) {
+        if (StringUtil.isNotBlank(param.getUpdatedDateStart())) {
             Date date = DateUtil.getDate(param.getUpdatedDateStart(), DateUtil.FULL_DATE_FORMAT);
             context.setUpdatedDateStart(date);
         }
-        if(StringUtil.isNotBlank(param.getUpdatedDateEnd())) {
+        if (StringUtil.isNotBlank(param.getUpdatedDateEnd())) {
             Date date = DateUtil.getDate(param.getUpdatedDateEnd(), DateUtil.FULL_DATE_FORMAT);
             context.setUpdatedDateEnd(date);
         }
@@ -195,6 +196,7 @@ public class MemberCardServiceBean implements MemberCardService {
 
     /**
      * 查询数据
+     *
      * @param context
      * @return
      */
@@ -237,7 +239,7 @@ public class MemberCardServiceBean implements MemberCardService {
         Map<Long, String> mapMemberStatus = memberStatusList.stream().collect(Collectors.toMap(MemberStatus::getId, MemberStatus::getName));
         // 加载当前所有会员 渠道
         List<Long> channelIds = list.stream().map(MemberCard::getChannelId).collect(Collectors.toList());
-        channelIds.addAll(list.stream().map(MemberCard :: getRepairChannelId).collect(Collectors.toList()));
+        channelIds.addAll(list.stream().map(MemberCard::getRepairChannelId).collect(Collectors.toList()));
         List<Channel> channelList = channelDao.selectBatchIds(channelIds.stream().distinct().collect(Collectors.toList()));
         Map<Long, Channel> mapChannel = channelList.stream().collect(Collectors.toMap(Channel::getId, t -> t));
         // 加载 维护人，扩展人,发卡人
@@ -369,13 +371,13 @@ public class MemberCardServiceBean implements MemberCardService {
         MemberCardSaveContext context = new MemberCardSaveContext(param);
         //判断是新增还是更新
         MemberCard item = memberCardDao.selectOne(new QueryWrapper<MemberCard>().eq("code", param.getCode()));
-        if(item != null) {
+        if (item != null) {
             context.getMemberCard().setId(item.getId());
             createFlag = false;
         }
         //验证渠道数据有效性
         List<String> errorMsgList = verificationProperty(param, context);
-        if(errorMsgList.size() > 0 ) {
+        if (errorMsgList.size() > 0) {
             String message = StringUtil.join(errorMsgList, ",");
             return DataResponse.errorParameter(message);
         }
@@ -397,6 +399,7 @@ public class MemberCardServiceBean implements MemberCardService {
 
     /**
      * 检测会员卡是否已存在
+     *
      * @param memberCard
      * @return
      */
@@ -407,6 +410,7 @@ public class MemberCardServiceBean implements MemberCardService {
 
     /**
      * 检测手机号是否已存在
+     *
      * @param mobile
      * @return
      */
@@ -422,6 +426,7 @@ public class MemberCardServiceBean implements MemberCardService {
 
     /**
      * 验证属性
+     *
      * @param param
      * @param context
      * @return
@@ -430,37 +435,17 @@ public class MemberCardServiceBean implements MemberCardService {
         List<String> errorMsgList = new ArrayList<>();
         MemberCard memberCard = context.getMemberCard();
 
-        if(StringUtils.isBlank(param.getCode())) {
-            errorMsgList.add("卡号(code)不能为空");
-        } else {
-            MemberCard item = memberCardDao.selectOne(new QueryWrapper<MemberCard>().eq("code", param.getCode()));
-            if(item != null) {
-                memberCard.setId(item.getId());
-            }
-        }
+        MemberCard oldMemberCard = memberCardDao.selectOne(new QueryWrapper<MemberCard>().eq("code", param.getCode()));
+        memberCard.setId(oldMemberCard.getId());
 
-        if (StringUtils.isBlank(param.getMemberType())) {
-            errorMsgList.add("会员类型(memberType)不能为空");
-        } else {
-            MemberType item = memberTypeDao.selectOne(new QueryWrapper<MemberType>().eq("name", param.getMemberType()));
-            if(item != null) {
-                memberCard.setMemberTypeId(item.getId());
-            }
-        }
+        MemberType memberType = memberTypeDao.selectOne(new QueryWrapper<MemberType>().eq("name", param.getMemberType()));
+        memberCard.setMemberTypeId(memberType.getId());
 
         if (StringUtils.isNotBlank(param.getMemberStatus())) {
-            MemberStatus item = memberStatusDao.selectOne(new QueryWrapper<MemberStatus>().eq("name", param.getMemberStatus()));
-            if(item != null) {
-                memberCard.setMemberStatusId(item.getId());
+            MemberStatus memberStatus = memberStatusDao.selectOne(new QueryWrapper<MemberStatus>().eq("type_value", param.getMemberStatus()));
+            if (memberStatus != null) {
+                memberCard.setMemberStatusId(memberStatus.getId());
             }
-        }
-
-        if (StringUtils.isBlank(param.getOriginType())) {
-            errorMsgList.add("来源类别(originType)不能为空");
-        }
-
-        if (StringUtils.isBlank(param.getOrigin())) {
-            errorMsgList.add("来源(origin)不能为空");
         }
 
         // 性别
@@ -535,6 +520,7 @@ public class MemberCardServiceBean implements MemberCardService {
 
     /**
      * 自动补充不存在的数据字典
+     *
      * @param param
      */
     private void processAutoCompleteDictionary(MemberCardSaveParam param, MemberCardSaveContext context) {
@@ -542,6 +528,7 @@ public class MemberCardServiceBean implements MemberCardService {
 
     /**
      * 写入会员
+     *
      * @param createFlag
      * @param memberCard
      */
@@ -556,6 +543,7 @@ public class MemberCardServiceBean implements MemberCardService {
 
     /**
      * 审核会员
+     *
      * @param memberCard
      */
     private void checkMemberCard(MemberCard memberCard) {
@@ -568,6 +556,7 @@ public class MemberCardServiceBean implements MemberCardService {
 
     /**
      * 新增 会员积分基础表
+     *
      * @param memberCard
      */
     private void saveMemberIntegral(MemberCard memberCard) {
@@ -592,6 +581,7 @@ public class MemberCardServiceBean implements MemberCardService {
 
     /**
      * 新建储值卡
+     *
      * @param memberCard
      */
     private void saveStoredValueCard(MemberCard memberCard) {
@@ -617,7 +607,7 @@ public class MemberCardServiceBean implements MemberCardService {
                 storedValueCard.setUpdatedBy(memberCard.getUpdatedBy());
                 storedValueCard.setUpdatedTime(memberCard.getUpdatedTime());
                 storedValueCardDao.insert(storedValueCard);
-                
+
                 // 新增储值卡资产
                 StoredValueCardAssets assets = new StoredValueCardAssets();
                 assets.setId(SnowFlakeUtil.getDefaultSnowFlakeId());

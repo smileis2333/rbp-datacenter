@@ -496,10 +496,10 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         }
 
         // inject goods info
-        boolean runBarcodeAsGoodInfoSource = StringUtils.isBlank(param.getGoodsDetailData().get(0).getBarcode());
+        boolean runBarcodeAsGoodInfoSource = StringUtils.isNotBlank(param.getGoodsDetailData().get(0).getBarcode());
         if (runBarcodeAsGoodInfoSource) {
             List<String> barcodes = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getBarcode).filter(ObjectUtil::isNotNull).distinct().collect(Collectors.toList());
-            Map<String, Barcode> barcodeMap = CollUtil.isEmpty(barcodes) ? Collections.emptyMap() : barcodeDao.selectList(new QueryWrapper<Barcode>().in("code", barcodes)).stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
+            Map<String, Barcode> barcodeMap = CollUtil.isEmpty(barcodes) ? Collections.emptyMap() : barcodeDao.selectList(new QueryWrapper<Barcode>().in("barcode", barcodes)).stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
             param.getGoodsDetailData().forEach(e -> {
                 Barcode barcode;
                 if ((barcode = barcodeMap.get(e.getBarcode())) != null) {
@@ -507,6 +507,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                     e.setColorId(barcode.getColorId());
                     e.setLongId(barcode.getLongId());
                     e.setSizeId(barcode.getSizeId());
+                    e.setBarcodeId(barcode.getId());
                 }
             });
         } else {
@@ -620,10 +621,12 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         billGoods.setBalanceDiscount(goodsResult.getBalanceDiscount());
         billGoods.setOriginalPrice(goodsResult.getOriginalPrice());
         billGoods.setQuantity(goodsResult.getQuantity());
+        billGoods.setPoint(goodsResult.getPoint());
         billGoods.setCreatedBy(salesOrderBill.getCreatedBy());
         billGoods.setCreatedTime(salesOrderBill.getCreatedTime());
         billGoods.setUpdatedBy(salesOrderBill.getUpdatedBy());
         billGoods.setUpdatedTime(salesOrderBill.getUpdatedTime());
+        billGoods.setSalesPrice(goodsResult.getSalesPrice());
         return billGoods;
     }
 
