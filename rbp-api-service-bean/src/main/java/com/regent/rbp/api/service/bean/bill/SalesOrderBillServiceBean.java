@@ -1,5 +1,6 @@
 package com.regent.rbp.api.service.bean.bill;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -25,6 +26,7 @@ import com.regent.rbp.api.dao.salesOrder.SalesOrderBillSizeDao;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.sale.*;
+import com.regent.rbp.api.dto.validate.group.Complex;
 import com.regent.rbp.api.service.sale.SalesOrderBillService;
 import com.regent.rbp.api.service.sale.context.SalesOrderBillQueryContext;
 import com.regent.rbp.api.service.sale.context.SalesOrderBillSaveContext;
@@ -34,7 +36,9 @@ import com.regent.rbp.infrastructure.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Validator;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -76,6 +80,8 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
     SalesOrderBillSizeDao salesOrderBillSizeDao;
     @Autowired
     SalesOrderBillPaymentDao salesOrderBillPaymentDao;
+    @Autowired
+    private Validator validator;
 
 
     @Override
@@ -412,6 +418,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
     }
 
     @Override
+    @Transactional
     public DataResponse save(SaleOrderSaveParam param) {
         SalesOrderBillSaveContext context = new SalesOrderBillSaveContext(param);
 
@@ -441,12 +448,10 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         List<SalesOrderBillPayment> salesOrderBillPaymentList = context.getSalesOrderBillPaymentList();
 
         Channel saleChannel = channelDao.selectOne(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getSaleChannelCode()));
-
         salesOrderBill.setSaleChannelId(saleChannel.getId());
 
         if (StrUtil.isNotBlank(param.getChannelCode())) {
             Channel channel = channelDao.selectOne(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getChannelCode()));
-
             salesOrderBill.setChannelId(channel.getId());
         }
 
@@ -465,12 +470,13 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                 salesOrderBill.setMemberId(memberCard.getId());
             }
         }
+
         if (StrUtil.isNotBlank(param.getOriginBillNo())) {
             SalesOrderBill sale = salesOrderBillDao.selectOne(new LambdaQueryWrapper<SalesOrderBill>().eq(SalesOrderBill::getBillNo, param.getOriginBillNo()));
-
             salesOrderBill.setOriginBillId(sale.getId());
             salesOrderBill.setOriginBillNo(sale.getBillNo());
         }
+
         if (StringUtils.isBlank(param.getGoodsDetailData().get(0).getBarcode())) {
             // 货品+颜色+内长+尺码
             Map<String, Goods> goodsMap = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getCode, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getGoodsCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Goods::getCode, t -> t));
@@ -538,25 +544,28 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                 rowIndex++;
             }
         }
-        if (param.getRetailPayTypeData() != null) {
-            for (SalesOrderBillPaymentResult paymentResult : param.getRetailPayTypeData()) {
-                RetailPayType payType = retailPayTypeDao.selectOne(new LambdaQueryWrapper<RetailPayType>().eq(RetailPayType::getCode, paymentResult.getRetailPayTypeCode()));
-                if (payType == null) {
-                    errorMsgList.add(String.format("付款方式(retailPayTypeCode) %s 不存在", paymentResult.getRetailPayTypeCode()));
-                } else {
+        if (CollUtil.isNotEmpty(param.getRetailPayTypeData())) {
+            Map<String, Long> payTypeIdMap = retailPayTypeDao.selectList(new LambdaQueryWrapper<RetailPayType>().in(RetailPayType::getCode, CollUtil.distinct(CollUtil.map(param.getRetailPayTypeData(), SalesOrderBillPaymentResult::getRetailPayTypeCode, true)))).stream().collect(Collectors.toMap(RetailPayType::getCode, RetailPayType::getId));
+            param.getRetailPayTypeData().forEach(e->{
+                e.setRetailPayTypeId(payTypeIdMap.get(e.getRetailPayTypeCode()));
+            });
+        }
+
+        if (ValidateMessageUtil.pass(validator.validate(param, Complex.class),errorMsgList)) {
+            if (CollUtil.isNotEmpty(param.getRetailPayTypeData())){
+                param.getRetailPayTypeData().forEach(e->{
                     SalesOrderBillPayment payment = new SalesOrderBillPayment();
                     payment.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
                     payment.setBillId(salesOrderBill.getId());
-                    payment.setRetailPayTypeId(payType.getId());
-                    payment.setPayMoney(paymentResult.getPayMoney());
-                    payment.setReturnMoney(paymentResult.getReturnMoney());
+                    payment.setRetailPayTypeId(e.getRetailPayTypeId());
+                    payment.setPayMoney(e.getPayMoney());
+                    payment.setReturnMoney(e.getReturnMoney());
                     payment.setCreatedBy(salesOrderBill.getCreatedBy());
                     payment.setCreatedTime(salesOrderBill.getCreatedTime());
                     payment.setUpdatedBy(salesOrderBill.getUpdatedBy());
                     payment.setUpdatedTime(salesOrderBill.getUpdatedTime());
-
                     salesOrderBillPaymentList.add(payment);
-                }
+                });
             }
         }
 

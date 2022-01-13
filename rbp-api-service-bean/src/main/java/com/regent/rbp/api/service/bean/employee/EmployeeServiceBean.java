@@ -159,7 +159,7 @@ public class EmployeeServiceBean implements EmployeeService {
             if (channel != null) {
                 employeeQueryResult.setChannelCode(channel.getCode());
             }
-            if (customizeColumnMap.containsKey(employee.getId())){
+            if (customizeColumnMap.containsKey(employee.getId())) {
                 employeeQueryResult.setCustomizeData(customizeColumnMap.get(employee.getId()));
             }
             employeeQueryResult.setBirthdayDate(DateUtil.getDateStr(employee.getCreatedTime()));
@@ -281,12 +281,13 @@ public class EmployeeServiceBean implements EmployeeService {
             }
         }
 
-        if (StrUtil.isNotEmpty(param.getPositionName())){
+        if (StrUtil.isNotEmpty(param.getPositionName())) {
             Position position = positionDao.selectOne(new QueryWrapper<Position>().eq("name", param.getPositionName()));
             if (position == null) {
                 errorMsgList.add("职位(positionName)不存在");
+            } else {
+                context.getEmployee().setPositionId(position.getId());
             }
-            context.getEmployee().setPositionId(position.getId());
         }
         return errorMsgList;
     }

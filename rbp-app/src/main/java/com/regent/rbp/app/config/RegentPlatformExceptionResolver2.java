@@ -54,6 +54,7 @@ public class RegentPlatformExceptionResolver2 extends DefaultErrorAttributes imp
         } else if (e instanceof MethodArgumentNotValidException) {
             // 获取validation 验证信息,默认拼接参数字段名
             code = 400;
+            language = language != null ? language : LanguageUtil.ZH;
             StringBuilder sb = new StringBuilder();
             MethodArgumentNotValidException ex = (MethodArgumentNotValidException) e;
             BindingResult bindingResult = ex.getBindingResult();
@@ -91,10 +92,10 @@ public class RegentPlatformExceptionResolver2 extends DefaultErrorAttributes imp
         String key = StringUtil.isEmpty(businessException.getLanguageKey()) ? businessException.getCode() + "" : businessException.getLanguageKey();
         try {
             ResourceBundle externalResourceBundle = LanguageUtil.getLanguageMap().get(language);
-            if(externalResourceBundle != null){
+            if (externalResourceBundle != null) {
                 if (externalResourceBundle.containsKey(key)) {
                     message = externalResourceBundle.getString(StringUtil.isEmpty(businessException.getLanguageKey()) ? businessException.getCode() + "" : businessException.getLanguageKey());  //通过key获取对应的
-                    message = LanguageUtil.convertGlobalKey(message,language);
+                    message = LanguageUtil.convertGlobalKey(message, language);
                 }
             }
         } catch (Exception e) {

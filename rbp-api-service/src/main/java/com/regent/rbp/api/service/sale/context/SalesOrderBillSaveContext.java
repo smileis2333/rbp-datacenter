@@ -52,5 +52,7 @@ public class SalesOrderBillSaveContext {
         this.salesOrderBill.setManualId(param.getManualId());
         this.salesOrderBill.setNotes(param.getNotes());
         this.salesOrderBill.setBillDate(param.getBillDate());
+        this.salesOrderBill.setStatus(param.getStatus());
+        this.salesOrderBill.setOrigin(param.getOrigin());
     }
 }

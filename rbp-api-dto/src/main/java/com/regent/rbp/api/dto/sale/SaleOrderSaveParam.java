@@ -9,9 +9,11 @@ import com.regent.rbp.api.dto.validate.ConflictManualIdCheck;
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -34,10 +36,10 @@ public class SaleOrderSaveParam {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date billDate;
 
-    @NotBlank
     @ChannelCodeCheck
     private String saleChannelCode;
 
+    @NotBlank
     @ChannelCodeCheck
     private String channelCode;
 
@@ -66,7 +68,8 @@ public class SaleOrderSaveParam {
     @NotEmpty
     private List<SalesOrderBillGoodsResult> goodsDetailData;
 
-    private List<SalesOrderBillPaymentResult> retailPayTypeData;
+    @Valid
+    private List<SalesOrderBillPaymentResult> retailPayTypeData = Collections.emptyList();
 
     private List<CustomizeDataDto> customizeData;
 }
