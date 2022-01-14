@@ -1,9 +1,11 @@
 package com.regent.rbp.api.dto.member;
 
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
+import com.regent.rbp.api.dto.validate.ChannelCodeCheck;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -31,22 +33,24 @@ public class MemberCardSaveParam {
 
     private String sexName;
 
-    @NotBlank
-    private String originType;
+    @NotNull
+    private Integer originType;
 
-    @NotBlank
-    private String origin;
+    @NotNull
+    private Integer origin;
 
     private String beginDate;
 
     private String endDate;
 
+    @ChannelCodeCheck
     private String channelCode;
 
     private String userCode;
 
     private String referrerCardNo;
 
+    @ChannelCodeCheck
     private String repairChannelCode;
 
     private String maintainerCode;

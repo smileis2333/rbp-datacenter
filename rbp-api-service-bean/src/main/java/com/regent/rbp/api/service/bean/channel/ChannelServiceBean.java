@@ -544,58 +544,28 @@ public class ChannelServiceBean implements ChannelService {
         List<String> errorMsgList = new ArrayList<>();
         Channel channel = context.getChannel();
 
-        if (StringUtils.isBlank(param.getChannelCode())) {
-            errorMsgList.add("渠道编号(channelCode)不能为空");
-        } else {
-            Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getChannelCode()));
-            if (item != null) {
-                channel.setId(item.getId());
-            }
+        Channel existChannel = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getChannelCode()));
+        if (existChannel != null) {
+            channel.setId(existChannel.getId());
         }
 
-        if (StringUtils.isBlank(param.getChannelName())) {
-            errorMsgList.add("渠道简称(channelName)不能为空");
-        }
-        if (StringUtils.isBlank(param.getChannelFullName())) {
-            errorMsgList.add("渠道名称(channelFullName)不能为空");
-        }
         //验证 渠道业态
-        if (StringUtils.isBlank(param.getBusinessFormat())) {
-            errorMsgList.add("渠道业态(businessFormat)不能为空");
+        ChannelBusinessFormat channelBusinessFormat = channelBusinessFormatDao.selectOne(new QueryWrapper<ChannelBusinessFormat>().eq("name", param.getBusinessFormat()));
+        if (channelBusinessFormat != null) {
+            channel.setBusinessFormatId(channelBusinessFormat.getId());
         } else {
-            ChannelBusinessFormat item = channelBusinessFormatDao.selectOne(new QueryWrapper<ChannelBusinessFormat>().eq("name", param.getBusinessFormat()));
-            if (item != null) {
-                channel.setBusinessFormatId(item.getId());
-            } else {
-                errorMsgList.add("经营性质(businessNature)不存在");
-            }
+            errorMsgList.add("经营性质(businessNature)不存在");
         }
+
         //验证 经营性质
-        if (StringUtils.isBlank(param.getBusinessNature())) {
-            errorMsgList.add("经营性质(businessNature)不能为空");
-        } else {
-            ChannelBusinessNature item = channelBusinessNatureDao.selectOne(new QueryWrapper<ChannelBusinessNature>().eq("name", param.getBusinessNature()));
-            if (item != null) {
-                channel.setBusinessNatureId(item.getId());
-            }
+        ChannelBusinessNature channelBusinessNature = channelBusinessNatureDao.selectOne(new QueryWrapper<ChannelBusinessNature>().eq("name", param.getBusinessNature()));
+        if (channelBusinessNature != null) {
+            channel.setBusinessNatureId(channelBusinessNature.getId());
         }
-        //验证 渠道收货信息
-        if (param.getAddressData() != null && param.getAddressData().size() > 0) {
-            for (AddressData addressData : param.getAddressData()) {
-                if (StringUtils.isBlank(addressData.getAddress())) {
-                    errorMsgList.add("详细地址(address)不能为空");
-                }
-                if (StringUtils.isBlank(addressData.getContactsPerson())) {
-                    errorMsgList.add("联系人(contactsPerson)不能为空");
-                }
-                if (StringUtils.isBlank(addressData.getMobile())) {
-                    errorMsgList.add("手机号码(mobile)不能为空");
-                }
-            }
-        }
+
         // 资金号
         if (StringUtils.isNotBlank(param.getFundAccount())) {
-            FundAccount fundAccount = fundAccountDao.selectOne(new QueryWrapper<FundAccount>().eq("name", param.getFundAccount()));
+            FundAccount fundAccount = fundAccountDao.selectOne(new QueryWrapper<FundAccount>().eq("code", param.getFundAccount()));
             if (fundAccount == null) {
                 errorMsgList.add("资金号(fundAccount)不存在");
             } else {
@@ -612,19 +582,19 @@ public class ChannelServiceBean implements ChannelService {
             Channelorganization channelorganization = param.getChannelorganization();
             if (StringUtils.isNotBlank(channelorganization.getOrganization1())) {
                 ChannelOrganization co1 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 0).eq("name", channelorganization.getOrganization1()).eq("parent_id", 0));
-                channel.setOrganization1(co1!=null?co1.getId():null);
-                if (co1!=null&&StringUtils.isNotBlank(channelorganization.getOrganization2())) {
+                channel.setOrganization1(co1 != null ? co1.getId() : null);
+                if (co1 != null && StringUtils.isNotBlank(channelorganization.getOrganization2())) {
                     ChannelOrganization co2 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 1).eq("name", channelorganization.getOrganization2()).eq("parent_id", co1.getId()));
-                    channel.setOrganization2(co2!=null?co2.getId():null);
-                    if (co2!=null&&StringUtils.isNotBlank(channelorganization.getOrganization3())) {
+                    channel.setOrganization2(co2 != null ? co2.getId() : null);
+                    if (co2 != null && StringUtils.isNotBlank(channelorganization.getOrganization3())) {
                         ChannelOrganization co3 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 2).eq("name", channelorganization.getOrganization3()).eq("parent_id", co2.getId()));
-                        channel.setOrganization3(co3!=null?co3.getId():null);
-                        if (co3!=null&&StringUtils.isNotBlank(channelorganization.getOrganization4())) {
+                        channel.setOrganization3(co3 != null ? co3.getId() : null);
+                        if (co3 != null && StringUtils.isNotBlank(channelorganization.getOrganization4())) {
                             ChannelOrganization co4 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 3).eq("name", channelorganization.getOrganization4()).eq("parent_id", co3.getId()));
-                            channel.setOrganization4(co4!=null?co4.getId():null);
-                            if (co4!=null&&StringUtils.isNotBlank(channelorganization.getOrganization5())) {
+                            channel.setOrganization4(co4 != null ? co4.getId() : null);
+                            if (co4 != null && StringUtils.isNotBlank(channelorganization.getOrganization5())) {
                                 ChannelOrganization co5 = channelOrganizationDao.selectOne(new QueryWrapper<ChannelOrganization>().eq("depth", 4).eq("name", channelorganization.getOrganization5()).eq("parent_id", co4.getId()));
-                                channel.setOrganization4(co5!=null?co5.getId():null);
+                                channel.setOrganization4(co5 != null ? co5.getId() : null);
                             }
                         }
                     }

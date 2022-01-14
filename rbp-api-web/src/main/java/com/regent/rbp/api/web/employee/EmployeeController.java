@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 /**
  * @Description 员工档案
  * @Author shaoqidong
@@ -31,7 +33,7 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public DataResponse save(@RequestBody EmployeeSaveParam param) {
+    public DataResponse save(@RequestBody @Valid EmployeeSaveParam param) {
         DataResponse result = employeeService.save(param);
         return result;
     }

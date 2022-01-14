@@ -1,23 +1,15 @@
 package com.regent.rbp.task.inno.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.regent.rbp.api.core.member.MemberCard;
 import com.regent.rbp.api.dao.member.MemberCardDao;
-import com.regent.rbp.api.dto.goods.GoodsQueryParam;
 import com.regent.rbp.api.dto.member.MemberCardSaveParam;
-import com.regent.rbp.api.service.goods.context.GoodsQueryContext;
 import com.regent.rbp.api.service.member.MemberCardService;
-import com.regent.rbp.api.service.member.context.MemberCardSaveContext;
-import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import com.regent.rbp.task.inno.model.dto.CustomerVipDto;
 import com.regent.rbp.task.inno.service.CustomerVipService;
 import com.xxl.job.core.context.XxlJobHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.web.PageableArgumentResolver;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
 
 /**
  * @author xuxing
@@ -46,9 +38,9 @@ public class CustomerVipServiceImpl implements CustomerVipService {
         memberCardSaveParam.setName(param.getName());
         memberCardSaveParam.setPhone(param.getMobileTel());
         //来源类别 origin_type 1.线上2.线下3.后台
-        memberCardSaveParam.setOriginType("1");
+        memberCardSaveParam.setOriginType(1);
         //来源origin 1.pos,2.英朗,3.微盟,4.有赞5.yike
-        memberCardSaveParam.setOrigin("2");
+        memberCardSaveParam.setOrigin(2);
         memberCardSaveParam.setBeginDate(param.getBegainDate());
         memberCardSaveParam.setEndDate(param.getExpireDate());
         memberCardSaveParam.setBirthday(param.getBirthDate());

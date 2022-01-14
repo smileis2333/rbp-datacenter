@@ -2,8 +2,12 @@ package com.regent.rbp.api.dto.channel;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
+import com.regent.rbp.api.dto.validate.BillStatus;
 import lombok.Data;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -17,8 +21,11 @@ import java.util.List;
 @Data
 public class ChannelSaveParam {
 
+    @NotBlank
     private String channelCode;
+    @NotBlank
     private String channelName;
+    @NotBlank
     private String channelFullName;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date channelBuildDate;
@@ -26,7 +33,9 @@ public class ChannelSaveParam {
     private String[] brand;
     private String branchCompany;
     private String grade;
+    @NotBlank
     private String businessFormat;
+    @NotBlank
     private String businessNature;
     private String balanceType;
     private String retailTagPriceType;
@@ -41,8 +50,11 @@ public class ChannelSaveParam {
     private PhysicalRegion physicalRegion;
     private ChannelBarrio channelBarrio;
     private Channelorganization channelorganization;
+    @Valid
     private List<AddressData> addressData;
     private List<CustomizeDataDto> customizeData;
-    private Integer status = 0;
+    @NotNull
+    @BillStatus
+    private Integer status;
 
 }

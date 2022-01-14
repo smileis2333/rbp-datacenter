@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping(ApiConstants.API_SUPPLIER)
 @Api(tags = "供应商档案")
@@ -27,8 +29,8 @@ public class SupplierController {
         return result;
     }
 
-    @PostMapping("/save")
-    public DataResponse save(@RequestBody SupplierSaveParam param) {
+    @PostMapping
+    public DataResponse save(@RequestBody @Valid SupplierSaveParam param) {
         DataResponse result = supplierService.save(param);
         return result;
     }

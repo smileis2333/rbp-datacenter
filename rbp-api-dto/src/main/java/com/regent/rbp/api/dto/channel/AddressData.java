@@ -3,6 +3,8 @@ package com.regent.rbp.api.dto.channel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+
 /**
  * @program: rbp-datacenter
  * @description: 收货信息
@@ -18,8 +20,11 @@ public class AddressData {
     private String province;
     private String city;
     private String county;
+    @NotBlank
     private String address;
+    @NotBlank
     private String contactsPerson;
+    @NotBlank
     private String mobile;
     private String postCode;
 }

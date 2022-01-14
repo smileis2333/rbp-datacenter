@@ -6,7 +6,6 @@ import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import lombok.Data;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * @program: rbp-datacenter
@@ -60,48 +59,11 @@ public class MemberCardSaveContext {
         this.memberCard.setNotes(param.getNotes());
         this.memberCard.setUpdatedOrigin(param.getUpdatedOrigin());
         this.memberCard.setUnionId(param.getUnionId());
-
         this.memberCard.setBeginDate(DateUtil.getDate(param.getBeginDate(), DateUtil.SHORT_DATE_FORMAT));
         this.memberCard.setEndDate(DateUtil.getDate(param.getEndDate(), DateUtil.SHORT_DATE_FORMAT));
         this.memberCard.setBirthdayDate(DateUtil.getDate(param.getBirthday(), DateUtil.SHORT_DATE_FORMAT));
-
-        if (StringUtils.isNotBlank(param.getOriginType())) {
-            Integer originType = null;
-            switch (param.getOriginType()) {
-                case "线上":
-                    originType = 1;
-                    break;
-                case "线下":
-                    originType = 2;
-                    break;
-                case "后台":
-                    originType = 3;
-                    break;
-            }
-            this.memberCard.setOriginType(originType);
-        }
-
-        if (StringUtils.isNotBlank(param.getOrigin())) {
-            Integer origint = null;
-            switch (param.getOrigin()) {
-                case "pos":
-                    origint = 1;
-                    break;
-                case "英朗":
-                    origint = 2;
-                    break;
-                case "微盟":
-                    origint = 3;
-                    break;
-                case "有赞":
-                    origint = 4;
-                    break;
-                case "yike":
-                    origint = 5;
-                    break;
-            }
-            this.memberCard.setOrigin(origint);
-        }
+        this.memberCard.setOriginType(param.getOriginType());
+        this.memberCard.setOrigin(param.getOrigin());
     }
 
 }

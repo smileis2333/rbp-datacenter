@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 /**
  * @program: rbp-datacenter
  * @description: 渠道资料
@@ -35,7 +37,7 @@ public class ChannelController {
     }
 
     @PostMapping
-    public DataResponse save(@RequestBody ChannelSaveParam param) {
+    public DataResponse save(@RequestBody @Valid ChannelSaveParam param) {
         DataResponse result = channelService.save(param);
         return result;
     }

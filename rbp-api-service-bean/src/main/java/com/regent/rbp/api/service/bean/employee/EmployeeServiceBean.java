@@ -29,7 +29,6 @@ import com.regent.rbp.api.service.employee.context.EmployeeSaveContext;
 import com.regent.rbp.common.constants.InformationConstants;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -254,13 +253,8 @@ public class EmployeeServiceBean implements EmployeeService {
     }
 
     private List<String> verificationProperty(EmployeeSaveParam param, EmployeeSaveContext context) {
+        Employee employee = context.getEmployee();
         List<String> errorMsgList = new ArrayList<>();
-        if (StringUtils.isBlank(param.getCode())) {
-            errorMsgList.add("员工编号(code)不能为空");
-        }
-        if (StringUtils.isBlank(param.getName())) {
-            errorMsgList.add("姓名(name)不能为空");
-        }
 
         if (StringUtil.isNotEmpty(param.getSexName())) {
             List<Sex> sexList = sexDao.selectList(new LambdaQueryWrapper<Sex>().eq(Sex::getName, param.getSexName()));
@@ -270,16 +264,9 @@ public class EmployeeServiceBean implements EmployeeService {
                 context.getEmployee().setSexId(sexList.get(0).getId());
             }
         }
-        if (StringUtils.isBlank(param.getChannelCode())) {
-            errorMsgList.add("所属渠道编号(channelCode)不能为空");
-        } else {
-            List<Channel> channelList = channelDao.selectList(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getChannelCode()));
-            if (CollUtil.isEmpty(channelList)) {
-                errorMsgList.add("所属渠道编号(channelCode)有误");
-            } else {
-                context.getEmployee().setChannelId(channelList.get(0).getId());
-            }
-        }
+
+        Channel channel = channelDao.selectOne(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getChannelCode()));
+        employee.setChannelId(channel.getId());
 
         if (StrUtil.isNotEmpty(param.getPositionName())) {
             Position position = positionDao.selectOne(new QueryWrapper<Position>().eq("name", param.getPositionName()));

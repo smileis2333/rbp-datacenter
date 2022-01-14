@@ -436,7 +436,8 @@ public class MemberCardServiceBean implements MemberCardService {
         MemberCard memberCard = context.getMemberCard();
 
         MemberCard oldMemberCard = memberCardDao.selectOne(new QueryWrapper<MemberCard>().eq("code", param.getCode()));
-        memberCard.setId(oldMemberCard.getId());
+        if (oldMemberCard != null)
+            memberCard.setId(oldMemberCard.getId());
 
         MemberType memberType = memberTypeDao.selectOne(new QueryWrapper<MemberType>().eq("name", param.getMemberType()));
         memberCard.setMemberTypeId(memberType.getId());
@@ -460,11 +461,7 @@ public class MemberCardServiceBean implements MemberCardService {
         // 发卡渠道
         if (StringUtils.isNotBlank(param.getChannelCode())) {
             Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getChannelCode()));
-            if (item != null) {
-                memberCard.setChannelId(item.getId());
-            } else {
-                errorMsgList.add("发卡渠道(channelCode)不存在");
-            }
+            memberCard.setChannelId(item.getId());
         }
         // 发卡人编号
         if (StringUtils.isNotBlank(param.getUserCode())) {
@@ -479,11 +476,7 @@ public class MemberCardServiceBean implements MemberCardService {
         // 维护渠道编号
         if (StringUtils.isNotBlank(param.getRepairChannelCode())) {
             Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getRepairChannelCode()));
-            if (item != null) {
-                memberCard.setRepairChannelId(item.getId());
-            } else {
-                //errorMsgList.add("维护渠道编号(repairChannelCode)不存在");
-            }
+            memberCard.setRepairChannelId(item.getId());
         }
         // 维护人编号
         if (StringUtils.isNotBlank(param.getMaintainerCode())) {
@@ -513,7 +506,11 @@ public class MemberCardServiceBean implements MemberCardService {
             }
         } else {
             MemberPolicy policy = memberPolicyDao.selectOne(new QueryWrapper<MemberPolicy>().eq("is_default", 1));
-            memberCard.setMemberPolicyId(policy.getId());
+            if (policy==null){
+                errorMsgList.add("默认会员政策编号(memberPolicyCode)不存在");
+            }else {
+                memberCard.setMemberPolicyId(policy.getId());
+            }
         }
         return errorMsgList;
     }
