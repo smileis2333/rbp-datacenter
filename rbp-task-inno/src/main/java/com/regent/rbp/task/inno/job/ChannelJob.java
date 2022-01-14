@@ -120,6 +120,7 @@ public class ChannelJob {
      * 同步云仓列表
      * 请求Json：{ "onlinePlatformCode": "INNO" }
      */
+    @XxlJob(SystemConstants.POST_ERP_CLOUD_WAREHOUSE)
     public void uploadingCloudWarehouse() {
 
         ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);

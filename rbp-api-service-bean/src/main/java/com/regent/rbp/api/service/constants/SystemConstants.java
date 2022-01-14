@@ -36,6 +36,7 @@ public class SystemConstants {
     public static final String POST_ERP_STORE = "inno.PostErpStore";
 
     public static final String POST_ERP_WAREHOUSE = "inno.PostErpWarehouse";
+    public static final String POST_ERP_CLOUD_WAREHOUSE = "inno.PostErpCloudWarehouse";
 
     public static final String POST_ERP_EMPLOYEE = "inno.PostErpEmployee";
 
