@@ -37,8 +37,8 @@ public class ChannelJob {
     private RestTemplate restTemplate;
 
     /**
-     * 同步渠道
-     * 请求Json：{ "onlinePlatformCode": "RBP" }
+     * 同步云仓的店铺列表
+     * 请求Json：{ "onlinePlatformCode": "INNO" }
      */
     @XxlJob(SystemConstants.POST_ERP_STORE)
     public void uploadingChannel() {
@@ -77,8 +77,8 @@ public class ChannelJob {
     }
 
     /**
-     * 同步渠道
-     * 请求Json：{ "onlinePlatformCode": "RBP" }
+     * 同步云仓的仓库列表
+     * 请求Json：{ "onlinePlatformCode": "INNO" }
      */
     @XxlJob(SystemConstants.POST_ERP_WAREHOUSE)
     public void uploadingWarehouse() {
@@ -98,6 +98,46 @@ public class ChannelJob {
             //开始推送仓库
             if (onlinePlatform.getWarehouseId() != null) {
                 ChannelRespDto resp = channelService.uploadingWarehouse(onlinePlatform);
+                if (resp == null) {
+                    XxlJobHelper.log(ERROR_WAREHOUSE_LIST);
+                }
+                else if (resp.getCode().equals("-1")) {
+                    new Exception(resp.getMsg());
+                }
+                XxlJobHelper.log("请求成功：" + JSON.toJSONString(resp));
+            } else {
+                XxlJobHelper.log(ERROR_WAREHOUSE_LIST);
+            }
+        }catch (Exception ex) {
+            String message = ex.getMessage();
+            XxlJobHelper.log(message);
+            XxlJobHelper.handleFail(message);
+            return;
+        }
+    }
+
+    /**
+     * 同步云仓列表
+     * 请求Json：{ "onlinePlatformCode": "INNO" }
+     */
+    public void uploadingCloudWarehouse() {
+
+        ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
+        try {
+            //读取参数(电商平台编号)
+            String param = XxlJobHelper.getJobParam();
+            XxlJobHelper.log(param);
+            ChannelUploadingParam channelUploadingParam = JSON.parseObject(param, ChannelUploadingParam.class);
+            OnlinePlatform onlinePlatform = onlinePlatformService.getOnlinePlatform(channelUploadingParam.getOnlinePlatformCode());
+
+            if(onlinePlatform == null) {
+                XxlJobHelper.log(ERROR_WAREHOUSE_ONLINEPLATFORMCODE);
+                XxlJobHelper.handleFail(ERROR_WAREHOUSE_ONLINEPLATFORMCODE);
+                return;
+            }
+            //开始推送仓库
+            if (onlinePlatform.getWarehouseId() != null) {
+                ChannelRespDto resp = channelService.uploadingCloudWarehouse(onlinePlatform);
                 if (resp == null) {
                     XxlJobHelper.log(ERROR_WAREHOUSE_LIST);
                 }
