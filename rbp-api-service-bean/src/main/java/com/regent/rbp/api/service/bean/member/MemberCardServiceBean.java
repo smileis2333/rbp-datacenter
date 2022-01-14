@@ -461,7 +461,9 @@ public class MemberCardServiceBean implements MemberCardService {
         // 发卡渠道
         if (StringUtils.isNotBlank(param.getChannelCode())) {
             Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getChannelCode()));
-            memberCard.setChannelId(item.getId());
+            if(item != null){
+                memberCard.setChannelId(item.getId());
+            }
         }
         // 发卡人编号
         if (StringUtils.isNotBlank(param.getUserCode())) {
@@ -476,7 +478,9 @@ public class MemberCardServiceBean implements MemberCardService {
         // 维护渠道编号
         if (StringUtils.isNotBlank(param.getRepairChannelCode())) {
             Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getRepairChannelCode()));
-            memberCard.setRepairChannelId(item.getId());
+            if(item != null){
+                memberCard.setRepairChannelId(item.getId());
+            }
         }
         // 维护人编号
         if (StringUtils.isNotBlank(param.getMaintainerCode())) {
