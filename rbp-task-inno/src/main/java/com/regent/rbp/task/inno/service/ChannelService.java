@@ -27,10 +27,16 @@ public interface ChannelService {
     ChannelRespDto uploadingChannel(OnlinePlatform onlinePlatform);
 
     /**
-     * 上传 云仓信息
+     * 上传 云仓相关的仓库信息
      * @param onlinePlatform
      * @return
      */
     ChannelRespDto uploadingWarehouse(OnlinePlatform onlinePlatform);
 
+    /**
+     * 上传 云仓信息
+     * @param onlinePlatform
+     * @return
+     */
+    ChannelRespDto uploadingCloudWarehouse(OnlinePlatform onlinePlatform);
 }

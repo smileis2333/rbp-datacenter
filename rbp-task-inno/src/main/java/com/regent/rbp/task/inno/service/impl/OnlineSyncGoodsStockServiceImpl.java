@@ -75,7 +75,7 @@ public class OnlineSyncGoodsStockServiceImpl extends ServiceImpl<OnlineSyncGoods
                         if (StringUtil.isEmpty(stock.getBarcode())) {
                             continue;
                         }
-                        goodsStockDtoList.add(OnlineSyncGoodsStockDto.build(stock.getBarcode(), stock.getQuantity().intValue(), onlinePlatform.getChannelCode()));
+                        goodsStockDtoList.add(OnlineSyncGoodsStockDto.build(stock.getBarcode(), stock.getQuantity().intValue(), onlinePlatform.getWarehouseCode()));
                         // 批量上传实际库存
                         if (goodsStockDtoList.size() >= SystemConstants.BATCH_SIZE) {
                             successTotal += this.batchUploadStock(stockReqDto, onlinePlatform.getExternalApplicationApiUrl());
@@ -142,7 +142,7 @@ public class OnlineSyncGoodsStockServiceImpl extends ServiceImpl<OnlineSyncGoods
                             if (null == goodsStock || stock.getQuantity().equals(goodsStock.getQuantity())) {
                                 continue;
                             }
-                            goodsStockDtoList.add(OnlineSyncGoodsStockDto.build(stock.getBarcode(), stock.getQuantity().intValue(), onlinePlatform.getChannelCode()));
+                            goodsStockDtoList.add(OnlineSyncGoodsStockDto.build(stock.getBarcode(), stock.getQuantity().intValue(), onlinePlatform.getWarehouseCode()));
                             // 批量上传实际库存
                             if (goodsStockDtoList.size() >= SystemConstants.BATCH_SIZE) {
                                 successTotal += this.batchUploadStock(stockReqDto, onlinePlatform.getExternalApplicationApiUrl());
@@ -175,7 +175,8 @@ public class OnlineSyncGoodsStockServiceImpl extends ServiceImpl<OnlineSyncGoods
      */
     private Long batchUploadStock(OnlineSyncGoodsStockReqDto stockReqDto, String url) {
         String api_url = String.format("%s%s", url, POST_WAREHOUSE_INVERTORY);
-        String result = HttpUtil.post(api_url, JSON.toJSONString(stockReqDto));
+        String json = JSON.toJSONString(stockReqDto);
+        String result = HttpUtil.post(api_url, json);
         // 成功数量
         Long successTotal = 0L;
         // 转换

@@ -11,6 +11,7 @@ import com.regent.rbp.api.core.channel.ChannelBusinessFormat;
 import com.regent.rbp.api.core.eum.BusinessFormatTypeEnum;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
+import com.regent.rbp.api.core.warehouse.Warehouse;
 import com.regent.rbp.api.core.warehouse.WarehouseChannelRange;
 import com.regent.rbp.api.dao.base.BusinessFormatTypeDao;
 import com.regent.rbp.api.dao.channel.ChannelBalanceTypeDao;
@@ -132,6 +133,7 @@ public class ChannelServiceImpl implements ChannelService {
         Long warehouseId = onlinePlatform.getWarehouseId();
         ChannelRespDto respDto = null;
         String key = SystemConstants.POST_ERP_STORE;
+
         List<WarehouseChannelRange> warehouseChannelRangeList = warehouseChannelRangeDao.selectList(
                 new QueryWrapper<WarehouseChannelRange>().eq("warehouse_id", warehouseId));
         if (warehouseChannelRangeList != null && warehouseChannelRangeList.size() > 0) {
@@ -168,6 +170,31 @@ public class ChannelServiceImpl implements ChannelService {
             Date uploadingTime = channelList.stream().max(Comparator.comparing(Channel::getUpdatedTime)).get().getUpdatedTime();
             onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatformId, key, uploadingTime);
         }
+        return respDto;
+    }
+
+    @Transactional
+    @Override
+    public ChannelRespDto uploadingCloudWarehouse(OnlinePlatform onlinePlatform) {
+        Long onlinePlatformId = onlinePlatform.getId();
+        Long warehouseId = onlinePlatform.getWarehouseId();
+        ChannelRespDto respDto = null;
+        String key = SystemConstants.POST_ERP_STORE;
+        Warehouse warehouse = warehouseDao.selectById(onlinePlatform.getWarehouseId());
+        List<WarehouseDto> warehouseDtoList = new ArrayList<>();
+        WarehouseDto warehouseItem = new WarehouseDto("1", "", warehouse.getCode(), "", warehouse.getName(), "", "");
+        warehouseDtoList.add(warehouseItem);
+
+        WarehouseReqDto warehouseReqDto = new WarehouseReqDto();
+        warehouseReqDto.setApp_key(onlinePlatform.getAppKey());
+        warehouseReqDto.setApp_secrept(onlinePlatform.getAppSecret());
+        warehouseReqDto.setData(warehouseDtoList);
+
+        String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), POST_ERP_WAREHOUSE);
+        String result = HttpUtil.post(api_url, JSON.toJSONString(warehouseReqDto));
+
+        respDto = JSON.parseObject(result, ChannelRespDto.class);
+
         return respDto;
     }
 
