@@ -1,7 +1,7 @@
 package com.regent.rbp.api.dto.base;
 
+import com.regent.rbp.api.dto.validate.DiscreteRange;
 import com.regent.rbp.api.dto.validate.FromTo;
-import com.regent.rbp.api.dto.validate.RuleIdCheck;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -34,7 +34,8 @@ public class BarcodeItem {
     private String barcode;
 
     @NotBlank
-    @RuleIdCheck
+    @DiscreteRange(ranges = {6888783191082240l,6888783191082241l,6888783191082242l,6888783191082243l},
+            message = "6888783191082240 内部码, 6888783191082241 内部码(含内长), 6888783191082242 国标码7位, 6888783191082243 国标码8位")
     private String ruleId;
 
     @Null

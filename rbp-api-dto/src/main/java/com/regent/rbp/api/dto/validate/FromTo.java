@@ -18,6 +18,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * toField的值由用户根据具体情况进行注入，该注解主要处理List下的元素带各类非直接引用的校验处理
  * example:
  * 入参的List参数类型带goodsCode，使用者处理后对全部元素注入goodsId，然后进行第二次校验
+ * fromField，toField用于反射读取数据，而前者还有一个目的用于处理报错路径的json 回显
+ * 基于jsr303的数组Bean校验，只能到xx[index]，处理到具体的回显目前通过异常解析器拼进去，
+ * 第二种做法可以通过
+ * @see com.regent.rbp.api.dto.base.BarcodeDto#isSize()
+ * 类似的做法，即is开头的xxxx方法做校验，也可能实现基于Bean的cross param validate的回显
  * @see Complex
  * @description
  */

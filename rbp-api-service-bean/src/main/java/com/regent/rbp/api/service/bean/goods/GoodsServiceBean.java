@@ -2,6 +2,7 @@ package com.regent.rbp.api.service.bean.goods;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -616,8 +617,9 @@ public class GoodsServiceBean implements GoodsService {
         GoodsSaveContext context = new GoodsSaveContext(param);
         //判断是新增还是更新
         Goods item = goodsDao.selectOne(new QueryWrapper<Goods>().eq("code", param.getGoodsCode()));
+        Goods goods = context.getGoods();
         if (item != null) {
-            context.getGoods().setId(item.getId());
+            goods.setId(item.getId());
             createFlag = false;
         }
 
@@ -630,7 +632,16 @@ public class GoodsServiceBean implements GoodsService {
         //自动补充不存在的数据字典
         processAutoCompleteDictionary(param, context);
         //写入货品表
-        saveGoods(createFlag, context.getGoods());
+        saveGoods(createFlag, goods);
+
+        if (!createFlag) {
+            goodsColorDao.delete(new LambdaQueryWrapper<GoodsColor>().eq(GoodsColor::getGoodsId, goods.getId()));
+            goodsLongDao.delete(new LambdaQueryWrapper<GoodsLong>().eq(GoodsLong::getGoodsId, goods.getId()));
+            sizeDisableDao.delete(new LambdaQueryWrapper<SizeDisable>().eq(SizeDisable::getGoodsId, goods.getId()));
+            goodsTagPriceDao.delete(new LambdaQueryWrapper<GoodsTagPrice>().eq(GoodsTagPrice::getGoodsId, goods.getId()));
+            barcodeDao.delete(new LambdaQueryWrapper<Barcode>().eq(Barcode::getGoodsId, goods.getId()));
+        }
+
         //写入颜色
         if (CollUtil.isNotEmpty(context.getGoodsColorList())) {
             saveGoodsColor(createFlag, context.getGoodsColorList());
@@ -641,7 +652,7 @@ public class GoodsServiceBean implements GoodsService {
         }
         //写入自定义字段
         if (CollUtil.isNotEmpty(context.getCustomizeData())) {
-            baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.GOODS_INFO, TableConstants.GOODS, context.getGoods().getId(), context.getCustomizeData());
+            baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.GOODS_INFO, TableConstants.GOODS, goods.getId(), context.getCustomizeData());
         }
         //写入尺码停用
         if (CollUtil.isNotEmpty(context.getSizeDisableList())) {
@@ -742,30 +753,18 @@ public class GoodsServiceBean implements GoodsService {
         List<String> errorMsgList = new ArrayList<>();
         Goods goods = context.getGoods();
 
-        if (StringUtils.isBlank(param.getGoodsCode())) {
-            errorMsgList.add("货号(GoodsCode)不能为空");
-        } else {
-            Goods item = goodsDao.selectOne(new QueryWrapper<Goods>().eq("code", param.getGoodsCode()));
-            if (item != null) {
-                goods.setId(item.getId());
-            }
-        }
-
-        if (param.getType() == null) {
-            errorMsgList.add("货品类型(type)不能为空");
+        Goods existGoods = goodsDao.selectOne(new QueryWrapper<Goods>().eq("code", param.getGoodsCode()));
+        if (existGoods != null) {
+            goods.setId(existGoods.getId());
         }
 
         //验证尺码列表
-        if (StringUtils.isBlank(param.getSizeClassName())) {
-            errorMsgList.add("尺码类别(SizeClassName)不能为空");
+        SizeClass sizeClass = sizeClassDao.selectOne(new QueryWrapper<SizeClass>().eq("name", param.getSizeClassName()));
+        if (sizeClass == null) {
+            //尺码类别不存在，给予提示
+            errorMsgList.add("尺码类别(SizeClassName)不存在");
         } else {
-            SizeClass sizeClass = sizeClassDao.selectOne(new QueryWrapper<SizeClass>().eq("name", param.getSizeClassName()));
-            if (sizeClass == null) {
-                //尺码类别不存在，给予提示
-                errorMsgList.add("尺码类别(SizeClassName)不存在");
-            } else {
-                goods.setSizeClassId(sizeClass.getId());
-            }
+            goods.setSizeClassId(sizeClass.getId());
         }
 
         //验证号型
@@ -793,17 +792,12 @@ public class GoodsServiceBean implements GoodsService {
         //验证供应商
         if (StringUtils.isNotBlank(param.getSupplierCode())) {
             Supplier supplier = supplierDao.selectOne(new QueryWrapper<Supplier>().eq("code", param.getSupplierCode()));
-            if (supplier == null) {
-                //供应商不存在，给予提示
-                errorMsgList.add("供应商(SupplierCode)不存在");
-            } else {
-                goods.setSupplierId(supplier.getId());
-            }
+            goods.setSupplierId(supplier.getId());
         }
 
         //验证颜色列表(货品颜色 只追加，不替换)
         if (StringUtil.isNotEmpty(param.getColorList())) {
-            List<GoodsColor> goodsColors = new ArrayList<>(param.getColorList().length);
+            List<GoodsColor> goodsColors = new ArrayList<>(param.getColorList().size());
             for (String colorCode : param.getColorList()) {
                 Color color = colorDao.selectOne(new QueryWrapper<Color>().eq("code", colorCode));
                 if (color == null) {
@@ -826,7 +820,7 @@ public class GoodsServiceBean implements GoodsService {
         //验证内长列表(货品内长 只追加，不替换)
         if (StringUtil.isNotEmpty(param.getLongList())) {
             for (String longName : param.getLongList()) {
-                List<GoodsLong> goodsLongs = new ArrayList<>(param.getLongList().length);
+                List<GoodsLong> goodsLongs = new ArrayList<>(param.getLongList().size());
                 LongInfo longInfo = longDao.selectOne(new QueryWrapper<LongInfo>().eq("name", longName));
                 if (longInfo == null) {
                     //内长不存在，给予提示
@@ -843,53 +837,46 @@ public class GoodsServiceBean implements GoodsService {
         }
 
         //验证条码列表
-        if (StringUtil.isNotEmpty(param.getBarcodeData())) {
-            List<Barcode> barcodeList = new ArrayList<>(param.getBarcodeData().size());
-            for (BarcodeDto barcodeDto : param.getBarcodeData()) {
-                Barcode item = barcodeDao.selectOne(new QueryWrapper<Barcode>().eq("barcode", barcodeDto.getBarcode()));
+        if (createFlag) {
+            if (StringUtil.isNotEmpty(param.getBarcodeData())) {
+                List<Barcode> barcodeList = new ArrayList<>(param.getBarcodeData().size());
+                for (BarcodeDto barcodeDto : param.getBarcodeData()) {
+                    Barcode item = barcodeDao.selectOne(new QueryWrapper<Barcode>().eq("barcode", barcodeDto.getBarcode()));
 
-                if (item != null) {
-                    //内长不存在，给予提示
-                    errorMsgList.add(String.format("条形码(%s)已经存在", barcodeDto.getBarcode()));
-                } else {
-                    item = new Barcode();
-                    item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-                    item.setGoodsId(goods.getId());
-                    item.setBarcode(barcodeDto.getBarcode());
-                    Color color = colorDao.selectOne(new QueryWrapper<Color>().select("id", "code", "name")
-                            .eq("code", barcodeDto.getColorCode()));
-                    if (color == null) {
-                        errorMsgList.add(String.format("颜色(%s)不存在", barcodeDto.getGoodsCode()));
+                    if (item != null) {
+                        //内长不存在，给予提示
+                        errorMsgList.add(String.format("条形码(%s)已经存在", barcodeDto.getBarcode()));
                     } else {
-                        item.setColorId(color.getId());
-                    }
-                    LongInfo longInfo = longDao.selectOne(new QueryWrapper<LongInfo>().select("id", "name")
-                            .eq("name", barcodeDto.getLongName()));
-                    if (longInfo == null) {
-                        errorMsgList.add(String.format("内长(%s)不存在", barcodeDto.getLongName()));
-                    } else {
-                        item.setLongId(longInfo.getId());
-                    }
-                    SizeDetail sizeDetail = sizeDetailDao.selectOne(new QueryWrapper<SizeDetail>().select("id", "name")
-                            .eq("size_class_id", goods.getSizeClassId())
-                            .eq("name", barcodeDto.getSize()));
-                    if (sizeDetail == null) {
-                        errorMsgList.add(String.format("尺码(%s)不存在", barcodeDto.getSize()));
-                    } else {
-                        item.setSizeId(sizeDetail.getId());
-                    }
-                    if (barcodeDto.getRuleId() == null) {
-                        errorMsgList.add("条码生成规则不能为空");
-                    } else {
-                        if (!SET_RULES.contains(barcodeDto.getRuleId())) {
-                            errorMsgList.add("条码生成规则不合法");
+                        item = new Barcode();
+                        item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                        item.setGoodsId(goods.getId());
+                        item.setBarcode(barcodeDto.getBarcode());
+                        Color color = colorDao.selectOne(new QueryWrapper<Color>().select("id", "code", "name")
+                                .eq("code", barcodeDto.getColorCode()));
+                        if (color == null) {
+                            errorMsgList.add(String.format("颜色(%s)不存在", barcodeDto.getGoodsCode()));
                         } else {
-                            item.setRuleId(barcodeDto.getRuleId());
+                            item.setColorId(color.getId());
                         }
+                        LongInfo longInfo = longDao.selectOne(new QueryWrapper<LongInfo>().select("id", "name")
+                                .eq("name", barcodeDto.getLongName()));
+                        if (longInfo == null) {
+                            errorMsgList.add(String.format("内长(%s)不存在", barcodeDto.getLongName()));
+                        } else {
+                            item.setLongId(longInfo.getId());
+                        }
+                        SizeDetail sizeDetail = sizeDetailDao.selectOne(new QueryWrapper<SizeDetail>().select("id", "name")
+                                .eq("size_class_id", goods.getSizeClassId())
+                                .eq("name", barcodeDto.getSize()));
+                        if (sizeDetail == null) {
+                            errorMsgList.add(String.format("尺码(%s)不存在", barcodeDto.getSize()));
+                        } else {
+                            item.setSizeId(sizeDetail.getId());
+                        }
+                        barcodeList.add(item);
                     }
-                    barcodeList.add(item);
+                    context.setBarcodeList(barcodeList);
                 }
-                context.setBarcodeList(barcodeList);
             }
         }
 

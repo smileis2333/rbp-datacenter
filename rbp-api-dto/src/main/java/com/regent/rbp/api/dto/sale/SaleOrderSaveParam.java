@@ -4,12 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
-import com.regent.rbp.api.dto.validate.BillNo;
-import com.regent.rbp.api.dto.validate.BillStatus;
-import com.regent.rbp.api.dto.validate.ChannelCodeCheck;
-import com.regent.rbp.api.dto.validate.ConflictManualIdCheck;
+import com.regent.rbp.api.dto.validate.*;
 import lombok.Data;
-import org.hibernate.validator.constraints.Range;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -54,7 +50,7 @@ public class SaleOrderSaveParam {
     private String shiftNo;
 
     @NotNull
-    @Range(min = 0, max = 2, message = "(0.Pos;1.后台;2.第三方平台)") // todo extract annotation to prevent future change
+    @DiscreteRange(ranges = {0, 1, 2}, message = "0.Pos;1.后台;2.第三方平台")
     private Integer origin;
 
     @NotNull
@@ -62,8 +58,7 @@ public class SaleOrderSaveParam {
     private Integer status;
 
     @NotNull
-    @Range(min = 0, max = 4, message = "(0.线下销售 1.全渠道发货 2.线上发货 3.线上退货 4.定金)")
-    // todo extract annotation to prevent future change
+    @DiscreteRange(ranges = {0, 1, 2, 3, 4}, message = "0.线下销售 1.全渠道发货 2.线上发货 3.线上退货 4.定金")
     private Integer billType;
 
     private String notes;
@@ -90,4 +85,5 @@ public class SaleOrderSaveParam {
         }
         return CollUtil.distinct(ans);
     }
+
 }

@@ -14,14 +14,14 @@ import java.util.Set;
  * @description
  */
 @Component
-public class DiscreteRangeValidator implements ConstraintValidator<DiscreteRange, Integer> {
-    private Set<Integer> rangeSet = new HashSet<>();
+public class DiscreteRangeValidator implements ConstraintValidator<DiscreteRange, Number> {
+    private Set<Long> rangeSet = new HashSet<>();
 
     @Override
     public void initialize(DiscreteRange constraintAnnotation) {
-        int[] ranges = constraintAnnotation.ranges();
+        long[] ranges = constraintAnnotation.ranges();
         int rangesLength = ranges.length;
-        for (int i : ranges) {
+        for (long i : ranges) {
             rangeSet.add(i);
         }
         if (rangesLength != rangeSet.size()) {
@@ -30,9 +30,14 @@ public class DiscreteRangeValidator implements ConstraintValidator<DiscreteRange
     }
 
     @Override
-    public boolean isValid(Integer value, ConstraintValidatorContext context) {
+    public boolean isValid(Number value, ConstraintValidatorContext context) {
         if (value != null) {
-            return rangeSet.contains(value);
+            if (value instanceof Integer) {
+                return rangeSet.contains((long) value.intValue());
+            } else if (value instanceof Long) {
+                return rangeSet.contains(value);
+            }
+
         }
         return true;
     }

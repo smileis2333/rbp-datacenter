@@ -36,7 +36,7 @@ public class SupplierSaveContext {
         supplier.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         supplier.setId(id);
         supplier.setCode(param.getSupplierCode());
-        supplier.setStatus(0);
+        supplier.setStatus(param.getStatus());
 
         nature = param.getNature();
         grade = param.getGrade();

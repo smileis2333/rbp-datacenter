@@ -603,6 +603,14 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                 return employeeGoodsAchievement;
             }).collect(Collectors.toList());
         }).filter(ObjectUtil::isNotNull).flatMap(Collection::stream).collect(Collectors.toList()));
+
+        // 计算汇总数据
+//        salesOrderBill.setSumSkuQuantity();
+//        salesOrderBill.setSumItemQuantity();
+//        salesOrderBill.setSumRetailAmount();
+//        salesOrderBill.setSumOriginalAmount();
+//        salesOrderBill.setSumTagAmount();
+//        salesOrderBill.setSumSalesAmount();
         return errorMsgList;
     }
 

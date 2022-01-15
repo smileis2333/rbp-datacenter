@@ -8,6 +8,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 检测 manualId 是否重复，用法类似
+ * @see BillNo
  * @author huangjie
  * @date : 2021/12/22
  * @description

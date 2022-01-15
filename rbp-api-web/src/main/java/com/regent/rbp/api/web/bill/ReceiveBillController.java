@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 /**
  * @author huangjie
  * @date : 2021/12/17
@@ -36,7 +38,7 @@ public class ReceiveBillController {
 
     @ApiOperation(value = "新增")
     @PostMapping
-    public DataResponse save(@RequestBody ReceiveBillSaveParam param) {
+    public DataResponse save(@RequestBody @Valid ReceiveBillSaveParam param) {
         DataResponse result = sendBillService.save(param);
         return result;
     }

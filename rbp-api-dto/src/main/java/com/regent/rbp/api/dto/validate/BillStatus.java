@@ -8,6 +8,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 等于于
+ * @see com.regent.rbp.api.dto.validate.DiscreteRange
+ * 只是用于用于使用上方便
  * @author huangjie
  * @date : 2021/12/23
  * @description

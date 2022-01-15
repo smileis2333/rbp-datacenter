@@ -14,7 +14,6 @@ import java.lang.annotation.Target;
  * 因此，定义该注解用于离散数值上的值域校验
  * 使用者根据实际情况进行信息填写，如果重复性高，建议定义一个新注解减少代码重复，如
  * @see BillStatus
- * todo refactor to support all other primitive type
  * @author huangjie
  * @date : 2022/01/14
  * @description
@@ -29,5 +28,5 @@ public @interface DiscreteRange {
 
     Class<? extends Payload>[] payload() default {};
 
-    int[] ranges() default {};
+    long[] ranges() default {};
 }
