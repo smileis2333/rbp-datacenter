@@ -16,6 +16,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import static com.regent.rbp.infrastructure.util.DateUtil.SHORT_DATE_FORMAT;
 
@@ -63,8 +64,9 @@ public class GoodsSaveParam {
     private String notes;
     @JsonFormat(pattern = SHORT_DATE_FORMAT)
     private Date buildDate;
-    private List<String> colorList;
-    private List<String> longList;
+    private Set<String> colorList;
+    private Set<String> longList;
+    @Valid
     private GoodsPriceDto priceData;
     private List<CustomizeDataDto> customizeData;
     @Valid

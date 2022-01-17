@@ -94,7 +94,11 @@ public class SalesOrderBillGoodsResult {
     @Null
     private Long barcodeId;
 
+    @Null
+    private Integer rowIndex;
+
     public void setRowIndex(Integer rowIndex) {
+        this.rowIndex = rowIndex;
         if (CollUtil.isNotEmpty(employeeGoodsAchievement)) {
             employeeGoodsAchievement.forEach(e -> e.setRowIndex(rowIndex));
         }

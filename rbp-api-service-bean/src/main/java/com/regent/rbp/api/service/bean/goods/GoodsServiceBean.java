@@ -2,9 +2,9 @@ package com.regent.rbp.api.service.bean.goods;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.*;
 import com.regent.rbp.api.core.goods.*;
@@ -43,10 +43,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class GoodsServiceBean implements GoodsService {
-    //条形码生成规则
-    public static final Set<Long> SET_RULES = new HashSet<>(Arrays.asList(
-            new Long[]{6888783191082240L, 6888783191082241L, 6888783191082242L, 6888783191082243L}
-    ));
 
     @Autowired
     private GoodsDao goodsDao;
@@ -634,14 +630,6 @@ public class GoodsServiceBean implements GoodsService {
         //写入货品表
         saveGoods(createFlag, goods);
 
-        if (!createFlag) {
-            goodsColorDao.delete(new LambdaQueryWrapper<GoodsColor>().eq(GoodsColor::getGoodsId, goods.getId()));
-            goodsLongDao.delete(new LambdaQueryWrapper<GoodsLong>().eq(GoodsLong::getGoodsId, goods.getId()));
-            sizeDisableDao.delete(new LambdaQueryWrapper<SizeDisable>().eq(SizeDisable::getGoodsId, goods.getId()));
-            goodsTagPriceDao.delete(new LambdaQueryWrapper<GoodsTagPrice>().eq(GoodsTagPrice::getGoodsId, goods.getId()));
-            barcodeDao.delete(new LambdaQueryWrapper<Barcode>().eq(Barcode::getGoodsId, goods.getId()));
-        }
-
         //写入颜色
         if (CollUtil.isNotEmpty(context.getGoodsColorList())) {
             saveGoodsColor(createFlag, context.getGoodsColorList());
@@ -797,21 +785,26 @@ public class GoodsServiceBean implements GoodsService {
 
         //验证颜色列表(货品颜色 只追加，不替换)
         if (StringUtil.isNotEmpty(param.getColorList())) {
+            Set<String> colorCodes = param.getColorList();
+            Map<String, Long> colorCodeIdMap = colorDao.selectList(Wrappers.lambdaQuery(Color.class).in(Color::getCode, colorCodes)).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
+            Collection<Long> colorIds = colorCodeIdMap.values();
+            Set<Long> existColorIds = goodsColorDao.selectList(Wrappers.lambdaQuery(GoodsColor.class).eq(GoodsColor::getGoodsId, goods.getId()).in(GoodsColor::getColorId, colorIds)).stream().map(GoodsColor::getColorId).collect(Collectors.toSet());
             List<GoodsColor> goodsColors = new ArrayList<>(param.getColorList().size());
             for (String colorCode : param.getColorList()) {
-                Color color = colorDao.selectOne(new QueryWrapper<Color>().eq("code", colorCode));
-                if (color == null) {
+                Long colorId = colorCodeIdMap.get(colorCode);
+                if (colorId == null) {
                     //颜色不存在，给予提示
                     errorMsgList.add(String.format("颜色编号{%s}不存在", colorCode));
                 } else {
-                    if (!createFlag) {
-
-                    }
                     GoodsColor goodsColor = new GoodsColor();
                     goodsColor.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
                     goodsColor.setGoodsId(context.getGoods().getId());
-                    goodsColor.setColorId(color.getId());
-                    goodsColors.add(goodsColor);
+                    goodsColor.setColorId(colorId);
+                    if (createFlag) {
+                        goodsColors.add(goodsColor);
+                    } else if (!existColorIds.contains(colorId)) {
+                        goodsColors.add(goodsColor);
+                    }
                 }
                 context.setGoodsColorList(goodsColors);
             }
@@ -819,70 +812,80 @@ public class GoodsServiceBean implements GoodsService {
 
         //验证内长列表(货品内长 只追加，不替换)
         if (StringUtil.isNotEmpty(param.getLongList())) {
+            Set<String> longNames = param.getLongList();
+            Map<String, Long> longNameIdMap = longDao.selectList(Wrappers.lambdaQuery(LongInfo.class).in(LongInfo::getName, longNames)).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
+            Collection<Long> longIds = longNameIdMap.values();
+            Set<Long> existLongId = goodsLongDao.selectList(Wrappers.lambdaQuery(GoodsLong.class).eq(GoodsLong::getGoodsId, goods.getId()).in(GoodsLong::getLongId, longIds)).stream().map(GoodsLong::getLongId).collect(Collectors.toSet());
             for (String longName : param.getLongList()) {
                 List<GoodsLong> goodsLongs = new ArrayList<>(param.getLongList().size());
-                LongInfo longInfo = longDao.selectOne(new QueryWrapper<LongInfo>().eq("name", longName));
-                if (longInfo == null) {
+                Long longId = longNameIdMap.get(longName);
+
+                if (longId == null) {
                     //内长不存在，给予提示
                     errorMsgList.add(String.format("内长{%s}不存在", longName));
                 } else {
                     GoodsLong goodsLong = new GoodsLong();
                     goodsLong.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
                     goodsLong.setGoodsId(context.getGoods().getId());
-                    goodsLong.setLongId(longInfo.getId());
-                    goodsLongs.add(goodsLong);
+                    goodsLong.setLongId(longId);
+                    if (createFlag) {
+                        goodsLongs.add(goodsLong);
+                    } else if (!existLongId.contains(longId)) {
+                        goodsLongs.add(goodsLong);
+                    }
                 }
                 context.setGoodsLongList(goodsLongs);
             }
         }
 
         //验证条码列表
-        if (createFlag) {
-            if (StringUtil.isNotEmpty(param.getBarcodeData())) {
-                List<Barcode> barcodeList = new ArrayList<>(param.getBarcodeData().size());
-                for (BarcodeDto barcodeDto : param.getBarcodeData()) {
-                    Barcode item = barcodeDao.selectOne(new QueryWrapper<Barcode>().eq("barcode", barcodeDto.getBarcode()));
+        if (StringUtil.isNotEmpty(param.getBarcodeData())) {
+            List<Barcode> barcodeList = new ArrayList<>(param.getBarcodeData().size());
+            for (BarcodeDto barcodeDto : param.getBarcodeData()) {
+                Barcode item = barcodeDao.selectOne(new QueryWrapper<Barcode>().eq("barcode", barcodeDto.getBarcode()));
 
-                    if (item != null) {
-                        //内长不存在，给予提示
+                if (item != null) {
+                    //内长不存在，给予提示
+                    if (createFlag)
                         errorMsgList.add(String.format("条形码(%s)已经存在", barcodeDto.getBarcode()));
+                } else {
+                    item = new Barcode();
+                    item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                    item.setGoodsId(goods.getId());
+                    item.setBarcode(barcodeDto.getBarcode());
+                    item.setRuleId(barcodeDto.getRuleId());
+                    Color color = colorDao.selectOne(new QueryWrapper<Color>().select("id", "code", "name")
+                            .eq("code", barcodeDto.getColorCode()));
+                    if (color == null) {
+                        errorMsgList.add(String.format("颜色(%s)不存在", barcodeDto.getGoodsCode()));
                     } else {
-                        item = new Barcode();
-                        item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-                        item.setGoodsId(goods.getId());
-                        item.setBarcode(barcodeDto.getBarcode());
-                        Color color = colorDao.selectOne(new QueryWrapper<Color>().select("id", "code", "name")
-                                .eq("code", barcodeDto.getColorCode()));
-                        if (color == null) {
-                            errorMsgList.add(String.format("颜色(%s)不存在", barcodeDto.getGoodsCode()));
-                        } else {
-                            item.setColorId(color.getId());
-                        }
-                        LongInfo longInfo = longDao.selectOne(new QueryWrapper<LongInfo>().select("id", "name")
-                                .eq("name", barcodeDto.getLongName()));
-                        if (longInfo == null) {
-                            errorMsgList.add(String.format("内长(%s)不存在", barcodeDto.getLongName()));
-                        } else {
-                            item.setLongId(longInfo.getId());
-                        }
-                        SizeDetail sizeDetail = sizeDetailDao.selectOne(new QueryWrapper<SizeDetail>().select("id", "name")
-                                .eq("size_class_id", goods.getSizeClassId())
-                                .eq("name", barcodeDto.getSize()));
-                        if (sizeDetail == null) {
-                            errorMsgList.add(String.format("尺码(%s)不存在", barcodeDto.getSize()));
-                        } else {
-                            item.setSizeId(sizeDetail.getId());
-                        }
-                        barcodeList.add(item);
+                        item.setColorId(color.getId());
                     }
-                    context.setBarcodeList(barcodeList);
+                    LongInfo longInfo = longDao.selectOne(new QueryWrapper<LongInfo>().select("id", "name")
+                            .eq("name", barcodeDto.getLongName()));
+                    if (longInfo == null) {
+                        errorMsgList.add(String.format("内长(%s)不存在", barcodeDto.getLongName()));
+                    } else {
+                        item.setLongId(longInfo.getId());
+                    }
+                    SizeDetail sizeDetail = sizeDetailDao.selectOne(new QueryWrapper<SizeDetail>().select("id", "name")
+                            .eq("size_class_id", goods.getSizeClassId())
+                            .eq("name", barcodeDto.getSize()));
+                    if (sizeDetail == null) {
+                        errorMsgList.add(String.format("尺码(%s)不存在", barcodeDto.getSize()));
+                    } else {
+                        item.setSizeId(sizeDetail.getId());
+                    }
+                    barcodeList.add(item);
                 }
+                context.setBarcodeList(barcodeList);
             }
         }
 
         //验证尺码停用列表
         if (StringUtil.isNotEmpty(param.getDisableSizeData())) {
             List<SizeDisable> sizeDisableList = new ArrayList<>(param.getDisableSizeData().size());
+            Set<String> sclMap = sizeDisableDao.selectList(Wrappers.lambdaQuery(SizeDisable.class).eq(SizeDisable::getGoodsId, goods.getId())).stream().map(e -> String.format("%s|%s|%s", e.getSizeId(), e.getColorId(), e.getLongId())).collect(Collectors.toSet());
             for (DisableSizeDto disableSizeDto : param.getDisableSizeData()) {
                 SizeDisable item = new SizeDisable();
                 item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
@@ -909,7 +912,9 @@ public class GoodsServiceBean implements GoodsService {
                 } else {
                     item.setSizeId(sizeDetail.getId());
                 }
-                sizeDisableList.add(item);
+                if (!sclMap.contains(String.format("%s|%s|%s", item.getSizeId(), item.getColorId(), item.getLongId()))) {
+                    sizeDisableList.add(item);
+                }
                 context.setSizeDisableList(sizeDisableList);
             }
         }
@@ -918,6 +923,7 @@ public class GoodsServiceBean implements GoodsService {
             ArrayList<GoodsTagPrice> goodsTagPrices = new ArrayList<>();
             List<String> tagPriceCodes = CollUtil.map(param.getPriceData().getTagPrice(), GoodsTagPriceDto::getCode, true);
             Map<String, TagPriceType> tagPriceTypeMap = tagPriceCodes.isEmpty() ? Collections.emptyMap() : tagPriceTypeDao.selectList(new QueryWrapper<TagPriceType>().in("code", tagPriceCodes)).stream().collect(Collectors.toMap(TagPriceType::getCode, Function.identity()));
+            Set<Long> existTagPrices = goodsTagPriceDao.selectList(Wrappers.lambdaQuery(GoodsTagPrice.class).eq(GoodsTagPrice::getGoodsId, goods.getId())).stream().map(GoodsTagPrice::getPriceTypeId).collect(Collectors.toSet());
             for (int i = 0; i < tagPriceCodes.size(); i++) {
                 String e = tagPriceCodes.get(i);
                 TagPriceType tagPriceType = null;
@@ -929,10 +935,12 @@ public class GoodsServiceBean implements GoodsService {
                     goodsTagPrice.setPriceTypeId(tagPriceType.getId());
                     goodsTagPrice.setTagPrice(param.getPriceData().getTagPrice().get(i).getValue());
                     goodsTagPrice.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-                    goodsTagPrices.add(goodsTagPrice);
+                    if (!existTagPrices.contains(tagPriceType.getId()))
+                        goodsTagPrices.add(goodsTagPrice);
                 }
             }
-            if (CollUtil.isEmpty(goodsTagPrices)) {
+
+            if (createFlag && CollUtil.isEmpty(goodsTagPrices)) {
                 errorMsgList.add(String.format("至少需要设置一个吊牌价，请检查吊牌是否存在以及吊牌价code是否设置"));
             }
             context.setGoodsTagPriceList(goodsTagPrices);

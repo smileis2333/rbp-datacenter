@@ -3,6 +3,7 @@ package com.regent.rbp.api.dto.employee;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.validate.ChannelCodeCheck;
+import com.regent.rbp.api.dto.validate.DiscreteRange;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -33,6 +34,7 @@ public class EmployeeSaveParam {
     private String jobNumber;
     private String notes;
     private String positionName;
+    @DiscreteRange(ranges = {0, 1, 2}, message = "入参非法，合法输入0-离职，1-入职，2-实习")
     private Integer workStatus;
     @NotBlank
     @ChannelCodeCheck

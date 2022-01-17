@@ -153,23 +153,23 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
 
         BeanUtil.copyProperties(param, user);
         // 密码加密
-        if (StringUtil.isNotEmpty(user.getPassword())) {
-            user.setPassword(EncryptUtil.encryptByAES(user.getPassword()));
-        }
+//        if (StringUtil.isNotEmpty(user.getPassword())) {
+        user.setPassword(EncryptUtil.encryptByAES(user.getPassword()));
+//        }
         context.setUser(user);
         // 主体校验
-        if (StringUtil.isEmpty(user.getCode())) {
-            messageList.add(getNotNullMessage("userCode"));
-        }
-        if (StringUtil.isEmpty(user.getName())) {
-            messageList.add(getNotNullMessage("userName"));
-        }
-        if (null == user.getStatus()) {
-            messageList.add(getNotNullMessage("status"));
-        }
-        if (StringUtil.isEmpty(user.getPassword())) {
-            messageList.add(getNotNullMessage("password"));
-        }
+//        if (StringUtil.isEmpty(user.getCode())) {
+//            messageList.add(getNotNullMessage("userCode"));
+//        }
+//        if (StringUtil.isEmpty(user.getName())) {
+//            messageList.add(getNotNullMessage("userName"));
+//        }
+//        if (null == user.getStatus()) {
+//            messageList.add(getNotNullMessage("status"));
+//        }
+//        if (StringUtil.isEmpty(user.getPassword())) {
+//            messageList.add(getNotNullMessage("password"));
+//        }
         // 判断用户编号是否重复
         if (createFlag && messageList.size() == 0) {
             Integer count = userProfileDao.selectCount(new QueryWrapper<UserProfile>().eq("code", user.getCode()));
@@ -178,9 +178,9 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
             }
         }
         // 判断是否为收银员
-        if (null != param.getCashierTag() && param.getCashierTag().equals(1) && null == param.getDiscount()) {
-            messageList.add(getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("discount")}));
-        }
+//        if (null != param.getCashierTag() && param.getCashierTag().equals(1) && null == param.getDiscount()) {
+//            messageList.add(getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("discount")}));
+//        }
         if (CollUtil.isNotEmpty(messageList)) {
             return;
         }

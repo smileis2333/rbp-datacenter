@@ -599,7 +599,14 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                 employeeGoodsAchievement.setColorId(gds.getColorId());
                 employeeGoodsAchievement.setSizeId(gds.getSizeId());
                 employeeGoodsAchievement.setLongId(gds.getLongId());
+                employeeGoodsAchievement.setBillId(salesOrderBill.getId());
+                employeeGoodsAchievement.setBillType(1);
                 employeeGoodsAchievement.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                employeeGoodsAchievement.setQuantity(gds.getQuantity());
+                employeeGoodsAchievement.setEmployeeId(e.getEmployeeId());
+                employeeGoodsAchievement.setRowIndex(gds.getRowIndex());
+                employeeGoodsAchievement.setShareAmount(e.getShareAmount());
+                employeeGoodsAchievement.setShareRate(e.getShareRate());
                 return employeeGoodsAchievement;
             }).collect(Collectors.toList());
         }).filter(ObjectUtil::isNotNull).flatMap(Collection::stream).collect(Collectors.toList()));

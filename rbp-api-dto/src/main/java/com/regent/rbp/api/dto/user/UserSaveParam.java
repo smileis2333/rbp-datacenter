@@ -1,9 +1,14 @@
 package com.regent.rbp.api.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.regent.rbp.api.dto.validate.DiscreteRange;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -16,21 +21,27 @@ import java.util.List;
 @Data
 public class UserSaveParam {
 
+    @NotBlank
     @ApiModelProperty(notes = "用户编号")
     private String code;
 
+    @NotBlank
     @ApiModelProperty(notes = "用户名称")
     private String name;
 
     @ApiModelProperty(notes = "描述")
     private String notes;
 
+    @NotNull
+    @DiscreteRange(ranges = {100, 101}, message = "入参非法，合法输入100-启用 101-禁用")
     @ApiModelProperty(notes = "状态;(100-启用 101-禁用)")
     private Integer status;
 
     @ApiModelProperty(notes = "类型;(0-员工 1-管理员")
+    @DiscreteRange(ranges = {0,1}, message = "入参非法，合法输入0-员工 1-管理员")
     private Integer type;
 
+    @NotBlank
     @ApiModelProperty(notes = "密码")
     private String password;
 
@@ -54,6 +65,7 @@ public class UserSaveParam {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date workDate;
 
+    @Email
     @ApiModelProperty(notes = "邮件")
     private String email;
 
@@ -66,6 +78,7 @@ public class UserSaveParam {
     @ApiModelProperty(notes = "企业微信号")
     private String qyweixin;
 
+    @DiscreteRange(ranges = {0, 1}, message = "入参非法，合法输入0-否1-是")
     @ApiModelProperty(value = "是否收银员0-否1-是")
     private Integer cashierTag;
 
@@ -78,4 +91,11 @@ public class UserSaveParam {
     @ApiModelProperty(value = "收银员最低折扣")
     private List<UserCashierDiscountDto> cashierDiscount;
 
+    @AssertTrue(message = "收银员标识为“是”时必填")
+    private boolean isDiscount() {
+        if (cashierTag != null && cashierTag == 1) {
+            return discount != null;
+        }
+        return true;
+    }
 }

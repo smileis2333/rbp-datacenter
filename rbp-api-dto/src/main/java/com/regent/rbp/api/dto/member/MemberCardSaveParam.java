@@ -2,8 +2,10 @@ package com.regent.rbp.api.dto.member;
 
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.validate.ChannelCodeCheck;
+import com.regent.rbp.api.dto.validate.DiscreteRange;
 import lombok.Data;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -34,9 +36,11 @@ public class MemberCardSaveParam {
     private String sexName;
 
     @NotNull
+    @DiscreteRange(ranges = {1, 2, 3}, message = "入参非法，合法输入1-线上，2-线下，3-后台")
     private Integer originType;
 
     @NotNull
+    @DiscreteRange(ranges = {1, 2, 3, 4, 5}, message = "入参非法，合法输入1-pos，2-英朗，3-微盟，4-有赞，5-yike")
     private Integer origin;
 
     private String beginDate;
@@ -77,6 +81,7 @@ public class MemberCardSaveParam {
 
     private String memberStatus;
 
+    @Email
     private String email;
 
     private String weixin;
