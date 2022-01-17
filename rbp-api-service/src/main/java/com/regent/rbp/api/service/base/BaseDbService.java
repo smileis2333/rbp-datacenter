@@ -106,4 +106,6 @@ public interface BaseDbService {
      * @return
      */
     Map<Long, BaseGoodsPriceDto> getBaseGoodsPriceMapByGoodsIds(List<Long> goodsIds);
+
+    String getDictionaryNewCode(String tableName);
 }

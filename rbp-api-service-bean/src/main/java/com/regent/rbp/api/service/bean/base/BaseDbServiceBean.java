@@ -447,4 +447,22 @@ public class BaseDbServiceBean implements BaseDbService {
         return CollUtil.isEmpty(list) ? new HashMap<>() : list.stream().collect(Collectors.toMap(BaseGoodsPriceDto::getGoodsId, Function.identity(), (x1, x2) -> x1));
     }
 
+    @Override
+    public String getDictionaryNewCode(String tableName) {
+        String sql = String.format("        select\n" +
+                "            n+1 new_code\n" +
+                "        from\n" +
+                "            (\n" +
+                "                select\n" +
+                "                    cast(code as signed) n\n" +
+                "                from\n" +
+                "                    %s \n" +
+                "                where\n" +
+                "                    code regexp  \"^[0-9]+$\"\n" +
+                "                order by\n" +
+                "                    n desc) ns limit 1", tableName);
+        String newCode = baseDbDao.getStringDataBySql(sql);
+        return StrUtil.isBlank(newCode) ? "1" : newCode;
+    }
+
 }

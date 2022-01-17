@@ -37,8 +37,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -479,10 +481,11 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         // inject config
         List<String> employeeCodes = param.getAllEmployeeCodes();
         Map<String, Long> employeeCodeIdMap = CollUtil.isEmpty(employeeCodes) ? Collections.emptyMap() : employeeDao.selectList(new QueryWrapper<Employee>().in(CollUtil.isNotEmpty(employeeCodes), "code", employeeCodes)).stream().collect(Collectors.toMap(Employee::getCode, Employee::getId));
+        List<SalesOrderBillGoodsResult> goodsDetailData = param.getGoodsDetailData();
         if (CollUtil.isNotEmpty(param.getEmployeeBillAchievement())) {
             param.getEmployeeBillAchievement().forEach(em -> em.setEmployeeId(employeeCodeIdMap.get(em.getEmployeeCode())));
         } else {
-            param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getEmployeeGoodsAchievement).filter(ObjectUtil::isNotNull).flatMap(Collection::stream).forEach(em -> {
+            goodsDetailData.stream().map(SalesOrderBillGoodsResult::getEmployeeGoodsAchievement).filter(ObjectUtil::isNotNull).flatMap(Collection::stream).forEach(em -> {
                 em.setEmployeeId(employeeCodeIdMap.get(em.getEmployeeCode()));
             });
         }
@@ -496,11 +499,11 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         }
 
         // inject goods info
-        boolean runBarcodeAsGoodInfoSource = StringUtils.isNotBlank(param.getGoodsDetailData().get(0).getBarcode());
+        boolean runBarcodeAsGoodInfoSource = StringUtils.isNotBlank(goodsDetailData.get(0).getBarcode());
         if (runBarcodeAsGoodInfoSource) {
-            List<String> barcodes = param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getBarcode).filter(ObjectUtil::isNotNull).distinct().collect(Collectors.toList());
+            List<String> barcodes = goodsDetailData.stream().map(SalesOrderBillGoodsResult::getBarcode).filter(ObjectUtil::isNotNull).distinct().collect(Collectors.toList());
             Map<String, Barcode> barcodeMap = CollUtil.isEmpty(barcodes) ? Collections.emptyMap() : barcodeDao.selectList(new QueryWrapper<Barcode>().in("barcode", barcodes)).stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
-            param.getGoodsDetailData().forEach(e -> {
+            goodsDetailData.forEach(e -> {
                 Barcode barcode;
                 if ((barcode = barcodeMap.get(e.getBarcode())) != null) {
                     e.setGoodsId(barcode.getGoodsId());
@@ -512,12 +515,12 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
             });
         } else {
             // 货品+颜色+内长+尺码
-            Map<String, Long> goodsCodeIdMap = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getCode, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getGoodsCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
-            Map<String, Long> colorCodeIdMap = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getCode, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getColorCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
-            Map<String, Long> longNameIdMap = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getName, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getLongName).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
-            Map<String, Long> sizeIdMap = sizeClassDao.selectList(new LambdaQueryWrapper<SizeClass>().in(SizeClass::getName, param.getGoodsDetailData().stream().map(SalesOrderBillGoodsResult::getSize).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(SizeClass::getName, SizeClass::getId));
+            Map<String, Long> goodsCodeIdMap = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getCode, goodsDetailData.stream().map(SalesOrderBillGoodsResult::getGoodsCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
+            Map<String, Long> colorCodeIdMap = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getCode, goodsDetailData.stream().map(SalesOrderBillGoodsResult::getColorCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
+            Map<String, Long> longNameIdMap = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getName, goodsDetailData.stream().map(SalesOrderBillGoodsResult::getLongName).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
+            Map<String, Long> sizeIdMap = sizeClassDao.selectList(new LambdaQueryWrapper<SizeClass>().in(SizeClass::getName, goodsDetailData.stream().map(SalesOrderBillGoodsResult::getSize).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(SizeClass::getName, SizeClass::getId));
 
-            param.getGoodsDetailData().forEach(e -> {
+            goodsDetailData.forEach(e -> {
                 e.setGoodsId(goodsCodeIdMap.get(e.getGoodsCode()));
                 e.setColorId(colorCodeIdMap.get(e.getColorCode()));
                 e.setLongId(longNameIdMap.get(e.getLongName()));
@@ -548,7 +551,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         if (runBarcodeAsGoodInfoSource) {
             // 条码
             Integer rowIndex = 1;
-            for (SalesOrderBillGoodsResult goodsResult : param.getGoodsDetailData()) {
+            for (SalesOrderBillGoodsResult goodsResult : goodsDetailData) {
                 Barcode realBarcode = BeanUtil.copyProperties(goodsResult, Barcode.class);
                 realBarcode.setId(goodsResult.getBarcodeId());
                 SalesOrderBillGoods billGoods = giveSalesOrderBillGoods(salesOrderBill, goodsResult, realBarcode.getGoodsId());
@@ -563,7 +566,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
             }
         } else {
             Integer rowIndex = 1;
-            for (SalesOrderBillGoodsResult goodsResult : param.getGoodsDetailData()) {
+            for (SalesOrderBillGoodsResult goodsResult : goodsDetailData) {
                 Barcode fakeBarcode = BeanUtil.copyProperties(goodsResult, Barcode.class);
                 SalesOrderBillGoods billGoods = giveSalesOrderBillGoods(salesOrderBill, goodsResult, fakeBarcode.getGoodsId());
                 salesOrderBillGoodsList.add(billGoods);
@@ -591,7 +594,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                     }).collect(Collectors.toList()));
         }
 
-        context.setEmployeeGoodsAchievements(param.getGoodsDetailData().stream().map(gds -> {
+        context.setEmployeeGoodsAchievements(goodsDetailData.stream().map(gds -> {
             List<EmployeeAchievement> employeeGoodsAchievements = gds.getEmployeeGoodsAchievement();
             return CollUtil.isEmpty(employeeGoodsAchievements) ? null : employeeGoodsAchievements.stream().map(e -> {
                 EmployeeGoodsAchievement employeeGoodsAchievement = BeanUtil.copyProperties(e, EmployeeGoodsAchievement.class);
@@ -612,13 +615,17 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         }).filter(ObjectUtil::isNotNull).flatMap(Collection::stream).collect(Collectors.toList()));
 
         // 计算汇总数据
-//        salesOrderBill.setSumSkuQuantity();
-//        salesOrderBill.setSumItemQuantity();
-//        salesOrderBill.setSumRetailAmount();
-//        salesOrderBill.setSumOriginalAmount();
-//        salesOrderBill.setSumTagAmount();
-//        salesOrderBill.setSumSalesAmount();
+        salesOrderBill.setSumSkuQuantity(new BigDecimal(goodsDetailData.size()));
+        salesOrderBill.setSumItemQuantity(goodsDetailData.stream().map(SalesOrderBillGoodsResult::getQuantity).collect(summingUp()));
+        salesOrderBill.setSumRetailAmount(goodsDetailData.stream().map(SalesOrderBillGoodsResult::getRetailPrice).collect(summingUp()));
+        salesOrderBill.setSumOriginalAmount(goodsDetailData.stream().map(SalesOrderBillGoodsResult::getOriginalPrice).collect(summingUp()));
+        salesOrderBill.setSumTagAmount(goodsDetailData.stream().map(SalesOrderBillGoodsResult::getTagPrice).collect(summingUp()));
+        salesOrderBill.setSumSalesAmount(goodsDetailData.stream().map(e -> e.getSalesPrice().multiply(e.getQuantity())).collect(summingUp()));
         return errorMsgList;
+    }
+
+    private static Collector<BigDecimal, ?, BigDecimal> summingUp() {
+        return Collectors.reducing(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private SalesOrderBillGoods giveSalesOrderBillGoods(SalesOrderBill salesOrderBill, SalesOrderBillGoodsResult goodsResult, Long goodsId) {

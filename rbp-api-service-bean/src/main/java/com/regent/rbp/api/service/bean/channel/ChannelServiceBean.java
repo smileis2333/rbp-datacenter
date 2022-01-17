@@ -690,7 +690,7 @@ public class ChannelServiceBean implements ChannelService {
             for (String str : param.getBrand()) {
                 Brand brand = brandDao.selectOne(new QueryWrapper<Brand>().eq("name", str));
                 if (brand == null) {
-                    Brand.build("", str);
+                    Brand.build(baseDbService.getDictionaryNewCode("rbp_brand"), str);
                     brandDao.insert(brand);
                 }
                 channelBrandList.add(new ChannelBrand(channel.getId(), brand.getId()));
@@ -700,7 +700,7 @@ public class ChannelServiceBean implements ChannelService {
         if (StringUtils.isNotBlank(param.getBranchCompany())) {
             BranchCompany branchCompany = branchCompanyDao.selectOne(new QueryWrapper<BranchCompany>().eq("name", param.getBranchCompany()));
             if (branchCompany == null) {
-                branchCompany = new BranchCompany("", param.getBranchCompany());
+                branchCompany = new BranchCompany(baseDbService.getDictionaryNewCode("rbp_branch_company"), param.getBranchCompany());
                 branchCompanyDao.insert(branchCompany);
             }
             channel.setBranchCompanyId(branchCompany.getId());
@@ -709,7 +709,7 @@ public class ChannelServiceBean implements ChannelService {
         if (StringUtils.isNotBlank(param.getGrade())) {
             ChannelGrade channelGrade = channelGradeDao.selectOne(new QueryWrapper<ChannelGrade>().eq("name", param.getGrade()));
             if (channelGrade == null) {
-                channelGrade = new ChannelGrade("", param.getGrade());
+                channelGrade = new ChannelGrade(baseDbService.getDictionaryNewCode("rbp_channel_grade"), param.getGrade());
                 channelGradeDao.insert(channelGrade);
             }
             channel.setGradeId(channelGrade.getId());
@@ -718,7 +718,7 @@ public class ChannelServiceBean implements ChannelService {
         if (StringUtils.isNotBlank(param.getBalanceType())) {
             ChannelBalanceType balanceType = channelBalanceTypeDao.selectOne(new QueryWrapper<ChannelBalanceType>().eq("name", param.getBalanceType()));
             if (balanceType == null) {
-                balanceType = new ChannelBalanceType("", param.getBalanceType());
+                balanceType = new ChannelBalanceType(baseDbService.getDictionaryNewCode("rbp_channel_balance_type"), param.getBalanceType());
                 channelBalanceTypeDao.insert(balanceType);
             }
             channel.setBalanceTypeId(balanceType.getId());
@@ -727,7 +727,7 @@ public class ChannelServiceBean implements ChannelService {
         if (StringUtils.isNotBlank(param.getRetailTagPriceType())) {
             TagPriceType tagPriceType = tagPriceTypeDao.selectOne(new QueryWrapper<TagPriceType>().eq("name", param.getRetailTagPriceType()));
             if (tagPriceType == null) {
-                tagPriceType = new TagPriceType("", param.getRetailTagPriceType());
+                tagPriceType = new TagPriceType(baseDbService.getDictionaryNewCode("rbp_tag_price_type"), param.getRetailTagPriceType());
                 tagPriceTypeDao.insert(tagPriceType);
             }
             channel.setRetailTagPriceTypeId(tagPriceType.getId());
@@ -736,7 +736,7 @@ public class ChannelServiceBean implements ChannelService {
         if (StringUtils.isNotBlank(param.getSaleTagPriceType())) {
             TagPriceType tagPriceType = tagPriceTypeDao.selectOne(new QueryWrapper<TagPriceType>().eq("name", param.getSaleTagPriceType()));
             if (tagPriceType == null) {
-                tagPriceType = new TagPriceType("", param.getSaleTagPriceType());
+                tagPriceType = new TagPriceType(baseDbService.getDictionaryNewCode("rbp_tag_price_type"), param.getSaleTagPriceType());
                 tagPriceTypeDao.insert(tagPriceType);
             }
             channel.setSaleTagPriceTypeId(tagPriceType.getId());
@@ -745,7 +745,7 @@ public class ChannelServiceBean implements ChannelService {
         if (StringUtils.isNotBlank(param.getSaleRange())) {
             SaleRange saleRange = saleRangeDao.selectOne(new QueryWrapper<SaleRange>().eq("name", param.getSaleRange()));
             if (saleRange == null) {
-                saleRange = new SaleRange("", param.getSaleRange());
+                saleRange = new SaleRange(baseDbService.getDictionaryNewCode("rbp_sale_range"), param.getSaleRange());
                 saleRangeDao.insert(saleRange);
             }
             channel.setSaleRangeId(saleRange.getId());
