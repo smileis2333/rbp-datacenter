@@ -37,8 +37,7 @@ public class UserSaveParam {
     @ApiModelProperty(notes = "状态;(100-启用 101-禁用)")
     private Integer status;
 
-    @ApiModelProperty(notes = "类型;(0-员工 1-管理员")
-    @DiscreteRange(ranges = {0,1}, message = "入参非法，合法输入0-员工 1-管理员")
+    @DiscreteRange(ranges = {0, 1, 2, 3}, message = "入参非法，合法输入0-普通用户;1-收银员; 2-管理员;3-下级管理员")
     private Integer type;
 
     @NotBlank
