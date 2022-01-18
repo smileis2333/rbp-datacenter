@@ -29,8 +29,6 @@ import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DeadlockLoserDataAccessException;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -610,7 +608,6 @@ public class GoodsServiceBean implements GoodsService {
 
     @Override
     @Transactional
-    @Retryable(value = DeadlockLoserDataAccessException.class, maxAttempts = 3)
     public DataResponse save(GoodsSaveParam param) {
         boolean createFlag = true;
         GoodsSaveContext context = new GoodsSaveContext(param);
@@ -628,34 +625,37 @@ public class GoodsServiceBean implements GoodsService {
             String message = StringUtil.join(errorMsgList, ",");
             return DataResponse.errorParameter(message);
         }
-        //自动补充不存在的数据字典
-        processAutoCompleteDictionary(param, context);
-        //写入货品表
-        saveGoods(createFlag, goods);
 
-        //写入颜色
-        if (CollUtil.isNotEmpty(context.getGoodsColorList())) {
-            saveGoodsColor(createFlag, context.getGoodsColorList());
-        }
-        //写入内长
-        if (CollUtil.isNotEmpty(context.getGoodsLongList())) {
-            saveGoodsLong(createFlag, context.getGoodsLongList());
-        }
-        //写入自定义字段
-        if (CollUtil.isNotEmpty(context.getCustomizeData())) {
-            baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.GOODS_INFO, TableConstants.GOODS, goods.getId(), context.getCustomizeData());
-        }
-        //写入尺码停用
-        if (CollUtil.isNotEmpty(context.getSizeDisableList())) {
-            saveDisableSizeData(createFlag, context.getSizeDisableList());
-        }
-        //写入吊牌价列表
-        if (CollUtil.isNotEmpty(context.getGoodsTagPriceList())) {
-            saveGoodsTagPrice(createFlag, context.getGoodsTagPriceList());
-        }
-        //写入条形码
-        if (CollUtil.isNotEmpty(context.getBarcodeList())) {
-            saveGoodsBarcode(createFlag, context.getBarcodeList());
+        synchronized (this) {
+            //自动补充不存在的数据字典
+            processAutoCompleteDictionary(param, context);
+            //写入货品表
+            saveGoods(createFlag, goods);
+
+            //写入颜色
+            if (CollUtil.isNotEmpty(context.getGoodsColorList())) {
+                saveGoodsColor(createFlag, context.getGoodsColorList());
+            }
+            //写入内长
+            if (CollUtil.isNotEmpty(context.getGoodsLongList())) {
+                saveGoodsLong(createFlag, context.getGoodsLongList());
+            }
+            //写入自定义字段
+            if (CollUtil.isNotEmpty(context.getCustomizeData())) {
+                baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.GOODS_INFO, TableConstants.GOODS, goods.getId(), context.getCustomizeData());
+            }
+            //写入尺码停用
+            if (CollUtil.isNotEmpty(context.getSizeDisableList())) {
+                saveDisableSizeData(createFlag, context.getSizeDisableList());
+            }
+            //写入吊牌价列表
+            if (CollUtil.isNotEmpty(context.getGoodsTagPriceList())) {
+                saveGoodsTagPrice(createFlag, context.getGoodsTagPriceList());
+            }
+            //写入条形码
+            if (CollUtil.isNotEmpty(context.getBarcodeList())) {
+                saveGoodsBarcode(createFlag, context.getBarcodeList());
+            }
         }
 
         return DataResponse.success();
