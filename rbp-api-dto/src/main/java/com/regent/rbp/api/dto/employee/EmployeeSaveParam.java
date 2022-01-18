@@ -34,7 +34,7 @@ public class EmployeeSaveParam {
     private String jobNumber;
     private String notes;
     private String positionName;
-    @DiscreteRange(ranges = {0, 1, 2}, message = "入参非法，合法输入0-离职，1-入职，2-实习")
+    @DiscreteRange(ranges = {1, 2, 3}, message = "入参非法，合法输入1-入职，2-离职，3-实习")
     private Integer workStatus;
     @NotBlank
     @ChannelCodeCheck
