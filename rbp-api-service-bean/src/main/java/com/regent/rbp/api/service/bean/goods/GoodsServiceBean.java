@@ -29,6 +29,8 @@ import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DeadlockLoserDataAccessException;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -608,6 +610,7 @@ public class GoodsServiceBean implements GoodsService {
 
     @Override
     @Transactional
+    @Retryable(value = DeadlockLoserDataAccessException.class, maxAttempts = 3)
     public DataResponse save(GoodsSaveParam param) {
         boolean createFlag = true;
         GoodsSaveContext context = new GoodsSaveContext(param);
@@ -788,7 +791,7 @@ public class GoodsServiceBean implements GoodsService {
             Set<String> colorCodes = param.getColorList();
             Map<String, Long> colorCodeIdMap = colorDao.selectList(Wrappers.lambdaQuery(Color.class).in(Color::getCode, colorCodes)).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
             Collection<Long> colorIds = colorCodeIdMap.values();
-            Set<Long> existColorIds = goodsColorDao.selectList(Wrappers.lambdaQuery(GoodsColor.class).eq(GoodsColor::getGoodsId, goods.getId()).in(GoodsColor::getColorId, colorIds)).stream().map(GoodsColor::getColorId).collect(Collectors.toSet());
+            Set<Long> existColorIds = CollUtil.isEmpty(colorIds) ? Collections.EMPTY_SET : goodsColorDao.selectList(new QueryWrapper<GoodsColor>().eq("goods_id", goods.getId()).in("color_id", colorIds)).stream().map(GoodsColor::getColorId).collect(Collectors.toSet());
             List<GoodsColor> goodsColors = new ArrayList<>(param.getColorList().size());
             for (String colorCode : param.getColorList()) {
                 Long colorId = colorCodeIdMap.get(colorCode);
@@ -815,7 +818,7 @@ public class GoodsServiceBean implements GoodsService {
             Set<String> longNames = param.getLongList();
             Map<String, Long> longNameIdMap = longDao.selectList(Wrappers.lambdaQuery(LongInfo.class).in(LongInfo::getName, longNames)).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
             Collection<Long> longIds = longNameIdMap.values();
-            Set<Long> existLongId = goodsLongDao.selectList(Wrappers.lambdaQuery(GoodsLong.class).eq(GoodsLong::getGoodsId, goods.getId()).in(GoodsLong::getLongId, longIds)).stream().map(GoodsLong::getLongId).collect(Collectors.toSet());
+            Set<Long> existLongId = CollUtil.isEmpty(longIds) ? Collections.emptySet() : goodsLongDao.selectList(Wrappers.lambdaQuery(GoodsLong.class).eq(GoodsLong::getGoodsId, goods.getId()).in(GoodsLong::getLongId, longIds)).stream().map(GoodsLong::getLongId).collect(Collectors.toSet());
             for (String longName : param.getLongList()) {
                 List<GoodsLong> goodsLongs = new ArrayList<>(param.getLongList().size());
                 Long longId = longNameIdMap.get(longName);
