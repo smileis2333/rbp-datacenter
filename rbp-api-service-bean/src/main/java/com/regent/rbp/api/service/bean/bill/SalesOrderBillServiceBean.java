@@ -617,9 +617,9 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         // 计算汇总数据
         salesOrderBill.setSumSkuQuantity(new BigDecimal(goodsDetailData.size()));
         salesOrderBill.setSumItemQuantity(goodsDetailData.stream().map(SalesOrderBillGoodsResult::getQuantity).collect(summingUp()));
-        salesOrderBill.setSumRetailAmount(goodsDetailData.stream().map(SalesOrderBillGoodsResult::getRetailPrice).collect(summingUp()));
-        salesOrderBill.setSumOriginalAmount(goodsDetailData.stream().map(SalesOrderBillGoodsResult::getOriginalPrice).collect(summingUp()));
-        salesOrderBill.setSumTagAmount(goodsDetailData.stream().map(SalesOrderBillGoodsResult::getTagPrice).collect(summingUp()));
+        salesOrderBill.setSumRetailAmount(goodsDetailData.stream().map(e->e.getRetailPrice().multiply(e.getQuantity())).collect(summingUp()));
+        salesOrderBill.setSumOriginalAmount(goodsDetailData.stream().map(e->e.getOriginalPrice().multiply(e.getQuantity())).collect(summingUp()));
+        salesOrderBill.setSumTagAmount(goodsDetailData.stream().map(e->e.getTagPrice().multiply(e.getQuantity())).collect(summingUp()));
         salesOrderBill.setSumSalesAmount(goodsDetailData.stream().map(e -> e.getSalesPrice().multiply(e.getQuantity())).collect(summingUp()));
         return errorMsgList;
     }
