@@ -381,19 +381,20 @@ public class MemberCardServiceBean implements MemberCardService {
             String message = StringUtil.join(errorMsgList, ",");
             return DataResponse.errorParameter(message);
         }
-        // 自动补充不存在的数据字典
-        processAutoCompleteDictionary(param, context);
-        // 写入会员表
-        this.saveMemberCard(createFlag, context.getMemberCard());
-        if (createFlag) {
-            // 审核会员
-            this.checkMemberCard(context.getMemberCard());
+        synchronized (this) {
+            // 自动补充不存在的数据字典
+            processAutoCompleteDictionary(param, context);
+            // 写入会员表
+            this.saveMemberCard(createFlag, context.getMemberCard());
+            if (createFlag) {
+                // 审核会员
+                this.checkMemberCard(context.getMemberCard());
+            }
+            // 新增会员积分
+            this.saveMemberIntegral(context.getMemberCard());
+            // 新增储值卡
+            this.saveStoredValueCard(context.getMemberCard());
         }
-        // 新增会员积分
-        this.saveMemberIntegral(context.getMemberCard());
-        // 新增储值卡
-        this.saveStoredValueCard(context.getMemberCard());
-
         return DataResponse.success();
     }
 
@@ -461,7 +462,7 @@ public class MemberCardServiceBean implements MemberCardService {
         // 发卡渠道
         if (StringUtils.isNotBlank(param.getChannelCode())) {
             Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getChannelCode()));
-            if(item != null){
+            if (item != null) {
                 memberCard.setChannelId(item.getId());
             }
         }
@@ -478,7 +479,7 @@ public class MemberCardServiceBean implements MemberCardService {
         // 维护渠道编号
         if (StringUtils.isNotBlank(param.getRepairChannelCode())) {
             Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getRepairChannelCode()));
-            if(item != null){
+            if (item != null) {
                 memberCard.setRepairChannelId(item.getId());
             }
         }
@@ -510,9 +511,9 @@ public class MemberCardServiceBean implements MemberCardService {
             }
         } else {
             MemberPolicy policy = memberPolicyDao.selectOne(new QueryWrapper<MemberPolicy>().eq("is_default", 1));
-            if (policy==null){
+            if (policy == null) {
                 errorMsgList.add("默认会员政策编号(memberPolicyCode)不存在");
-            }else {
+            } else {
                 memberCard.setMemberPolicyId(policy.getId());
             }
         }
