@@ -86,8 +86,6 @@ public class BaseDbServiceBean implements BaseDbService {
         }
         Map<String, CustomizeColumnDto> columnDtoMap = listMap.get(moduleId).stream().collect(Collectors.toMap(CustomizeColumnDto::getCode, Function.identity(), (x1, x2) -> x1));
         this.validateCustomFiledMap(customFieldMap, columnDtoMap);
-        // 删除
-        baseDbDao.deleteSql(String.format("delete from %s where id=%s", tableName, id));
         // 新增
         StringBuilder insertSqlPrefix = new StringBuilder("Insert into " + tableName + " ( id, ");
         StringBuilder insertValue = new StringBuilder("values (" + id + ",");
@@ -111,6 +109,9 @@ public class BaseDbServiceBean implements BaseDbService {
         index = insertValue.lastIndexOf(",");
         insertValue.replace(index, index + 1, " ) ");
         String insertSql = insertSqlPrefix.append(insertValue).toString();
+        // 删除
+        baseDbDao.deleteSql(String.format("delete from %s where id=%s", tableName, id));
+        //新增
         int count = baseDbDao.insertSql(insertSql);
         return count == 1;
     }
