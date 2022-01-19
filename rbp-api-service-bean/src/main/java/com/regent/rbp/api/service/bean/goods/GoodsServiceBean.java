@@ -640,10 +640,6 @@ public class GoodsServiceBean implements GoodsService {
             if (CollUtil.isNotEmpty(context.getGoodsLongList())) {
                 saveGoodsLong(createFlag, context.getGoodsLongList());
             }
-            //写入自定义字段
-            if (CollUtil.isNotEmpty(context.getCustomizeData())) {
-                baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.GOODS_INFO, TableConstants.GOODS, goods.getId(), context.getCustomizeData());
-            }
             //写入尺码停用
             if (CollUtil.isNotEmpty(context.getSizeDisableList())) {
                 saveDisableSizeData(createFlag, context.getSizeDisableList());
@@ -655,6 +651,10 @@ public class GoodsServiceBean implements GoodsService {
             //写入条形码
             if (CollUtil.isNotEmpty(context.getBarcodeList())) {
                 saveGoodsBarcode(createFlag, context.getBarcodeList());
+            }
+            //写入自定义字段
+            if (CollUtil.isNotEmpty(context.getCustomizeData())) {
+                baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.GOODS_INFO, TableConstants.GOODS, goods.getId(), context.getCustomizeData());
             }
         }
 
