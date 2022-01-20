@@ -1,11 +1,14 @@
 package com.regent.rbp.api.dao.base;
 
+import cn.hutool.core.collection.CollUtil;
 import com.regent.rbp.api.core.base.ModuleBusinessType;
 import com.regent.rbp.api.core.base.SizeDetail;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author xuxing
@@ -26,7 +29,7 @@ public interface BaseDbDao {
 
     String getStringDataBySql(@Param("sql") String sql);
 
-    default Boolean getBooleanDataBySql(String sql){
+    default Boolean getBooleanDataBySql(String sql) {
         String str = getStringDataBySql(sql);
         return Boolean.valueOf(str);
     }
@@ -56,6 +59,25 @@ public interface BaseDbDao {
 
     List<SizeDetail> getSizeNameList(@Param("goodsIdList") List<Long> goodsIdList, @Param("sizeNameList") List<String> sizeNameList);
 
+    default Map<Long, Map<String, Long>> getGoodsIdSizeNameIdMap(List<String> goodsCode, List<String> sizeNames, Map<String, Long> goodsCodeIdMap) {
+        if (CollUtil.isEmpty(goodsCode) || CollUtil.isEmpty(sizeNames)) {
+            throw new RuntimeException("illegal operation query format invalid");
+        }
+        if (goodsCode.size() != sizeNames.size()) {
+            throw new RuntimeException("illegal operation, query size id relative goods id and sizename must be align");
+        }
+        if (CollUtil.isEmpty(goodsCodeIdMap)) {
+            throw new RuntimeException("must supply code to id about goods");
+        }
+        if (goodsCode.size() != goodsCodeIdMap.size()) {
+            throw new RuntimeException("illegal operation, please check the align about goodsCode to goodsId");
+        }
+
+        List<Long> goodsIds = goodsCode.stream().map(code -> goodsCodeIdMap.get(code)).collect(Collectors.toList());
+        Map<Long, Map<String, Long>> gniMap = getSizeNameList(goodsIds, sizeNames).stream().collect(Collectors.groupingBy(SizeDetail::getGoodsId, Collectors.collectingAndThen(Collectors.toMap(SizeDetail::getName, SizeDetail::getId), Collections::unmodifiableMap)));
+        return gniMap;
+    }
+
     void dropTemplateTable(@Param("tableName") String tableName);
 
     /**
@@ -66,4 +88,5 @@ public interface BaseDbDao {
      * @return
      */
     Map<String, Object> queryCustomDataById(@Param("tableName") String tableName, @Param("id") Long id);
+
 }

@@ -10,14 +10,12 @@ import com.regent.rbp.api.web.constants.ApiConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.Collections;
 
 /**
  * @author huangjie
@@ -34,10 +32,7 @@ public class PurchaseReceiveBillController {
 
     @ApiOperation(value = "查询")
     @PostMapping("/query")
-    public PageDataResponse<PurchaseReceiveBillQueryResult> query(@RequestBody @Valid PurchaseReceiveBillQueryParam param, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return new PageDataResponse<>(0, Collections.emptyList());
-        }
+    public PageDataResponse<PurchaseReceiveBillQueryResult> query(@RequestBody @Valid PurchaseReceiveBillQueryParam param) {
         return purchaseReceiveBillService.query(param);
     }
 

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.box.BoxDao">
+
+    <select id="searchPageData" resultType="com.regent.rbp.api.dto.box.BoxQueryResult">
+        select
+        rb.*,
+        rc.code channelCode,
+        rs.code supplierCode,
+        rdt.code distributionTypeCode
+        from
+        rbp_box rb
+        left join rbp_channel rc on
+        rb.channel_id = rc.id
+        left join rbp_supplier rs on
+        rb.supplier_id = rs.id
+        left join rbp_distribution_type rdt on
+        rb.distribution_type_id = rdt.id
+        <where>
+            <if test="@cn.hutool.core.collection.CollUtil@isNotEmpty(param.code)">
+                and rb.code in
+                <foreach item="code" collection="param.code" separator="," open="(" close=")">
+                    #{code}
+                </foreach>
+            </if>
+            <if test="@cn.hutool.core.collection.CollUtil@isNotEmpty(param.manualId)">
+                and rb.manual_id in
+                <foreach item="manualId" collection="param.manualId" separator="," open="(" close=")">
+                    #{manualId}
+                </foreach>
+            </if>
+            <if test="@cn.hutool.core.collection.CollUtil@isNotEmpty(param.batchNumber)">
+                and rb.batch_number in
+                <foreach item="batchNumber" collection="param.batchNumber" separator="," open="(" close=")">
+                    #{batchNumber}
+                </foreach>
+            </if>
+            <if test="@cn.hutool.core.collection.CollUtil@isNotEmpty(param.channelCode)">
+                and rc.code in
+                <foreach item="channelCode" collection="param.channelCode" separator="," open="(" close=")">
+                    #{channelCode}
+                </foreach>
+            </if>
+            <if test="@cn.hutool.core.collection.CollUtil@isNotEmpty(param.supplierCode)">
+                and rs.code in
+                <foreach item="supplierCode" collection="param.supplierCode" separator="," open="(" close=")">
+                    #{supplierCode}
+                </foreach>
+            </if>
+            <if test="@cn.hutool.core.collection.CollUtil@isNotEmpty(param.distributionTypeCode)">
+                and rdt.code in
+                <foreach item="distributionTypeCode" collection="param.distributionTypeCode" separator="," open="("
+                         close=")">
+                    #{distributionTypeCode}
+                </foreach>
+            </if>
+            <if test="param.type!=null">
+                and rb.`type` = #{param.type}
+            </if>
+            <if test="@cn.hutool.core.collection.CollUtil@isNotEmpty(param.status)">
+                and rb.status in
+                <foreach item="status" collection="param.status" separator="," open="(" close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="
+            @cn.hutool.core.collection.CollUtil@isNotEmpty(param.goodsCode) or
+            @cn.hutool.core.collection.CollUtil@isNotEmpty(param.goodsName) or
+            @cn.hutool.core.collection.CollUtil@isNotEmpty(param.mnemonicCode)">
+                and rb.id in (
+                select
+                distinct rbd.box_id
+                from
+                rbp_box_detail rbd
+                left join rbp_goods rg on
+                rbd.goods_id = rg.id
+                <where>
+                    <if test="@cn.hutool.core.collection.CollUtil@isNotEmpty(param.goodsCode)">
+                        and rg.code in
+                        <foreach item="goodsCode" collection="param.goodsCode" separator="," open="(" close=")">
+                            #{goodsCode}
+                        </foreach>
+                    </if>
+                    <if test="@cn.hutool.core.collection.CollUtil@isNotEmpty(param.goodsName)">
+                        and rg.name regexp "${@org.apache.commons.lang.StringUtils@join(param.goodsName,"|")}"
+                    </if>
+                    <if test="@cn.hutool.core.collection.CollUtil@isNotEmpty(param.mnemonicCode)">
+                        and rg.mnemonic_code in
+                        <foreach item="mnemonicCode" collection="param.mnemonicCode" separator="," open="(" close=")">
+                            #{mnemonicCode}
+                        </foreach>
+                    </if>
+                </where>
+                )
+            </if>
+        </where>
+
+    </select>
+
+
+</mapper>

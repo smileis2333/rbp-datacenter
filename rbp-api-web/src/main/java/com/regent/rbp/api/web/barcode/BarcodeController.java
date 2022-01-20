@@ -9,14 +9,12 @@ import com.regent.rbp.api.service.barcode.BarcodeService;
 import com.regent.rbp.api.web.constants.ApiConstants;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.Collections;
 
 /**
  * @author huangjie
@@ -31,12 +29,8 @@ public class BarcodeController {
     private BarcodeService barcodeService;
 
     @PostMapping("/query")
-    public PageDataResponse<BarcodeQueryResult> query(@RequestBody @Valid BarcodeQueryParam param, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return new PageDataResponse<>(0, Collections.emptyList());
-        }
-        PageDataResponse<BarcodeQueryResult> result = barcodeService.searchPageData(param);
-        return result;
+    public PageDataResponse<BarcodeQueryResult> query(@RequestBody @Valid BarcodeQueryParam param) {
+        return barcodeService.searchPageData(param);
     }
 
     @PostMapping("/save")

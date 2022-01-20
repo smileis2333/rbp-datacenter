@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Constraint(validatedBy = {})
 public @interface BarcodeRelationCheck {
-    String message() default "{regent.BarcodeRelationCheck.invalidBarcode}";
+    String message() default "条形码数据无效，需要满足内长，尺码，颜色三者均设置且有效";
 
     Class<?>[] groups() default {Complex.class};
 

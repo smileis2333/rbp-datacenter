@@ -23,14 +23,12 @@ import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.text.MessageFormat;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * copy from
  * com.regent.rbp.infrastructure.response.config.RegentPlatformExceptionResolver
+ * just print property path and corresponding values, no any developer need just text description
  */
 @Component
 public class RegentPlatformExceptionResolver2 extends DefaultErrorAttributes implements HandlerExceptionResolver {
@@ -58,6 +56,19 @@ public class RegentPlatformExceptionResolver2 extends DefaultErrorAttributes imp
             StringBuilder sb = new StringBuilder();
             MethodArgumentNotValidException ex = (MethodArgumentNotValidException) e;
             BindingResult bindingResult = ex.getBindingResult();
+            if ("query".equalsIgnoreCase(ex.getParameter().getExecutable().getName())) {
+                // 对于查询，如果反查不出各类code的对应关系，即等价于无查询结果(而不能以将无效字段进行过滤，在查)，另一种规避的手段是用SQL连接
+                if (bindingResult.hasErrors()){
+                    Map<String, Object> attributes = new LinkedHashMap<>();
+                    attributes.put("code", 0);
+                    attributes.put("msg", ErrorMessage.CODE_MAP.get(0));
+                    attributes.put("totalCount",0);
+                    attributes.put("data", Collections.emptyList());
+                    view.setAttributesMap(attributes);
+                    mav.setView(view);
+                    return mav;
+                }
+            }
             String spaceStr = LanguageUtil.EN.contains(language) ? StrUtil.SPACE : StrUtil.EMPTY;
             bindingResult.getFieldErrors().stream().forEach(v -> {
                 sb.append(v.getField()).append(": ").append(spaceStr).append(v.getDefaultMessage()).append("; ");
