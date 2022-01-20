@@ -142,9 +142,10 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
                     saveParam.setLogisticsBillCode(notice.getShipping_no());
 
                     // 全渠道订单验证
-                    RetailOrderBill orderBill = retailOrderBillDao.selectOne(new QueryWrapper<RetailOrderBill>().eq("online_order_code", notice.getErp_order_sn()));
+                    RetailOrderBill orderBill = retailOrderBillDao.selectOne(new QueryWrapper<RetailOrderBill>().eq("bill_no", notice.getErp_order_sn()));
                     if (orderBill == null) {
                         XxlJobHelper.log(String.format("全渠道退货通知单：%s，失败原因：%s", saveParam.getManualId(), "ERP订单SN(erp_order_sn)订单不存在"));
+                        continue;
                     } else {
                         saveParam.setRetailOrdereBillNo(orderBill.getBillNo());
                     }
