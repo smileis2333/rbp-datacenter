@@ -23,7 +23,7 @@ public class ReceiveBillSaveParam {
     private String moduleId;
 
     @NotBlank
-    @ConflictManualIdCheck(targetTable = "com.regent.rbp.api.core.receiveBill.ReceiveBill")
+    @ConflictManualIdCheck(targetTable = "rbp_receive_bill")
     private String manualId;
 
     @NotNull
@@ -35,11 +35,11 @@ public class ReceiveBillSaveParam {
     private String businessType;
 
     @NotBlank
-    @SupplierCodeCheck
+    @ChannelCodeCheck
     private String channelCode;
 
     @NotBlank
-    @SupplierCodeCheck
+    @ChannelCodeCheck
     private String toChannelCode;
 
     @CurrencyTypeCheck

@@ -6,8 +6,11 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.*;
+import com.regent.rbp.api.core.box.Box;
+import com.regent.rbp.api.core.box.BoxBill;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.api.core.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBill;
@@ -15,6 +18,8 @@ import com.regent.rbp.api.core.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBi
 import com.regent.rbp.api.core.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBillSize;
 import com.regent.rbp.api.core.supplier.Supplier;
 import com.regent.rbp.api.dao.base.*;
+import com.regent.rbp.api.dao.box.BoxBillDao;
+import com.regent.rbp.api.dao.box.BoxDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBillDao;
@@ -103,6 +108,10 @@ public class PurchaseReceiveNoticeBillServiceBean implements PurchaseReceiveNoti
     private ValidateReceiveDifferenceTool validateReceiveDifferenceTool;
     @Autowired
     private Validator validator;
+    @Autowired
+    private BoxDao boxDao;
+    @Autowired
+    private BoxBillDao boxBillDao;
 
     @Override
     public PageDataResponse<PurchaseReceiveNoticeBillQueryResult> query(PurchaseReceiveNoticeBillQueryParam param) {
@@ -281,6 +290,7 @@ public class PurchaseReceiveNoticeBillServiceBean implements PurchaseReceiveNoti
         purchaseReceiveNoticeBillDao.insert(context.getBill());
         context.getBillGoodsList().forEach(purchaseReceiveNoticeBillGoodsDao::insert);
         context.getBillSizeList().forEach(purchaseReceiveNoticeBillSizeDao::insert);
+        context.getBoxBills().forEach(boxBillDao::insert);
         baseDbService.saveOrUpdateCustomFieldData(param.getModuleId(), TableConstants.PURCHASE_RECEIVE_NOTICE_BILL, context.getBill().getId(), context.getBillCustomizeDataDtos());
         baseDbService.batchSaveOrUpdateCustomFieldData(param.getModuleId(), TableConstants.PURCHASE_RECEIVE_NOTICE_BILL_GOODS, context.getGoodsCustomizeData());
         validateReceiveDifferenceTool.checkGoodsReceiveDifferent(null, convertToBaseGoodsSizeDto(context.getBillSizeList()), context.getBill().getPurchaseId(), InformationConstants.ModuleConstants.PURCHASE_RECEIVE_NOTICE_BILL);
@@ -330,6 +340,19 @@ public class PurchaseReceiveNoticeBillServiceBean implements PurchaseReceiveNoti
         if (StrUtil.isNotEmpty(param.getPurchaseNo())) {
             bill.setPurchaseId(baseDbDao.getLongDataBySql(String.format("select id from rbp_purchase_bill where bill_no  = '%s'", param.getPurchaseNo())));
         }
+        if (CollUtil.isNotEmpty(param.getBoxDetailData())) {
+            boxDao.selectList(Wrappers.<Box>lambdaQuery().in(Box::getCode, param.getBoxDetailData())).stream().forEach(box -> {
+                BoxBill boxBill = new BoxBill();
+                boxBill.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                boxBill.setBoxId(box.getId());
+                boxBill.setBillId(bill.getId());
+                boxBill.setModuleId(param.getModuleId());
+                boxBill.setToChannelId(bill.getToChannelId());
+                boxBill.setSupplierId(bill.getSupplierId());
+                boxBill.setStatus(1);
+                context.getBoxBills().add(boxBill);
+            });
+        }
         context.setBill(bill);
         extractedGoodsAndSizes(context, param, messageList);
 
@@ -350,9 +373,7 @@ public class PurchaseReceiveNoticeBillServiceBean implements PurchaseReceiveNoti
         Map<String, Long> goodsMap = goodsIdsList.isEmpty() ? Collections.emptyMap() : goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
         Map<String, Long> colorMap = colorCodes.isEmpty() ? Collections.emptyMap() : colorDao.selectList(new QueryWrapper<Color>().in("code", colorCodes)).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
         Map<String, Long> longMap = longDao.selectList(new QueryWrapper<LongInfo>().in("name", longNames)).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
-        // todo 矫正，在补一层校验确保完整性
-        Map<String, Long> sizeMap = baseDbDao.getSizeNameList(goodsIdsList, sizeNames).stream().collect(Collectors.toMap(v -> v.getGoodsId() + StrUtil.UNDERLINE + v.getName(), SizeDetail::getId, (x1, x2) -> x1));
-
+        Map<Long, Map<String, Long>> goodsSizeNameMap = baseDbDao.getGoodsIdSizeNameIdMap(goodsCode, sizeNames, goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId)));
         goodsDetailData.forEach(e -> {
             if (StrUtil.isNotBlank(e.getBarcode())) {
                 Barcode barcode = null;
@@ -361,12 +382,13 @@ public class PurchaseReceiveNoticeBillServiceBean implements PurchaseReceiveNoti
                     e.setColorId(barcode.getColorId());
                     e.setLongId(barcode.getLongId());
                     e.setSizeId(barcode.getSizeId());
+                    e.setBarcodeId(barcode.getId());
                 }
             } else {
                 e.setGoodsId(goodsMap.get(e.getGoodsCode()));
                 e.setColorId(colorMap.get(e.getColorCode()));
                 e.setLongId(longMap.get(e.getLongName()));
-                e.setSizeId(sizeMap.get(e.getGoodsId() + StrUtil.UNDERLINE + e.getSize()));
+                e.setSizeId(goodsSizeNameMap.getOrDefault(e.getGoodsId(), Collections.emptyMap()).get(e.getSize()));
             }
         });
 

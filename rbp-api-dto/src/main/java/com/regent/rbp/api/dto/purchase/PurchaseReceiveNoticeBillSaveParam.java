@@ -56,4 +56,5 @@ public class PurchaseReceiveNoticeBillSaveParam {
     @NotEmpty
     private List<PurchaseReceiveNoticeBillGoodsDetailData> goodsDetailData;
 
+    private List<String> boxDetailData;
 }
