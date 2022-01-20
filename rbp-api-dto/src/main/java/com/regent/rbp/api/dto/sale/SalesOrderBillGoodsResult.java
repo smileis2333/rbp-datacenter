@@ -65,7 +65,6 @@ public class SalesOrderBillGoodsResult {
     private BigDecimal originalPrice;
 
     @ApiModelProperty(notes = "数量。非计量货品的数量必须是1，可以分多行")
-    @Range(min = 0)
     private BigDecimal quantity;
 
     @ApiModelProperty(notes = "积分")
