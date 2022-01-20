@@ -5,7 +5,6 @@ import com.regent.rbp.api.dto.validate.BarcodeOrGoodsCode;
 import com.regent.rbp.api.dto.validate.BarcodeRelationCheck;
 import com.regent.rbp.api.dto.validate.FromTo;
 import lombok.Data;
-import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
@@ -29,7 +28,6 @@ public class PurchaseReceiveNoticeBillGoodsDetailData implements GoodsDetailIden
     private String longName;
     private String size;
     @NotNull
-    @Range(min = 0)
     private BigDecimal quantity;
     private BigDecimal discount;
     private BigDecimal tagPrice;

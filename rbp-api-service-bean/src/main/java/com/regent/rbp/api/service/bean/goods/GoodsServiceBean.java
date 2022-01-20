@@ -625,34 +625,37 @@ public class GoodsServiceBean implements GoodsService {
             String message = StringUtil.join(errorMsgList, ",");
             return DataResponse.errorParameter(message);
         }
-        //自动补充不存在的数据字典
-        processAutoCompleteDictionary(param, context);
-        //写入货品表
-        saveGoods(createFlag, goods);
 
-        //写入颜色
-        if (CollUtil.isNotEmpty(context.getGoodsColorList())) {
-            saveGoodsColor(createFlag, context.getGoodsColorList());
-        }
-        //写入内长
-        if (CollUtil.isNotEmpty(context.getGoodsLongList())) {
-            saveGoodsLong(createFlag, context.getGoodsLongList());
-        }
-        //写入自定义字段
-        if (CollUtil.isNotEmpty(context.getCustomizeData())) {
-            baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.GOODS_INFO, TableConstants.GOODS, goods.getId(), context.getCustomizeData());
-        }
-        //写入尺码停用
-        if (CollUtil.isNotEmpty(context.getSizeDisableList())) {
-            saveDisableSizeData(createFlag, context.getSizeDisableList());
-        }
-        //写入吊牌价列表
-        if (CollUtil.isNotEmpty(context.getGoodsTagPriceList())) {
-            saveGoodsTagPrice(createFlag, context.getGoodsTagPriceList());
-        }
-        //写入条形码
-        if (CollUtil.isNotEmpty(context.getBarcodeList())) {
-            saveGoodsBarcode(createFlag, context.getBarcodeList());
+        synchronized (this) {
+            //自动补充不存在的数据字典
+            processAutoCompleteDictionary(param, context);
+            //写入货品表
+            saveGoods(createFlag, goods);
+
+            //写入颜色
+            if (CollUtil.isNotEmpty(context.getGoodsColorList())) {
+                saveGoodsColor(createFlag, context.getGoodsColorList());
+            }
+            //写入内长
+            if (CollUtil.isNotEmpty(context.getGoodsLongList())) {
+                saveGoodsLong(createFlag, context.getGoodsLongList());
+            }
+            //写入尺码停用
+            if (CollUtil.isNotEmpty(context.getSizeDisableList())) {
+                saveDisableSizeData(createFlag, context.getSizeDisableList());
+            }
+            //写入吊牌价列表
+            if (CollUtil.isNotEmpty(context.getGoodsTagPriceList())) {
+                saveGoodsTagPrice(createFlag, context.getGoodsTagPriceList());
+            }
+            //写入条形码
+            if (CollUtil.isNotEmpty(context.getBarcodeList())) {
+                saveGoodsBarcode(createFlag, context.getBarcodeList());
+            }
+            //写入自定义字段
+            if (CollUtil.isNotEmpty(context.getCustomizeData())) {
+                baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.GOODS_INFO, TableConstants.GOODS, goods.getId(), context.getCustomizeData());
+            }
         }
 
         return DataResponse.success();
@@ -788,7 +791,7 @@ public class GoodsServiceBean implements GoodsService {
             Set<String> colorCodes = param.getColorList();
             Map<String, Long> colorCodeIdMap = colorDao.selectList(Wrappers.lambdaQuery(Color.class).in(Color::getCode, colorCodes)).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
             Collection<Long> colorIds = colorCodeIdMap.values();
-            Set<Long> existColorIds = goodsColorDao.selectList(Wrappers.lambdaQuery(GoodsColor.class).eq(GoodsColor::getGoodsId, goods.getId()).in(GoodsColor::getColorId, colorIds)).stream().map(GoodsColor::getColorId).collect(Collectors.toSet());
+            Set<Long> existColorIds = CollUtil.isEmpty(colorIds) ? Collections.EMPTY_SET : goodsColorDao.selectList(new QueryWrapper<GoodsColor>().eq("goods_id", goods.getId()).in("color_id", colorIds)).stream().map(GoodsColor::getColorId).collect(Collectors.toSet());
             List<GoodsColor> goodsColors = new ArrayList<>(param.getColorList().size());
             for (String colorCode : param.getColorList()) {
                 Long colorId = colorCodeIdMap.get(colorCode);
@@ -815,7 +818,7 @@ public class GoodsServiceBean implements GoodsService {
             Set<String> longNames = param.getLongList();
             Map<String, Long> longNameIdMap = longDao.selectList(Wrappers.lambdaQuery(LongInfo.class).in(LongInfo::getName, longNames)).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
             Collection<Long> longIds = longNameIdMap.values();
-            Set<Long> existLongId = goodsLongDao.selectList(Wrappers.lambdaQuery(GoodsLong.class).eq(GoodsLong::getGoodsId, goods.getId()).in(GoodsLong::getLongId, longIds)).stream().map(GoodsLong::getLongId).collect(Collectors.toSet());
+            Set<Long> existLongId = CollUtil.isEmpty(longIds) ? Collections.emptySet() : goodsLongDao.selectList(Wrappers.lambdaQuery(GoodsLong.class).eq(GoodsLong::getGoodsId, goods.getId()).in(GoodsLong::getLongId, longIds)).stream().map(GoodsLong::getLongId).collect(Collectors.toSet());
             for (String longName : param.getLongList()) {
                 List<GoodsLong> goodsLongs = new ArrayList<>(param.getLongList().size());
                 Long longId = longNameIdMap.get(longName);

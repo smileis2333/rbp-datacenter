@@ -520,18 +520,19 @@ public class ChannelServiceBean implements ChannelService {
             return ModelDataResponse.errorParameter(message);
         }
 
-        // 自动补充不存在的数据字典
-        processAutoCompleteDictionary(param, context);
-        // 写入渠道表
-        saveChannel(createFlag, context.getChannel());
-        // 写入渠道品牌关系表
-        saveChannelBrand(context.getChannel().getId(), context.getChannelBrandList());
-        // 写入渠道收货信息
-        saveChannelReceiveInfo(context.getChannel().getId(), context.getChannelReceiveInfoList());
+        synchronized (this) {
+            // 自动补充不存在的数据字典
+            processAutoCompleteDictionary(param, context);
+            // 写入渠道表
+            saveChannel(createFlag, context.getChannel());
+            // 写入渠道品牌关系表
+            saveChannelBrand(context.getChannel().getId(), context.getChannelBrandList());
+            // 写入渠道收货信息
+            saveChannelReceiveInfo(context.getChannel().getId(), context.getChannelReceiveInfoList());
 
-        // 自定义字段
-        baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.CHANNEL_INFO, TableConstants.CHANNEL, context.getChannel().getId(), param.getCustomizeData());
-
+            // 自定义字段
+            baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.CHANNEL_INFO, TableConstants.CHANNEL, context.getChannel().getId(), param.getCustomizeData());
+        }
         return ModelDataResponse.Success(context.getChannel().getId());
     }
 

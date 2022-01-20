@@ -81,7 +81,6 @@ public class MemberCardSaveParam {
 
     private String memberStatus;
 
-    @Email
     private String email;
 
     private String weixin;
