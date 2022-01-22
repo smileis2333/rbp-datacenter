@@ -7,6 +7,7 @@ import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncErrorDao;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncErrorService;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +26,15 @@ public class OnlinePlatformSyncErrorServiceBean extends ServiceImpl<OnlinePlatfo
     @Autowired
     OnlinePlatformSyncErrorDao onlinePlatformSyncErrorDao;
 
+    @Value("${inno.chance}")
+    private Integer chance;
+
     @Override
     public Map<String, Long> getErrorBillId(String key) {
-        Integer chance = 5;
+        if (null == chance || chance <= 0) {
+            chance = 5;
+        }
+
         Map<String, Long> map = new HashMap<>();
         List<OnlinePlatformSyncError> list = onlinePlatformSyncErrorDao.selectList(new LambdaQueryWrapper<OnlinePlatformSyncError>()
                 .eq(OnlinePlatformSyncError::getSyncKey, key).eq(OnlinePlatformSyncError::getSuccessFlag, false)

@@ -77,8 +77,8 @@ public class RetailOrderServiceImpl implements RetailOrderService {
 
         try {
             RetailOrderSearchDto searchDto = new RetailOrderSearchDto();
-            searchDto.setBeginTime(param.getBeginTime());
-            searchDto.setEndTime(param.getEndTime());
+            searchDto.setBeginTime(DateUtil.getStartDateTimeStr(param.getBeginTime()));
+            searchDto.setEndTime(DateUtil.getStartDateTimeStr(param.getEndTime()));
             searchDto.setOrder_sn_list(param.getOrder_sn_list());
             searchDto.setPageIndex(1);
 
@@ -87,7 +87,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
         } catch (Exception e) {
             XxlJobHelper.handleFail(e.getMessage());
         } finally {
-            onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatform.getId(), key, DateUtils.parseDate(param.getEndTime()));
+            onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatform.getId(), key, param.getEndTime());
         }
 
         /*RetailOrderSearchReqDto searchReqDto = new RetailOrderSearchReqDto();
