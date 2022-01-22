@@ -94,7 +94,7 @@ public class RetailReceiveBackServiceImpl implements RetailReceiveBackService {
                 UpdateReturnOrderStatusDto dto = new UpdateReturnOrderStatusDto();
                 dto.setReturn_sn(noticeBill.getOnlineReturnNoticeCode());
                 dto.setOrder_sn(retailOrderBill.getOnlineOrderCode());
-                dto.setOuter_return_sn(noticeBill.getBillNo());
+                dto.setOuter_return_sn(noticeBill.getOnlineReturnNoticeCode());
                 dto.setIs_succ(1);
                 dto.setRemark("定时推送");
                 dto.setRec_time(DateUtil.getFullDateStr(bill.getCheckTime()));
