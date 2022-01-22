@@ -63,4 +63,6 @@ public class ApiConstants {
 
     /**采购退货通知**/
     public static final String API_PURCHASE_RETURN_NOTICE_BILL = "api/purchaseReturnNoticeBill";
+
+    public static final String API_BOX = "api/box";
 }

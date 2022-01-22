@@ -1,17 +1,16 @@
-package com.regent.rbp.api.dto.purchase;
+package com.regent.rbp.api.dto.box;
 
-import com.regent.rbp.api.dto.base.CustomizeDataDto;
-import com.regent.rbp.api.dto.validate.BarcodeOrGoodsCode;
 import com.regent.rbp.api.dto.validate.FromTo;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
 import java.math.BigDecimal;
-import java.util.List;
 
-
-@Data
+/**
+ * @author huangjie
+ * @date : 2022/01/18
+ * @description
+ */
 @FromTo.List({
         @FromTo(fromField = "goodsCode", toField = "goodsId"),
         @FromTo(fromField = "colorCode", toField = "colorId"),
@@ -19,22 +18,15 @@ import java.util.List;
         @FromTo(fromField = "size", toField = "sizeId"),
         @FromTo(fromField = "barcode", toField = "barcodeId"),
 })
-@BarcodeOrGoodsCode
-public class PurchaseReceiveNoticeBillGoodsDetailData implements GoodsDetailIdentifier {
+@Data
+public class BoxDetailItem {
     private String barcode;
     private String goodsCode;
     private String colorCode;
     private String longName;
     private String size;
-    @NotNull
     private BigDecimal quantity;
-    private BigDecimal discount;
-    private BigDecimal tagPrice;
-    private BigDecimal balancePrice;
-    private BigDecimal currencyPrice;
-    private BigDecimal exchangeRate;
-    private String remark;
-    private List<CustomizeDataDto> goodsCustomizeData;
+    private Long boxId;
 
     @Null
     private Long goodsId;
@@ -50,8 +42,4 @@ public class PurchaseReceiveNoticeBillGoodsDetailData implements GoodsDetailIden
 
     @Null
     private Long barcodeId;
-
-    @Null
-    private Long billGoodId;
-
 }

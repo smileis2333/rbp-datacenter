@@ -1,5 +1,6 @@
 package com.regent.rbp.api.web.validators;
 
+import cn.hutool.core.util.StrUtil;
 import com.regent.rbp.api.dto.validate.FromTo;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.beanutils.BeanUtils;
@@ -32,7 +33,7 @@ public class FromToValidator implements ConstraintValidator<FromTo, Object> {
             final Object fromFieldVal = BeanUtils.getProperty(obj, fromField);
             final Object toFieldVal = BeanUtils.getProperty(obj, toField);
 
-            return fromFieldVal == null || toFieldVal != null;
+            return fromFieldVal == null || StrUtil.isBlank(fromFieldVal.toString()) || toFieldVal != null;
         } catch (final Exception ignore) {
             // ignore
             log.error("validate internal error");

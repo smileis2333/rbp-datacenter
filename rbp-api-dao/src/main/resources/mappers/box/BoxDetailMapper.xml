@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.box.BoxDetailDao">
+
+    <select id="searchList" resultType="com.regent.rbp.api.dto.box.BoxDetailItem">
+        select
+            rbd.*,
+            rg.code goodsCode,
+            rc.code colorCode,
+            rl.name longName,
+            rsd.name `size`
+        from
+            rbp_box_detail rbd
+                left join rbp_goods rg on
+                rbd.goods_id = rg.id
+                left join rbp_color rc on
+                rbd .color_id = rc.id
+                left join rbp_long rl on
+                rbd.long_id = rl.id
+                left join rbp_size_detail rsd on
+                rbd.size_id = rsd.id
+        <where>
+            <if test="@cn.hutool.core.collection.CollUtil@isNotEmpty(boxIds)">
+                and rbd.box_id in
+                <foreach item="boxId" collection="boxIds" separator="," open="(" close=")">
+                    #{boxId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>
