@@ -1,5 +1,7 @@
 package com.regent.rbp.api.service.base;
 
+import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
+
 import java.util.Date;
 
 /**
@@ -25,5 +27,6 @@ public interface OnlinePlatformSyncCacheService {
      * @param uploadingTime
      */
     void saveOnlinePlatformSyncCache(Long onlinePlatformId, String key, Date uploadingTime);
+
 
 }

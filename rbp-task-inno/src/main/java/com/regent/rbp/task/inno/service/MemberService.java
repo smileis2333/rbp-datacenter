@@ -24,7 +24,7 @@ public interface MemberService {
      * 下载会员信息
      * @param param
      */
-    void saveMember(DownloadMemberParam param);
+    void saveMember(DownloadMemberParam param) throws Exception;
 
     /**
      * inno 新增/修改 会员

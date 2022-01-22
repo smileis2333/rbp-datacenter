@@ -53,4 +53,5 @@ public class OnlinePlatformSyncCacheServiceBean extends ServiceImpl<OnlinePlatfo
             onlinePlatformSyncCacheDao.updateById(syncCache);
         }
     }
+
 }

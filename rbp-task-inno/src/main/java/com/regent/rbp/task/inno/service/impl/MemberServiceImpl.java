@@ -2,7 +2,9 @@ package com.regent.rbp.task.inno.service.impl;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.http.HttpUtil;
+import com.alibaba.excel.util.DateUtils;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.base.Sex;
 import com.regent.rbp.api.core.channel.Channel;
@@ -21,6 +23,7 @@ import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.member.MemberCardSaveParam;
 import com.regent.rbp.api.service.base.OnlinePlatformService;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
+import com.regent.rbp.api.service.base.OnlinePlatformSyncErrorService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.api.service.member.MemberCardService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
@@ -81,12 +84,32 @@ public class MemberServiceImpl implements MemberService {
     OnlinePlatformService onlinePlatformService;
     @Autowired
     MemberCardService memberCardService;
+    @Autowired
+    OnlinePlatformSyncErrorService onlinePlatformSyncErrorService;
 
 
     @Override
     public void uploadingMember(OnlinePlatform onlinePlatform) {
         String key = SystemConstants.POST_ERP_USERS;
         Long onlinePlatformId = onlinePlatform.getId();
+        Map<String, Long> map = onlinePlatformSyncErrorService.getErrorBillId(key);
+        Map<String, Long> memberMap = new HashMap<>();
+        if (map.size() > 0) {
+            List<Long> memberIds = map.values().stream().collect(Collectors.toList());
+            List<MemberCard> memberList = memberCardDao.selectList(new LambdaQueryWrapper<MemberCard>().in(MemberCard::getId, memberIds));
+            memberMap = memberList.stream().collect(Collectors.toMap(v -> v.getCode(), v -> v.getId(), (x1, x2) -> x1));
+            Map<Integer, List<MemberDto>> listMap = this.packaging(memberList);
+            for (Map.Entry<Integer, List<MemberDto>> entry : listMap.entrySet()) {
+                MemberRespDto respDto = this.pushMember(onlinePlatform, entry.getValue());
+                if (respDto.getCode().equals("-1")) {
+                    for (MemberDto memberDto : entry.getValue()) {
+                        Long memberId = memberMap.get(memberDto.getCard_no());
+                        Long errorId = map.get(memberId.toString());
+                        onlinePlatformSyncErrorService.failure(errorId);
+                    }
+                }
+            }
+        }
 
         Date uploadingDate = onlinePlatformSyncCacheService.getOnlinePlatformSyncCacheByDate(onlinePlatformId, key);
 
@@ -98,189 +121,244 @@ public class MemberServiceImpl implements MemberService {
         }
 
         List<MemberCard> memberCardList = memberCardDao.selectList(queryWrapper);
-        if (memberCardList != null && memberCardList.size() > 0) {
-            // 发卡渠道
-            List<Long> channelIds = memberCardList.stream().map(MemberCard::getChannelId).distinct().collect(Collectors.toList());
-            List<Channel> channelList = channelDao.selectBatchIds(channelIds);
-            Map<Long, String> channelMap = channelList.stream().collect(Collectors.toMap(Channel::getId, Channel::getCode));
-            // 性别
-            List<Long> sexIds = memberCardList.stream().map(MemberCard::getSexId).distinct().collect(Collectors.toList());
-            List<Sex> sexList = sexDao.selectBatchIds(sexIds);
-            Map<Long, String> sexMap = sexList.stream().collect(Collectors.toMap(Sex::getId, Sex::getName));
-            // 会员政策
-            List<Long> memberPolicyIds = memberCardList.stream().map(MemberCard::getMemberPolicyId).distinct().collect(Collectors.toList());
-            List<MemberPolicy> memberPolicyList = memberPolicyDao.selectBatchIds(memberPolicyIds);
-            Map<Long, String> memberPolicyMap = memberPolicyList.stream().collect(Collectors.toMap(MemberPolicy::getId, MemberPolicy::getGradeCode));
-
-            Map<Integer, List<MemberDto>> listMap = new HashMap<>();
-            Integer sumQty = memberCardList.size();
-            double pageNo = Math.ceil(Double.valueOf(sumQty) / new Double(100));
-            for(int i = 0; i < pageNo; i++) {
-                Integer rowIndex = 1;
-                List<MemberDto> dtoList = new ArrayList<>();
-                List<MemberCard> cardList = new ArrayList<>();
-                if (sumQty < 100 || i == pageNo-1) {
-                    cardList = memberCardList.subList(i * 100, sumQty);
-                } else {
-                    cardList = memberCardList.subList(i * 100, ((i + 1) * 100));
+        memberMap = memberCardList.stream().collect(Collectors.toMap(v -> v.getCode(), v -> v.getId(), (x1, x2) -> x1));
+        Map<Integer, List<MemberDto>> memberCardMap = this.packaging(memberCardList);
+        for (Map.Entry<Integer, List<MemberDto>> entry : memberCardMap.entrySet()) {
+            MemberRespDto respDto = this.pushMember(onlinePlatform, entry.getValue());
+            if (respDto.getCode().equals("-1")) {
+                for (MemberDto memberDto : entry.getValue()) {
+                    Long memberId = memberMap.get(memberDto.getCard_no());
+                    onlinePlatformSyncErrorService.saveOnlinePlatformSyncError(onlinePlatformId, key, memberId.toString());
                 }
-                for (MemberCard card : cardList) {
-                    MemberDto dto = new MemberDto();
-                    dto.setRowIndex(rowIndex);
-                    dto.setUser_name(card.getName());
-                    dto.setCard_no(card.getCode());
-                    dto.setNick_name(card.getName());
-                    dto.setEmail(card.getEmail());
-                    dto.setSex(sexMap.get(card.getSexId()));
-                    dto.setBirthday(DateUtil.getFullDateStr(card.getBirthdayDate()));
-                    dto.setMobile_no(card.getPhone());
-                    dto.setCreate_date(DateUtil.getFullDateStr(card.getCreatedTime()));
-                    dto.setModify_date(DateUtil.getFullDateStr(card.getUpdatedTime()));
-
-                    if (card.getChannelId() != null && channelMap.containsKey(card.getChannelId())) {
-                        dto.setStore_code(channelMap.get(card.getChannelId()));
-                        dto.setStaff_code(channelMap.get(card.getChannelId()));
-                    }
-                    if (card.getMemberPolicyId() != null && memberPolicyMap.containsKey(card.getMemberPolicyId())) {
-                        dto.setRank_code(memberPolicyMap.get(card.getMemberPolicyId()));
-                    }
-
-                    MemberIntegral memberIntegral = memberIntegralDao.selectOne(new QueryWrapper<MemberIntegral>().eq("member_card_id", card.getId()));
-                    if (memberIntegral != null) {
-                        dto.setHistory_point(memberIntegral.getIntegral());
-                    } else {
-                        dto.setHistory_point(0);
-                    }
-                    dtoList.add(dto);
-                    rowIndex++;
-                }
-                listMap.put(i + 1, dtoList);
             }
-            Date uploadingTime = memberCardList.stream().max(Comparator.comparing(MemberCard::getUpdatedTime)).get().getUpdatedTime();
-            //请求接口
-            for (Map.Entry<Integer, List<MemberDto>> entry : listMap.entrySet()) {
-
-                MemberReqDto memberReqDto = new MemberReqDto();
-                memberReqDto.setApp_key(onlinePlatform.getAppKey());
-                memberReqDto.setApp_secrept(onlinePlatform.getAppSecret());
-                memberReqDto.setData(entry.getValue());
-
-                String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), API_URL_USERS);
-                String result = HttpUtil.post(api_url, JSON.toJSONString(memberReqDto));
-                MemberRespDto respDto = JSON.parseObject(result, MemberRespDto.class);
-                if (respDto.getCode().equals("-1")) {
-                    new Exception(respDto.getMsg());
-                }
-                XxlJobHelper.log("请求成功：" + JSON.toJSONString(respDto));
-            }
-            onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatformId, key, uploadingTime);
         }
+        Date uploadingTime = memberCardList.stream().max(Comparator.comparing(MemberCard::getUpdatedTime)).get().getUpdatedTime();
+        onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatformId, key, uploadingTime);
+    }
+
+    /**
+     * 推送会员打包
+     * @param memberCardList
+     * @return
+     */
+    private Map<Integer, List<MemberDto>> packaging(List<MemberCard> memberCardList) {
+        Map<Integer, List<MemberDto>> listMap = new HashMap<>();
+        // 发卡渠道
+        List<Long> channelIds = memberCardList.stream().map(MemberCard::getChannelId).distinct().collect(Collectors.toList());
+        List<Channel> channelList = channelDao.selectBatchIds(channelIds);
+        Map<Long, String> channelMap = channelList.stream().collect(Collectors.toMap(Channel::getId, Channel::getCode));
+        // 性别
+        List<Long> sexIds = memberCardList.stream().map(MemberCard::getSexId).distinct().collect(Collectors.toList());
+        List<Sex> sexList = sexDao.selectBatchIds(sexIds);
+        Map<Long, String> sexMap = sexList.stream().collect(Collectors.toMap(Sex::getId, Sex::getName));
+        // 会员政策
+        List<Long> memberPolicyIds = memberCardList.stream().map(MemberCard::getMemberPolicyId).distinct().collect(Collectors.toList());
+        List<MemberPolicy> memberPolicyList = memberPolicyDao.selectBatchIds(memberPolicyIds);
+        Map<Long, String> memberPolicyMap = memberPolicyList.stream().collect(Collectors.toMap(MemberPolicy::getId, MemberPolicy::getGradeCode));
+
+        Integer sumQty = memberCardList.size();
+        double pageNo = Math.ceil(Double.valueOf(sumQty) / new Double(100));
+        for (int i = 0; i < pageNo; i++) {
+            Integer rowIndex = 1;
+            List<MemberDto> dtoList = new ArrayList<>();
+            List<MemberCard> cardList = new ArrayList<>();
+            if (sumQty < 100 || i == pageNo - 1) {
+                cardList = memberCardList.subList(i * 100, sumQty);
+            } else {
+                cardList = memberCardList.subList(i * 100, ((i + 1) * 100));
+            }
+            for (MemberCard card : cardList) {
+                MemberDto dto = new MemberDto();
+                dto.setRowIndex(rowIndex);
+                dto.setUser_name(card.getName());
+                dto.setCard_no(card.getCode());
+                dto.setNick_name(card.getName());
+                dto.setEmail(card.getEmail());
+                dto.setSex(sexMap.get(card.getSexId()));
+                dto.setBirthday(DateUtil.getFullDateStr(card.getBirthdayDate()));
+                dto.setMobile_no(card.getPhone());
+                dto.setCreate_date(DateUtil.getFullDateStr(card.getCreatedTime()));
+                dto.setModify_date(DateUtil.getFullDateStr(card.getUpdatedTime()));
+
+                if (card.getChannelId() != null && channelMap.containsKey(card.getChannelId())) {
+                    dto.setStore_code(channelMap.get(card.getChannelId()));
+                    dto.setStaff_code(channelMap.get(card.getChannelId()));
+                }
+                if (card.getMemberPolicyId() != null && memberPolicyMap.containsKey(card.getMemberPolicyId())) {
+                    dto.setRank_code(memberPolicyMap.get(card.getMemberPolicyId()));
+                }
+
+                MemberIntegral memberIntegral = memberIntegralDao.selectOne(new QueryWrapper<MemberIntegral>().eq("member_card_id", card.getId()));
+                if (memberIntegral != null) {
+                    dto.setHistory_point(memberIntegral.getIntegral());
+                } else {
+                    dto.setHistory_point(0);
+                }
+                dtoList.add(dto);
+                rowIndex++;
+            }
+            listMap.put(i + 1, dtoList);
+        }
+        return listMap;
+    }
+
+    /**
+     * 推送会员
+     * @param onlinePlatform
+     * @param memberDtoList
+     * @return
+     */
+    private MemberRespDto pushMember(OnlinePlatform onlinePlatform, List<MemberDto> memberDtoList) {
+        MemberReqDto memberReqDto = new MemberReqDto();
+        memberReqDto.setApp_key(onlinePlatform.getAppKey());
+        memberReqDto.setApp_secrept(onlinePlatform.getAppSecret());
+        memberReqDto.setData(memberDtoList);
+
+        String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), API_URL_USERS);
+        String result = HttpUtil.post(api_url, JSON.toJSONString(memberReqDto));
+        XxlJobHelper.log("请求Json：" + JSON.toJSONString(memberReqDto));
+        XxlJobHelper.log("返回Json：" + result);
+        MemberRespDto respDto = JSON.parseObject(result, MemberRespDto.class);
+        return respDto;
     }
 
     @Override
-    public void saveMember(DownloadMemberParam param) {
+    public void saveMember(DownloadMemberParam param) throws Exception {
         String key = SystemConstants.GET_USER_LIST;
         OnlinePlatform onlinePlatform = onlinePlatformService.getOnlinePlatform(param.getOnlinePlatformCode());
         Long onlinePlatformId = onlinePlatform.getId();
+        Map<String, Long> map = onlinePlatformSyncErrorService.getErrorBillId(key);
+        if (map.size() > 0) {
+            SaveMemberDto memberDto = new SaveMemberDto();
+            memberDto.setCardnumList(StringUtils.join(map.keySet(), ","));
+            memberDto.setPageIndex(1);
+            this.pullMember(onlinePlatform, memberDto, map);
+        }
 
         Date uploadingDate = onlinePlatformSyncCacheService.getOnlinePlatformSyncCacheByDate(onlinePlatformId, key);
 
         try {
             SaveMemberDto dto = new SaveMemberDto();
             SimpleDateFormat sdf = new SimpleDateFormat(SystemConstants.FULL_DATE_FORMAT);
-            if (uploadingDate != null) {
-                dto.setBeginTime(sdf.format(uploadingDate));
-                dto.setEndTime(sdf.format(new Date()));
-            } else {
+
+            // 设置结束时间
+            dto.setEndTime(DateUtil.getNowDateString(SystemConstants.FULL_DATE_FORMAT));
+            if (null == uploadingDate) {
                 dto.setBeginTime(sdf.format(DateUtil.getDate("2021-10-01", DateUtil.SHORT_DATE_FORMAT)));
-                dto.setEndTime(sdf.format(new Date()));
+            } else {
+                dto.setBeginTime(DateUtil.getDateStr(uploadingDate, SystemConstants.FULL_DATE_FORMAT));
             }
+
             if (param.getMobileList() != null && param.getMobileList().size() > 0) {
                 dto.setMobileList(StringUtils.join(param.getMobileList(), ","));
             }
             if (param.getCardnumList() != null && param.getCardnumList().size() > 0) {
                 dto.setCardnumList(StringUtils.join(param.getCardnumList(), ","));
             }
-            dto.setPageIndex("1");
-
-            SaveMemberReqDto reqDto = new SaveMemberReqDto();
-            reqDto.setApp_key(onlinePlatform.getAppKey());
-            reqDto.setApp_secrept(onlinePlatform.getAppSecret());
-            reqDto.setData(dto);
-
-            DateTime recordTime = null;
-            String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), API_Get_USERS_LIST);
-            String result = HttpUtil.post(api_url, JSON.toJSONString(reqDto));
-
-            XxlJobHelper.log(String.format("请求Url：%s", api_url));
-            XxlJobHelper.log(String.format("请求Json：%s", JSON.toJSONString(reqDto)));
-            XxlJobHelper.log(String.format("返回Json：%s", result));
-
-            MemberPageDataRespDto respDto = JSON.parseObject(result, MemberPageDataRespDto.class);
-            if (respDto.getCode().equals("-1")) {
-                throw new Exception(respDto.getMsg());
-            }
-            if (respDto.getData().getData().size() == 0) {
-                return;
-            }
-
-            Integer winCount = 0;
-            for (MemberPageDto page : respDto.getData().getData()) {
-                // 写入会员
-                MemberCardSaveParam saveParam = new MemberCardSaveParam();
-                saveParam.setCode(page.getCard_no());
-                saveParam.setPassword(page.getPay_password());
-                saveParam.setName(page.getNick_name());
-                saveParam.setMemberType(MEMBER_TYPE);
-                // 区号
-                saveParam.setAreaCode("");
-                saveParam.setPhone(page.getMobile_no());
-                saveParam.setSexName(page.getSex());
-                saveParam.setOriginType(1);
-                saveParam.setOrigin(2);
-                saveParam.setBeginDate(page.getCreate_date());
-                saveParam.setEndDate("2999-12-01");
-                saveParam.setChannelCode(page.getStore_code());
-                saveParam.setUserCode(page.getStaff_code());
-                saveParam.setRepairChannelCode(page.getStore_code());
-                saveParam.setMaintainerCode(page.getStaff_code());
-                saveParam.setNation("");
-                saveParam.setProvince(page.getProvince_name());
-                saveParam.setCity(page.getCity_name());
-                saveParam.setArea(page.getDistrict_name());
-                saveParam.setAddress(page.getAddress());
-                // 生日
-                saveParam.setBirthday(page.getBirthday());
-                Date birthday = DateUtil.getDate(page.getBirthday(), DateUtil.SHORT_DATE_FORMAT);
-                saveParam.setBirthdayYear(DateUtil.getYear(birthday));
-                saveParam.setBirthdayMouth(DateUtil.getMonth(birthday));
-                saveParam.setBirthdayDay(DateUtil.getDay(birthday));
-
-                saveParam.setMemberStatus("正常");
-                saveParam.setEmail(page.getEmail());
-                saveParam.setWeixin(page.getWap_openid());
-                saveParam.setNotes("定时拉取 Inno 会员信息生成");
-                saveParam.setMemberPolicyCode(page.getRank_code());
-                saveParam.setUpdatedOrigin(1);
-                saveParam.setUnionId(page.getUnionid());
-
-                DataResponse response = memberCardService.save(saveParam);
-                if (response.getCode() != ResponseCode.OK){
-                    XxlJobHelper.log(String.format("同步会员：%s，失败原因：%s", saveParam.getCode(), response.getMessage()));
-                } else {
-                    XxlJobHelper.log(String.format("同步会员：%s，成功", saveParam.getCode()));
-                    winCount++;
-                }
-            }
-
-            if (winCount == respDto.getData().getData().size()) {
-                onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatformId, key, recordTime);
-            }
+            dto.setPageIndex(1);
+            this.pullMember(onlinePlatform, dto, null);
+            onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatformId, key, DateUtils.parseDate(dto.getEndTime()));
             XxlJobHelper.handleSuccess();
         } catch (Exception e) {
             XxlJobHelper.handleFail(e.getMessage());
         }
 
+    }
+
+    /**
+     * 拉取会员
+     * @param onlinePlatform
+     * @param dto
+     * @param map
+     * @throws Exception
+     */
+    private void pullMember(OnlinePlatform onlinePlatform, SaveMemberDto dto, Map<String, Long> map) throws Exception {
+        SaveMemberReqDto reqDto = new SaveMemberReqDto();
+        reqDto.setApp_key(onlinePlatform.getAppKey());
+        reqDto.setApp_secrept(onlinePlatform.getAppSecret());
+        reqDto.setData(dto);
+
+        String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), API_Get_USERS_LIST);
+        String result = HttpUtil.post(api_url, JSON.toJSONString(reqDto));
+
+        XxlJobHelper.log(String.format("请求Url：%s", api_url));
+        XxlJobHelper.log(String.format("请求Json：%s", JSON.toJSONString(reqDto)));
+        XxlJobHelper.log(String.format("返回Json：%s", result));
+
+        MemberPageDataRespDto respDto = JSON.parseObject(result, MemberPageDataRespDto.class);
+        if (respDto.getCode().equals("-1")) {
+            throw new Exception(respDto.getMsg());
+        }
+        if (respDto.getData().getData().size() > 0) {
+            for (MemberPageDto pageDto : respDto.getData().getData()) {
+                this.saveMember(onlinePlatform.getId(), pageDto, map);
+            }
+            for (int i = 2; i <= reqDto.getData().getPageIndex(); i++) {
+                dto.setPageIndex(i);
+                this.pullMember(onlinePlatform, dto, map);
+            }
+        }
+    }
+
+    /**
+     * 写入会员
+     * @param onlinePlatformId
+     * @param page
+     * @param map
+     */
+    private void saveMember(Long onlinePlatformId, MemberPageDto page, Map<String, Long> map) {
+        // 写入会员
+        MemberCardSaveParam saveParam = new MemberCardSaveParam();
+        saveParam.setCode(page.getCard_no());
+        saveParam.setPassword(page.getPay_password());
+        saveParam.setName(page.getNick_name());
+        saveParam.setMemberType(MEMBER_TYPE);
+        // 区号
+        saveParam.setAreaCode("");
+        saveParam.setPhone(page.getMobile_no());
+        saveParam.setSexName(page.getSex());
+        saveParam.setOriginType(1);
+        saveParam.setOrigin(2);
+        saveParam.setBeginDate(page.getCreate_date());
+        saveParam.setEndDate("2999-12-01");
+        saveParam.setChannelCode(page.getStore_code());
+        saveParam.setUserCode(page.getStaff_code());
+        saveParam.setRepairChannelCode(page.getStore_code());
+        saveParam.setMaintainerCode(page.getStaff_code());
+        saveParam.setNation("");
+        saveParam.setProvince(page.getProvince_name());
+        saveParam.setCity(page.getCity_name());
+        saveParam.setArea(page.getDistrict_name());
+        saveParam.setAddress(page.getAddress());
+        // 生日
+        saveParam.setBirthday(page.getBirthday());
+        Date birthday = DateUtil.getDate(page.getBirthday(), DateUtil.SHORT_DATE_FORMAT);
+        saveParam.setBirthdayYear(DateUtil.getYear(birthday));
+        saveParam.setBirthdayMouth(DateUtil.getMonth(birthday));
+        saveParam.setBirthdayDay(DateUtil.getDay(birthday));
+
+        saveParam.setMemberStatus("正常");
+        saveParam.setEmail(page.getEmail());
+        saveParam.setWeixin(page.getWap_openid());
+        saveParam.setNotes("定时拉取 Inno 会员信息生成");
+        saveParam.setMemberPolicyCode(page.getRank_code());
+        saveParam.setUpdatedOrigin(1);
+        saveParam.setUnionId(page.getUnionid());
+
+        DataResponse response = memberCardService.save(saveParam);
+        if (map != null && map.containsKey(page.getCard_no())) {
+            Long errorId = map.get(page.getCard_no());
+            if (response.getCode() != ResponseCode.OK) {
+                onlinePlatformSyncErrorService.failure(errorId);
+            } else {
+                onlinePlatformSyncErrorService.succeed(errorId);
+            }
+        } else {
+            if (response.getCode() != ResponseCode.OK) {
+                onlinePlatformSyncErrorService.saveOnlinePlatformSyncError(onlinePlatformId, SystemConstants.GET_USER_LIST, page.getCard_no());
+                XxlJobHelper.log(String.format("错误信息：%s %s", saveParam.getCode(), response.getMessage()));
+            }
+        }
     }
 
     @Override

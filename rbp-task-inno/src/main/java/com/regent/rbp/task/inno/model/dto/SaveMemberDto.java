@@ -28,5 +28,6 @@ public class SaveMemberDto {
     private String user_src;
 
     @ApiModelProperty(notes = "页码")
-    private String pageIndex;
+    private Integer pageIndex;
+
 }

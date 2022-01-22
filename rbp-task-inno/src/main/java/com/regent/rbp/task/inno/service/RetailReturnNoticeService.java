@@ -10,5 +10,5 @@ import com.regent.rbp.task.inno.model.param.RetailReturnNoticeParam;
  */
 public interface RetailReturnNoticeService {
 
-    void downloadRetailReturnNoticeList(RetailReturnNoticeParam param);
+    void downloadRetailReturnNoticeList(RetailReturnNoticeParam param) throws Exception;
 }

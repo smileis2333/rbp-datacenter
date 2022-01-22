@@ -10,6 +10,6 @@ import com.regent.rbp.task.inno.model.param.UpdateRetailReceiveBackByStatusParam
  */
 public interface RetailReceiveBackService {
 
-    void UpdateReturnOrderStatus(UpdateRetailReceiveBackByStatusParam param);
+    void UpdateReturnOrderStatus(UpdateRetailReceiveBackByStatusParam param) throws Exception;
 
 }

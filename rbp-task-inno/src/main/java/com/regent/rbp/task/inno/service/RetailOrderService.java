@@ -10,6 +10,6 @@ import com.regent.rbp.task.inno.model.param.RetailOrderDownloadOnlineOrderParam;
  */
 public interface RetailOrderService {
 
-    void downloadOnlineOrderList(RetailOrderDownloadOnlineOrderParam param, OnlinePlatform onlinePlatform);
+    void downloadOnlineOrderList(RetailOrderDownloadOnlineOrderParam param, OnlinePlatform onlinePlatform) throws Exception;
 
 }
