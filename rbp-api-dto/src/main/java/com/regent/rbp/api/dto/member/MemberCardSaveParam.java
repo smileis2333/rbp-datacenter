@@ -1,11 +1,12 @@
 package com.regent.rbp.api.dto.member;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.validate.ChannelCodeCheck;
 import com.regent.rbp.api.dto.validate.DiscreteRange;
 import lombok.Data;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -71,13 +72,13 @@ public class MemberCardSaveParam {
 
     private String address;
 
-    private String birthday;
-
     private Integer birthdayYear;
 
     private Integer birthdayMouth;
 
     private Integer birthdayDay;
+
+    private String birthday;
 
     private String memberStatus;
 
@@ -95,4 +96,14 @@ public class MemberCardSaveParam {
 
     private List<CustomizeDataDto> customizeData;
 
+    public String getBirthday() {
+        if (StrUtil.isNotBlank(birthday)){
+            return birthday;
+        }
+        if (ObjectUtil.isAllNotEmpty(birthdayYear, birthdayMouth, birthdayDay)) {
+            String birthDay = String.format("%s-%s-%s", birthdayYear, birthdayMouth, birthdayDay);
+            return birthDay;
+        }
+        return null;
+    }
 }
