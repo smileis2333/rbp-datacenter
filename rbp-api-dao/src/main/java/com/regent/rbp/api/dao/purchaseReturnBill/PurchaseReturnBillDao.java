@@ -1,4 +1,4 @@
-package com.regent.rbp.api.dao.purchaseReturnNoticeBill;
+package com.regent.rbp.api.dao.purchaseReturnBill;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;

@@ -3,8 +3,8 @@ package com.regent.rbp.api.service.label;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.label.LabelQueryParam;
+import com.regent.rbp.api.dto.label.LabelQueryResult;
 import com.regent.rbp.api.dto.label.LabelSaveParam;
-import com.regent.rbp.api.dto.purchase.PurchaseReturnBillQueryResult;
 
 /**
  * @author huangjie
@@ -12,7 +12,7 @@ import com.regent.rbp.api.dto.purchase.PurchaseReturnBillQueryResult;
  * @description
  */
 public interface LabelService {
-    PageDataResponse<PurchaseReturnBillQueryResult> query(LabelQueryParam param);
+    PageDataResponse<LabelQueryResult> query(LabelQueryParam param);
 
     DataResponse save(LabelSaveParam param);
 }

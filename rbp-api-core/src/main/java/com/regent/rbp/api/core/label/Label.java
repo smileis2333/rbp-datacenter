@@ -38,4 +38,5 @@ public class Label {
 
     private BigDecimal quantity;
 
+    private Integer exportStatus;
 }

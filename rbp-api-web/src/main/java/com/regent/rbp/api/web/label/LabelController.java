@@ -3,8 +3,8 @@ package com.regent.rbp.api.web.label;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.label.LabelQueryParam;
+import com.regent.rbp.api.dto.label.LabelQueryResult;
 import com.regent.rbp.api.dto.label.LabelSaveParam;
-import com.regent.rbp.api.dto.purchase.PurchaseReturnBillQueryResult;
 import com.regent.rbp.api.service.label.LabelService;
 import com.regent.rbp.api.web.constants.ApiConstants;
 import io.swagger.annotations.Api;
@@ -32,7 +32,7 @@ public class LabelController {
 
     @ApiOperation(value = "查询")
     @PostMapping("/query")
-    public PageDataResponse<PurchaseReturnBillQueryResult> query(@RequestBody LabelQueryParam param) {
+    public PageDataResponse<LabelQueryResult> query(@RequestBody LabelQueryParam param) {
         return labelService.query(param);
     }
 

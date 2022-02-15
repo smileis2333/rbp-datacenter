@@ -1,4 +1,4 @@
-package com.regent.rbp.api.dao.user;
+package com.regent.rbp.api.dao.warehouse.user;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.regent.rbp.api.core.user.UserCashierChannel;

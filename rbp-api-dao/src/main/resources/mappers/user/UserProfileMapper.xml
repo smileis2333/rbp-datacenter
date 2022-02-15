@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.regent.rbp.api.dao.user.UserProfileDao">
+<mapper namespace="com.regent.rbp.api.dao.warehouse.user.UserProfileDao">
 
     <insert id="batchInsertUserCashierChannelList">
         INSERT INTO rbp_user_cashier_channel (id, user_id, channel_id, created_by, updated_by)

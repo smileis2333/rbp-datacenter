@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.label.LabelDao">
+    <select id="searchPageData" resultType="com.regent.rbp.api.dto.label.LabelQueryResult">
+        select
+            rl.*,
+            rbm.code batchManagementNo,
+            rlr.name labelRuleNo,
+            rc.code channelCode,
+            rg.code goodsCode,
+            rco.code colorCode,
+            rlo.name longName,
+            rsd.name `size`
+        from
+            rbp_label rl
+                left join rbp_batch_management rbm on
+                rbm.id = rl.batch_management_id
+                left join rbp_label_rule rlr on
+                rlr.id = rl.label_rule_id
+                left join rbp_channel rc on
+                rc.id = rl.channel_id
+                left join rbp_goods rg on
+                rg.id = rl.goods_id
+                left join rbp_color rco on
+                rco.id = rl.color_id
+                left join rbp_size_detail rsd on
+                rsd.id = rl.size_id
+                left join rbp_long rlo on
+                rlo.id = rl.long_id
+            <where>
+                <if test=" @cn.hutool.core.collection.CollUtil@isNotEmpty(param.code)">
+                    and rl.code in
+                    <foreach item="c" collection="param.code" separator="," open="(" close=")">
+                        #{c}
+                    </foreach>
+                </if>
+                <if test=" @cn.hutool.core.collection.CollUtil@isNotEmpty(param.goodsCode)">
+                    and rg.code in
+                    <foreach item="c" collection="param.goodsCode" separator="," open="(" close=")">
+                        #{c}
+                    </foreach>
+                </if>
+                <if test=" @cn.hutool.core.collection.CollUtil@isNotEmpty(param.batchManagementNo)">
+                    and rbm.code in
+                    <foreach item="bmn" collection="param.batchManagementNo" separator="," open="(" close=")">
+                        #{bmn}
+                    </foreach>
+                </if>
+                <if test=" @cn.hutool.core.collection.CollUtil@isNotEmpty(param.channelCode)">
+                    and rc.code in
+                    <foreach item="cc" collection="param.channelCode" separator="," open="(" close=")">
+                        #{cc}
+                    </foreach>
+                </if>
+                <if test=" @cn.hutool.core.collection.CollUtil@isNotEmpty(param.status)">
+                    and rl.status in
+                    <foreach item="st" collection="param.status" separator="," open="(" close=")">
+                        #{st}
+                    </foreach>
+                </if>
+                <if test="param.createdDateStart != null ">
+                    and rprb.created_time <![CDATA[>=]]> #{param.createdDateStart}
+                </if>
+                <if test="param.createdDateEnd != null ">
+                    and rprb.created_time <![CDATA[<=]]> #{param.createdDateEnd}
+                </if>
+                <if test="param.updatedDateStart != null ">
+                    and rprb.updated_time <![CDATA[>=]]> #{param.updatedDateStart}
+                </if>
+                <if test="param.updatedDateEnd != null ">
+                    and rprb.updated_time <![CDATA[<=]]> #{param.updatedDateStart}
+                </if>
+            </where>
+    </select>
+
+</mapper>

@@ -68,6 +68,7 @@ public class CustomConstraintHelper extends ConstraintHelper {
             putConstraint(tmpConstraints, DiscreteRange.class, DiscreteRangeValidator.class);
             putConstraint(tmpConstraints, Code.class, CodeValidatorForQueryList.class);
             putConstraint(tmpConstraints, UniqueFields.class, UniqueFieldsValidator.class);
+            putConstraint(tmpConstraints, Dictionary.class, DictionaryValidator.class);
             /**
              * 设置回field
              */
