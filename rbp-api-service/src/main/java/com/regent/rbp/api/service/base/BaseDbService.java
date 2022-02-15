@@ -82,6 +82,17 @@ public interface BaseDbService {
      */
     boolean saveCustomFieldData(String tableNamePrefix, Long id, Map<String, Object> customFieldMap);
 
+    default boolean saveCustomFieldData(String tableNamePrefix, Long id, List<CustomizeDataDto> customizeDataDtos){
+        Map<String, Object> customizeData;
+        if (CollUtil.isNotEmpty(customizeDataDtos)) {
+            Map<String, Object> customFieldMap = new HashMap<>();
+            customizeDataDtos.forEach(item -> customFieldMap.put(item.getCode(), item.getValue()));
+            customizeData = customFieldMap;
+            return saveCustomFieldData(tableNamePrefix, id, customizeData);
+        }
+        return false;
+    }
+
     /**
      * 查询自定义字段的值
      *

@@ -46,4 +46,9 @@ public class TableConstants {
 
     public static final String PURCHASE_RECEIVE_BILL_GOODS = "rbp_purchase_receive_notice_goods";
 
+    public static final String PURCHASE_RETURN_BILL = "rbp_purchase_return_bill";
+
+    public static final String PURCHASE_RETURN_BILL_GOODS = "rbp_purchase_return_bill_goods";
+
+    public static final String LABEL = "rbp_label";
 }

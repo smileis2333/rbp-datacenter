@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.purchaseReturnNoticeBill.PurchaseReturnBillDao">
+    <select id="searchPageData" resultType="com.regent.rbp.api.dto.purchase.PurchaseReturnBillQueryResult">
+        select
+            rprb.*,
+        rbt.name  businessType,
+        rs.code supplierCode,
+        rc.code channelCode,
+        rct.name currencyType
+        from
+            rbp_purchase_return_bill rprb
+                left join rbp_business_type rbt on
+                rbt.id = rprb.business_type_id
+                left join rbp_supplier rs on
+                rs.id = rprb.supplier_id
+                left join rbp_channel rc on
+                rc.id = rprb.channel_id
+                left join rbp_currency_type rct on
+                rct.id = rprb.currency_type_id
+        <where>
+            <if test="@cn.hutool.core.util.StrUtil@isNotBlank(param.moduleId)">
+                and module_id = #{param.moduleId}
+            </if>
+            <if test="@cn.hutool.core.util.StrUtil@isNotBlank(param.billNo)">
+                and bill_no = #{param.billNo}
+            </if>
+            <if test="param.billDate!=null">
+                and bill_date = #{param.billDate}
+            </if>
+            <if test=" @cn.hutool.core.collection.CollUtil@isNotEmpty(param.businessType)">
+                and rbt.name in
+                <foreach item="bt" collection="param.businessType" separator="," open="(" close=")">
+                    #{bt}
+                </foreach>
+            </if>
+            <if test="param.manualId!=null">
+                and manual_id = #{param.manualId}
+            </if>
+            <if test=" @cn.hutool.core.collection.CollUtil@isNotEmpty(param.supplierCode)">
+                and rs.code in
+                <foreach item="sc" collection="param.supplierCode" separator="," open="(" close=")">
+                    #{sc}
+                </foreach>
+            </if>
+            <if test=" @cn.hutool.core.collection.CollUtil@isNotEmpty(param.channelCode)">
+                and rc.code in
+                <foreach item="cc" collection="param.channelCode" separator="," open="(" close=")">
+                    #{cc}
+                </foreach>
+            </if>
+            <if test=" @cn.hutool.core.collection.CollUtil@isNotEmpty(param.currencyType)">
+                and rct.name in
+                <foreach item="ct" collection="param.currencyType" separator="," open="(" close=")">
+                    #{ct}
+                </foreach>
+            </if>
+            <if test="param.notes!=null">
+                and rprb.notes regexp #{param.notes}
+            </if>
+            <if test=" @cn.hutool.core.collection.CollUtil@isNotEmpty(param.status)">
+                and rprb.status in
+                <foreach item="st" collection="param.status" separator="," open="(" close=")">
+                    #{st}
+                </foreach>
+            </if>
+            <if test="param.createdDateStart != null ">
+                and rprb.created_time <![CDATA[>=]]> #{param.createdDateStart}
+            </if>
+            <if test="param.createdDateEnd != null ">
+                and rprb.created_time <![CDATA[<=]]> #{param.createdDateEnd}
+            </if>
+            <if test="param.checkDateStart != null ">
+                and rprb.check_time <![CDATA[>=]]> #{param.checkDateStart}
+            </if>
+            <if test="param.checkDateEnd != null ">
+                and rprb.check_time <![CDATA[<=]]> #{param.checkDateEnd}
+            </if>
+            <if test="param.updatedDateStart != null ">
+                and rprb.updated_time <![CDATA[>=]]> #{param.updatedDateStart}
+            </if>
+            <if test="param.updatedDateEnd != null ">
+                and rprb.updated_time <![CDATA[<=]]> #{param.updatedDateStart}
+            </if>
+        </where>
+    </select>
+
+</mapper>

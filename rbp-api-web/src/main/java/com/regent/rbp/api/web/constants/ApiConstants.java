@@ -52,7 +52,7 @@ public class ApiConstants {
     public static final String API_CHANNEL_ORGANIZATION = "/api/organization";
 
     public static final String API_PURCHASE_BILL = "api/purchaseBill";
-    
+
     public static final String API_RECEIVE_BILL = "api/receiveBill";
 
     public static final String API_PURCHASE_RECEIVE_NOTICE_BILL = "api/purchaseReceiveNoticeBill";
@@ -65,4 +65,8 @@ public class ApiConstants {
     public static final String API_PURCHASE_RETURN_NOTICE_BILL = "api/purchaseReturnNoticeBill";
 
     public static final String API_BOX = "api/box";
+
+    public static final String API_PURCHASE_RETURN_BILL = "api/purchaseReturnBill";
+
+    public static final String API_LABEL = "api/label";
 }

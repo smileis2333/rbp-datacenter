@@ -59,6 +59,14 @@ public interface BaseDbDao {
 
     List<SizeDetail> getSizeNameList(@Param("goodsIdList") List<Long> goodsIdList, @Param("sizeNameList") List<String> sizeNameList);
 
+    /**
+     *
+     * @param goodsCode
+     * @param sizeNames
+     * @param goodsCodeIdMap
+     * @return
+     */
+    @Deprecated
     default Map<Long, Map<String, Long>> getGoodsIdSizeNameIdMap(List<String> goodsCode, List<String> sizeNames, Map<String, Long> goodsCodeIdMap) {
         if (CollUtil.isEmpty(goodsCode) || CollUtil.isEmpty(sizeNames)) {
             throw new RuntimeException("illegal operation query format invalid");
