@@ -1,5 +1,6 @@
 package com.regent.rbp.api.web.validators;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.base.Barcode;
 import com.regent.rbp.api.dao.base.BarcodeDao;
@@ -23,7 +24,7 @@ public class BarcodeValidatorForQueryList implements ConstraintValidator<Barcode
 
     @Override
     public boolean isValid(List<String> barcodes, ConstraintValidatorContext context) {
-        if (barcodes.isEmpty()) {
+        if (CollUtil.isEmpty(barcodes)) {
             return true;
         }
         return !barcodeDao.selectList(new QueryWrapper<Barcode>().in("barcode", barcodes)).isEmpty();
