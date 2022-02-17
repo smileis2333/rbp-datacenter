@@ -552,17 +552,11 @@ public class ChannelServiceBean implements ChannelService {
 
         //验证 渠道业态
         ChannelBusinessFormat channelBusinessFormat = channelBusinessFormatDao.selectOne(new QueryWrapper<ChannelBusinessFormat>().eq("name", param.getBusinessFormat()));
-        if (channelBusinessFormat != null) {
-            channel.setBusinessFormatId(channelBusinessFormat.getId());
-        } else {
-            errorMsgList.add("经营性质(businessNature)不存在");
-        }
+        channel.setBusinessFormatId(channelBusinessFormat.getId());
 
         //验证 经营性质
         ChannelBusinessNature channelBusinessNature = channelBusinessNatureDao.selectOne(new QueryWrapper<ChannelBusinessNature>().eq("name", param.getBusinessNature()));
-        if (channelBusinessNature != null) {
-            channel.setBusinessNatureId(channelBusinessNature.getId());
-        }
+        channel.setBusinessNatureId(channelBusinessNature.getId());
 
         // 资金号
         if (StringUtils.isNotBlank(param.getFundAccount())) {

@@ -3,6 +3,7 @@ package com.regent.rbp.api.dto.channel;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.validate.BillStatus;
+import com.regent.rbp.api.dto.validate.Dictionary;
 import lombok.Data;
 
 import javax.validation.Valid;
@@ -34,8 +35,10 @@ public class ChannelSaveParam {
     private String branchCompany;
     private String grade;
     @NotBlank
+    @Dictionary(targetTable = "rbp_channel_business_format",targetField = "name")
     private String businessFormat;
     @NotBlank
+    @Dictionary(targetTable = "rbp_channel_business_nature",targetField = "name")
     private String businessNature;
     private String balanceType;
     private String retailTagPriceType;

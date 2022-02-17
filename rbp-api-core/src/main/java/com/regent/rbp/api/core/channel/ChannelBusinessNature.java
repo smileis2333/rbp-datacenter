@@ -18,7 +18,7 @@ import java.util.Date;
  * @create: 2021-09-11 14:51
  */
 @Data
-@ApiModel(description = "渠道经营性质")
+    @ApiModel(description = "渠道经营性质")
 @TableName(value = "rbp_channel_business_nature")
 public class ChannelBusinessNature {
 
