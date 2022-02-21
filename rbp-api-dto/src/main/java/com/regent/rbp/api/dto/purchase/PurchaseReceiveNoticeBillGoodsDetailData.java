@@ -5,6 +5,7 @@ import com.regent.rbp.api.dto.validate.BarcodeOrGoodsCode;
 import com.regent.rbp.api.dto.validate.FromTo;
 import lombok.Data;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
 import java.math.BigDecimal;
@@ -34,6 +35,7 @@ public class PurchaseReceiveNoticeBillGoodsDetailData implements GoodsDetailIden
     private BigDecimal currencyPrice;
     private BigDecimal exchangeRate;
     private String remark;
+    @Valid
     private List<CustomizeDataDto> goodsCustomizeData;
 
     @Null

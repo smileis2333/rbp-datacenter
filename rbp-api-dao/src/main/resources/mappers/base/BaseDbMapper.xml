@@ -71,6 +71,14 @@
         select count(*) from information_schema.columns where `table_schema` =database() and `table_name` = #{tableName} and `column_name` = #{fieldName}
     </select>
 
+    <select id="isExistColumnName" resultType="java.lang.Integer">
+        select count(*) from information_schema.columns co inner join
+                             rbp_customize_column rcc on rcc.code = co.COLUMN_NAME
+        where
+              `table_schema` =database() and `table_name` = #{tableName}
+                and rcc.name = #{columnName}
+    </select>
+
     <select id="isExistTable" resultType="java.lang.Integer">
         select count(*) from information_schema.tables where `table_schema`= database() and `table_name`=  #{tableName};
     </select>

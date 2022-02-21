@@ -44,6 +44,14 @@ public interface BaseDbDao {
 
     Integer isExistField(@Param("tableName") String tableName, @Param("fieldName") String fieldName);
 
+    /**
+     * 查询是否存在对应的column name对应的column
+     * @param tableName
+     * @param columnName
+     * @return
+     */
+    Integer isExistColumnName(@Param("tableName") String tableName, @Param("columnName") String columnName);
+
     Integer isExistTable(@Param("tableName") String tableName);
 
     /**

@@ -5,6 +5,7 @@ import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.validate.BillStatus;
 import lombok.Data;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
@@ -30,5 +31,6 @@ public class BaseBillSaveParam {
 
     private String notes;
 
+    @Valid
     private List<CustomizeDataDto> customizeData;
 }

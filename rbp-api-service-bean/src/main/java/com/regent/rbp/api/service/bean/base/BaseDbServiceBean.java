@@ -1,6 +1,7 @@
 package com.regent.rbp.api.service.bean.base;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.goods.Goods;
@@ -29,16 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -85,7 +77,8 @@ public class BaseDbServiceBean implements BaseDbService {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExist", new Object[]{LanguageUtil.getMessage("customizeColumn")});
         }
         Map<String, CustomizeColumnDto> columnDtoMap = listMap.get(moduleId).stream().collect(Collectors.toMap(CustomizeColumnDto::getCode, Function.identity(), (x1, x2) -> x1));
-        this.validateCustomFiledMap(customFieldMap, columnDtoMap);
+        Map<String, CustomizeColumnDto> columnNameDtoMap = listMap.get(moduleId).stream().collect(Collectors.toMap(CustomizeColumnDto::getName, Function.identity(), (x1, x2) -> x1));
+        this.validateCustomFiledMap(customFieldMap, listMap.get(moduleId));
         // 新增
         StringBuilder insertSqlPrefix = new StringBuilder("Insert into " + tableName + " ( id, ");
         StringBuilder insertValue = new StringBuilder("values (" + id + ",");
@@ -94,13 +87,16 @@ public class BaseDbServiceBean implements BaseDbService {
             Object value = entry.getValue();
             if (null != value && !StrUtil.EMPTY.equals(value) && !"id".equals(key)) {
                 CustomizeColumnDto columnDto = columnDtoMap.get(key);
+                if (columnDto == null) {
+                    columnDto = columnNameDtoMap.get(key);
+                }
                 // 单选类型，需要通过值获取ID
                 if (CustomizeColumnTypeEnum.SELECT.equals(CustomizeColumnTypeEnum.getByPageType(columnDto.getType()))) {
                     Object finalValue = value;
                     value = columnDto.getColumnValueList().stream().filter(f -> finalValue.equals(f.getValue())).findFirst().get().getId();
                 }
                 //value不能null,也不能为 ""
-                insertSqlPrefix.append(key).append(",");
+                insertSqlPrefix.append(columnDto.getCode()).append(",");
                 insertValue.append(" '").append(value).append("',");
             }
         }
@@ -135,60 +131,87 @@ public class BaseDbServiceBean implements BaseDbService {
             return false;
         }
         // 校验字段是否存在
-        Set<String> fields = new HashSet<>();
         // 字段名
         List<Object> ids = new ArrayList<>();
         customFieldMapList.forEach(item -> {
-            fields.addAll(item.keySet());
-            if (!item.keySet().contains("id")) {
-                throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExist", new Object[]{"customFieldMap.id"});
-            }
             ids.add(item.get("id"));
         });
-        // 最后一个字段名
-        String lastKey = null;
-        for (String key : fields) {
-            //数据库存在字段 做处理，不存在直接忽略
-            if (!"id".equals(key) && baseDbDao.isExistField(tableName, key) == 0) {
-                throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExist", new Object[]{tableName + StrUtil.DOT + key});
-            }
-            lastKey = key;
-        }
         // 验证模块是否启用当前自定义字段
         Map<String, List<CustomizeColumnDto>> listMap = this.getModuleCustomizeColumnListMap(Arrays.asList(moduleId));
         if (CollUtil.isEmpty(listMap)) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExist", new Object[]{LanguageUtil.getMessage("customizeColumn")});
         }
         Map<String, CustomizeColumnDto> columnDtoMap = listMap.get(moduleId).stream().collect(Collectors.toMap(CustomizeColumnDto::getCode, Function.identity(), (x1, x2) -> x1));
+        Map<String, CustomizeColumnDto> columnNameDtoMap = listMap.get(moduleId).stream().collect(Collectors.toMap(CustomizeColumnDto::getName, Function.identity(), (x1, x2) -> x1));
+        Set<String> fields = getFields(tableName, customFieldMapList, columnDtoMap, columnNameDtoMap);
         // 新增
         StringBuilder sb = new StringBuilder();
         sb.append(" INSERT INTO " + tableName);
         sb.append(String.format(" (%s) values ", String.join(StrUtil.COMMA, fields)));
-        String finalLastKey = lastKey;
+        ArrayList<String> pairs = new ArrayList<>();
         customFieldMapList.forEach(map -> {
-            this.validateCustomFiledMap(map, columnDtoMap);
-            sb.append(" (");
-            for (String key : fields) {
+            this.validateCustomFiledMap(map, listMap.get(moduleId));
+            String pair = fields.stream().map(key -> {
                 Object value = Optional.ofNullable(map.get(key)).orElse(null);
                 // 单选类型，需要通过值获取ID
                 CustomizeColumnDto columnDto = columnDtoMap.get(key);
+                if (columnDto == null) {
+                    columnDto = columnNameDtoMap.get(key);
+                }
                 if (null != columnDto && CustomizeColumnTypeEnum.SELECT.equals(CustomizeColumnTypeEnum.getByPageType(columnDto.getType()))) {
                     Object finalValue = value;
                     value = columnDto.getColumnValueList().stream().filter(f -> finalValue.equals(f.getValue())).findFirst().get().getId();
                 }
-                sb.append("'").append(value).append("'");
-                if (!finalLastKey.equals(key)) {
-                    sb.append(",");
-                }
-            }
-            sb.append(" ),");
+                return value;
+            }).map(ObjectUtil::toString).map(s->"null".equals(s)?s:String.format("'%s'",s)).collect(Collectors.joining(",","(",")"));
+            pairs.add(pair);
         });
+        sb.append(pairs.stream().collect(Collectors.joining(",")));
         // 删除
         baseDbDao.deleteSql(String.format("delete from %s where id in %s", tableName, AppendSqlUtil.getInSql(ids)));
         // 移除最后一个逗号
         String insertSql = sb.toString();
-        int count = baseDbDao.insertSql(insertSql.substring(0, insertSql.length() - 1));
+        int count = baseDbDao.insertSql(insertSql);
         return count == 1;
+    }
+
+    private Set<String> getFields(String tableName, List<Map<String, Object>> customFieldMapList, Map<String, CustomizeColumnDto> columnDtoMap, Map<String, CustomizeColumnDto> columnNameDtoMap) {
+        Set<String> fields = new HashSet<>();
+        Map<String,String>nameToField = new HashMap<>();
+        customFieldMapList.forEach(item -> {
+            fields.addAll(item.keySet().stream().map(k->{
+                if (columnDtoMap.containsKey(k)){
+                    return k;
+                }else if (columnNameDtoMap.containsKey(k)){
+                    CustomizeColumnDto nameDto = columnNameDtoMap.get(k);
+                    nameToField.put(nameDto.getName(),nameDto.getCode());
+                    return nameDto.getCode();
+                }else if ("id".equals(k)){
+                    return k;
+                }
+                return null;
+            }).filter(ObjectUtil::isNotNull).collect(Collectors.toSet()));
+
+            if (!item.keySet().contains("id")) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExist", new Object[]{"customFieldMap.id"});
+            }
+        });
+
+        customFieldMapList.forEach(c->{
+            nameToField.forEach((n,f)->{
+                Object o = c.get(n);
+                c.remove(n);
+                c.put(f,o);
+            });
+        });
+
+        for (String key : fields) {
+            //数据库存在字段 做处理，不存在直接忽略
+            if (!"id".equals(key) && baseDbDao.isExistField(tableName, key) == 0 && baseDbDao.isExistColumnName(tableName, key) == 0) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExist", new Object[]{tableName + StrUtil.DOT + key});
+            }
+        }
+        return fields;
     }
 
     /**
@@ -287,14 +310,20 @@ public class BaseDbServiceBean implements BaseDbService {
 
     /**
      * 自定义字段格式验证
+     * 有field拿field，没field从字段名反着拿，在没有抛异常
      *
      * @param map
-     * @param columnDtoMap
+     * @param columnDtos
      */
-    private void validateCustomFiledMap(Map<String, Object> map, Map<String, CustomizeColumnDto> columnDtoMap) {
+    private void validateCustomFiledMap(Map<String, Object> map, List<CustomizeColumnDto> columnDtos) {
+        Map<String, CustomizeColumnDto> columnDtoMap = columnDtos.stream().collect(Collectors.toMap(CustomizeColumnDto::getCode, Function.identity(), (x1, x2) -> x1));
+        Map<String, CustomizeColumnDto> columnNameMap = columnDtos.stream().collect(Collectors.toMap(CustomizeColumnDto::getName, Function.identity(), (x1, x2) -> x1));
         map.forEach((key, value) -> {
             if (null != value && !StrUtil.EMPTY.equals(value) && !"id".equals(key)) {
                 CustomizeColumnDto columnDto = columnDtoMap.get(key);
+                if (columnDto == null) {
+                    columnDto = columnNameMap.get(key);
+                }
                 if (null == columnDto) {
                     throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExistOrDisabled", new Object[]{key});
                 }
