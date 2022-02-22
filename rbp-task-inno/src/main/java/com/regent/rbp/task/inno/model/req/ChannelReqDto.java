@@ -1,6 +1,6 @@
 package com.regent.rbp.task.inno.model.req;
 
-import com.regent.rbp.task.inno.model.dto.ChannelDto;
+import com.regent.rbp.task.inno.model.dto.InnoChannelDto;
 import lombok.Data;
 
 import java.util.List;
@@ -10,5 +10,5 @@ import java.util.List;
  */
 @Data
 public class ChannelReqDto extends BaseRequestDto {
-    private List<ChannelDto> data;
+    private List<InnoChannelDto> data;
 }

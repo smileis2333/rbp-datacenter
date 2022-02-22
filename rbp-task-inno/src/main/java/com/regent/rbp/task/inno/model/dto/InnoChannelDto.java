@@ -8,9 +8,9 @@ import java.math.BigDecimal;
  * @author xuxing
  */
 @Data
-public class ChannelDto {
+public class InnoChannelDto {
 
-    public ChannelDto(String id, String name, String phone, String contact, String store_code, String addr, String isCloseSelfGet, String isEnabled, String agent_code, BigDecimal latitude, BigDecimal longitude) {
+    public InnoChannelDto(String id, String name, String phone, String contact, String store_code, String addr, String isCloseSelfGet, String isEnabled, String agent_code, BigDecimal latitude, BigDecimal longitude) {
         this.id = id;
         this.name = name;
         this.phone = phone;

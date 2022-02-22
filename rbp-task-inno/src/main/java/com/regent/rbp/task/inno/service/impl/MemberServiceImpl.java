@@ -1,6 +1,5 @@
 package com.regent.rbp.task.inno.service.impl;
 
-import cn.hutool.core.date.DateTime;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.excel.util.DateUtils;
 import com.alibaba.fastjson.JSON;
@@ -30,7 +29,7 @@ import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import com.regent.rbp.task.inno.model.dto.CustomerVipDto;
-import com.regent.rbp.task.inno.model.dto.MemberDto;
+import com.regent.rbp.task.inno.model.dto.InnoMemberDto;
 import com.regent.rbp.task.inno.model.dto.MemberPageDto;
 import com.regent.rbp.task.inno.model.dto.SaveMemberDto;
 import com.regent.rbp.task.inno.model.param.DownloadMemberParam;
@@ -98,12 +97,12 @@ public class MemberServiceImpl implements MemberService {
             List<Long> memberIds = map.values().stream().collect(Collectors.toList());
             List<MemberCard> memberList = memberCardDao.selectList(new LambdaQueryWrapper<MemberCard>().in(MemberCard::getId, memberIds));
             memberMap = memberList.stream().collect(Collectors.toMap(v -> v.getCode(), v -> v.getId(), (x1, x2) -> x1));
-            Map<Integer, List<MemberDto>> listMap = this.packaging(memberList);
-            for (Map.Entry<Integer, List<MemberDto>> entry : listMap.entrySet()) {
+            Map<Integer, List<InnoMemberDto>> listMap = this.packaging(memberList);
+            for (Map.Entry<Integer, List<InnoMemberDto>> entry : listMap.entrySet()) {
                 MemberRespDto respDto = this.pushMember(onlinePlatform, entry.getValue());
                 if (respDto.getCode().equals("-1")) {
-                    for (MemberDto memberDto : entry.getValue()) {
-                        Long memberId = memberMap.get(memberDto.getCard_no());
+                    for (InnoMemberDto innoMemberDto : entry.getValue()) {
+                        Long memberId = memberMap.get(innoMemberDto.getCard_no());
                         Long errorId = map.get(memberId.toString());
                         onlinePlatformSyncErrorService.failure(errorId);
                     }
@@ -122,12 +121,12 @@ public class MemberServiceImpl implements MemberService {
 
         List<MemberCard> memberCardList = memberCardDao.selectList(queryWrapper);
         memberMap = memberCardList.stream().collect(Collectors.toMap(v -> v.getCode(), v -> v.getId(), (x1, x2) -> x1));
-        Map<Integer, List<MemberDto>> memberCardMap = this.packaging(memberCardList);
-        for (Map.Entry<Integer, List<MemberDto>> entry : memberCardMap.entrySet()) {
+        Map<Integer, List<InnoMemberDto>> memberCardMap = this.packaging(memberCardList);
+        for (Map.Entry<Integer, List<InnoMemberDto>> entry : memberCardMap.entrySet()) {
             MemberRespDto respDto = this.pushMember(onlinePlatform, entry.getValue());
             if (respDto.getCode().equals("-1")) {
-                for (MemberDto memberDto : entry.getValue()) {
-                    Long memberId = memberMap.get(memberDto.getCard_no());
+                for (InnoMemberDto innoMemberDto : entry.getValue()) {
+                    Long memberId = memberMap.get(innoMemberDto.getCard_no());
                     onlinePlatformSyncErrorService.saveOnlinePlatformSyncError(onlinePlatformId, key, memberId.toString());
                 }
             }
@@ -141,8 +140,8 @@ public class MemberServiceImpl implements MemberService {
      * @param memberCardList
      * @return
      */
-    private Map<Integer, List<MemberDto>> packaging(List<MemberCard> memberCardList) {
-        Map<Integer, List<MemberDto>> listMap = new HashMap<>();
+    private Map<Integer, List<InnoMemberDto>> packaging(List<MemberCard> memberCardList) {
+        Map<Integer, List<InnoMemberDto>> listMap = new HashMap<>();
         // 发卡渠道
         List<Long> channelIds = memberCardList.stream().map(MemberCard::getChannelId).distinct().collect(Collectors.toList());
         List<Channel> channelList = channelDao.selectBatchIds(channelIds);
@@ -160,7 +159,7 @@ public class MemberServiceImpl implements MemberService {
         double pageNo = Math.ceil(Double.valueOf(sumQty) / new Double(100));
         for (int i = 0; i < pageNo; i++) {
             Integer rowIndex = 1;
-            List<MemberDto> dtoList = new ArrayList<>();
+            List<InnoMemberDto> dtoList = new ArrayList<>();
             List<MemberCard> cardList = new ArrayList<>();
             if (sumQty < 100 || i == pageNo - 1) {
                 cardList = memberCardList.subList(i * 100, sumQty);
@@ -168,7 +167,7 @@ public class MemberServiceImpl implements MemberService {
                 cardList = memberCardList.subList(i * 100, ((i + 1) * 100));
             }
             for (MemberCard card : cardList) {
-                MemberDto dto = new MemberDto();
+                InnoMemberDto dto = new InnoMemberDto();
                 dto.setRowIndex(rowIndex);
                 dto.setUser_name(card.getName());
                 dto.setCard_no(card.getCode());
@@ -205,14 +204,14 @@ public class MemberServiceImpl implements MemberService {
     /**
      * 推送会员
      * @param onlinePlatform
-     * @param memberDtoList
+     * @param innoMemberDtoList
      * @return
      */
-    private MemberRespDto pushMember(OnlinePlatform onlinePlatform, List<MemberDto> memberDtoList) {
+    private MemberRespDto pushMember(OnlinePlatform onlinePlatform, List<InnoMemberDto> innoMemberDtoList) {
         MemberReqDto memberReqDto = new MemberReqDto();
         memberReqDto.setApp_key(onlinePlatform.getAppKey());
         memberReqDto.setApp_secrept(onlinePlatform.getAppSecret());
-        memberReqDto.setData(memberDtoList);
+        memberReqDto.setData(innoMemberDtoList);
 
         String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), API_URL_USERS);
         String result = HttpUtil.post(api_url, JSON.toJSONString(memberReqDto));

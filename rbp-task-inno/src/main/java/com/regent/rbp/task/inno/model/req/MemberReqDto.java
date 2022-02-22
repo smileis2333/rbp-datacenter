@@ -1,6 +1,6 @@
 package com.regent.rbp.task.inno.model.req;
 
-import com.regent.rbp.task.inno.model.dto.MemberDto;
+import com.regent.rbp.task.inno.model.dto.InnoMemberDto;
 import lombok.Data;
 
 import java.util.List;
@@ -13,5 +13,5 @@ import java.util.List;
  */
 @Data
 public class MemberReqDto extends BaseRequestDto {
-    private List<MemberDto> data;
+    private List<InnoMemberDto> data;
 }

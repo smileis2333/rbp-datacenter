@@ -1,6 +1,6 @@
 package com.regent.rbp.task.inno.model.req;
 
-import com.regent.rbp.task.inno.model.dto.WarehouseDto;
+import com.regent.rbp.task.inno.model.dto.InnoWarehouseDto;
 import lombok.Data;
 
 import java.util.List;
@@ -14,5 +14,5 @@ import java.util.List;
 @Data
 public class WarehouseReqDto extends BaseRequestDto{
 
-    private List<WarehouseDto> data;
+    private List<InnoWarehouseDto> data;
 }
