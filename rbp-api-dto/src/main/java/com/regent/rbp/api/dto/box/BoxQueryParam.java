@@ -1,5 +1,6 @@
 package com.regent.rbp.api.dto.box;
 
+import com.regent.rbp.api.dto.base.DefaultParam;
 import lombok.Data;
 
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
  * @description
  */
 @Data
-public class BoxQueryParam {
+public class BoxQueryParam extends DefaultParam {
     private List<String> code;
     private List<String> manualId;
     private List<String> batchNumber;
@@ -22,7 +23,5 @@ public class BoxQueryParam {
     private List<String> goodsCode;
     private List<String> goodsName;
     private List<String> mnemonicCode;
-    private String fields;
-    private Integer pageNo;
-    private Integer pageSize;
+
 }

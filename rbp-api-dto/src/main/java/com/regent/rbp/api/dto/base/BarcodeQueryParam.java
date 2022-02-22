@@ -11,7 +11,7 @@ import java.util.List;
  * @description
  */
 @Data
-public class BarcodeQueryParam {
+public class BarcodeQueryParam extends DefaultParam{
 
     private String goodsCode;
     private String goodsName;
@@ -19,8 +19,4 @@ public class BarcodeQueryParam {
     private String ruleId;
     @BarcodeCheck
     private List<String> barcode;
-    private String fields;
-    private Integer pageNo;
-    private Integer pageSize;
-
 }

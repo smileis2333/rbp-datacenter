@@ -1,6 +1,7 @@
 package com.regent.rbp.api.dto.label;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.regent.rbp.api.dto.base.DefaultParam;
 import lombok.Data;
 
 import java.util.Date;
@@ -12,7 +13,7 @@ import java.util.List;
  * @description
  */
 @Data
-public class LabelQueryParam {
+public class LabelQueryParam extends DefaultParam {
     private List<String> code;
     private List<String> goodsCode;
     private List<String> batchManagementNo;
@@ -26,7 +27,4 @@ public class LabelQueryParam {
     private Date updatedDateStart;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date updatedDateEnd;
-    private String fields;
-    private Integer pageNo;
-    private Integer pageSize;
 }

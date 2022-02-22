@@ -1,6 +1,7 @@
 package com.regent.rbp.api.dto.purchase;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.regent.rbp.api.dto.base.DefaultParam;
 import lombok.Data;
 
 import java.util.Date;
@@ -12,7 +13,7 @@ import java.util.List;
  * @description
  */
 @Data
-public class PurchaseReturnBillQueryParam {
+public class PurchaseReturnBillQueryParam extends DefaultParam {
     private String moduleId;
     private String billNo;
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -36,7 +37,4 @@ public class PurchaseReturnBillQueryParam {
     private Date updatedDateStart;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date updatedDateEnd;
-    private String fields;
-    private Integer pageNo;
-    private Integer pageSize;
 }

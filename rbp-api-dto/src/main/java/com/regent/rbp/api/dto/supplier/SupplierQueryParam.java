@@ -1,13 +1,14 @@
 package com.regent.rbp.api.dto.supplier;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.regent.rbp.api.dto.base.DefaultParam;
 import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
 
 @Data
-public class SupplierQueryParam {
+public class SupplierQueryParam extends DefaultParam {
     private String supplierCode;
     private String name;
     private String fullName;
@@ -31,9 +32,6 @@ public class SupplierQueryParam {
     private Date updatedDateStart;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updatedDateEnd;
-    private List<String> fields;
-    private Integer pageNo;
-    private Integer pageSize;
     private String nation;
     private String region;
     private String province;
