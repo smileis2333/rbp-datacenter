@@ -1,6 +1,7 @@
 package com.regent.rbp.app;
 
 import com.regent.rbp.app.adapter.CustomWebMvcConfigurer;
+import com.regent.rbp.infrastructure.interceptor.JwtAuthInterceptor;
 import com.regent.rbp.infrastructure.response.config.RegentPlatformExceptionResolver;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,7 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @ServletComponentScan
 @EnableDiscoveryClient
-@ComponentScan(value = "com.regent.rbp.**.**", excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {CustomWebMvcConfigurer.class, RegentPlatformExceptionResolver.class})})
+@ComponentScan(value = "com.regent.rbp.**.**", excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {CustomWebMvcConfigurer.class, RegentPlatformExceptionResolver.class, JwtAuthInterceptor.class})})
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, SecurityAutoConfiguration.class})
 public class RbpAppApplication {
 

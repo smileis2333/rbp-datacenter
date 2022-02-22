@@ -1,12 +1,13 @@
 package com.regent.rbp.app.config;
 
+import com.regent.rbp.api.web.config.AuthHandlerInterceptor;
 import com.regent.rbp.app.RbpAppApplication;
 import com.regent.rbp.app.adapter.CustomWebMvcConfigurer;
 import com.regent.rbp.infrastructure.constants.ResourceConstant;
-import com.regent.rbp.infrastructure.interceptor.JwtAuthInterceptor;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +41,8 @@ import java.util.Locale;
 @Configuration
 public class CustomWebMvcConfigurer2 implements WebMvcConfigurer {
     static Logger logger = LoggerFactory.getLogger(CustomWebMvcConfigurer.class);
+    @Autowired
+    private AuthHandlerInterceptor authHandlerInterceptor;
 
     /**
      * 上传目录
@@ -97,15 +100,10 @@ public class CustomWebMvcConfigurer2 implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         if (!disableJwt) {
-            registry.addInterceptor(jwtAuthInterceptor())
+            registry.addInterceptor(authHandlerInterceptor)
                     .addPathPatterns("/**")
                     .excludePathPatterns("/swagger-resources/**", "/webjars/**", "/v2/**", "/swagger-ui.html/**");
         }
-    }
-
-    @Bean
-    public JwtAuthInterceptor jwtAuthInterceptor() {
-        return new JwtAuthInterceptor();
     }
 
     private String getUploadFolder() {
