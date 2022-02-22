@@ -25,13 +25,13 @@
 		<dependency>
 			<groupId>com.regent.rbp.app.config</groupId>
 			<artifactId>rbp-app-config</artifactId>
-			<version>0.0.0.7</version>
+			<version>0.0.0.8</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.regent.rbp.infrastructure</groupId>
 			<artifactId>rbp-infrastructure</artifactId>
-			<version>0.0.0.7</version>
+			<version>0.0.0.8</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.xuxueli</groupId>
@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>com.regent.rbp.common</groupId>
 			<artifactId>rbp-common-core</artifactId>
-			<version>0.0.0.7</version>
+			<version>0.0.0.8</version>
 		</dependency>
 
 		<dependency>
