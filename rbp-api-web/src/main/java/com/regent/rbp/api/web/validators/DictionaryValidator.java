@@ -1,5 +1,6 @@
 package com.regent.rbp.api.web.validators;
 
+import cn.hutool.core.util.StrUtil;
 import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dto.validate.Dictionary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ public class DictionaryValidator implements ConstraintValidator<Dictionary, Stri
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
+        if (StrUtil.isBlank(value)){
+            return true;
+        }
         Long id = baseDbDao.getLongDataBySql(String.format("select id from %s where %s = '%s'", targetTable, targetField, value));
         return id!=null;
     }
