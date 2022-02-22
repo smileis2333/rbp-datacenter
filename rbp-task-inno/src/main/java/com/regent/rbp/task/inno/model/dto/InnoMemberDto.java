@@ -9,7 +9,7 @@ import lombok.Data;
  * @create: 2021-09-24 13:32
  */
 @Data
-public class MemberDto {
+public class InnoMemberDto {
     /**
      * 序号（1，2，3）区分上传的会员
      */

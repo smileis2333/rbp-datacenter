@@ -9,9 +9,9 @@ import lombok.Data;
  * @create: 2021-09-22 17:37
  */
 @Data
-public class WarehouseDto {
+public class InnoWarehouseDto {
 
-    public WarehouseDto(String id, String area_id, String code, String contact, String name, String phone, String addr) {
+    public InnoWarehouseDto(String id, String area_id, String code, String contact, String name, String phone, String addr) {
         this.id = id;
         this.area_id = area_id;
         this.code = code;
