@@ -177,14 +177,14 @@ public class BaseDbServiceBean implements BaseDbService {
 
     private Set<String> getFields(String tableName, List<Map<String, Object>> customFieldMapList, Map<String, CustomizeColumnDto> columnDtoMap, Map<String, CustomizeColumnDto> columnNameDtoMap) {
         Set<String> fields = new HashSet<>();
-        Map<String,String>nameToField = new HashMap<>();
+        Map<String,String>nameToCode = new HashMap<>();
         customFieldMapList.forEach(item -> {
             fields.addAll(item.keySet().stream().map(k->{
                 if (columnDtoMap.containsKey(k)){
                     return k;
                 }else if (columnNameDtoMap.containsKey(k)){
                     CustomizeColumnDto nameDto = columnNameDtoMap.get(k);
-                    nameToField.put(nameDto.getName(),nameDto.getCode());
+                    nameToCode.put(nameDto.getName(),nameDto.getCode());
                     return nameDto.getCode();
                 }else if ("id".equals(k)){
                     return k;
@@ -197,13 +197,15 @@ public class BaseDbServiceBean implements BaseDbService {
             }
         });
 
-        customFieldMapList.forEach(c->{
-            nameToField.forEach((n,f)->{
-                Object o = c.get(n);
-                c.remove(n);
-                c.put(f,o);
+        for (Map<String, Object> item : customFieldMapList) {
+            nameToCode.forEach((n,c)->{
+                if (item.containsKey(n)) {
+                    Object v = item.get(n);
+                    item.remove(n);
+                    item.put(c,v);
+                }
             });
-        });
+        }
 
         for (String key : fields) {
             //数据库存在字段 做处理，不存在直接忽略
