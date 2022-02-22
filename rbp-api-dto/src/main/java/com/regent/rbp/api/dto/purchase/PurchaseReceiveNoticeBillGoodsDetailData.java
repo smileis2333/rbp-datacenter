@@ -2,6 +2,7 @@ package com.regent.rbp.api.dto.purchase;
 
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.validate.BarcodeOrGoodsCode;
+import com.regent.rbp.api.dto.validate.Code;
 import com.regent.rbp.api.dto.validate.FromTo;
 import lombok.Data;
 
@@ -14,7 +15,6 @@ import java.util.List;
 
 @Data
 @FromTo.List({
-        @FromTo(fromField = "goodsCode", toField = "goodsId"),
         @FromTo(fromField = "colorCode", toField = "colorId"),
         @FromTo(fromField = "longName", toField = "longId"),
         @FromTo(fromField = "size", toField = "sizeId"),
@@ -23,6 +23,7 @@ import java.util.List;
 @BarcodeOrGoodsCode
 public class PurchaseReceiveNoticeBillGoodsDetailData implements GoodsDetailIdentifier {
     private String barcode;
+    @Code(targetTable = "rbp_goods")
     private String goodsCode;
     private String colorCode;
     private String longName;

@@ -1,5 +1,6 @@
 package com.regent.rbp.api.dto.box;
 
+import com.regent.rbp.api.dto.validate.Code;
 import com.regent.rbp.api.dto.validate.FromTo;
 import lombok.Data;
 
@@ -12,7 +13,6 @@ import java.math.BigDecimal;
  * @description
  */
 @FromTo.List({
-        @FromTo(fromField = "goodsCode", toField = "goodsId"),
         @FromTo(fromField = "colorCode", toField = "colorId"),
         @FromTo(fromField = "longName", toField = "longId"),
         @FromTo(fromField = "size", toField = "sizeId"),
@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 @Data
 public class BoxDetailItem {
     private String barcode;
+    @Code(targetTable = "rbp_goods")
     private String goodsCode;
     private String colorCode;
     private String longName;

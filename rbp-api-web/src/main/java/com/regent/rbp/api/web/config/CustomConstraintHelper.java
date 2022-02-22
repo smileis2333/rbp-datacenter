@@ -66,7 +66,7 @@ public class CustomConstraintHelper extends ConstraintHelper {
             putConstraints(tmpConstraints, SupplierCodeCheck.class, SupplierCodeValidatorForSingle.class, SupplierCodeValidatorForQueryList.class);
             putConstraint(tmpConstraints, ChannelOrganizationCheck.class, ChannelOrganizationCheckValidator.class);
             putConstraint(tmpConstraints, DiscreteRange.class, DiscreteRangeValidator.class);
-            putConstraint(tmpConstraints, Code.class, CodeValidatorForQueryList.class);
+            putConstraints(tmpConstraints, Code.class, CodeValidatorForQueryList.class,CodeValidator.class);
             putConstraint(tmpConstraints, UniqueFields.class, UniqueFieldsValidator.class);
             putConstraint(tmpConstraints, Dictionary.class, DictionaryValidator.class);
             /**

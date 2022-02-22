@@ -136,7 +136,7 @@ public class BoxServiceBean implements BoxService {
         List<String> distributionTypeCodes = CollUtil.distinct(CollUtil.map(boxData, BoxItem::getDistributionTypeCode, true));
 
         Map<String, Long> boxCodeIdMap = boxDao.selectList(Wrappers.lambdaQuery(Box.class).in(Box::getCode, boxCodes)).stream().collect(Collectors.toMap(Box::getCode, Box::getId));
-        Map<String, Long> mannualIdBoxIdMap = boxDao.selectList(Wrappers.lambdaQuery(Box.class).in(Box::getManualId, manualIds)).stream().collect(Collectors.toMap(Box::getManualId, Box::getId));
+        Map<String, Long> mannualIdBoxIdMap = CollUtil.isEmpty(manualIds) ? Collections.emptyMap() : boxDao.selectList(Wrappers.lambdaQuery(Box.class).in(Box::getManualId, manualIds)).stream().collect(Collectors.toMap(Box::getManualId, Box::getId));
         Map<String, Long> channelCodeIdMap = CollUtil.isEmpty(channelCodes) ? Collections.emptyMap() : channelDao.selectList(Wrappers.lambdaQuery(Channel.class).in(Channel::getCode, channelCodes)).stream().collect(Collectors.toMap(Channel::getCode, Channel::getId));
         Map<String, Long> supplierCodeIdMap = CollUtil.isEmpty(supplierCodes) ? Collections.emptyMap() : supplierDao.selectList(Wrappers.lambdaQuery(Supplier.class).in(Supplier::getCode, supplierCodes)).stream().collect(Collectors.toMap(Supplier::getCode, Supplier::getId));
         Map<String, Long> distributionTypeCodeIdMap = CollUtil.isEmpty(distributionTypeCodes) ? Collections.emptyMap() : distributionTypeDao.selectList(Wrappers.lambdaQuery(DistributionType.class).in(DistributionType::getCode, distributionTypeCodes)).stream().collect(Collectors.toMap(DistributionType::getCode, DistributionType::getId));
@@ -174,7 +174,7 @@ public class BoxServiceBean implements BoxService {
             // 货品+颜色+内长+尺码
             List<String> goodsCode = boxDetails.stream().map(BoxDetailItem::getGoodsCode).distinct().collect(Collectors.toList());
             List<String> sizeNames = boxDetails.stream().map(BoxDetailItem::getSize).distinct().collect(Collectors.toList());
-            Map<String, Long> goodsCodeIdMap = goodsDao.selectList(Wrappers.<Goods>lambdaQuery().in(Goods::getCode, goodsCode)).stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
+            Map<String, Long> goodsCodeIdMap =  goodsDao.selectList(Wrappers.<Goods>lambdaQuery().in(Goods::getCode, goodsCode)).stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
             Map<String, Long> colorCodeIdMap = colorDao.selectList(Wrappers.<Color>lambdaQuery().in(Color::getCode, boxDetails.stream().map(BoxDetailItem::getColorCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
             Map<String, Long> longNameIdMap = longDao.selectList(Wrappers.<LongInfo>lambdaQuery().in(LongInfo::getName, boxDetails.stream().map(BoxDetailItem::getLongName).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
             Map<Long, Map<String, Long>> goodsIdSizeNameIdMap = baseDbDao.getGoodsIdSizeNameIdMap(goodsCode, sizeNames, goodsCodeIdMap);

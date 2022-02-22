@@ -24,5 +24,5 @@ public @interface Code {
 
     String targetTable();
 
-    String mapField() default "code";
+    String targetField() default "code";
 }
