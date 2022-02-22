@@ -30,7 +30,15 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target(TYPE)
 @Constraint(validatedBy = { })
 public @interface FromTo {
-    String message() default "{regent.validation.FromTo}";
+    String message() default
+            "${fromField==\"goodsCode\"?validatedValue.goodsCode:''}"+
+            "${fromField==\"colorCode\"?validatedValue.colorCode:''}"+
+            "${fromField==\"longName\"?validatedValue.longName:''}"+
+            "${fromField==\"size\"?validatedValue.size:''}"+
+            "${fromField==\"retailPayTypeCode\"?validatedValue.retailPayTypeCode:''}"+
+            "${fromField==\"employeeCode\"?validatedValue.employeeCode:''}"+
+            "${fromField==\"barcode\"?validatedValue.barcode:''}"+
+            "不存在";
 
     Class<?>[] groups() default {Complex.class};
 

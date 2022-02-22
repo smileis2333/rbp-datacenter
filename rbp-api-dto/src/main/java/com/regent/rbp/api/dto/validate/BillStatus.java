@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = { })
 public @interface BillStatus {
-    String message() default "{regent.validation.constraints.billStatus}";
+    String message() default "(${validatedValue})不存在, 单据状态(0.未审核,1.已审核,2.反审核,3.已作废)";
 
     Class<?>[] groups() default {};
 

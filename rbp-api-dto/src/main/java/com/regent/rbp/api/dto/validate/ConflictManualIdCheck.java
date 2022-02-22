@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = { })
 public @interface ConflictManualIdCheck {
-    String message() default "{regent.validation.constraints.notAllowRepeat}";
+    String message() default "(${validatedValue})已经存在";
 
     Class<?>[] groups() default {};
 

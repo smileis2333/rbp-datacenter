@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = { })
 public @interface CurrencyTypeCheck {
-    String message() default "{regent.validation.constraints.mapNotFound}";
+    String message() default "(${validatedValue})不存在";
 
     Class<?>[] groups() default {};
 

@@ -15,7 +15,7 @@ import java.util.List;
 @Data
 public class BarcodeSaveParam {
     @NotEmpty
-    @UniqueElements(message = "{hv.UniqueElements.barcode.message}")
+    @UniqueElements(message = "条形码不允许重复")
     @Valid
     private List<BarcodeItem> barcodeData;
 }

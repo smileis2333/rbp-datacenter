@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = { })
 public @interface ColorCode {
-    String message() default "颜色编号非法";
+    String message() default "(${validatedValue})不存在";
 
     Class<?>[] groups() default {};
 
