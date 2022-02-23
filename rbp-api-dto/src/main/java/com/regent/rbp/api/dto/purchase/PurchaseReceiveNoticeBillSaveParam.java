@@ -1,6 +1,7 @@
 package com.regent.rbp.api.dto.purchase;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.regent.rbp.api.dto.base.BoxDetailData;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.validate.*;
 import lombok.Data;
@@ -51,10 +52,12 @@ public class PurchaseReceiveNoticeBillSaveParam {
     @CurrencyTypeCheck
     private String currencyType;
     private String notes;
+    @Valid
     private List<CustomizeDataDto> customizeData;
     @Valid
     @NotEmpty
     private List<PurchaseReceiveNoticeBillGoodsDetailData> goodsDetailData;
 
-    private List<String> boxDetailData;
+    @Valid
+    private List<BoxDetailData> boxDetailData;
 }

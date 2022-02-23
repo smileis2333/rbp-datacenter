@@ -28,6 +28,7 @@ import com.regent.rbp.api.dao.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBil
 import com.regent.rbp.api.dao.salePlan.BusinessTypeDao;
 import com.regent.rbp.api.dao.salePlan.CurrencyTypeDao;
 import com.regent.rbp.api.dao.supplier.SupplierDao;
+import com.regent.rbp.api.dto.base.BoxDetailData;
 import com.regent.rbp.api.dto.base.CustomizeColumnDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
@@ -341,17 +342,20 @@ public class PurchaseReceiveNoticeBillServiceBean implements PurchaseReceiveNoti
             bill.setPurchaseId(baseDbDao.getLongDataBySql(String.format("select id from rbp_purchase_bill where bill_no  = '%s'", param.getPurchaseNo())));
         }
         if (CollUtil.isNotEmpty(param.getBoxDetailData())) {
-            boxDao.selectList(Wrappers.<Box>lambdaQuery().in(Box::getCode, param.getBoxDetailData())).stream().forEach(box -> {
-                BoxBill boxBill = new BoxBill();
-                boxBill.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-                boxBill.setBoxId(box.getId());
-                boxBill.setBillId(bill.getId());
-                boxBill.setModuleId(param.getModuleId());
-                boxBill.setToChannelId(bill.getToChannelId());
-                boxBill.setSupplierId(bill.getSupplierId());
-                boxBill.setStatus(1);
-                context.getBoxBills().add(boxBill);
-            });
+            List<String> boxCodes = CollUtil.distinct(CollUtil.map(param.getBoxDetailData(), BoxDetailData::getBoxCode, true));
+            if (CollUtil.isNotEmpty(boxCodes)) {
+                boxDao.selectList(Wrappers.<Box>lambdaQuery().in(Box::getCode, boxCodes)).stream().forEach(box -> {
+                    BoxBill boxBill = new BoxBill();
+                    boxBill.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                    boxBill.setBoxId(box.getId());
+                    boxBill.setBillId(bill.getId());
+                    boxBill.setModuleId(param.getModuleId());
+                    boxBill.setToChannelId(bill.getToChannelId());
+                    boxBill.setSupplierId(bill.getSupplierId());
+                    boxBill.setStatus(1);
+                    context.getBoxBills().add(boxBill);
+                });
+            }
         }
         context.setBill(bill);
         extractedGoodsAndSizes(context, param, messageList);

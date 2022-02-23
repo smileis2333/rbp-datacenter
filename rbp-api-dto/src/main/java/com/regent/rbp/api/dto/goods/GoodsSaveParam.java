@@ -68,6 +68,7 @@ public class GoodsSaveParam {
     private Set<String> longList;
     @Valid
     private GoodsPriceDto priceData;
+    @Valid
     private List<CustomizeDataDto> customizeData;
     @Valid
     private List<BarcodeDto> barcodeData;

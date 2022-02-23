@@ -80,13 +80,13 @@ public interface BaseDbDao {
             throw new RuntimeException("illegal operation query format invalid");
         }
         if (goodsCode.size() != sizeNames.size()) {
-            throw new RuntimeException("illegal operation, query size id relative goods id and sizename must be align");
+            throw new RuntimeException("illegal operation, query size id relative goods id and sizeName must be align");
         }
         if (CollUtil.isEmpty(goodsCodeIdMap)) {
             throw new RuntimeException("must supply code to id about goods");
         }
-        if (goodsCode.size() != goodsCodeIdMap.size()) {
-            throw new RuntimeException("illegal operation, please check the align about goodsCode to goodsId");
+        if (!goodsCodeIdMap.keySet().containsAll(goodsCode.stream().collect(Collectors.toSet()))) {
+            throw new RuntimeException("illegal operation, please check the map about goodsCode to goodsId");
         }
 
         List<Long> goodsIds = goodsCode.stream().map(code -> goodsCodeIdMap.get(code)).collect(Collectors.toList());

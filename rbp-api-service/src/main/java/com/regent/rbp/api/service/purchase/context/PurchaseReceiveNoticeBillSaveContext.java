@@ -1,5 +1,6 @@
 package com.regent.rbp.api.service.purchase.context;
 
+import cn.hutool.core.collection.CollUtil;
 import com.regent.rbp.api.core.box.BoxBill;
 import com.regent.rbp.api.core.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBill;
 import com.regent.rbp.api.core.purchaseReceiveNoticeBill.PurchaseReceiveNoticeBillGoods;
@@ -25,12 +26,14 @@ public class PurchaseReceiveNoticeBillSaveContext {
     private List<BoxBill>boxBills = new ArrayList<>();
 
     public void addGoodsDetailCustomData(List<CustomizeDataDto> customizeDataDto, Long billGoodsId) {
-        HashMap<String, Object> ele = new HashMap<>();
-        customizeDataDto.forEach(e -> {
-            ele.put(e.getCode(), e.getValue());
-        });
-        ele.put("id", billGoodsId);
-        goodsCustomizeData.add(ele);
+        if (CollUtil.isNotEmpty(customizeDataDto)) {
+            HashMap<String, Object> ele = new HashMap<>();
+            customizeDataDto.forEach(e -> {
+                ele.put(e.getCode(), e.getValue());
+            });
+            ele.put("id", billGoodsId);
+            goodsCustomizeData.add(ele);
+        }
     }
 
     public void addBillGoods(PurchaseReceiveNoticeBillGoods billGoods){
