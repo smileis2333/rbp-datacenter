@@ -1,9 +1,14 @@
 package com.regent.rbp.api.dto.purchaseReturn;
 
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
-import io.swagger.annotations.ApiModelProperty;
+import com.regent.rbp.api.dto.purchase.GoodsDetailIdentifier;
+import com.regent.rbp.api.dto.validate.Code;
+import com.regent.rbp.api.dto.validate.FromTo;
 import lombok.Data;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -13,46 +18,47 @@ import java.util.List;
  * @author: HaiFeng
  * @create: 2021/12/30 14:18
  */
+@FromTo.List({
+        @FromTo(fromField = "colorCode", toField = "colorId"),
+        @FromTo(fromField = "longName", toField = "longId"),
+        @FromTo(fromField = "size", toField = "sizeId"),
+        @FromTo(fromField = "barcode", toField = "barcodeId"),
+})
 @Data
-public class PurchaseReturnNoticeBillGoodsDetailData {
+public class PurchaseReturnNoticeBillGoodsDetailData implements GoodsDetailIdentifier {
 
-    @ApiModelProperty(notes = "条形码")
     private String barcode;
-
-    @ApiModelProperty(notes = "货号")
+    @Code(targetTable = "rbp_goods")
     private String goodsCode;
-
-    @ApiModelProperty(notes = "颜色编号")
     private String colorCode;
-
-    @ApiModelProperty(notes = "内长")
     private String longName;
-
-    @ApiModelProperty(notes = "尺码")
     private String size;
-
-    @ApiModelProperty(notes = "数量")
+    @NotNull
     private BigDecimal quantity;
-
-    @ApiModelProperty(notes = "折扣")
     private BigDecimal discount;
-
-    @ApiModelProperty(notes = "吊牌价")
     private BigDecimal tagPrice;
-
-    @ApiModelProperty(notes = "采购价")
     private BigDecimal balancePrice;
-
-    @ApiModelProperty(notes = "币种价格")
     private BigDecimal currencyPrice;
-
-    @ApiModelProperty(notes = "汇率")
     private BigDecimal exchangeRate;
-
-    @ApiModelProperty(notes = "备注")
     private String remark;
-
-    @ApiModelProperty(notes = "自定义字段")
+    @Valid
     private List<CustomizeDataDto> goodsCustomizeData;
 
+    @Null
+    private Long goodsId;
+
+    @Null
+    private Long colorId;
+
+    @Null
+    private Long longId;
+
+    @Null
+    private Long sizeId;
+
+    @Null
+    private Long barcodeId;
+
+    @Null
+    private Long billGoodId;
 }

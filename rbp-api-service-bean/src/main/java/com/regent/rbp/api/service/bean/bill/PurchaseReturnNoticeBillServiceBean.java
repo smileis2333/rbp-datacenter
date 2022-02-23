@@ -1,5 +1,6 @@
 package com.regent.rbp.api.service.bean.bill;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -9,20 +10,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.regent.rbp.api.core.base.*;
 import com.regent.rbp.api.core.channel.Channel;
-import com.regent.rbp.api.core.coupon.RetailPayType;
 import com.regent.rbp.api.core.goods.Goods;
-import com.regent.rbp.api.core.member.MemberCard;
 import com.regent.rbp.api.core.purchaseBill.PurchaseBill;
 import com.regent.rbp.api.core.purchaseReturnNoticeBill.PurchaseReturnNoticeBill;
 import com.regent.rbp.api.core.purchaseReturnNoticeBill.PurchaseReturnNoticeBillGoods;
 import com.regent.rbp.api.core.purchaseReturnNoticeBill.PurchaseReturnNoticeBillSize;
-import com.regent.rbp.api.core.salesOrder.SalesOrderBill;
-import com.regent.rbp.api.core.salesOrder.SalesOrderBillGoods;
-import com.regent.rbp.api.core.salesOrder.SalesOrderBillPayment;
-import com.regent.rbp.api.core.salesOrder.SalesOrderBillSize;
-import com.regent.rbp.api.core.sendBill.SendBill;
-import com.regent.rbp.api.core.sendBill.SendBillGoods;
-import com.regent.rbp.api.core.sendBill.SendBillSize;
 import com.regent.rbp.api.core.supplier.Supplier;
 import com.regent.rbp.api.dao.base.*;
 import com.regent.rbp.api.dao.channel.ChannelDao;
@@ -36,39 +28,30 @@ import com.regent.rbp.api.dao.supplier.SupplierDao;
 import com.regent.rbp.api.dto.base.CustomizeColumnDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
-import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
+import com.regent.rbp.api.dto.purchase.GoodsDetailIdentifier;
 import com.regent.rbp.api.dto.purchaseReturn.PurchaseReturnNoticeBillGoodsDetailData;
 import com.regent.rbp.api.dto.purchaseReturn.PurchaseReturnNoticeBillQueryParam;
 import com.regent.rbp.api.dto.purchaseReturn.PurchaseReturnNoticeBillQueryResult;
 import com.regent.rbp.api.dto.purchaseReturn.PurchaseReturnNoticeBillSaveParam;
-import com.regent.rbp.api.dto.sale.SaleOrderSaveParam;
-import com.regent.rbp.api.dto.sale.SalesOrderBillGoodsResult;
-import com.regent.rbp.api.dto.sale.SalesOrderBillPaymentResult;
-import com.regent.rbp.api.dto.send.SendBillGoodsDetailData;
-import com.regent.rbp.api.dto.send.SendBillQueryParam;
-import com.regent.rbp.api.dto.send.SendBillQueryResult;
-import com.regent.rbp.api.dto.send.SendBillSaveParam;
+import com.regent.rbp.api.dto.validate.group.Complex;
 import com.regent.rbp.api.service.base.BaseDbService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.api.service.constants.TableConstants;
 import com.regent.rbp.api.service.purchaseReturn.PurchaseReturnNoticeBillService;
 import com.regent.rbp.api.service.purchaseReturn.context.PurchaseReturnNoticeBillQueryContext;
 import com.regent.rbp.api.service.purchaseReturn.context.PurchaseReturnNoticeBillSaveContext;
-import com.regent.rbp.api.service.sale.context.SalesOrderBillSaveContext;
-import com.regent.rbp.api.service.send.context.SendBillSaveContext;
 import com.regent.rbp.common.model.basic.dto.IdNameCodeDto;
 import com.regent.rbp.common.model.basic.dto.IdNameDto;
 import com.regent.rbp.common.service.basic.DbService;
 import com.regent.rbp.common.service.basic.SystemCommonService;
-import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.enums.LanguageTableEnum;
 import com.regent.rbp.infrastructure.util.*;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Validator;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
@@ -116,6 +99,8 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
     BaseDbService baseDbService;
     @Autowired
     private SystemCommonService systemCommonService;
+    @Autowired
+    private Validator validator;
 
 
     @Override
@@ -138,6 +123,7 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
 
     /**
      * 将查询参数转换成 查询的上下文
+     *
      * @param param
      * @param context
      */
@@ -206,6 +192,7 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
 
     /**
      * 整理查询条件构造器
+     *
      * @param context
      * @return
      */
@@ -225,7 +212,7 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
         queryWrapper.ge(null != context.getCheckDateStart(), "check_time", context.getCheckDateStart());
         queryWrapper.le(null != context.getCheckDateEnd(), "check_time", context.getCheckDateEnd());
 
-        if(context.getBusinessTypeIds() != null && context.getBusinessTypeIds().length > 0) {
+        if (context.getBusinessTypeIds() != null && context.getBusinessTypeIds().length > 0) {
             queryWrapper.in("business_type_id", context.getBusinessTypeIds());
         }
         if (context.getSupplierCodeIds() != null && context.getSupplierCodeIds().length > 0) {
@@ -235,7 +222,7 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
             queryWrapper.in("channel_id", context.getToChannelCodeIds());
         }
         if (context.getCurrencyTypeIds() != null && context.getCurrencyTypeIds().length > 0) {
-           queryWrapper.in("currency_type_id", context.getCurrencyTypeIds());
+            queryWrapper.in("currency_type_id", context.getCurrencyTypeIds());
         }
         if (context.getStatusIds() != null && context.getStatusIds().length > 0) {
             queryWrapper.in("status", context.getStatusIds());
@@ -246,6 +233,7 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
 
     /**
      * 处理查询结果的属性
+     *
      * @param list
      * @return
      */
@@ -361,17 +349,20 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
         PurchaseReturnNoticeBillSaveContext context = new PurchaseReturnNoticeBillSaveContext(param);
         // 验证属性
         List<String> errorMsgList = verificationProperty(param, context);
-        if(errorMsgList.size() > 0 ) {
+        if (errorMsgList.size() > 0) {
             String message = StringUtil.join(errorMsgList, ",");
             return DataResponse.errorParameter(message);
         }
         // 写入单据
         this.save(context);
+        baseDbService.saveOrUpdateCustomFieldData(param.getModuleId(), TableConstants.PURCHASE_RECEIVE_NOTICE_BILL, context.getBill().getId(), context.getBillCustomizeDataDtos());
+        baseDbService.batchSaveOrUpdateCustomFieldData(param.getModuleId(), TableConstants.PURCHASE_RECEIVE_NOTICE_BILL_GOODS, context.getGoodsCustomizeData());
         return DataResponse.success();
     }
 
     /**
      * 验证属性
+     *
      * @param param
      * @param context
      * @return
@@ -382,156 +373,76 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
         List<PurchaseReturnNoticeBillGoods> billGoodsList = context.getBillGoodsList();
         List<PurchaseReturnNoticeBillSize> billSizeList = context.getBillSizeList();
 
-        if (StringUtil.isEmpty(param.getModuleId())) {
-            errorMsgList.add("模块编号(moduleId)不能为空");
-        }
-        if (StringUtil.isEmpty(param.getManualId())) {
-            errorMsgList.add("模块编号(moduleId)不能为空");
-        } else {
-            bill.setBillNo(systemCommonService.getBillNo(bill.getModuleId()));
-        }
-        if (StringUtil.isEmpty(param.getBillDate())) {
-            errorMsgList.add("单据日期(billDate)不能为空");
-        } else {
-            bill.setBillDate(DateUtil.getDate(param.getBillDate(), DateUtil.SHORT_DATE_FORMAT));
-        }
-        // 业务类型
-        if (StringUtil.isEmpty(param.getBusinessType())) {
-            errorMsgList.add("业务类型名称(businessType)不能为空");
-        } else {
-            Long businessTypeId = baseDbDao.getLongDataBySql(String.format("select id from rbp_business_type where name = '%s'", param.getBusinessType()));
-            if (businessTypeId == null) {
-                errorMsgList.add("业务类型名称(businessType)不存在");
-            } else {
-                bill.setBusinessTypeId(businessTypeId);
-            }
-        }
-        // 供应商
-        if (StringUtil.isEmpty(param.getSupplierCode())) {
-            errorMsgList.add("供应商编码(supplierCode)不能为空");
-        } else {
-            Supplier supplier = supplierDao.selectOne(new LambdaQueryWrapper<Supplier>().eq(Supplier::getCode, param.getSupplierCode()));
-            if (supplier == null) {
-                errorMsgList.add("供应商编码(supplierCode)不存在");
-            } else {
-                bill.setSupplierId(supplier.getId());
-            }
-        }
-        // 退货渠道
-        if (StringUtil.isEmpty(param.getChannelCode())) {
-            errorMsgList.add("退货渠道编号(channelCode)不能为空");
-        } else {
-            Channel channel = channelDao.selectOne(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getChannelCode()));
-            if (channel == null) {
-                errorMsgList.add("退货渠道编号(channelCode)不存在");
-            } else {
-                bill.setChannelId(channel.getId());
-            }
-        }
+        bill.setBillNo(systemCommonService.getBillNo(bill.getModuleId()));
+        bill.setBillDate(param.getBillDate());
+
+        Long businessTypeId = baseDbDao.getLongDataBySql(String.format("select id from rbp_business_type where name = '%s'", param.getBusinessType()));
+        bill.setBusinessTypeId(businessTypeId);
+
+        Supplier supplier = supplierDao.selectOne(new LambdaQueryWrapper<Supplier>().eq(Supplier::getCode, param.getSupplierCode()));
+        bill.setSupplierId(supplier.getId());
+
+        Channel channel = channelDao.selectOne(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getChannelCode()));
+        bill.setChannelId(channel.getId());
+
         // 采购单
         if (StringUtil.isNotEmpty(param.getPurchaseNo())) {
             PurchaseBill purchaseBill = purchaseBillDao.selectOne(new LambdaQueryWrapper<PurchaseBill>().eq(BillMasterData::getBillNo, param.getPurchaseNo()));
-            if (purchaseBill == null) {
-                errorMsgList.add("采购单号(purchaseNo)不存在");
-            } else {
-                bill.setPurchaseId(purchaseBill.getId());
-            }
-        }
-        if (param.getStatus() == null) {
-            errorMsgList.add("单据状态(status)不能为空");
-        } else {
-            List<Integer> statusList = new ArrayList<>();
-            statusList.add(0);
-            statusList.add(1);
-            statusList.add(2);
-            statusList.add(3);
-            if (statusList.stream().filter(f -> f.equals(param.getStatus())).count() == 0) {
-                errorMsgList.add("单据状态(status)内容必须是 (0.未审核,1.已审核,2.反审核,3.已作废)");
-            }
+            bill.setPurchaseId(purchaseBill.getId());
         }
 
-        if (param.getGoodsDetailData() == null || param.getGoodsDetailData().size() == 0) {
-            errorMsgList.add("货品明细(goodsDetailData)不能为空");
-        } else {
-            if (StringUtils.isBlank(param.getGoodsDetailData().get(0).getBarcode())) {
-                // 货品+颜色+内长+尺码
-                List<String> goodsNos = param.getGoodsDetailData().stream().map(PurchaseReturnNoticeBillGoodsDetailData::getGoodsCode).distinct().collect(Collectors.toList());
-                List<Goods> goodsList = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getCode, goodsNos));
-                Map<String, Goods> goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getCode, t->t));
-
-                List<String> colorNos = param.getGoodsDetailData().stream().map(PurchaseReturnNoticeBillGoodsDetailData::getColorCode).distinct().collect(Collectors.toList());
-                List<Color> colorList = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getCode, colorNos));
-                Map<String, Color> colorMap = colorList.stream().collect(Collectors.toMap(Color::getCode, t->t));
-
-                List<String> longNos = param.getGoodsDetailData().stream().map(PurchaseReturnNoticeBillGoodsDetailData::getLongName).distinct().collect(Collectors.toList());
-                List<LongInfo> longList = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getName, longNos));
-                Map<String, LongInfo> longMap = longList.stream().collect(Collectors.toMap(LongInfo::getName, t->t));
-
-                Map<String, Long> sizeMap = new HashMap<>();
-
-                for (PurchaseReturnNoticeBillGoodsDetailData goodsResult : param.getGoodsDetailData()) {
-                    Barcode barcode = new Barcode();
-                    Goods goods = null;
-                    // 货品
-                    if (!goodsMap.containsKey(goodsResult.getGoodsCode())) {
-                        errorMsgList.add(String.format("货号(goodsCode) %s 不存在", goodsResult.getGoodsCode()));
-                    } else {
-                        goods = goodsMap.get(goodsResult.getGoodsCode());
-                        barcode.setGoodsId(goods.getId());
-                    }
-                    // 颜色
-                    if (!colorMap.containsKey(goodsResult.getColorCode())) {
-                        errorMsgList.add(String.format("颜色编号(colorCode) %s 不存在", goodsResult.getColorCode()));
-                    } else {
-                        barcode.setColorId(colorMap.get(goodsResult.getColorCode()).getId());
-                    }
-                    // 内长
-                    if (!longMap.containsKey(goodsResult.getLongName())) {
-                        errorMsgList.add(String.format("内长(longName) %s 不存在", goodsResult.getLongName()));
-                    } else {
-                        barcode.setLongId(longMap.get(goodsResult.getLongName()).getId());
-                    }
-                    // 尺码
-                    String key = goods.getCode() + "-" + goodsResult.getSize();
-                    if (!sizeMap.containsKey(key)) {
-                        SizeDetail sizeDetail = sizeDetailDao.selectOne(new LambdaQueryWrapper<SizeDetail>().eq(SizeDetail::getSizeClassId, goods.getSizeClassId()).eq(SizeDetail::getName, goodsResult.getSize()));
-                        if (sizeDetail == null) {
-                            errorMsgList.add(String.format("尺码(size) %s 不存在", goodsResult.getSize()));
-                        } else {
-                            sizeMap.put(key, sizeDetail.getId());
-                            barcode.setSizeId(sizeDetail.getId());
-                        }
-                    } else {
-                        barcode.setSizeId(sizeMap.get(key));
-                    }
-
-                    PurchaseReturnNoticeBillGoods billGoods = this.giveBillGoods(bill.getId(), goodsResult, barcode.getGoodsId());
-                    billGoodsList.add(billGoods);
-
-                    PurchaseReturnNoticeBillSize billSize = this.giveBillSize(bill.getId(), billGoods.getId(), barcode, goodsResult.getQuantity());
-                    billSizeList.add(billSize);
-                }
-            } else {
-                // 条码
-                List<String> barcodes =  param.getGoodsDetailData().stream().map(PurchaseReturnNoticeBillGoodsDetailData::getBarcode).distinct().collect(Collectors.toList());
-                List<Barcode> barcodeList = barcodeDao.selectList(new LambdaQueryWrapper<Barcode>().in(Barcode::getBarcode, barcodes));
-                Map<String, Barcode> barcodeMap = barcodeList.stream().collect(Collectors.toMap(Barcode::getBarcode, t -> t));
-                for (PurchaseReturnNoticeBillGoodsDetailData goodsResult : param.getGoodsDetailData()) {
-                    if (!barcodeMap.containsKey(goodsResult.getBarcode())) {
-                        errorMsgList.add(String.format("条形码(barcode) %s 不存在", goodsResult.getBarcode()));
-                    } else {
-                        Barcode barcode = barcodeMap.get(goodsResult.getBarcode());
-
-                        PurchaseReturnNoticeBillGoods billGoods = this.giveBillGoods(bill.getId(), goodsResult, barcode.getGoodsId());
-                        billGoodsList.add(billGoods);
-
-                        PurchaseReturnNoticeBillSize billSize = this.giveBillSize(bill.getId(), billGoods.getId(), barcode, goodsResult.getQuantity());
-                        billSizeList.add(billSize);;
-                    }
-                }
-            }
-        }
+        extractedGoodsAndSizes(context, param, errorMsgList);
+        context.setBillCustomizeDataDtos(param.getCustomizeData());
         return errorMsgList;
+    }
+
+    private void extractedGoodsAndSizes(PurchaseReturnNoticeBillSaveContext context, PurchaseReturnNoticeBillSaveParam param, List<String> messageList) {
+        List<PurchaseReturnNoticeBillGoodsDetailData> goodsDetailData = param.getGoodsDetailData();
+        List<String> barcodes = CollUtil.map(goodsDetailData, e -> StrUtil.isNotBlank(e.getBarcode()) ? e.getBarcode() : null, true);
+        List<String> goodsCode = CollUtil.map(goodsDetailData, e -> StrUtil.isNotBlank(e.getGoodsCode()) ? e.getGoodsCode() : null, true);
+        List<Goods> goodsList = goodsDao.selectList(new QueryWrapper<Goods>().in("code", goodsCode));
+        List<Long> goodsIdsList = CollUtil.map(goodsList, Goods::getId, true);
+        List<String> colorCodes = CollUtil.distinct(CollUtil.map(goodsDetailData, PurchaseReturnNoticeBillGoodsDetailData::getColorCode, true));
+        List<String> longNames = CollUtil.distinct(CollUtil.map(goodsDetailData, PurchaseReturnNoticeBillGoodsDetailData::getLongName, true));
+        List<String> sizeNames = CollUtil.map(goodsDetailData, PurchaseReturnNoticeBillGoodsDetailData::getSize, true); // don't distinct, must align
+
+        Map<String, Barcode> barcodeMap = barcodes.isEmpty() ? Collections.emptyMap() : barcodeDao.selectList(new QueryWrapper<Barcode>().in("barcode", barcodes)).stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
+        Map<String, Long> goodsMap = goodsIdsList.isEmpty() ? Collections.emptyMap() : goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
+        Map<String, Long> colorMap = colorCodes.isEmpty() ? Collections.emptyMap() : colorDao.selectList(new QueryWrapper<Color>().in("code", colorCodes)).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
+        Map<String, Long> longMap = longDao.selectList(new QueryWrapper<LongInfo>().in("name", longNames)).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
+        Map<Long, Map<String, Long>> goodsSizeNameMap = baseDbDao.getGoodsIdSizeNameIdMap(goodsCode, sizeNames, goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId)));
+        goodsDetailData.forEach(e -> {
+            if (StrUtil.isNotBlank(e.getBarcode())) {
+                Barcode barcode = null;
+                if ((barcode = barcodeMap.get(e.getBarcode())) != null) {
+                    e.setGoodsId(barcode.getGoodsId());
+                    e.setColorId(barcode.getColorId());
+                    e.setLongId(barcode.getLongId());
+                    e.setSizeId(barcode.getSizeId());
+                    e.setBarcodeId(barcode.getId());
+                }
+            } else {
+                e.setGoodsId(goodsMap.get(e.getGoodsCode()));
+                e.setColorId(colorMap.get(e.getColorCode()));
+                e.setLongId(longMap.get(e.getLongName()));
+                e.setSizeId(goodsSizeNameMap.getOrDefault(e.getGoodsId(), Collections.emptyMap()).get(e.getSize()));
+            }
+        });
+
+        if (!ValidateMessageUtil.pass(validator.validate(param, Complex.class), messageList)) return;
+
+        // 根据货品+价格分组，支持同款多价
+        param.getGoodsDetailData().stream().collect(Collectors.groupingBy(GoodsDetailIdentifier::getSameGoodsDiffPriceKey)).forEach((key, sizes) -> {
+            PurchaseReturnNoticeBillGoods billGoods = BeanUtil.copyProperties(sizes.get(0), PurchaseReturnNoticeBillGoods.class);
+            context.addBillGoods(billGoods);
+            context.addGoodsDetailCustomData(sizes.get(0).getGoodsCustomizeData(), billGoods.getId());
+            sizes.forEach(size -> {
+                PurchaseReturnNoticeBillSize billSize = BeanUtil.copyProperties(size, PurchaseReturnNoticeBillSize.class);
+                billSize.setBillGoodsId(billGoods.getId());
+                context.addBillSize(billSize);
+            });
+        });
+
     }
 
     private PurchaseReturnNoticeBillGoods giveBillGoods(Long billId, PurchaseReturnNoticeBillGoodsDetailData goodsResult, Long goodsId) {

@@ -1,10 +1,17 @@
 package com.regent.rbp.api.dto.purchaseReturn;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
+import com.regent.rbp.api.dto.validate.*;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -16,25 +23,28 @@ import java.util.List;
 @Data
 public class PurchaseReturnNoticeBillSaveParam {
 
-    @ApiModelProperty(notes = "模块编号")
+    @NotBlank
     private String moduleId;
 
-    @ApiModelProperty(notes = "外部单号，唯一。对应Nebula手工单号")
+    @NotBlank
     private String manualId;
 
-    @ApiModelProperty(notes = "单据日期")
-    private String billDate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date billDate;
 
-    @ApiModelProperty(notes = "业务类型名称")
+    @NotBlank
+    @BusinessTypeCheck
     private String businessType;
 
-    @ApiModelProperty(notes = "供应商编码")
+    @NotBlank
+    @SupplierCodeCheck
     private String supplierCode;
 
-    @ApiModelProperty(notes = "退货渠道编号")
+    @NotBlank
+    @ChannelCodeCheck
     private String channelCode;
 
-    @ApiModelProperty(notes = "采购单号")
+    @BillNo(targetTable = "rbp_purchase_bill")
     private String purchaseNo;
 
     @ApiModelProperty(notes = "税率")
@@ -46,16 +56,20 @@ public class PurchaseReturnNoticeBillSaveParam {
     @ApiModelProperty(notes = "备注")
     private String notes;
 
-    @ApiModelProperty(notes = "单据状态(0.未审核,1.已审核,2.反审核)")
+    @NotNull
+    @BillStatus
     private Integer status;
 
     @ApiModelProperty(notes = "自定义字段")
+    @Valid
     private List<CustomizeDataDto> customizeData;
 
-    @ApiModelProperty(notes = "货品明细")
+    @NotEmpty
+    @Valid
     private List<PurchaseReturnNoticeBillGoodsDetailData> goodsDetailData;
 
     @ApiModelProperty(notes = "货品自定义字段")
+    @Valid
     private List<CustomizeDataDto> goodsCustomizeData;
 
 }
