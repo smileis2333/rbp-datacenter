@@ -41,6 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -219,6 +220,7 @@ public class PurchaseReturnBillServiceBean implements PurchaseReturnBillService 
         // 根据货品+价格分组，支持同款多价
         param.getGoodsDetailData().stream().collect(Collectors.groupingBy(GoodsDetailIdentifier::getSameGoodsDiffPriceKey)).forEach((key, sizes) -> {
             PurchaseReturnBillGoods billGoods = BeanUtil.copyProperties(sizes.get(0), PurchaseReturnBillGoods.class);
+            billGoods.setQuantity(sizes.stream().map(PurchaseReceiveNoticeBillGoodsDetailData::getQuantity).reduce(BigDecimal.ZERO,BigDecimal::add));
             context.addBillGoods(billGoods);
             context.addGoodsDetailCustomData(sizes.get(0).getGoodsCustomizeData(), billGoods.getId());
             sizes.forEach(size -> {

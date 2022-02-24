@@ -34,10 +34,7 @@ import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
-import com.regent.rbp.api.dto.purchase.PurchaseReceiveNoticeBillGoodsDetailData;
-import com.regent.rbp.api.dto.purchase.PurchaseReceiveNoticeBillQueryParam;
-import com.regent.rbp.api.dto.purchase.PurchaseReceiveNoticeBillQueryResult;
-import com.regent.rbp.api.dto.purchase.PurchaseReceiveNoticeBillSaveParam;
+import com.regent.rbp.api.dto.purchase.*;
 import com.regent.rbp.api.dto.validate.group.Complex;
 import com.regent.rbp.api.service.base.BaseDbService;
 import com.regent.rbp.api.service.constants.TableConstants;
@@ -62,6 +59,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Validator;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -399,8 +397,9 @@ public class PurchaseReceiveNoticeBillServiceBean implements PurchaseReceiveNoti
         if (!ValidateMessageUtil.pass(validator.validate(param, Complex.class), messageList)) return;
 
         // 根据货品+价格分组，支持同款多价
-        param.getGoodsDetailData().stream().collect(Collectors.groupingBy(v -> v.getSameGoodsDiffPriceKey())).forEach((key, sizes) -> {
+        param.getGoodsDetailData().stream().collect(Collectors.groupingBy(GoodsDetailIdentifier::getSameGoodsDiffPriceKey)).forEach((key, sizes) -> {
             PurchaseReceiveNoticeBillGoods billGoods = BeanUtil.copyProperties(sizes.get(0), PurchaseReceiveNoticeBillGoods.class);
+            billGoods.setQuantity(sizes.stream().map(PurchaseReceiveNoticeBillGoodsDetailData::getQuantity).reduce(BigDecimal.ZERO,BigDecimal::add));
             context.addBillGoods(billGoods);
             context.addGoodsDetailCustomData(sizes.get(0).getGoodsCustomizeData(), billGoods.getId());
             sizes.forEach(size -> {

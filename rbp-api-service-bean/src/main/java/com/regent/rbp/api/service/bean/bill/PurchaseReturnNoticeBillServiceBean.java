@@ -434,6 +434,7 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
         // 根据货品+价格分组，支持同款多价
         param.getGoodsDetailData().stream().collect(Collectors.groupingBy(GoodsDetailIdentifier::getSameGoodsDiffPriceKey)).forEach((key, sizes) -> {
             PurchaseReturnNoticeBillGoods billGoods = BeanUtil.copyProperties(sizes.get(0), PurchaseReturnNoticeBillGoods.class);
+            billGoods.setQuantity(sizes.stream().map(PurchaseReturnNoticeBillGoodsDetailData::getQuantity).reduce(BigDecimal.ZERO,BigDecimal::add));
             context.addBillGoods(billGoods);
             context.addGoodsDetailCustomData(sizes.get(0).getGoodsCustomizeData(), billGoods.getId());
             sizes.forEach(size -> {
