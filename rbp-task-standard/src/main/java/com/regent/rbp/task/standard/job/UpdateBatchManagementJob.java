@@ -33,9 +33,9 @@ public class UpdateBatchManagementJob {
     @XxlJob(SystemConstants.UPDATE_BATCH_MANAGEMENT_STATUS)
     public void updateBatchManagementStatus() {
         try {
-            List<String> codeList = baseDbDao.getStringListDataBySql("select code from rbp_batch_management where status = 100 and usage_status = 0 and expiration_date < now()");
+            List<String> codeList = baseDbDao.getStringListDataBySql("select code from rbp_batch_management where status = 100 and usage_status = 0 and expiration_date < date_format(now(), '%y-%m-%d')");
             if (CollUtil.isNotEmpty(codeList)) {
-                baseDbDao.updateSql("update rbp_batch_management set status = 101 where status = 100 and usage_status = 0 and expiration_date < now() ");
+                baseDbDao.updateSql("update rbp_batch_management set status = 101 where status = 100 and usage_status = 0 and expiration_date < date_format(now(), '%y-%m-%d') ");
                 XxlJobHelper.log(String.format("更新批次号 %s 条, detail [%s]", codeList.size(), StringUtils.join(codeList, StrUtil.COMMA)));
             } else {
                 XxlJobHelper.log("更新批次号 0 条");
