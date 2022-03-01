@@ -11,16 +11,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.*;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.coupon.RetailPayType;
-import com.regent.rbp.api.core.employee.Employee;
 import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.api.core.member.MemberCard;
 import com.regent.rbp.api.core.salesOrder.*;
+import com.regent.rbp.api.core.user.UserProfile;
 import com.regent.rbp.api.dao.base.*;
 import com.regent.rbp.api.dao.channel.ChannelDao;
-import com.regent.rbp.api.dao.employee.EmployeeDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.member.MemberCardDao;
 import com.regent.rbp.api.dao.salesOrder.*;
+import com.regent.rbp.api.dao.warehouse.user.UserProfileDao;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.sale.*;
@@ -81,11 +81,11 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
     @Autowired
     private Validator validator;
     @Autowired
-    private EmployeeDao employeeDao;
-    @Autowired
     EmployeeBillAchievementDao employeeBillAchievementDao;
     @Autowired
     EmployeeGoodsAchievementDao employeeGoodsAchievementDao;
+    @Autowired
+    private UserProfileDao userProfileDao;
 
     @Override
     public PageDataResponse<SalesOrderBillQueryResult> query(SaleOrderQueryParam param) {
@@ -480,7 +480,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
 
         // inject config
         List<String> employeeCodes = param.getAllEmployeeCodes();
-        Map<String, Long> employeeCodeIdMap = CollUtil.isEmpty(employeeCodes) ? Collections.emptyMap() : employeeDao.selectList(new QueryWrapper<Employee>().in(CollUtil.isNotEmpty(employeeCodes), "code", employeeCodes)).stream().collect(Collectors.toMap(Employee::getCode, Employee::getId));
+        Map<String, Long> employeeCodeIdMap = CollUtil.isEmpty(employeeCodes) ? Collections.emptyMap() : userProfileDao.selectList(new QueryWrapper<UserProfile>().in(CollUtil.isNotEmpty(employeeCodes), "code", employeeCodes)).stream().collect(Collectors.toMap(UserProfile::getCode, UserProfile::getId));
         List<SalesOrderBillGoodsResult> goodsDetailData = param.getGoodsDetailData();
         if (CollUtil.isNotEmpty(param.getEmployeeBillAchievement())) {
             param.getEmployeeBillAchievement().forEach(em -> em.setEmployeeId(employeeCodeIdMap.get(em.getEmployeeCode())));

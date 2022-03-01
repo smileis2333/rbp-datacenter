@@ -8,16 +8,15 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.channel.Channel;
-import com.regent.rbp.api.core.employee.Employee;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
 import com.regent.rbp.api.dao.channel.ChannelDao;
-import com.regent.rbp.api.dao.employee.EmployeeDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncCacheDao;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.common.dao.UserDao;
+import com.regent.rbp.common.model.system.entity.User;
 import com.regent.rbp.infrastructure.annotation.PassToken;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.task.inno.model.dto.EmployeeDto;
@@ -43,8 +42,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     private static final String POST_ERP_STORESTAFF = "api/StoreStaff/Post_ErpStoreStaff";
     private static final String ERROR_EMPLOYEE_LIST = "[inno推送员工信息]:当前无数据需要同步";
 
-    @Autowired
-    EmployeeDao employeeDao;
     @Autowired
     OnlinePlatformDao onlinePlatformDao;
     @Autowired
@@ -78,15 +75,15 @@ public class EmployeeServiceImpl implements EmployeeService {
             String key = SystemConstants.POST_ERP_EMPLOYEE;
             Date uploadingDate = onlinePlatformSyncCacheService.getOnlinePlatformSyncCacheByDate(onlinePlatformId, key);
 
-            QueryWrapper<Employee> queryWrapper = new QueryWrapper<Employee>();
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
             if (uploadingDate != null) {
                 queryWrapper.ge("updated_time", uploadingDate);
             }
             queryWrapper.orderByAsc("updated_time");
-            List<Employee> employeeList = employeeDao.selectList(queryWrapper);
+            List<User> employeeList = userDao.selectList(queryWrapper);
             if (CollUtil.isNotEmpty(employeeList)) {
-                Date uploadingTime = employeeList.stream().max(Comparator.comparing(Employee::getUpdatedTime)).get().getUpdatedTime();
-                for (Employee employee : employeeList) {
+                Date uploadingTime = employeeList.stream().max(Comparator.comparing(User::getUpdatedTime)).get().getUpdatedTime();
+                for (User employee : employeeList) {
                     List<EmployeeDto> reqList = new ArrayList<>();
                     Channel channel = channelDao.selectById(employee.getChannelId());
                     String isEnabled = "1";

@@ -7,14 +7,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.base.Sex;
 import com.regent.rbp.api.core.channel.Channel;
-import com.regent.rbp.api.core.employee.Employee;
 import com.regent.rbp.api.core.integral.MemberIntegral;
 import com.regent.rbp.api.core.member.MemberCard;
 import com.regent.rbp.api.core.member.MemberPolicy;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.dao.base.SexDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
-import com.regent.rbp.api.dao.employee.EmployeeDao;
 import com.regent.rbp.api.dao.member.MemberCardDao;
 import com.regent.rbp.api.dao.member.MemberIntegralDao;
 import com.regent.rbp.api.dao.member.MemberPolicyDao;
@@ -25,6 +23,8 @@ import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncErrorService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.api.service.member.MemberCardService;
+import com.regent.rbp.common.dao.UserDao;
+import com.regent.rbp.common.model.system.entity.User;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
@@ -75,7 +75,7 @@ public class MemberServiceImpl implements MemberService {
     @Autowired
     MemberIntegralDao memberIntegralDao;
     @Autowired
-    EmployeeDao employeeDao;
+    UserDao userDao;
 
     @Autowired
     OnlinePlatformSyncCacheService onlinePlatformSyncCacheService;
@@ -450,7 +450,7 @@ public class MemberServiceImpl implements MemberService {
             }
         }
         if (StringUtil.isNotEmpty(dto.getBusinessManID())) {
-            Employee item = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", dto.getBusinessManID()));
+            User item = userDao.selectOne(new QueryWrapper<User>().eq("code", dto.getBusinessManID()));
             if (item != null) {
                 saveParam.setUserCode(dto.getBusinessManID());
                 saveParam.setMaintainerCode(dto.getBusinessManID());

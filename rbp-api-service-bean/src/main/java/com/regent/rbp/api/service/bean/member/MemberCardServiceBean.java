@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.Sex;
 import com.regent.rbp.api.core.channel.Channel;
-import com.regent.rbp.api.core.employee.Employee;
 import com.regent.rbp.api.core.integral.MemberIntegral;
 import com.regent.rbp.api.core.member.MemberCard;
 import com.regent.rbp.api.core.member.MemberPolicy;
@@ -14,12 +13,13 @@ import com.regent.rbp.api.core.member.MemberStatus;
 import com.regent.rbp.api.core.member.MemberType;
 import com.regent.rbp.api.core.storedvaluecard.StoredValueCard;
 import com.regent.rbp.api.core.storedvaluecard.StoredValueCardAssets;
+import com.regent.rbp.api.core.user.UserProfile;
 import com.regent.rbp.api.dao.base.SexDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
-import com.regent.rbp.api.dao.employee.EmployeeDao;
 import com.regent.rbp.api.dao.member.*;
 import com.regent.rbp.api.dao.storedvaluecard.StoredValueCardAssetsDao;
 import com.regent.rbp.api.dao.storedvaluecard.StoredValueCardDao;
+import com.regent.rbp.api.dao.warehouse.user.UserProfileDao;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.member.MemberCardQueryParam;
@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -64,8 +65,6 @@ public class MemberCardServiceBean implements MemberCardService {
     @Autowired
     UserDao userDao;
     @Autowired
-    EmployeeDao employeeDao;
-    @Autowired
     MemberTypeDao memberTypeDao;
     @Autowired
     MemberPolicyDao memberPolicyDao;
@@ -77,6 +76,8 @@ public class MemberCardServiceBean implements MemberCardService {
     StoredValueCardDao storedValueCardDao;
     @Autowired
     StoredValueCardAssetsDao storedValueCardAssetsDao;
+    @Autowired
+    UserProfileDao userProfileDao;
 
 
     @Override
@@ -108,21 +109,21 @@ public class MemberCardServiceBean implements MemberCardService {
 
         // 发卡人编号
         if (StringUtils.isNotBlank(param.getUserCode())) {
-            Employee employee = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", param.getUserCode()));
+            UserProfile employee = userProfileDao.selectOne(new QueryWrapper<UserProfile>().eq("code", param.getUserCode()));
             if (employee != null) {
                 context.setUserCode(employee.getId());
             }
         }
         // 维护人编号
         if (StringUtils.isNotBlank(param.getMaintainerCode())) {
-            Employee employee = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", param.getMaintainerCode()));
+            UserProfile employee = userProfileDao.selectOne(new QueryWrapper<UserProfile>().eq("code", param.getMaintainerCode()));
             if (employee != null) {
                 context.setMaintainerCode(employee.getId());
             }
         }
         // 扩展人编号
         if (StringUtils.isNotBlank(param.getDeveloperCode())) {
-            Employee employee = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", param.getMaintainerCode()));
+            UserProfile employee = userProfileDao.selectOne(new QueryWrapper<UserProfile>().eq("code", param.getMaintainerCode()));
             if (employee != null) {
                 context.setDeveloperCode(employee.getId());
             }
@@ -246,8 +247,8 @@ public class MemberCardServiceBean implements MemberCardService {
         List<Long> employeeIds = list.stream().map(MemberCard::getMaintainerId).collect(Collectors.toList());
         employeeIds.addAll(list.stream().map(MemberCard::getDeveloperId).collect(Collectors.toList()));
         employeeIds.addAll(list.stream().map(MemberCard::getUserId).collect(Collectors.toList()));
-        List<Employee> employeeList = employeeDao.selectBatchIds(employeeIds.stream().distinct().collect(Collectors.toList()));
-        Map<Long, Employee> mapEmployee = employeeList.stream().collect(Collectors.toMap(Employee::getId, t -> t));
+        List<UserProfile> employeeList = userProfileDao.selectBatchIds(employeeIds.stream().distinct().collect(Collectors.toList()));
+        Map<Long, UserProfile> mapEmployee = employeeList.stream().collect(Collectors.toMap(UserProfile::getId, Function.identity()));
         // 加载 ，创建人，更新人，审核人，失效人，反审核人
         List<Long> userIds = list.stream().map(MemberCard::getCreatedBy).collect(Collectors.toList());
         userIds.addAll(list.stream().map(MemberCard::getUpdatedBy).collect(Collectors.toList()));
@@ -318,12 +319,12 @@ public class MemberCardServiceBean implements MemberCardService {
             }
             // 维护人编号
             if (memberCard.getMaintainerId() != null && mapEmployee.containsKey(memberCard.getMaintainerId())) {
-                Employee employee = mapEmployee.get(memberCard.getMaintainerId());
+                UserProfile employee = mapEmployee.get(memberCard.getMaintainerId());
                 queryResult.setMaintainerCode(employee.getCode());
             }
             // 拓展人编号
             if (memberCard.getDeveloperId() != null && mapEmployee.containsKey(memberCard.getDeveloperId())) {
-                Employee employee = mapEmployee.get(memberCard.getDeveloperId());
+                UserProfile employee = mapEmployee.get(memberCard.getDeveloperId());
                 queryResult.setDeveloperCode(employee.getCode());
             }
             // 会员状态
@@ -332,7 +333,7 @@ public class MemberCardServiceBean implements MemberCardService {
             }
             // 发卡人
             if (memberCard.getUserId() != null && mapEmployee.containsKey(memberCard.getUserId())) {
-                Employee employee = mapEmployee.get(memberCard.getUserId());
+                UserProfile employee = mapEmployee.get(memberCard.getUserId());
                 queryResult.setUserCode(employee.getCode());
             }
             // 创建人
@@ -468,7 +469,7 @@ public class MemberCardServiceBean implements MemberCardService {
         }
         // 发卡人编号
         if (StringUtils.isNotBlank(param.getUserCode())) {
-            Employee item = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", param.getUserCode()));
+            UserProfile item = userProfileDao.selectOne(new QueryWrapper<UserProfile>().eq("code", param.getUserCode()));
             if (item != null) {
                 memberCard.setUserId(item.getId());
             } else {
@@ -485,7 +486,7 @@ public class MemberCardServiceBean implements MemberCardService {
         }
         // 维护人编号
         if (StringUtils.isNotBlank(param.getMaintainerCode())) {
-            Employee item = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", param.getMaintainerCode()));
+            UserProfile item = userProfileDao.selectOne(new QueryWrapper<UserProfile>().eq("code", param.getMaintainerCode()));
             if (item != null) {
                 memberCard.setMaintainerId(item.getId());
             } else {
@@ -494,7 +495,7 @@ public class MemberCardServiceBean implements MemberCardService {
         }
         // 拓展人编号
         if (StringUtils.isNotBlank(param.getDeveloperCode())) {
-            Employee item = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", param.getDeveloperCode()));
+            UserProfile item = userProfileDao.selectOne(new QueryWrapper<UserProfile>().eq("code", param.getDeveloperCode()));
             if (item != null) {
                 memberCard.setDeveloperId(item.getId());
             } else {
