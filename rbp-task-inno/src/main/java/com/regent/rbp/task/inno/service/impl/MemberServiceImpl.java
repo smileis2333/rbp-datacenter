@@ -488,6 +488,7 @@ public class MemberServiceImpl implements MemberService {
         saveParam.setMemberStatus(MEMBER_STATUS);
         saveParam.setEmail(dto.getEmail());
         saveParam.setWeixin("");
+        saveParam.setUnionId(dto.getUnionid());
         //saveParam.setNotes("Inno 新建生成");
 
         saveParam.setUpdatedOrigin(1);

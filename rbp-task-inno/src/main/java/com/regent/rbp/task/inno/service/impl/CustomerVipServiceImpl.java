@@ -49,6 +49,7 @@ public class CustomerVipServiceImpl implements CustomerVipService {
         memberCardSaveParam.setChannelCode(param.getCustomer_ID());
         memberCardSaveParam.setRepairChannelCode(param.getOriginalCustomer());
         memberCardSaveParam.setMemberStatus(MEMBER_STATUS_NAME);
+        memberCardSaveParam.setUnionId(param.getUnionid());
 
         memberCardService.save(memberCardSaveParam);
     }

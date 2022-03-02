@@ -1,5 +1,6 @@
 package com.regent.rbp.api.service.bean.member;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -16,7 +17,11 @@ import com.regent.rbp.api.core.storedvaluecard.StoredValueCardAssets;
 import com.regent.rbp.api.core.user.UserProfile;
 import com.regent.rbp.api.dao.base.SexDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
-import com.regent.rbp.api.dao.member.*;
+import com.regent.rbp.api.dao.member.MemberCardDao;
+import com.regent.rbp.api.dao.member.MemberIntegralDao;
+import com.regent.rbp.api.dao.member.MemberPolicyDao;
+import com.regent.rbp.api.dao.member.MemberStatusDao;
+import com.regent.rbp.api.dao.member.MemberTypeDao;
 import com.regent.rbp.api.dao.storedvaluecard.StoredValueCardAssetsDao;
 import com.regent.rbp.api.dao.storedvaluecard.StoredValueCardDao;
 import com.regent.rbp.api.dao.warehouse.user.UserProfileDao;
@@ -28,6 +33,7 @@ import com.regent.rbp.api.dto.member.MemberCardSaveParam;
 import com.regent.rbp.api.service.member.MemberCardService;
 import com.regent.rbp.api.service.member.context.MemberCardQueryContext;
 import com.regent.rbp.api.service.member.context.MemberCardSaveContext;
+import com.regent.rbp.common.dao.DbDao;
 import com.regent.rbp.common.dao.UserDao;
 import com.regent.rbp.common.model.system.entity.User;
 import com.regent.rbp.infrastructure.util.DateUtil;
@@ -44,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -57,27 +64,29 @@ import java.util.stream.Collectors;
 public class MemberCardServiceBean implements MemberCardService {
 
     @Autowired
-    MemberCardDao memberCardDao;
+    private MemberCardDao memberCardDao;
     @Autowired
-    SexDao sexDao;
+    private SexDao sexDao;
     @Autowired
-    ChannelDao channelDao;
+    private ChannelDao channelDao;
     @Autowired
-    UserDao userDao;
+    private UserDao userDao;
     @Autowired
-    MemberTypeDao memberTypeDao;
+    private MemberTypeDao memberTypeDao;
     @Autowired
-    MemberPolicyDao memberPolicyDao;
+    private MemberPolicyDao memberPolicyDao;
     @Autowired
-    MemberStatusDao memberStatusDao;
+    private MemberStatusDao memberStatusDao;
     @Autowired
-    MemberIntegralDao memberIntegralDao;
+    private MemberIntegralDao memberIntegralDao;
     @Autowired
-    StoredValueCardDao storedValueCardDao;
+    private StoredValueCardDao storedValueCardDao;
     @Autowired
-    StoredValueCardAssetsDao storedValueCardAssetsDao;
+    private StoredValueCardAssetsDao storedValueCardAssetsDao;
     @Autowired
-    UserProfileDao userProfileDao;
+    private UserProfileDao userProfileDao;
+    @Autowired
+    private DbDao dbDao;
 
 
     @Override
@@ -438,8 +447,9 @@ public class MemberCardServiceBean implements MemberCardService {
         MemberCard memberCard = context.getMemberCard();
 
         MemberCard oldMemberCard = memberCardDao.selectOne(new QueryWrapper<MemberCard>().eq("code", param.getCode()));
-        if (oldMemberCard != null)
+        if (oldMemberCard != null) {
             memberCard.setId(oldMemberCard.getId());
+        }
 
         MemberType memberType = memberTypeDao.selectOne(new QueryWrapper<MemberType>().eq("name", param.getMemberType()));
         memberCard.setMemberTypeId(memberType.getId());
@@ -536,12 +546,49 @@ public class MemberCardServiceBean implements MemberCardService {
      * @param memberCard
      */
     private void saveMemberCard(Boolean createFlag, MemberCard memberCard) {
+        this.fillDaoGouExternalContacts(memberCard, createFlag);
         if (createFlag) {
             memberCard.setStatus(0);
             memberCardDao.insert(memberCard);
         } else {
             memberCardDao.updateById(memberCard);
         }
+    }
+
+    /**
+     * 填充导购外部关联关系
+     */
+    public void fillDaoGouExternalContacts(MemberCard card, Boolean createdFlag) {
+        if (null == card || StringUtil.isEmpty(card.getUnionId())) {
+            return;
+        }
+        StringBuilder sql = new StringBuilder();
+        sql.append("select qywx_userid as qywxId,external_userid as externalUserId from rbp_dg_external_contacts ");
+        sql.append(" where qywx_status =1 and external_status = 1 and qywx_userid is not null");
+        sql.append(String.format(" and unionid = '%s'", card.getUnionId()));
+        sql.append(" order by created_time asc limit 1 ");
+        // 获取对应外部关联关系
+        Map<String, Object> map = dbDao.selectMapById(sql.toString());
+        if (CollUtil.isEmpty(map)) {
+            return;
+        }
+        // 企业微信ID
+        String qywxId = Optional.ofNullable(map.get("qywxId")).map(v -> (String) v).orElse(null);
+        String externalUserId = Optional.ofNullable(map.get("externalUserId")).map(v -> (String) v).orElse(null);
+
+        // 获取用户ID
+        Long userId = dbDao.selectOneOfId(String.format("select id from rbp_user where qyweixin = '%s' limit 1", qywxId));
+        if (null == userId) {
+            return;
+        }
+        // 填充会员信息，为空则更新
+        card.setDeveloperId(Optional.ofNullable(card.getDeveloperId()).orElse(userId));
+        card.setMaintainerId(Optional.ofNullable(card.getMaintainerId()).orElse(userId));
+        if (createdFlag) {
+            card.setDevelopeTime(Optional.ofNullable(card.getDevelopeTime()).orElse(new Date()));
+        }
+        card.setExternalUserid(Optional.ofNullable(card.getExternalUserid()).orElse(externalUserId));
+
     }
 
     /**

@@ -79,6 +79,10 @@ public class MemberCard {
     @ApiModelProperty(notes = "拓展人")
     private Long developerId;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(notes = "拓展时间")
+    private Date developeTime;
+
     @ApiModelProperty(notes = "国家")
     @TableField(exist = false)
     private String nation;
@@ -162,5 +166,8 @@ public class MemberCard {
 
     @ApiModelProperty(notes = "微信unionid")
     private String unionId;
+
+    @ApiModelProperty(notes = "外部联系人ID")
+    private String externalUserid;
 
 }

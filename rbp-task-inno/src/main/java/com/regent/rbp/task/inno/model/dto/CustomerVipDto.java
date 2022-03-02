@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 public class CustomerVipDto {
@@ -128,6 +127,10 @@ public class CustomerVipDto {
     @JsonProperty("CardType")
     @ApiModelProperty(notes = "卡号类型")
     public Integer CardType;
+
+    @JsonProperty("unionid")
+    @ApiModelProperty(notes = "微信的Unionid")
+    public String unionid;
 
 
     /*public Integer AddValueTimes;
