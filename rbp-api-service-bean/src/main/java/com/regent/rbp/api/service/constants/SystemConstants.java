@@ -62,4 +62,7 @@ public class SystemConstants {
 
     public static final String UPDATE_BATCH_MANAGEMENT_STATUS = "updateBatchManagementStatus";
 
+    public static final String TASK_CARE_MEMBER_HANDLER = "taskCareMemberHandler";
+
+    public static final String TASK_CARE_CHANNEL_HANDLER = "taskCareChannelHandler";
 }
