@@ -36,7 +36,7 @@ public class AutoDeleteTempTableJob {
      * 自动数据库删除临时表
      * 入参格式：{ "action": "default"}
      * 删除逻辑：default-删除今天之前；all-删除所有；DTable-仅删除临时表；DReport-仅删除报表临时表
-     * temp_xxx_table_{模块名称}_{日期+8位流水}，temp_report_xxx_table_{模块名称}_{日期+8位流水}
+     * temp_xxx_table_{模块名称}_{日期+6位流水}，temp_report_xxx_table_{模块名称}_{日期+6位流水}
      */
     @XxlJob(SystemConstants.AUTO_DELETE_TEMP_TABLE)
     public void autoDeleteTempTable() {
@@ -125,7 +125,7 @@ public class AutoDeleteTempTableJob {
     /**
      * 操作类型
      */
-    enum ActionTypeEnum {
+    private enum ActionTypeEnum {
 
         DEFAULT("default"),
         ALL("all"),

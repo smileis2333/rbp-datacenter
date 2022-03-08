@@ -38,6 +38,7 @@ public class SystemConstants {
     public static final String POST_ERP_STORE = "inno.PostErpStore";
 
     public static final String POST_ERP_WAREHOUSE = "inno.PostErpWarehouse";
+
     public static final String POST_ERP_CLOUD_WAREHOUSE = "inno.PostErpCloudWarehouse";
 
     public static final String POST_ERP_EMPLOYEE = "inno.PostErpEmployee";
@@ -61,6 +62,8 @@ public class SystemConstants {
     public static final String AUTO_DELETE_TEMP_TABLE = "autoDeleteTempTable";
 
     public static final String UPDATE_BATCH_MANAGEMENT_STATUS = "updateBatchManagementStatus";
+
+    public static final String AUTO_MEMBER_GROUPING = "autoMemberGrouping";
 
     public static final String TASK_CARE_MEMBER_HANDLER = "taskCareMemberHandler";
 
