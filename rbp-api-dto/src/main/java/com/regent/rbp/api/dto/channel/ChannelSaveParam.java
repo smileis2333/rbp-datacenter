@@ -31,7 +31,7 @@ public class ChannelSaveParam {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date channelBuildDate;
     private String channelAddress;
-    private String[] brand;
+    private List<String> brand;
     private String branchCompany;
     private String grade;
     @NotBlank

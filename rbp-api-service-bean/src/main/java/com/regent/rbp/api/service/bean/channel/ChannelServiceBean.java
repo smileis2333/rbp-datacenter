@@ -681,11 +681,11 @@ public class ChannelServiceBean implements ChannelService {
             }
         }
         // 品牌
-        if (param.getBrand() != null && param.getBrand().length > 0) {
+        if (CollUtil.isNotEmpty(param.getBrand())) {
             for (String str : param.getBrand()) {
                 Brand brand = brandDao.selectOne(new QueryWrapper<Brand>().eq("name", str));
                 if (brand == null) {
-                    Brand.build(baseDbService.getDictionaryNewCode("rbp_brand"), str);
+                    brand = Brand.build(baseDbService.getDictionaryNewCode("rbp_brand"), str);
                     brandDao.insert(brand);
                 }
                 channelBrandList.add(new ChannelBrand(channel.getId(), brand.getId()));

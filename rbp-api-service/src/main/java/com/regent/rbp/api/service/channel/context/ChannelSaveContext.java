@@ -8,6 +8,7 @@ import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,7 +22,7 @@ public class ChannelSaveContext {
 
     private Channel channel;
     private List<ChannelReceiveInfo> channelReceiveInfoList;
-    private List<ChannelBrand> channelBrandList;
+    private List<ChannelBrand> channelBrandList = new ArrayList<>();
 
     public ChannelSaveContext() { this(null); }
 
