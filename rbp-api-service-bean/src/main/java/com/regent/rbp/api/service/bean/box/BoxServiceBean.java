@@ -172,7 +172,7 @@ public class BoxServiceBean implements BoxService {
         } else {
             // 货品+颜色+内长+尺码
             List<String> goodsCode = boxDetails.stream().map(BoxDetailItem::getGoodsCode).distinct().collect(Collectors.toList());
-            List<String> sizeNames = boxDetails.stream().map(BoxDetailItem::getSize).distinct().collect(Collectors.toList());
+            List<String> sizeNames = boxDetails.stream().map(BoxDetailItem::getSize).collect(Collectors.toList());
             Map<String, Long> goodsCodeIdMap =  goodsDao.selectList(Wrappers.<Goods>lambdaQuery().in(Goods::getCode, goodsCode)).stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
             Map<String, Long> colorCodeIdMap = colorDao.selectList(Wrappers.<Color>lambdaQuery().in(Color::getCode, boxDetails.stream().map(BoxDetailItem::getColorCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
             Map<String, Long> longNameIdMap = longDao.selectList(Wrappers.<LongInfo>lambdaQuery().in(LongInfo::getName, boxDetails.stream().map(BoxDetailItem::getLongName).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
