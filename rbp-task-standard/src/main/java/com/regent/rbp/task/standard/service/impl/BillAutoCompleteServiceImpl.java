@@ -86,14 +86,16 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
                 List<SendBillGoods> sendBillGoodsList = sendBillDao.querySendBillGoods(bill.getId(), null);
                 Integer endState = 0;
                 for (SalePlanBillGoodsFinal goodsFinal : salePlanBillGoodsFinalList) {
-                    SendBillGoods sendBillGoods = sendBillGoodsList.stream().filter(f -> f.getSalePlanId().equals(goodsFinal.getBillId()) && f.getSalePlanGoodsId().equals(goodsFinal.getId())).findFirst().orElse(null);
-                    if (sendBillGoods != null) {
-                        BigDecimal owqQty = goodsFinal.getQuantity().subtract(sendBillGoods.getQuantity());
-                        if (owqQty.compareTo(BigDecimal.ZERO) == 1) {
+                    if (sendBillGoodsList.size() > 0) {
+                        SendBillGoods sendBillGoods = sendBillGoodsList.stream().filter(f -> f.getSalePlanId().equals(goodsFinal.getBillId()) && f.getSalePlanGoodsId().equals(goodsFinal.getId())).findFirst().orElse(null);
+                        if (sendBillGoods != null) {
+                            BigDecimal owqQty = goodsFinal.getQuantity().subtract(sendBillGoods.getQuantity());
+                            if (owqQty.compareTo(BigDecimal.ZERO) == 1) {
+                                endState++;
+                            }
+                        } else {
                             endState++;
                         }
-                    } else {
-                        endState++;
                     }
                 }
                 if (endState == 0) {
@@ -109,7 +111,7 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
 
     @Override
     public void noticeBillAutoComplete(BillParam billParam) {
-        Date date = salePlanBillDao.queryMinDate(billParam.getStartDate());
+        Date date = noticeBillDao.queryMinDate(billParam.getStartDate());
         List<WeekDate> weekDateList = DateUtil.doDateType(date.getTime(), new Date().getTime());
         for (WeekDate weekDate : weekDateList) {
             // 查询未完结的指令单
@@ -133,14 +135,16 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
 
                 Integer endState = 0;
                 for (NoticeBillGoods goods : goodsList) {
-                    SendBillGoods sendBillGoods = sendBillGoodsList.stream().filter(f -> f.getNoticeId().equals(goods.getBillId()) && f.getNoticeGoodsId().equals(goods.getId())).findFirst().orElse(null);
-                    if (sendBillGoods != null) {
-                        BigDecimal owqQty = goods.getQuantity().subtract(sendBillGoods.getQuantity());
-                        if (owqQty.compareTo(BigDecimal.ZERO) == 1) {
+                    if (sendBillGoodsList.size() > 0) {
+                        SendBillGoods sendBillGoods = sendBillGoodsList.stream().filter(f -> f.getNoticeId().equals(goods.getBillId()) && f.getNoticeGoodsId().equals(goods.getId())).findFirst().orElse(null);
+                        if (sendBillGoods != null) {
+                            BigDecimal owqQty = goods.getQuantity().subtract(sendBillGoods.getQuantity());
+                            if (owqQty.compareTo(BigDecimal.ZERO) == 1) {
+                                endState++;
+                            }
+                        } else {
                             endState++;
                         }
-                    } else {
-                        endState++;
                     }
                 }
                 if (endState == 0) {
@@ -156,7 +160,7 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
 
     @Override
     public void purchaseBillAutoComplete(BillParam billParam) {
-        Date date = salePlanBillDao.queryMinDate(billParam.getStartDate());
+        Date date = purchaseBillDao.queryMinDate(billParam.getStartDate());
         List<WeekDate> weekDateList = DateUtil.doDateType(date.getTime(), new Date().getTime());
         for (WeekDate weekDate : weekDateList) {
             // 查询未完结的采购单
@@ -178,21 +182,22 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
                 // 采购入库单
                 List<PurchaseReceiveBill> purchaseReceiveBillList = purchaseReceiveBillDao.selectList(new LambdaQueryWrapper<PurchaseReceiveBill>().eq(BillMasterData::getStatus, 1).eq(PurchaseReceiveBill::getPurchaseId, bill.getId()));
                 List<Long> purchaseReceiveBillId = purchaseReceiveBillList.stream().map(BillMasterData::getId).collect(Collectors.toList());
-                List<PurchaseBillGoodsFinal> purchaseBillGoodsFinalList = purchaseBillGoodsFinalDao.queryPurchaseBillGoodsFinal(purchaseReceiveBillId);
-
                 Integer endState = 0;
-                for (PurchaseBillGoodsFinal goods : goodsFinalList) {
-                    PurchaseBillGoodsFinal purchaseBillGoodsFinal = purchaseBillGoodsFinalList.stream().filter(f -> f.getGoodsId().equals(goods.getGoodsId())).findFirst().orElse(null);
-                    if (purchaseBillGoodsFinal != null) {
-                        BigDecimal owqQty = goods.getQuantity().subtract(purchaseBillGoodsFinal.getQuantity());
-                        if (owqQty.compareTo(BigDecimal.ZERO) == 1) {
+                if (purchaseReceiveBillId.size() > 0) {
+                    List<PurchaseBillGoodsFinal> purchaseBillGoodsFinalList = purchaseBillGoodsFinalDao.queryPurchaseBillGoodsFinal(purchaseReceiveBillId);
+
+                    for (PurchaseBillGoodsFinal goods : goodsFinalList) {
+                        PurchaseBillGoodsFinal purchaseBillGoodsFinal = purchaseBillGoodsFinalList.stream().filter(f -> f.getGoodsId().equals(goods.getGoodsId())).findFirst().orElse(null);
+                        if (purchaseBillGoodsFinal != null) {
+                            BigDecimal owqQty = goods.getQuantity().subtract(purchaseBillGoodsFinal.getQuantity());
+                            if (owqQty.compareTo(BigDecimal.ZERO) == 1) {
+                                endState++;
+                            }
+                        } else {
                             endState++;
                         }
-                    } else {
-                        endState++;
                     }
                 }
-
                 if (endState == 0) {
                     bill.setFinishFlag(1);
                     bill.setUpdatedTime(new Date());

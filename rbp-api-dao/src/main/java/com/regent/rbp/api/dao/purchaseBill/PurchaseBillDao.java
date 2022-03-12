@@ -8,6 +8,7 @@ import com.regent.rbp.api.core.purchaseBill.PurchaseBillSize;
 import com.regent.rbp.api.core.purchaseBill.PurchaseBillSizeFinal;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -49,5 +50,7 @@ public interface PurchaseBillDao extends BaseMapper<PurchaseBill> {
      * @return
      */
     Integer batchInsertSizeFinalList(@Param("billSizeList") List<PurchaseBillSizeFinal> billSizeList);
+
+    Date queryMinDate(@Param("date") Date date);
 
 }

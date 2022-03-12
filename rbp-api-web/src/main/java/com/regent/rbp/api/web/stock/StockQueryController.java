@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @createTime 2021-09-11
  * @Description 库存查询
  */
-@RestController("StockQueryAPIController")
+@RestController(value = "datacenterStockQueryController")
 @RequestMapping(ApiConstants.API_STOCK_QUERY)
 public class StockQueryController {
 
