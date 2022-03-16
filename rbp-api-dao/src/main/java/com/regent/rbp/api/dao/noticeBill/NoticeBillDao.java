@@ -7,6 +7,7 @@ import com.regent.rbp.api.core.noticeBill.NoticeBillSize;
 import com.regent.rbp.api.core.salePlan.SalePlanBillSizeFinal;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,5 +41,6 @@ public interface NoticeBillDao extends BaseMapper<NoticeBill> {
      */
     Integer batchInsertSalePlanBillSizeList(@Param("tableName") String tableName, @Param("billSizeList") List<SalePlanBillSizeFinal> billSizeList);
 
+    Date queryMinDate(@Param("date") Date date);
 
 }

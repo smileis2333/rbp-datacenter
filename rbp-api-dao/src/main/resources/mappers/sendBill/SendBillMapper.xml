@@ -10,9 +10,11 @@
         inner join rbp_send_bill_goods b on a.id = b.bill_id
         where a.status = 1
         <if test="salePlanId != null">
+            and b.sale_plan_goods_id is not null
             and b.sale_plan_id = #{salePlanId}
         </if>
         <if test="noticeId != null">
+            and b.notice_goods_id is not null
             and b.notice_id = #{noticeId}
         </if>
     </select>
