@@ -11,10 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +30,9 @@ public class AutoDeleteTempTableJob {
     @Autowired
     private BaseDbDao baseDbDao;
 
+    private static final String tableNamePrefix = "temp_xxx_table_";
+    private static final String reportTableNamePrefix = "temp_report_xxx_table_";
+
     /**
      * 自动数据库删除临时表
      * 入参格式：{ "action": "default"}
@@ -40,9 +41,6 @@ public class AutoDeleteTempTableJob {
      */
     @XxlJob(SystemConstants.AUTO_DELETE_TEMP_TABLE)
     public void autoDeleteTempTable() {
-        String tableNamePrefix = "temp_xxx_table_";
-        String reportTableNamePrefix = "temp_report_xxx_table_";
-        Integer nowDateInt = getNowDateInt();
         try {
             //读取参数
             String param = XxlJobHelper.getJobParam();
@@ -53,36 +51,21 @@ public class AutoDeleteTempTableJob {
             List<String> deleteTableList = new ArrayList<>();
             switch (actionTypeEnum) {
                 case DEFAULT: {
-                    List<String> tableList = this.getTableList(tableNamePrefix);
-                    List<String> reportTableList = this.getTableList(reportTableNamePrefix);
-                    tableList.addAll(reportTableList);
-                    if (CollUtil.isNotEmpty(tableList)) {
-                        tableList.forEach(table -> {
-                            String[] str = table.split(StrUtil.UNDERLINE);
-                            // 小于今天
-                            if (Integer.parseInt(str[str.length - 1].substring(0, 8)) < nowDateInt) {
-                                deleteTableList.add(table);
-                            }
-                        });
-                    }
-
+                    deleteTableList.addAll(this.getTableList(tableNamePrefix, true));
+                    deleteTableList.addAll(this.getTableList(reportTableNamePrefix, true));
                     break;
                 }
                 case ALL: {
-                    List<String> tableList = this.getTableList(tableNamePrefix);
-                    deleteTableList.addAll(tableList);
-                    List<String> reportTableList = this.getTableList(reportTableNamePrefix);
-                    deleteTableList.addAll(reportTableList);
+                    deleteTableList.addAll(this.getTableList(tableNamePrefix, false));
+                    deleteTableList.addAll(this.getTableList(reportTableNamePrefix, false));
                     break;
                 }
                 case DELETE_TABLE: {
-                    List<String> tableList = this.getTableList(tableNamePrefix);
-                    deleteTableList.addAll(tableList);
+                    deleteTableList.addAll(this.getTableList(tableNamePrefix, true));
                     break;
                 }
                 case DELETE_REPORT: {
-                    List<String> reportList = this.getTableList(reportTableNamePrefix);
-                    deleteTableList.addAll(reportList);
+                    deleteTableList.addAll(this.getTableList(reportTableNamePrefix, true));
                     break;
                 }
                 default:
@@ -109,17 +92,13 @@ public class AutoDeleteTempTableJob {
         }
     }
 
-    private List<String> getTableList(String prefix) {
-        StringBuilder sql = new StringBuilder("select table_name from information_schema.tables where table_schema = database() and table_name like ");
-        sql.append("'").append(prefix).append("%'");
+    private List<String> getTableList(String prefix, Boolean isNowDay) {
+        StringBuilder sql = new StringBuilder("select table_name from information_schema.tables where table_schema = database() ");
+        if (isNowDay) {
+            sql.append(" and create_time <= DATE_FORMAT(NOW(), '%Y-%m-%d') ");
+        }
+        sql.append(" and table_name like '").append(prefix).append("%'");
         return Optional.ofNullable(baseDbDao.getStringListDataBySql(sql.toString())).orElse(new ArrayList<>());
-    }
-
-    public static Integer getNowDateInt() {
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
-        String dateStr = format.format(new Date());
-
-        return Integer.parseInt(dateStr);
     }
 
     /**
