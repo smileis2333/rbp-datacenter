@@ -3,6 +3,7 @@ package com.regent.rbp.api.core.base;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -45,6 +46,7 @@ public class DiscountCategory {
     public static DiscountCategory build(String name) {
         Long userId = ThreadLocalGroup.getUserId();
         DiscountCategory item = new DiscountCategory();
+        item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         item.setName(name);
         item.setCreatedBy(userId);
         item.setUpdatedBy(userId);

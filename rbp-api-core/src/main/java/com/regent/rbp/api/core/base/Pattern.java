@@ -3,6 +3,7 @@ package com.regent.rbp.api.core.base;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -48,6 +49,7 @@ public class Pattern {
     public static Pattern build(String name) {
         Long userId = ThreadLocalGroup.getUserId();
         Pattern item = new Pattern();
+        item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         item.setName(name);
         item.setCode("");
         item.setCreatedBy(userId);

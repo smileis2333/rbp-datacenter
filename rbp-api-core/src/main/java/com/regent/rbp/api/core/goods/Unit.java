@@ -45,6 +45,7 @@ public class Unit {
     public static Unit build(String name) {
         Long userId = ThreadLocalGroup.getUserId();
         Unit unit = new Unit();
+        unit.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         unit.setName(name);
         unit.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         unit.setCreatedBy(userId);
