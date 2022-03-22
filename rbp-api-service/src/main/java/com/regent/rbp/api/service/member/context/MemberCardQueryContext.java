@@ -17,7 +17,7 @@ public class MemberCardQueryContext {
     private String name;
     private String areaCode;
     private String phone;
-    private long[] sexCode;
+    private Integer sex;
     private int[] originType;
     private int[] origin;
     private int[] status;

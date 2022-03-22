@@ -47,7 +47,7 @@ public class MemberCard {
     private String phone;
 
     @ApiModelProperty(notes = "性别")
-    private Long sexId;
+    private Integer sexId;
 
     @ApiModelProperty(notes = "来源类别")
     private Integer originType;

@@ -34,7 +34,9 @@ public class MemberCardSaveParam {
 
     private String phone;
 
-    private String sexName;
+    @NotNull
+    @DiscreteRange(ranges = {0, 1}, message = "入参非法，合法输入 0-男 1-女")
+    private String sex;
 
     @NotNull
     @DiscreteRange(ranges = {1, 2, 3}, message = "入参非法，合法输入1-线上，2-线下，3-后台")

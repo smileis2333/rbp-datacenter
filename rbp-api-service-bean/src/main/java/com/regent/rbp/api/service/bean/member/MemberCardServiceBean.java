@@ -105,6 +105,7 @@ public class MemberCardServiceBean implements MemberCardService {
         context.setStatus(param.getStatus());
         context.setReferrerCardNo(param.getReferrerCardNo());
         context.setFields(param.getFields());
+        context.setSex(param.getSex());
 
         // 发卡人编号
         if (StringUtils.isNotBlank(param.getUserCode())) {
@@ -128,14 +129,14 @@ public class MemberCardServiceBean implements MemberCardService {
             }
         }
 
-        // 性别
+        /*// 性别
         if (param.getSexCode() != null && param.getSexCode().length > 0) {
             List<Sex> list = sexDao.selectList(new QueryWrapper<Sex>().in("name", param.getSexCode()));
             if (list != null && list.size() > 0) {
                 long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
                 context.setSexCode(ids);
             }
-        }
+        }*/
         // 发卡渠道
         if (param.getChannelCode() != null && param.getChannelCode().length > 0) {
             List<Channel> list = channelDao.selectList(new QueryWrapper<Channel>().in("code", param.getChannelCode()));
@@ -231,9 +232,9 @@ public class MemberCardServiceBean implements MemberCardService {
         // 加载所有 会员政策
         List<MemberPolicy> memberPolicyList = memberPolicyDao.selectList(new QueryWrapper<MemberPolicy>().select("id", "grade_code", "grade_name"));
         Map<Long, MemberPolicy> mapMemberPolicy = memberPolicyList.stream().collect(Collectors.toMap(MemberPolicy::getId, t -> t));
-        // 加载所有 性别
+        /*// 加载所有 性别
         List<Sex> sexList = sexDao.selectList(new QueryWrapper<Sex>().select("id", "name"));
-        Map<Long, String> mapSex = sexList.stream().collect(Collectors.toMap(Sex::getId, Sex::getName));
+        Map<Long, String> mapSex = sexList.stream().collect(Collectors.toMap(Sex::getId, Sex::getName));*/
         // 加载所有 会员状态
         List<MemberStatus> memberStatusList = memberStatusDao.selectList(new QueryWrapper<MemberStatus>().select("id", "name"));
         Map<Long, String> mapMemberStatus = memberStatusList.stream().collect(Collectors.toMap(MemberStatus::getId, MemberStatus::getName));
@@ -302,10 +303,11 @@ public class MemberCardServiceBean implements MemberCardService {
                 queryResult.setMemberPolicyName(memberPolicy.getGradeName());
             }
             // 性别
-            if (memberCard.getSexId() != null && mapSex.containsKey(memberCard.getSexId())) {
+            /*if (memberCard.getSexId() != null && mapSex.containsKey(memberCard.getSexId())) {
                 queryResult.setSexId(memberCard.getSexId());
                 queryResult.setSexName(mapSex.get(memberCard.getSexId()));
-            }
+            }*/
+            queryResult.setSexId(memberCard.getSexId());
             // 发卡渠道
             if (memberCard.getChannelId() != null && mapChannel.containsKey(memberCard.getChannelId())) {
                 Channel channel = mapChannel.get(memberCard.getChannelId());
@@ -450,7 +452,7 @@ public class MemberCardServiceBean implements MemberCardService {
             }
         }
 
-        // 性别
+        /*// 性别
         if (StringUtils.isNotBlank(param.getSexName())) {
             Sex item = sexDao.selectOne(new QueryWrapper<Sex>().eq("name", param.getSexName()));
             if (item != null) {
@@ -458,7 +460,7 @@ public class MemberCardServiceBean implements MemberCardService {
             } else {
                 errorMsgList.add("性别(sexName)不存在");
             }
-        }
+        }*/
         // 发卡渠道
         if (StringUtils.isNotBlank(param.getChannelCode())) {
             Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getChannelCode()));

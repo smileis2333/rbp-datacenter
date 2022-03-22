@@ -27,7 +27,7 @@ public class MemberCardQueryResult {
     private String memberPolicyName;
     private String areaCode;
     private String phone;
-    private Long sexId;
+    private Integer sexId;
     private String sexName;
     private Integer originType;
     private String originTypeName;
