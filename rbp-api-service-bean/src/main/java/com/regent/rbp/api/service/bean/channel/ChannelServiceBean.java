@@ -23,6 +23,7 @@ import com.regent.rbp.api.service.channel.context.ChannelSaveContext;
 import com.regent.rbp.api.service.constants.TableConstants;
 import com.regent.rbp.common.constants.InformationConstants;
 import com.regent.rbp.infrastructure.util.DateUtil;
+import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -569,7 +570,13 @@ public class ChannelServiceBean implements ChannelService {
         }
 
         if (CollUtil.isNotEmpty(param.getAddressData())) {
-            List<ChannelReceiveInfo> channelReceiveInfos = param.getAddressData().stream().map(e -> BeanUtil.copyProperties(e, ChannelReceiveInfo.class)).collect(Collectors.toList());
+            List<ChannelReceiveInfo> channelReceiveInfos = param.getAddressData().stream().map(e ->
+                    {
+                        ChannelReceiveInfo channelReceiveInfo = BeanUtil.copyProperties(e, ChannelReceiveInfo.class);
+                        channelReceiveInfo.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                        return channelReceiveInfo;
+                    }
+            ).collect(Collectors.toList());
             context.setChannelReceiveInfoList(channelReceiveInfos);
         }
 
