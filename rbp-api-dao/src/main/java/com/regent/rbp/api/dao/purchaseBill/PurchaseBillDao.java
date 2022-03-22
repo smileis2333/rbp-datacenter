@@ -51,6 +51,6 @@ public interface PurchaseBillDao extends BaseMapper<PurchaseBill> {
      */
     Integer batchInsertSizeFinalList(@Param("billSizeList") List<PurchaseBillSizeFinal> billSizeList);
 
-    Date queryMinDate(@Param("date") Date date);
+    Date queryMinDate();
 
 }

@@ -14,5 +14,5 @@ import java.util.Date;
  */
 public interface SalePlanBillDao extends BaseMapper<SalePlanBill> {
 
-    Date queryMinDate(@Param("date") Date date);
+    Date queryMinDate();
 }

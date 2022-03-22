@@ -14,9 +14,6 @@ import java.util.Date;
 @Data
 public class BillParam {
 
-    @ApiModelProperty(notes = "开始日期")
-    private Date startDate;
-
     @ApiModelProperty(notes = "订单号")
     private String billNo;
 }
