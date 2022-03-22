@@ -51,9 +51,6 @@
         select Min(bill_date) as billDate
         from rbp_purchase_bill
         where status = 1 and finish_flag != 1
-        <if test="date != null">
-            and created_time <![CDATA[>=]]> #{date}
-        </if>
     </select>
 
 

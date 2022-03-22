@@ -63,7 +63,7 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
 
     @Override
     public void salePlanBillAutoComplete(BillParam billParam) {
-        Date date = salePlanBillDao.queryMinDate(billParam.getStartDate());
+        Date date = salePlanBillDao.queryMinDate();
         List<WeekDate> weekDateList = DateUtil.doDateType(date.getTime(), new Date().getTime());
         for (WeekDate weekDate : weekDateList) {
             // 查询未完结的计划单
@@ -111,7 +111,7 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
 
     @Override
     public void noticeBillAutoComplete(BillParam billParam) {
-        Date date = noticeBillDao.queryMinDate(billParam.getStartDate());
+        Date date = noticeBillDao.queryMinDate();
         List<WeekDate> weekDateList = DateUtil.doDateType(date.getTime(), new Date().getTime());
         for (WeekDate weekDate : weekDateList) {
             // 查询未完结的指令单
@@ -160,7 +160,7 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
 
     @Override
     public void purchaseBillAutoComplete(BillParam billParam) {
-        Date date = purchaseBillDao.queryMinDate(billParam.getStartDate());
+        Date date = purchaseBillDao.queryMinDate();
         List<WeekDate> weekDateList = DateUtil.doDateType(date.getTime(), new Date().getTime());
         for (WeekDate weekDate : weekDateList) {
             // 查询未完结的采购单

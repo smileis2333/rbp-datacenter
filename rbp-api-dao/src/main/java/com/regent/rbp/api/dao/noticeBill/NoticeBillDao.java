@@ -41,6 +41,6 @@ public interface NoticeBillDao extends BaseMapper<NoticeBill> {
      */
     Integer batchInsertSalePlanBillSizeList(@Param("tableName") String tableName, @Param("billSizeList") List<SalePlanBillSizeFinal> billSizeList);
 
-    Date queryMinDate(@Param("date") Date date);
+    Date queryMinDate();
 
 }
