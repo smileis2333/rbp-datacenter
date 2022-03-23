@@ -146,10 +146,10 @@ public class MemberServiceImpl implements MemberService {
         List<Long> channelIds = memberCardList.stream().map(MemberCard::getChannelId).distinct().collect(Collectors.toList());
         List<Channel> channelList = channelDao.selectBatchIds(channelIds);
         Map<Long, String> channelMap = channelList.stream().collect(Collectors.toMap(Channel::getId, Channel::getCode));
-        // 性别
+        /*// 性别
         List<Long> sexIds = memberCardList.stream().map(MemberCard::getSexId).distinct().collect(Collectors.toList());
         List<Sex> sexList = sexDao.selectBatchIds(sexIds);
-        Map<Long, String> sexMap = sexList.stream().collect(Collectors.toMap(Sex::getId, Sex::getName));
+        Map<Long, String> sexMap = sexList.stream().collect(Collectors.toMap(Sex::getId, Sex::getName));*/
         // 会员政策
         List<Long> memberPolicyIds = memberCardList.stream().map(MemberCard::getMemberPolicyId).distinct().collect(Collectors.toList());
         List<MemberPolicy> memberPolicyList = memberPolicyDao.selectBatchIds(memberPolicyIds);
@@ -173,7 +173,7 @@ public class MemberServiceImpl implements MemberService {
                 dto.setCard_no(card.getCode());
                 dto.setNick_name(card.getName());
                 dto.setEmail(card.getEmail());
-                dto.setSex(sexMap.get(card.getSexId()));
+                dto.setSex(card.getSexName());
                 dto.setBirthday(DateUtil.getFullDateStr(card.getBirthdayDate()));
                 dto.setMobile_no(card.getPhone());
                 dto.setCreate_date(DateUtil.getFullDateStr(card.getCreatedTime()));
@@ -315,7 +315,7 @@ public class MemberServiceImpl implements MemberService {
         // 区号
         saveParam.setAreaCode("");
         saveParam.setPhone(page.getMobile_no());
-        saveParam.setSexName(page.getSex());
+        saveParam.setSex(page.getSex() == "男" ? 0:1);
         saveParam.setOriginType(1);
         saveParam.setOrigin(2);
         saveParam.setBeginDate(page.getCreate_date());
@@ -467,7 +467,7 @@ public class MemberServiceImpl implements MemberService {
         // 区号
         saveParam.setAreaCode("");
         saveParam.setPhone(dto.getMobileTel());
-        saveParam.setSexName(dto.getSex());
+        saveParam.setSex(dto.getSex() == "男" ? 0 : 1);
         saveParam.setOriginType(1);
         saveParam.setOrigin(2);
         saveParam.setBeginDate(dto.getBegainDate());

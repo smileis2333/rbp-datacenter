@@ -307,7 +307,7 @@ public class MemberCardServiceBean implements MemberCardService {
                 queryResult.setSexId(memberCard.getSexId());
                 queryResult.setSexName(mapSex.get(memberCard.getSexId()));
             }*/
-            queryResult.setSexId(memberCard.getSexId());
+            queryResult.setSexId(memberCard.getSex());
             // 发卡渠道
             if (memberCard.getChannelId() != null && mapChannel.containsKey(memberCard.getChannelId())) {
                 Channel channel = mapChannel.get(memberCard.getChannelId());

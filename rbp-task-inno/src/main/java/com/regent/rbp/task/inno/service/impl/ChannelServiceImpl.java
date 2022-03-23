@@ -22,6 +22,7 @@ import com.regent.rbp.task.inno.model.req.ChannelReqDto;
 import com.regent.rbp.task.inno.model.req.WarehouseReqDto;
 import com.regent.rbp.task.inno.model.resp.ChannelRespDto;
 import com.regent.rbp.task.inno.service.ChannelService;
+import com.xxl.job.core.context.XxlJobHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -107,6 +108,10 @@ public class ChannelServiceImpl implements ChannelService {
 
             String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), POST_ERP_STORE);
             String result = HttpUtil.post(api_url, JSON.toJSONString(channelReqDto));
+
+            XxlJobHelper.log(String.format("请求Url：%s", api_url));
+            XxlJobHelper.log(String.format("请求Json：%s", JSON.toJSONString(channelReqDto)));
+            XxlJobHelper.log(String.format("返回Json：%s", result));
 
             respDto = JSON.parseObject(result, ChannelRespDto.class);
 
