@@ -46,8 +46,12 @@ public class MemberCard {
     @ApiModelProperty(notes = "手机")
     private String phone;
 
+    @ApiModelProperty(notes = "性别 0 男 1 女")
+    private Integer sex;
+
     @ApiModelProperty(notes = "性别")
-    private Long sexId;
+    @TableField(exist = false)
+    private String sexName;
 
     @ApiModelProperty(notes = "来源类别")
     private Integer originType;
@@ -167,7 +171,20 @@ public class MemberCard {
     @ApiModelProperty(notes = "微信unionid")
     private String unionId;
 
+<<<<<<< HEAD
     @ApiModelProperty(notes = "外部联系人ID")
     private String externalUserid;
 
+=======
+    public void setSex(Integer sex) {
+        this.sex = sex;
+        String sexName = "";
+        if (sex.equals(0)) {
+            sexName = "男";
+        } else {
+            sexName = "女";
+        }
+        this.sexName = sexName;
+    }
+>>>>>>> 0.0.0.8
 }

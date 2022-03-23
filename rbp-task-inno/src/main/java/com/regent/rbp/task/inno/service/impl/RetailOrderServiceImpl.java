@@ -78,7 +78,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
         try {
             RetailOrderSearchDto searchDto = new RetailOrderSearchDto();
             searchDto.setBeginTime(DateUtil.getStartDateTimeStr(param.getBeginTime()));
-            searchDto.setEndTime(DateUtil.getStartDateTimeStr(param.getEndTime()));
+            searchDto.setEndTime(DateUtil.getEndDateTimeStr(param.getEndTime()));
             searchDto.setOrder_sn_list(param.getOrder_sn_list());
             searchDto.setPageIndex(1);
 

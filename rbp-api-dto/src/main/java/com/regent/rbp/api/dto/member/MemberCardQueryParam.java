@@ -15,7 +15,7 @@ public class MemberCardQueryParam {
     private String name;
     private String areaCode;
     private String phone;
-    private String[] sexCode;
+    private Integer sex;
     private int[] originType;
     private int[] origin;
     private int[] status;
