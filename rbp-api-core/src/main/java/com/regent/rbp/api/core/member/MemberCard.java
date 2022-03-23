@@ -171,11 +171,9 @@ public class MemberCard {
     @ApiModelProperty(notes = "微信unionid")
     private String unionId;
 
-<<<<<<< HEAD
     @ApiModelProperty(notes = "外部联系人ID")
     private String externalUserid;
 
-=======
     public void setSex(Integer sex) {
         this.sex = sex;
         String sexName = "";
@@ -186,5 +184,4 @@ public class MemberCard {
         }
         this.sexName = sexName;
     }
->>>>>>> 0.0.0.8
 }
