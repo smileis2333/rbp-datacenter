@@ -256,7 +256,7 @@ public class GoodsServiceBean implements GoodsService {
      * 2.将内部编码id转换成名称name
      */
     private List<GoodsQueryResult> convertGoodsQueryResult(List<Goods> goodsList) {
-        if (CollUtil.isNotEmpty(goodsList)){
+        if (CollUtil.isEmpty(goodsList)){
             return Collections.emptyList();
         }
         List<GoodsQueryResult> queryResults = new ArrayList<>(goodsList.size());
