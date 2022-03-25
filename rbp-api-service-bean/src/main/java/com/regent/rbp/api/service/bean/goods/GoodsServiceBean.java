@@ -256,6 +256,9 @@ public class GoodsServiceBean implements GoodsService {
      * 2.将内部编码id转换成名称name
      */
     private List<GoodsQueryResult> convertGoodsQueryResult(List<Goods> goodsList) {
+        if (CollUtil.isEmpty(goodsList)){
+            return Collections.emptyList();
+        }
         List<GoodsQueryResult> queryResults = new ArrayList<>(goodsList.size());
         List<Long> goodsIds = goodsList.stream().map(Goods::getId).collect(Collectors.toList());
         //加载所有货号的吊牌价列表
