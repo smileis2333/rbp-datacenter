@@ -284,7 +284,7 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
         queryWrapper.in(null != context.getStatus() && context.getStatus().length > 0, "status", context.getStatus());
         queryWrapper.in(null != context.getType() && context.getType().length > 0, "type", context.getType());
         queryWrapper.in(null != context.getSex() && context.getSex().length > 0, "sex", context.getSex());
-        queryWrapper.in(null != context.getCashierTag() && context.getCashierTag().length > 0, "cashier_tag", context.getCashierTag());
+        queryWrapper.in(null != context.getCashierFlag() && context.getCashierFlag().length > 0, "cashier_flag", context.getCashierFlag());
 
 
         queryWrapper.eq(null != context.getBirthdayDate(), "birthday_date", context.getBirthdayDate());

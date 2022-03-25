@@ -77,7 +77,7 @@ public class UserProfile {
     private String qyweixin;
 
     @ApiModelProperty(value = "是否收银员0-否1-是")
-    private Integer cashierTag;
+    private Integer cashierFlag;
 
     @ApiModelProperty(value = "最低折扣")
     private BigDecimal discount;

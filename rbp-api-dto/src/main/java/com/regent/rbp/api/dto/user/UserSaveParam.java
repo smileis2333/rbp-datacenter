@@ -79,7 +79,7 @@ public class UserSaveParam {
 
     @DiscreteRange(ranges = {0, 1}, message = "入参非法，合法输入0-否1-是")
     @ApiModelProperty(value = "是否收银员0-否1-是")
-    private Integer cashierTag;
+    private Integer cashierFlag;
 
     @ApiModelProperty(value = "最低折扣")
     private BigDecimal discount;
@@ -92,7 +92,7 @@ public class UserSaveParam {
 
     @AssertTrue(message = "收银员标识为“是”时必填")
     private boolean isDiscount() {
-        if (cashierTag != null && cashierTag == 1) {
+        if (cashierFlag != null && cashierFlag == 1) {
             return discount != null;
         }
         return true;

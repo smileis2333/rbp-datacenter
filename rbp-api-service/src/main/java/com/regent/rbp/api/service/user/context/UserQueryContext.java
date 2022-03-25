@@ -62,7 +62,7 @@ public class UserQueryContext {
     private String qyweixin;
 
     @ApiModelProperty(value = "是否收银员0-否1-是")
-    private Integer[] cashierTag;
+    private Integer[] cashierFlag;
 
     @ApiModelProperty(notes = "创建日期(开始日期)")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
