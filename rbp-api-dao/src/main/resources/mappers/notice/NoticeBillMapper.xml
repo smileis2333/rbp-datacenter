@@ -39,4 +39,11 @@
         where status = 1 and finish_flag != 1
     </select>
 
+    <select id="queryNoticeBillGoods" resultType="com.regent.rbp.api.core.noticeBill.NoticeBillGoods">
+        select goods_id, sum(quantity) as quantity
+        from rbp_notice_bill_size
+        where bill_id = #{noticeId}
+        group by goods_id
+    </select>
+
 </mapper>

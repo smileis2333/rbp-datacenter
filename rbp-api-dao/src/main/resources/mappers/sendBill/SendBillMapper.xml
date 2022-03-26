@@ -5,7 +5,8 @@
 <mapper namespace="com.regent.rbp.api.dao.sendBill.SendBillDao">
 
     <select id="querySendBillGoods" resultType="com.regent.rbp.api.core.sendBill.SendBillGoods">
-        select b.notice_id, b.notice_goods_id, b.sale_plan_id, b.sale_plan_goods_id, b.goods_id, b.quantity
+        <!-- b.notice_id, b.notice_goods_id, b.sale_plan_id, b.sale_plan_goods_id, -->
+        select b.goods_id, Sum(b.quantity) as quantity
         from rbp_send_bill a
         inner join rbp_send_bill_goods b on a.id = b.bill_id
         where a.status = 1
@@ -17,6 +18,7 @@
             and b.notice_goods_id is not null
             and b.notice_id = #{noticeId}
         </if>
+        group by b.goods_id
     </select>
 
     <insert id="batchInsertGoodsList">

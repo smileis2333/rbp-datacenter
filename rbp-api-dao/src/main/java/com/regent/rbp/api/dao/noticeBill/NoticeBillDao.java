@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.regent.rbp.api.core.noticeBill.NoticeBill;
 import com.regent.rbp.api.core.noticeBill.NoticeBillGoods;
 import com.regent.rbp.api.core.noticeBill.NoticeBillSize;
+import com.regent.rbp.api.core.salePlan.SalePlanBillGoodsFinal;
 import com.regent.rbp.api.core.salePlan.SalePlanBillSizeFinal;
 import org.apache.ibatis.annotations.Param;
 
@@ -42,5 +43,7 @@ public interface NoticeBillDao extends BaseMapper<NoticeBill> {
     Integer batchInsertSalePlanBillSizeList(@Param("tableName") String tableName, @Param("billSizeList") List<SalePlanBillSizeFinal> billSizeList);
 
     Date queryMinDate();
+
+    List<NoticeBillGoods> queryNoticeBillGoods(@Param("noticeId") Long noticeId);
 
 }

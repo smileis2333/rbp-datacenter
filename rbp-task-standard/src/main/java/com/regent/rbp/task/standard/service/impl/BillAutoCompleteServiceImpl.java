@@ -85,13 +85,13 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
             Integer pedometer = 0;
             for (SalePlanBill bill : salePlanBillList) {
                 // 计划单货品明细
-                List<SalePlanBillGoodsFinal> salePlanBillGoodsFinalList = salePlanBillGoodsFinalDao.selectList(new LambdaQueryWrapper<SalePlanBillGoodsFinal>().eq(SalePlanBillGoodsFinal::getBillId, bill.getId()));
+                List<SalePlanBillGoodsFinal> salePlanBillGoodsFinalList = salePlanBillDao.querySendPlanBillGoods( bill.getId());
                 // 发货单货品明细
                 List<SendBillGoods> sendBillGoodsList = sendBillDao.querySendBillGoods(bill.getId(), null);
                 Integer endState = 0;
                 for (SalePlanBillGoodsFinal goodsFinal : salePlanBillGoodsFinalList) {
                     if (sendBillGoodsList.size() > 0) {
-                        SendBillGoods sendBillGoods = sendBillGoodsList.stream().filter(f -> f.getSalePlanId().equals(goodsFinal.getBillId()) && f.getSalePlanGoodsId().equals(goodsFinal.getId())).findFirst().orElse(null);
+                        SendBillGoods sendBillGoods = sendBillGoodsList.stream().filter(f -> f.getGoodsId().equals(goodsFinal.getGoodsId())).findFirst().orElse(null);
                         if (sendBillGoods != null) {
                             BigDecimal owqQty = goodsFinal.getQuantity().subtract(sendBillGoods.getQuantity());
                             if (owqQty.compareTo(BigDecimal.ZERO) == 1) {
@@ -133,14 +133,14 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
             Integer pedometer = 0;
             for (NoticeBill bill : noticeBillList) {
                 // 指令单货品明细
-                List<NoticeBillGoods> goodsList = noticeBillGoodsDao.selectList(new LambdaQueryWrapper<NoticeBillGoods>().eq(NoticeBillGoods::getBillId, bill.getId()));
+                List<NoticeBillGoods> goodsList = noticeBillDao.queryNoticeBillGoods(bill.getId());
                 // 发货单货品明细
                 List<SendBillGoods> sendBillGoodsList = sendBillDao.querySendBillGoods(null, bill.getId());
 
                 Integer endState = 0;
                 for (NoticeBillGoods goods : goodsList) {
                     if (sendBillGoodsList.size() > 0) {
-                        SendBillGoods sendBillGoods = sendBillGoodsList.stream().filter(f -> f.getNoticeId().equals(goods.getBillId()) && f.getNoticeGoodsId().equals(goods.getId())).findFirst().orElse(null);
+                        SendBillGoods sendBillGoods = sendBillGoodsList.stream().filter(f -> f.getGoodsId().equals(goods.getGoodsId())).findFirst().orElse(null);
                         if (sendBillGoods != null) {
                             BigDecimal owqQty = goods.getQuantity().subtract(sendBillGoods.getQuantity());
                             if (owqQty.compareTo(BigDecimal.ZERO) == 1) {
