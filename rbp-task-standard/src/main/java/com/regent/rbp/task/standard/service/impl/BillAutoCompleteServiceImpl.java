@@ -8,6 +8,7 @@ import com.regent.rbp.api.core.noticeBill.NoticeBillGoods;
 import com.regent.rbp.api.core.purchaseBill.PurchaseBill;
 import com.regent.rbp.api.core.purchaseBill.PurchaseBillGoodsFinal;
 import com.regent.rbp.api.core.purchaseReceiveBill.PurchaseReceiveBill;
+import com.regent.rbp.api.core.purchaseReceiveBill.PurchaseReceiveBillGoods;
 import com.regent.rbp.api.core.salePlan.SalePlanBill;
 import com.regent.rbp.api.core.salePlan.SalePlanBillGoodsFinal;
 import com.regent.rbp.api.core.sendBill.SendBillGoods;
@@ -16,6 +17,7 @@ import com.regent.rbp.api.dao.noticeBill.NoticeBillGoodsDao;
 import com.regent.rbp.api.dao.purchaseBill.PurchaseBillDao;
 import com.regent.rbp.api.dao.purchaseBill.PurchaseBillGoodsFinalDao;
 import com.regent.rbp.api.dao.purchaseReceiveBill.PurchaseReceiveBillDao;
+import com.regent.rbp.api.dao.purchaseReceiveBill.PurchaseReceiveBillGoodsDao;
 import com.regent.rbp.api.dao.salePlan.SalePlanBillDao;
 import com.regent.rbp.api.dao.salePlan.SalePlanBillGoodsFinalDao;
 import com.regent.rbp.api.dao.sendBill.SendBillDao;
@@ -59,6 +61,8 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
     PurchaseBillGoodsFinalDao purchaseBillGoodsFinalDao;
     @Autowired
     PurchaseReceiveBillDao purchaseReceiveBillDao;
+    @Autowired
+    PurchaseReceiveBillGoodsDao purchaseReceiveBillGoodsDao;
 
 
     @Override
@@ -180,16 +184,18 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
                 // 采购单调后货品明细
                 List<PurchaseBillGoodsFinal> goodsFinalList = purchaseBillGoodsFinalDao.selectList(new LambdaQueryWrapper<PurchaseBillGoodsFinal>().eq(PurchaseBillGoodsFinal::getBillId, bill.getId()));
                 // 采购入库单
-                List<PurchaseReceiveBill> purchaseReceiveBillList = purchaseReceiveBillDao.selectList(new LambdaQueryWrapper<PurchaseReceiveBill>().eq(BillMasterData::getStatus, 1).eq(PurchaseReceiveBill::getPurchaseId, bill.getId()));
+                List<PurchaseReceiveBill> purchaseReceiveBillList = purchaseReceiveBillDao.selectList(
+                        new LambdaQueryWrapper<PurchaseReceiveBill>().eq(BillMasterData::getStatus, 1).eq(PurchaseReceiveBill::getPurchaseId, bill.getId()));
                 List<Long> purchaseReceiveBillId = purchaseReceiveBillList.stream().map(BillMasterData::getId).collect(Collectors.toList());
                 Integer endState = 0;
                 if (purchaseReceiveBillId.size() > 0) {
-                    List<PurchaseBillGoodsFinal> purchaseBillGoodsFinalList = purchaseBillGoodsFinalDao.queryPurchaseBillGoodsFinal(purchaseReceiveBillId);
+                    List<PurchaseReceiveBillGoods> purchaseReceiveBillGoodsList = purchaseReceiveBillGoodsDao.selectList(
+                            new LambdaQueryWrapper<PurchaseReceiveBillGoods>().in(PurchaseReceiveBillGoods::getBillId,purchaseReceiveBillId));
 
                     for (PurchaseBillGoodsFinal goods : goodsFinalList) {
-                        PurchaseBillGoodsFinal purchaseBillGoodsFinal = purchaseBillGoodsFinalList.stream().filter(f -> f.getGoodsId().equals(goods.getGoodsId())).findFirst().orElse(null);
-                        if (purchaseBillGoodsFinal != null) {
-                            BigDecimal owqQty = goods.getQuantity().subtract(purchaseBillGoodsFinal.getQuantity());
+                        PurchaseReceiveBillGoods purchaseReceiveBillGoods = purchaseReceiveBillGoodsList.stream().filter(f -> f.getGoodsId().equals(goods.getGoodsId())).findFirst().orElse(null);
+                        if (purchaseReceiveBillGoods != null) {
+                            BigDecimal owqQty = goods.getQuantity().subtract(purchaseReceiveBillGoods.getQuantity());
                             if (owqQty.compareTo(BigDecimal.ZERO) == 1) {
                                 endState++;
                             }

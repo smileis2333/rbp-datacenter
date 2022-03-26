@@ -381,6 +381,7 @@ public class MemberCardServiceBean implements MemberCardService {
     public DataResponse save(MemberCardSaveParam param) {
         boolean createFlag = true;
         MemberCardSaveContext context = new MemberCardSaveContext(param);
+
         //判断是新增还是更新
         MemberCard item = memberCardDao.selectOne(new QueryWrapper<MemberCard>().eq("code", param.getCode()));
         if (item != null) {
