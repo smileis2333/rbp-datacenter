@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.regent.rbp.api.core.base.Sex;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.integral.MemberIntegral;
 import com.regent.rbp.api.core.member.MemberCard;
@@ -579,14 +578,17 @@ public class MemberCardServiceBean implements MemberCardService {
         String qywxId = Optional.ofNullable(map.get("qywxId")).map(v -> (String) v).orElse(null);
         String externalUserId = Optional.ofNullable(map.get("externalUserId")).map(v -> (String) v).orElse(null);
 
-        // 获取用户ID
-        Long userId = dbDao.selectOneOfId(String.format("select id from rbp_user where qyweixin = '%s' limit 1", qywxId));
-        if (null == userId) {
+        // 获取用户ID、所属渠道
+        Map<String, Object> userMap = dbDao.selectMapById(String.format("select id,channel_id from rbp_user where qyweixin = '%s' limit 1", qywxId));
+        if (CollUtil.isEmpty(userMap)) {
             return;
         }
+        Long userId = (Long) userMap.get("id");
+        Long channelId = Optional.ofNullable(userMap.get("channel_id")).map(v -> (Long) v).orElse(null);
         // 填充会员信息，为空则更新
         card.setDeveloperId(Optional.ofNullable(card.getDeveloperId()).orElse(userId));
         card.setMaintainerId(Optional.ofNullable(card.getMaintainerId()).orElse(userId));
+        card.setRepairChannelId(channelId);
         if (createdFlag) {
             card.setDevelopeTime(Optional.ofNullable(card.getDevelopeTime()).orElse(new Date()));
         }
