@@ -60,6 +60,7 @@ public class ReceiveBillSaveParam {
 
     @Valid
     @NotEmpty
+    @GoodsInfo
     private List<ReceiveBillGoodsDetailData> goodsDetailData;
     private Long baseBusinessTypeId;
 

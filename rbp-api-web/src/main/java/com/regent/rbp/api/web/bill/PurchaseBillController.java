@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 /**
  * @program: rbp-datacenter
  * @description: 采购订单
@@ -38,7 +40,7 @@ public class PurchaseBillController {
 
     @ApiOperation(value = "新增")
     @PostMapping
-    public DataResponse save(@RequestBody PurchaseBillSaveParam param) {
+    public DataResponse save(@RequestBody @Valid PurchaseBillSaveParam param) {
         DataResponse result = purchaseBillService.save(param);
         return result;
     }

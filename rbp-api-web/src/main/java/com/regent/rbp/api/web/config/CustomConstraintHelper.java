@@ -53,8 +53,6 @@ public class CustomConstraintHelper extends ConstraintHelper {
             tmpConstraints.putAll((Map<Class<? extends Annotation>, List<ConstraintValidatorDescriptor<?>>>) o);
             // 在这里注册我们自定义的注解和注解处理器
             putConstraint(tmpConstraints, BarcodeCheck.class, BarcodeValidatorForQueryList.class);
-            putConstraint(tmpConstraints, BarcodeRelationCheck.class, BarcodeRelationCheckValidator.class);
-            putConstraint(tmpConstraints, BarcodeOrGoodsCode.class, BarcodeOrGoodsCodeValidator.class);
             putConstraints(tmpConstraints, BillStatus.class, BillStatusValidator.class, BillStatusValidatorForQueryList.class);
             putConstraints(tmpConstraints, BusinessTypeCheck.class, BusinessTypeValidatorForSingle.class, BusinessTypeValidatorForQueryList.class);
             putConstraints(tmpConstraints, ChannelCodeCheck.class, ChannelCodeValidatorForSingle.class, ChannelCodeValidatorForQueryList.class);
@@ -69,6 +67,7 @@ public class CustomConstraintHelper extends ConstraintHelper {
             putConstraints(tmpConstraints, Code.class, CodeValidatorForQueryList.class,CodeValidator.class);
             putConstraint(tmpConstraints, UniqueFields.class, UniqueFieldsValidator.class);
             putConstraint(tmpConstraints, Dictionary.class, DictionaryValidator.class);
+            putConstraint(tmpConstraints, GoodsInfo.class, GoodsInfoValidator.class);
             /**
              * 设置回field
              */

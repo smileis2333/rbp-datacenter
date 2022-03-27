@@ -93,8 +93,10 @@ public class GoodsSaveParam {
         return (type != null) && ((type == 2 && CollUtil.isEmpty(longList)) || (type == 1 && CollUtil.isNotEmpty(longList)));
     }
 
-    public void setType(Integer type) {
-        this.type = type;
-        barcodeData.forEach(e -> e.setGoodsType(type));
+    public List<BarcodeDto> getBarcodeData() {
+        if (CollUtil.isNotEmpty(barcodeData)){
+            barcodeData.forEach(e->e.setGoodsType(type));
+        }
+        return barcodeData;
     }
 }

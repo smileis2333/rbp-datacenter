@@ -2,9 +2,15 @@ package com.regent.rbp.api.dto.purchase;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
+import com.regent.rbp.api.dto.validate.BillStatus;
+import com.regent.rbp.api.dto.validate.GoodsInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
@@ -21,10 +27,12 @@ public class PurchaseBillSaveParam {
     private String moduleId;
 
     @ApiModelProperty(notes = "外部单号，唯一。对应Nebual手工单号")
+    @NotBlank
     private String manualId;
 
     @ApiModelProperty(notes = "单据日期")
     @JsonFormat(pattern = "yyyy-MM-dd")
+    @NotNull
     private Date billDate;
 
     @ApiModelProperty(notes = "交货日期")
@@ -32,6 +40,7 @@ public class PurchaseBillSaveParam {
     private Date deliveryDate;
 
     @ApiModelProperty(notes = "供应商编号")
+    @NotBlank
     private String supplierCode;
 
     @ApiModelProperty(notes = "业务类型名称")
@@ -47,8 +56,13 @@ public class PurchaseBillSaveParam {
     private String notes;
 
     @ApiModelProperty(notes = "单据状态(0.未审核,1.已审核,2.反审核,3.已作废)")
+    @NotNull
+    @BillStatus
     private Integer status;
 
+    @Valid
+    @NotEmpty
+    @GoodsInfo
     @ApiModelProperty(notes = "货品明细")
     private List<PurchaseBillGoodsDetailData> goodsDetailData;
 

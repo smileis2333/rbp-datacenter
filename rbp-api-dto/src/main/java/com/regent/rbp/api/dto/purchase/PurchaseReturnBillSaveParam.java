@@ -41,6 +41,7 @@ public class PurchaseReturnBillSaveParam extends BaseBillSaveParam {
 
     @Valid
     @NotEmpty
+    @GoodsInfo
     private List<PurchaseReceiveNoticeBillGoodsDetailData> goodsDetailData;
 
 }

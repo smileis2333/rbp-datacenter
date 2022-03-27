@@ -3,6 +3,7 @@ package com.regent.rbp.api.dao.base;
 import cn.hutool.core.collection.CollUtil;
 import com.regent.rbp.api.core.base.ModuleBusinessType;
 import com.regent.rbp.api.core.base.SizeDetail;
+import org.apache.ibatis.annotations.CacheNamespace;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Collections;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 /**
  * @author xuxing
  */
+@CacheNamespace
 public interface BaseDbDao {
 
     List<Map> selectTableDataByMap(@Param("tableName") String tableName, @Param("conditionMap") Map conditionMap);

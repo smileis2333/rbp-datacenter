@@ -24,11 +24,13 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * @see com.regent.rbp.api.dto.base.BarcodeDto#isSize()
  * 类似的做法，即is开头的xxxx方法做校验，也可能实现基于Bean的cross param validate的回显
  * @see Complex
+ * @see 可读性，建议从hibernate context在校验时，生成具体信息，其可以自动导航
  * @description
  */
 @Retention(RUNTIME)
 @Target(TYPE)
 @Constraint(validatedBy = { })
+@Deprecated
 public @interface FromTo {
     String message() default
             "${fromField==\"goodsCode\"?validatedValue.goodsCode:''}"+

@@ -2,6 +2,8 @@ package com.regent.rbp.api.core.base;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.infrastructure.util.MD5Util;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -13,7 +15,7 @@ import lombok.Data;
 @Data
 @ApiModel(description = "条形码")
 @TableName(value = "rbp_barcode")
-public class Barcode {
+public class Barcode extends Model<Goods> {
     @TableId("id")
     @ApiModelProperty(notes = "编码")
     private Long id;

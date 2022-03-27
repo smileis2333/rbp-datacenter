@@ -1,5 +1,6 @@
 package com.regent.rbp.api.service.receive.context;
 
+import cn.hutool.core.collection.CollUtil;
 import com.regent.rbp.api.core.receiveBill.*;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import lombok.Data;
@@ -26,6 +27,9 @@ public class ReceiveBillSaveContext {
     private Long baseBusinessTypeId;
 
     public void addGoodsDetailCustomData(List<CustomizeDataDto> customizeDataDto, Long billGoodsId) {
+        if (CollUtil.isEmpty(customizeDataDto)){
+            return;
+        }
         HashMap<String, Object> ele = new HashMap<>();
         customizeDataDto.forEach(e -> {
             ele.put(e.getCode(), e.getValue());

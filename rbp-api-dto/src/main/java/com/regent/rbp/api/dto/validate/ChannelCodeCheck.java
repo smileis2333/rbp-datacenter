@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
  * @author huangjie
  * @date : 2021/12/22
  * @description
+ * todo 复用@Code，跳掉重复的校验器实现
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

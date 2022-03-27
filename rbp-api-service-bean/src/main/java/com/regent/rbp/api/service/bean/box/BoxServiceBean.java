@@ -16,7 +16,10 @@ import com.regent.rbp.api.core.box.DistributionType;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.api.core.supplier.Supplier;
-import com.regent.rbp.api.dao.base.*;
+import com.regent.rbp.api.dao.base.BarcodeDao;
+import com.regent.rbp.api.dao.base.BaseDbDao;
+import com.regent.rbp.api.dao.base.ColorDao;
+import com.regent.rbp.api.dao.base.LongDao;
 import com.regent.rbp.api.dao.box.BoxDao;
 import com.regent.rbp.api.dao.box.BoxDetailDao;
 import com.regent.rbp.api.dao.box.DistributionTypeDao;
@@ -27,8 +30,6 @@ import com.regent.rbp.api.dto.box.*;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
-import com.regent.rbp.api.dto.validate.group.Complex;
-import com.regent.rbp.api.service.bean.bill.ValidateMessageUtil;
 import com.regent.rbp.api.service.box.BoxService;
 import com.regent.rbp.api.service.box.context.BoxSaveContext;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
@@ -185,9 +186,6 @@ public class BoxServiceBean implements BoxService {
                 e.setSizeId(goodsIdSizeNameIdMap.getOrDefault(e.getGoodsId(), Collections.emptyMap()).get(e.getSize()));
             });
         }
-
-        // manual trigger validate
-        if (!ValidateMessageUtil.pass(validator.validate(param, Complex.class), messages)) return;
 
         boxData.forEach(b -> {
             Box box = new Box();

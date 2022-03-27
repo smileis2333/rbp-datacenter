@@ -54,8 +54,10 @@ public class PurchaseReceiveNoticeBillSaveParam {
     private String notes;
     @Valid
     private List<CustomizeDataDto> customizeData;
+
     @Valid
     @NotEmpty
+    @GoodsInfo
     private List<PurchaseReceiveNoticeBillGoodsDetailData> goodsDetailData;
 
     @Valid

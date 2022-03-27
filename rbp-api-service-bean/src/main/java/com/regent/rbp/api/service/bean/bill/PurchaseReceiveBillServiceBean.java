@@ -23,13 +23,16 @@ import com.regent.rbp.api.dao.purchaseReceiveBill.PurchaseReceiveBillSizeDao;
 import com.regent.rbp.api.dao.salePlan.BusinessTypeDao;
 import com.regent.rbp.api.dao.salePlan.CurrencyTypeDao;
 import com.regent.rbp.api.dao.supplier.SupplierDao;
+import com.regent.rbp.api.dto.base.BillGoodsDetailData;
 import com.regent.rbp.api.dto.base.CustomizeColumnDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
-import com.regent.rbp.api.dto.purchase.*;
-import com.regent.rbp.api.dto.validate.group.Complex;
+import com.regent.rbp.api.dto.purchase.PurchaseReceiveBillGoodsDetailData;
+import com.regent.rbp.api.dto.purchase.PurchaseReceiveBillQueryParam;
+import com.regent.rbp.api.dto.purchase.PurchaseReceiveBillQueryResult;
+import com.regent.rbp.api.dto.purchase.PurchaseReceiveBillSaveParam;
 import com.regent.rbp.api.service.base.BaseDbService;
 import com.regent.rbp.api.service.constants.TableConstants;
 import com.regent.rbp.api.service.purchase.PurchaseReceiveBillService;
@@ -57,7 +60,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.util.*;
 import java.util.function.Function;
@@ -381,16 +383,18 @@ public class PurchaseReceiveBillServiceBean implements PurchaseReceiveBillServic
         List<String> goodsCode = CollUtil.map(goodsDetailData, e -> StrUtil.isNotBlank(e.getGoodsCode()) ? e.getGoodsCode() : null, true);
         List<Goods> goodsList = goodsDao.selectList(new QueryWrapper<Goods>().in("code", goodsCode));
         List<Long> goodsIdsList = CollUtil.map(goodsList, Goods::getId, true);
-        List<String> colorCodes = CollUtil.distinct(CollUtil.map(goodsDetailData, PurchaseReceiveNoticeBillGoodsDetailData::getColorCode, true));
-        List<String> longNames = CollUtil.distinct(CollUtil.map(goodsDetailData, PurchaseReceiveNoticeBillGoodsDetailData::getLongName, true));
-        List<String> sizeNames = CollUtil.map(goodsDetailData, PurchaseReceiveNoticeBillGoodsDetailData::getSize, true); // don't distinct, must align
+        List<String> colorCodes = CollUtil.distinct(CollUtil.map(goodsDetailData, BillGoodsDetailData::getColorCode, true));
+        List<String> longNames = CollUtil.distinct(CollUtil.map(goodsDetailData, BillGoodsDetailData::getLongName, true));
+        List<String> sizeNames = CollUtil.map(goodsDetailData, BillGoodsDetailData::getSize, true); // don't distinct, must align
 
         Map<String, Barcode> barcodeMap = barcodes.isEmpty() ? Collections.emptyMap() : barcodeDao.selectList(new QueryWrapper<Barcode>().in("barcode", barcodes)).stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
-        Map<String, Long> goodsMap = goodsIdsList.isEmpty() ? Collections.emptyMap() : goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
-        Map<String, Long> colorMap = colorCodes.isEmpty() ? Collections.emptyMap() : colorDao.selectList(new QueryWrapper<Color>().in("code", colorCodes)).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
-        Map<String, Long> longMap = longDao.selectList(new QueryWrapper<LongInfo>().in("name", longNames)).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
-        // todo 矫正，在补一层校验确保完整性
-        Map<String, Long> sizeMap = baseDbDao.getSizeNameList(goodsIdsList, sizeNames).stream().collect(Collectors.toMap(v -> v.getGoodsId() + StrUtil.UNDERLINE + v.getName(), SizeDetail::getId, (x1, x2) -> x1));
+        Map<String, Long> goodsCodeIdMap = goodsIdsList.isEmpty() ? Collections.emptyMap() : goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
+        Map<String, Goods> goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getCode, Function.identity()));
+        Integer type = goodsMap.get(param.getGoodsDetailData().get(0).getGoodsCode()).getType();
+
+        Map<String, Long> colorMap = type == 2 ? new HashMap<>() : colorCodes.isEmpty() ? Collections.emptyMap() : colorDao.selectList(new QueryWrapper<Color>().in("code", colorCodes)).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
+        Map<String, Long> longMap = type == 2 ? new HashMap<>() : longDao.selectList(new QueryWrapper<LongInfo>().in("name", longNames)).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
+        Map<String, Long> sizeMap = type == 2 ? new HashMap<>() : baseDbDao.getSizeNameList(goodsIdsList, sizeNames).stream().collect(Collectors.toMap(v -> v.getGoodsId() + StrUtil.UNDERLINE + v.getName(), SizeDetail::getId, (x1, x2) -> x1));
 
         goodsDetailData.forEach(e -> {
             if (StrUtil.isNotBlank(e.getBarcode())) {
@@ -402,16 +406,11 @@ public class PurchaseReceiveBillServiceBean implements PurchaseReceiveBillServic
                     e.setSizeId(barcode.getSizeId());
                 }
             } else {
-                e.setGoodsId(goodsMap.get(e.getGoodsCode()));
-                e.setColorId(colorMap.get(e.getColorCode()));
-                e.setLongId(longMap.get(e.getLongName()));
-                e.setSizeId(sizeMap.get(e.getGoodsId() + StrUtil.UNDERLINE + e.getSize()));
+                e.setGoodsId(goodsCodeIdMap.get(e.getGoodsCode()));
+                e.setColorId(colorMap.getOrDefault(e.getColorCode(), 1200000000000002L));
+                e.setLongId(longMap.getOrDefault(e.getLongName(), 1200000000000003L));
+                e.setSizeId(sizeMap.getOrDefault(e.getGoodsId() + StrUtil.UNDERLINE + e.getSize(), 1200000000000005L));
             }
-        });
-
-        Set<ConstraintViolation<PurchaseReceiveBillSaveParam>> validate = validator.validate(param, Complex.class);
-        validate.forEach(e -> {
-            messageList.add(e.getMessage());
         });
 
         if (!messageList.isEmpty()) {

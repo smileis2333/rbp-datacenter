@@ -2,9 +2,17 @@ package com.regent.rbp.api.dto.send;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
+import com.regent.rbp.api.dto.validate.BillStatus;
+import com.regent.rbp.api.dto.validate.ChannelCodeCheck;
+import com.regent.rbp.api.dto.validate.ConflictManualIdCheck;
+import com.regent.rbp.api.dto.validate.GoodsInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
@@ -18,22 +26,31 @@ import java.util.List;
 public class SendBillSaveParam {
 
     @ApiModelProperty(notes = "模块编号")
+    @NotBlank
     private String moduleId;
 
     @ApiModelProperty(notes = "外部单号，唯一。对应Nebual手工单号")
+    @ConflictManualIdCheck(targetTable = "rbp_send_bill")
+    @NotBlank
     private String manualId;
 
     @ApiModelProperty(notes = "单据日期")
     @JsonFormat(pattern = "yyyy-MM-dd")
+    @NotNull
     private Date billDate;
 
     @ApiModelProperty(notes = "发货渠道编号")
+    @ChannelCodeCheck
+    @NotNull
     private String channelCode;
 
     @ApiModelProperty(notes = "收货渠道编号")
+    @ChannelCodeCheck
+    @NotNull
     private String toChannelCode;
 
     @ApiModelProperty(notes = "业务类型名称")
+    @NotBlank
     private String businessType;
 
     @ApiModelProperty(notes = "币种名称")
@@ -43,6 +60,8 @@ public class SendBillSaveParam {
     private String notes;
 
     @ApiModelProperty(notes = "单据状态(0.未审核,1.已审核,2.反审核,3.已作废)")
+    @BillStatus
+    @NotNull
     private Integer status;
 
     /**************************** 物流信息 *********************************/
@@ -80,6 +99,9 @@ public class SendBillSaveParam {
     @ApiModelProperty(notes = "物流说明")
     private String logisticsNotes;
 
+    @Valid
+    @NotEmpty
+    @GoodsInfo
     @ApiModelProperty(notes = "货品明细")
     private List<SendBillGoodsDetailData> goodsDetailData;
 

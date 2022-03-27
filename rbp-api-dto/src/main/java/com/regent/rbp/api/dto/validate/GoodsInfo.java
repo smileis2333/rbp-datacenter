@@ -9,20 +9,16 @@ import java.lang.annotation.Target;
 
 /**
  * @author huangjie
- * @date : 2022/01/19
+ * @date : 2022/03/14
  * @description
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = {})
-public @interface Name {
-    String message() default "(${validatedValue})不存在";
+public @interface GoodsInfo {
+    String message() default "货品详情有误，请根据信息进行改正";
 
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
-
-    String targetTable();
-
-    String mapField() default "code";
 }

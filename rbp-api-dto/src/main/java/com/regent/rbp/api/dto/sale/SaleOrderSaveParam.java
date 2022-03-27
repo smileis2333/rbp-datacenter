@@ -63,8 +63,9 @@ public class SaleOrderSaveParam {
 
     private String notes;
 
-    @NotEmpty
     @Valid
+    @NotEmpty
+    @GoodsInfo
     private List<SalesOrderBillGoodsResult> goodsDetailData;
 
     @Valid

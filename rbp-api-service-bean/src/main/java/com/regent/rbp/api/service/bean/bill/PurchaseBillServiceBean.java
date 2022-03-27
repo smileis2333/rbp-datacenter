@@ -66,12 +66,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -262,24 +257,8 @@ public class PurchaseBillServiceBean extends ServiceImpl<PurchaseBillDao, Purcha
         }
 
         // 订单主体校验
-        if (null == bill.getBillDate()) {
-            messageList.add(getNotNullMessage("buildDate"));
-        }
         if (null == bill.getBusinessTypeId()) {
             messageList.add(getNotNullMessage("businessTypeId"));
-        }
-        if (StringUtil.isEmpty(bill.getManualId())) {
-            messageList.add(getNotNullMessage("manualId"));
-        }
-        if (null == bill.getSupplierId()) {
-            messageList.add(getNotNullMessage("supplierCode"));
-        }
-        if (null == bill.getStatus()) {
-            messageList.add(getNotNullMessage("status"));
-        }
-        // 货品明细
-        if (CollUtil.isEmpty(param.getGoodsDetailData())) {
-            messageList.add(getNotNullMessage("goodsDetailData"));
         }
         // 判断手工单号是否重复
         if (messageList.size() == 0) {
@@ -316,11 +295,12 @@ public class PurchaseBillServiceBean extends ServiceImpl<PurchaseBillDao, Purcha
         } else {
             List<Goods> goodsList = goodsDao.selectList(new QueryWrapper<Goods>().in("code", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getGoodsCode())));
             goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId, (x1, x2) -> x1));
-            List<Color> colorList = colorDao.selectList(new QueryWrapper<Color>().in("code", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getColorCode())));
+            Integer type = goodsList.stream().filter(e -> e.getCode().equals(param.getGoodsDetailData().get(0).getGoodsCode())).findFirst().get().getType();
+            List<Color> colorList = type == 2 ? Collections.emptyList() : colorDao.selectList(new QueryWrapper<Color>().in("code", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getColorCode())));
             colorMap = colorList.stream().collect(Collectors.toMap(Color::getCode, Color::getId, (x1, x2) -> x1));
-            List<LongInfo> longList = longDao.selectList(new QueryWrapper<LongInfo>().in("name", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getLongName())));
+            List<LongInfo> longList = type == 2 ? Collections.emptyList() : longDao.selectList(new QueryWrapper<LongInfo>().in("name", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getLongName())));
             longMap = longList.stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId, (x1, x2) -> x1));
-            List<SizeDetail> sizeClassList = baseDbDao.getSizeNameList(StreamUtil.toList(goodsList, Goods::getId), StreamUtil.toList(param.getGoodsDetailData(), v -> v.getSize()));
+            List<SizeDetail> sizeClassList = type == 2 ? Collections.emptyList() : baseDbDao.getSizeNameList(StreamUtil.toList(goodsList, Goods::getId), StreamUtil.toList(param.getGoodsDetailData(), v -> v.getSize()));
             sizeMap = sizeClassList.stream().collect(Collectors.toMap(v -> v.getGoodsId() + StrUtil.UNDERLINE + v.getName(), SizeDetail::getId, (x1, x2) -> x1));
         }
         // 来货超差类型
@@ -344,27 +324,12 @@ public class PurchaseBillServiceBean extends ServiceImpl<PurchaseBillDao, Purcha
                 size.setSizeId(barcode.getSizeId());
             } else {
                 size.setGoodsId(goodsMap.get(item.getGoodsCode()));
-                size.setLongId(longMap.get(item.getLongName()));
-                size.setColorId(colorMap.get(item.getColorCode()));
-                size.setSizeId(sizeMap.get(size.getGoodsId() + StrUtil.UNDERLINE + item.getSize()));
+                size.setLongId(longMap.getOrDefault(item.getLongName(), 1200000000000003L));
+                size.setColorId(colorMap.getOrDefault(item.getColorCode(), 1200000000000002L));
+                size.setSizeId(sizeMap.getOrDefault(size.getGoodsId() + StrUtil.UNDERLINE + item.getSize(), 1200000000000005L));
             }
             if (StringUtil.isNotEmpty(item.getReceiveDifferentType()) && null == receiveDifferentTypeMap.get(item.getReceiveDifferentType())) {
                 messageList.add(getNotExistMessage(atomicInteger.get(), "receiveDifferentType"));
-            }
-            if (null == size.getGoodsId()) {
-                messageList.add(getNotExistMessage(atomicInteger.get(), "goodsCode"));
-            }
-            if (null == size.getColorId()) {
-                messageList.add(getNotExistMessage(atomicInteger.get(), "colorCode"));
-            }
-            if (null == size.getLongId()) {
-                messageList.add(getNotExistMessage(atomicInteger.get(), "longName"));
-            }
-            if (null == size.getSizeId()) {
-                messageList.add(getNotExistMessage(atomicInteger.get(), "size"));
-            }
-            if (null == size.getQuantity()) {
-                messageList.add(getNotNullMessage(atomicInteger.get(), "quantity"));
             }
             if (CollUtil.isEmpty(messageList)) {
                 // 设置货品ID

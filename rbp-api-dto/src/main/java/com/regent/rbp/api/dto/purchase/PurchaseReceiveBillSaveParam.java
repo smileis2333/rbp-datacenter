@@ -58,8 +58,10 @@ public class PurchaseReceiveBillSaveParam {
     private Integer status;
 
     private List<CustomizeDataDto> customizeData;
+
     @Valid
     @NotEmpty
+    @GoodsInfo
     private List<PurchaseReceiveBillGoodsDetailData> goodsDetailData;
 
 }

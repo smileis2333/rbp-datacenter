@@ -2,9 +2,15 @@ package com.regent.rbp.api.dto.notice;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
+import com.regent.rbp.api.dto.validate.BillStatus;
+import com.regent.rbp.api.dto.validate.GoodsInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
@@ -24,16 +30,20 @@ public class NoticeBillSaveParam {
     private String salePlanNo;
 
     @ApiModelProperty(notes = "外部单号，唯一。对应Nebual手工单号")
+    @NotBlank
     private String manualId;
 
     @ApiModelProperty(notes = "单据日期")
     @JsonFormat(pattern = "yyyy-MM-dd")
+    @NotNull
     private Date billDate;
 
     @ApiModelProperty(notes = "发货渠道编号")
+    @NotBlank
     private String channelCode;
 
     @ApiModelProperty(notes = "收货渠道编号")
+    @NotBlank
     private String toChannelCode;
 
     @ApiModelProperty(notes = "业务类型名称")
@@ -49,6 +59,8 @@ public class NoticeBillSaveParam {
     private String notes;
 
     @ApiModelProperty(notes = "单据状态(0.未审核,1.已审核,2.反审核,3.已作废)")
+    @NotNull
+    @BillStatus
     private Integer status;
 
     /**************************** 物流信息 *********************************/
@@ -86,6 +98,9 @@ public class NoticeBillSaveParam {
     @ApiModelProperty(notes = "物流说明")
     private String logisticsNotes;
 
+    @Valid
+    @NotEmpty
+    @GoodsInfo
     @ApiModelProperty(notes = "货品明细")
     private List<NoticeBillGoodsDetailData> goodsDetailData;
 

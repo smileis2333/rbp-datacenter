@@ -24,12 +24,12 @@ import com.regent.rbp.api.dao.warehouse.user.UserProfileDao;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.sale.*;
-import com.regent.rbp.api.dto.validate.group.Complex;
 import com.regent.rbp.api.service.sale.SalesOrderBillService;
 import com.regent.rbp.api.service.sale.context.SalesOrderBillQueryContext;
 import com.regent.rbp.api.service.sale.context.SalesOrderBillSaveContext;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
+import com.regent.rbp.infrastructure.util.StreamUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +86,8 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
     EmployeeGoodsAchievementDao employeeGoodsAchievementDao;
     @Autowired
     private UserProfileDao userProfileDao;
+    @Autowired
+    BaseDbDao baseDbDao;
 
     @Override
     public PageDataResponse<SalesOrderBillQueryResult> query(SaleOrderQueryParam param) {
@@ -515,21 +517,21 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
             });
         } else {
             // 货品+颜色+内长+尺码
-            Map<String, Long> goodsCodeIdMap = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getCode, goodsDetailData.stream().map(SalesOrderBillGoodsResult::getGoodsCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
-            Map<String, Long> colorCodeIdMap = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getCode, goodsDetailData.stream().map(SalesOrderBillGoodsResult::getColorCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
-            Map<String, Long> longNameIdMap = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getName, goodsDetailData.stream().map(SalesOrderBillGoodsResult::getLongName).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
-            Map<String, Long> sizeIdMap = sizeClassDao.selectList(new LambdaQueryWrapper<SizeClass>().in(SizeClass::getName, goodsDetailData.stream().map(SalesOrderBillGoodsResult::getSize).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(SizeClass::getName, SizeClass::getId));
+            List<Goods> goodsList = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getCode, goodsDetailData.stream().map(SalesOrderBillGoodsResult::getGoodsCode).distinct().collect(Collectors.toList())));
+            Integer type = goodsList.stream().filter(e -> e.getCode().equals(param.getGoodsDetailData().get(0).getGoodsCode())).findFirst().get().getType();
+            Map<String, Long> goodsCodeIdMap = goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
+            Map<String, Long> colorCodeIdMap = type == 2 ? Collections.emptyMap() : colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getCode, goodsDetailData.stream().map(SalesOrderBillGoodsResult::getColorCode).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
+            Map<String, Long> longNameIdMap = type == 2 ? Collections.emptyMap() : longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getName, goodsDetailData.stream().map(SalesOrderBillGoodsResult::getLongName).distinct().collect(Collectors.toList()))).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
+            List<SizeDetail> sizeClassList = type == 2 ? Collections.emptyList() : baseDbDao.getSizeNameList(StreamUtil.toList(goodsList, Goods::getId), StreamUtil.toList(param.getGoodsDetailData(), v -> v.getSize()));
+            Map<String, Long> sizeMap = type == 2 ? Collections.emptyMap() : sizeClassList.stream().collect(Collectors.toMap(v -> v.getGoodsId() + StrUtil.UNDERLINE + v.getName(), SizeDetail::getId, (x1, x2) -> x1));
 
             goodsDetailData.forEach(e -> {
                 e.setGoodsId(goodsCodeIdMap.get(e.getGoodsCode()));
-                e.setColorId(colorCodeIdMap.get(e.getColorCode()));
-                e.setLongId(longNameIdMap.get(e.getLongName()));
-                e.setSizeId(sizeIdMap.get(e.getSize()));
+                e.setColorId(colorCodeIdMap.getOrDefault(e.getColorCode(), 1200000000000002L));
+                e.setLongId(longNameIdMap.getOrDefault(e.getLongName(), 1200000000000003L));
+                e.setSizeId(sizeMap.getOrDefault(e.getGoodsId() + StrUtil.UNDERLINE + e.getSize(), 1200000000000005L));
             });
         }
-
-        // manual trigger validate
-        if (!ValidateMessageUtil.pass(validator.validate(param, Complex.class), errorMsgList)) return errorMsgList;
 
         // process convert
         if (CollUtil.isNotEmpty(param.getRetailPayTypeData())) {
@@ -617,9 +619,9 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         // 计算汇总数据
         salesOrderBill.setSumSkuQuantity(goodsDetailData.stream().map(SalesOrderBillGoodsResult::getQuantity).collect(summingUp()));
         salesOrderBill.setSumItemQuantity(new BigDecimal(goodsDetailData.size()));
-        salesOrderBill.setSumRetailAmount(goodsDetailData.stream().map(e->e.getRetailPrice().multiply(e.getQuantity())).collect(summingUp()));
-        salesOrderBill.setSumOriginalAmount(goodsDetailData.stream().map(e->e.getOriginalPrice().multiply(e.getQuantity())).collect(summingUp()));
-        salesOrderBill.setSumTagAmount(goodsDetailData.stream().map(e->e.getTagPrice().multiply(e.getQuantity())).collect(summingUp()));
+        salesOrderBill.setSumRetailAmount(goodsDetailData.stream().map(e -> e.getRetailPrice().multiply(e.getQuantity())).collect(summingUp()));
+        salesOrderBill.setSumOriginalAmount(goodsDetailData.stream().map(e -> e.getOriginalPrice().multiply(e.getQuantity())).collect(summingUp()));
+        salesOrderBill.setSumTagAmount(goodsDetailData.stream().map(e -> e.getTagPrice().multiply(e.getQuantity())).collect(summingUp()));
         salesOrderBill.setSumSalesAmount(goodsDetailData.stream().map(e -> e.getSalesPrice().multiply(e.getQuantity())).collect(summingUp()));
         return errorMsgList;
     }

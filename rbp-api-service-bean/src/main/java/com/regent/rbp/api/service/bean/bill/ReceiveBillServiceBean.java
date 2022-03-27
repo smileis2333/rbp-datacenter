@@ -128,7 +128,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
         ReceiveBillQueryContext context = new ReceiveBillQueryContext();
         convertQueryContext(param, context);
         PageDataResponse<ReceiveBillQueryResult> result = new PageDataResponse<>();
-        if (!context.isValid()){
+        if (!context.isValid()) {
             result.setData(Collections.emptyList());
             result.setTotalCount(0);
             return result;
@@ -487,7 +487,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             if (sendBill.getChannelId().longValue() != context.getBill().getChannelId() | sendBill.getToChannelId().longValue() != context.getBill().getToChannelId()) {
                 messageList.add(getNotExistMessage("sendNoPathNotMatch"));
             }
-            if (!messageList.isEmpty()){
+            if (!messageList.isEmpty()) {
                 return;
             }
         }
@@ -536,13 +536,14 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             barcodeMap = barcodes.stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity(), (x1, x2) -> x1));
         } else {
             List<Goods> goodsList = goodsDao.selectList(new QueryWrapper<Goods>().in("code", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getGoodsCode())));
+            Integer type = goodsList.stream().filter(e -> e.getCode().equals(param.getGoodsDetailData().get(0).getGoodsCode())).findFirst().get().getType();
             goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId, (x1, x2) -> x1));
-            List<Color> colorList = colorDao.selectList(new QueryWrapper<Color>().in("code", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getColorCode())));
+            List<Color> colorList = type == 2 ? Collections.emptyList() : colorDao.selectList(new QueryWrapper<Color>().in("code", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getColorCode())));
             colorMap = colorList.stream().collect(Collectors.toMap(Color::getCode, Color::getId, (x1, x2) -> x1));
-            List<LongInfo> longList = longDao.selectList(new QueryWrapper<LongInfo>().in("name", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getLongName())));
+            List<LongInfo> longList = type == 2 ? Collections.emptyList() : longDao.selectList(new QueryWrapper<LongInfo>().in("name", StreamUtil.toSet(param.getGoodsDetailData(), v -> v.getLongName())));
             longMap = longList.stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId, (x1, x2) -> x1));
-            List<SizeDetail> sizeClassList = baseDbDao.getSizeNameList(StreamUtil.toList(goodsList, Goods::getId), StreamUtil.toList(param.getGoodsDetailData(), v -> v.getSize()));
-            sizeMap = sizeClassList.stream().collect(Collectors.toMap(v -> v.getGoodsId() + StrUtil.UNDERLINE + v.getName(), SizeDetail::getId, (x1, x2) -> x1));
+            List<SizeDetail> sizeClassList = type == 2 ? Collections.emptyList() : baseDbDao.getSizeNameList(StreamUtil.toList(goodsList, Goods::getId), StreamUtil.toList(param.getGoodsDetailData(), v -> v.getSize()));
+            sizeMap = type == 2 ? Collections.emptyMap() : sizeClassList.stream().collect(Collectors.toMap(v -> v.getGoodsId() + StrUtil.UNDERLINE + v.getName(), SizeDetail::getId, (x1, x2) -> x1));
         }
         // 尺码明细
         List<ReceiveBillRealSize> sizeList = new ArrayList<>();
@@ -564,27 +565,9 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
                 size.setSizeId(barcode.getSizeId());
             } else {
                 size.setGoodsId(goodsMap.get(item.getGoodsCode()));
-                size.setLongId(longMap.get(item.getLongName()));
-                size.setColorId(colorMap.get(item.getColorCode()));
-                size.setSizeId(sizeMap.get(size.getGoodsId() + StrUtil.UNDERLINE + item.getSize()));
-            }
-            if (null == priceTypeMap.get(item.getPriceType())) {
-                messageList.add(getNotExistMessage(atomicInteger.get(), "priceType"));
-            }
-            if (null == size.getGoodsId()) {
-                messageList.add(getNotExistMessage(atomicInteger.get(), "goodsCode"));
-            }
-            if (null == size.getColorId()) {
-                messageList.add(getNotExistMessage(atomicInteger.get(), "colorCode"));
-            }
-            if (null == size.getLongId()) {
-                messageList.add(getNotExistMessage(atomicInteger.get(), "longName"));
-            }
-            if (null == size.getSizeId()) {
-                messageList.add(getNotExistMessage(atomicInteger.get(), "size"));
-            }
-            if (null == size.getQuantity()) {
-                messageList.add(getNotNullMessage(atomicInteger.get(), "quantity"));
+                size.setLongId(longMap.getOrDefault(item.getLongName(), 1200000000000003L));
+                size.setColorId(colorMap.getOrDefault(item.getColorCode(), 1200000000000002L));
+                size.setSizeId(sizeMap.getOrDefault(size.getGoodsId() + StrUtil.UNDERLINE + item.getSize(), 1200000000000005L));
             }
             if (CollUtil.isEmpty(messageList)) {
                 // 设置货品ID
@@ -647,16 +630,8 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
         });
     }
 
-    private static String getNotNullMessage(String key) {
-        return getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage(key)});
-    }
-
     private static String getNotExistMessage(String key) {
         return getMessageByParams("dataNotExist", new String[]{LanguageUtil.getMessage(key)});
-    }
-
-    private static String getNotNullMessage(Integer index, String key) {
-        return getMessageByParams("dataWhichRow", new Object[]{index, getNotNullMessage(key)});
     }
 
     private static String getNotExistMessage(Integer index, String key) {

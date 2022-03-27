@@ -64,8 +64,9 @@ public class PurchaseReturnNoticeBillSaveParam {
     @Valid
     private List<CustomizeDataDto> customizeData;
 
-    @NotEmpty
     @Valid
+    @NotEmpty
+    @GoodsInfo
     private List<PurchaseReturnNoticeBillGoodsDetailData> goodsDetailData;
 
     @ApiModelProperty(notes = "货品自定义字段")

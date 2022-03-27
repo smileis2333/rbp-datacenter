@@ -31,6 +31,7 @@ import com.regent.rbp.api.service.sale.context.SalesPlanSaveContext;
 import com.regent.rbp.common.service.basic.SystemCommonService;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
+import com.regent.rbp.infrastructure.util.StreamUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -260,10 +261,13 @@ public class SalesPlanBillServiceBean implements SalesPlanBillService {
         }
 
         List<SalesPlanBillGoodsResult> withoutBarcodeGoods = param.getGoodsDetailData().stream().filter(e -> StrUtil.isEmpty(e.getBarcode())).collect(Collectors.toList());
-        Map<String, LongInfo> longMap = withoutBarcodeGoods.isEmpty() ? new HashMap<>() : longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getName, withoutBarcodeGoods.stream().map(SalesPlanBillGoodsResult::getLongName).collect(Collectors.toSet()))).stream().collect(Collectors.toMap(LongInfo::getName, Function.identity()));
-        Map<String, Long> colorMap = withoutBarcodeGoods.isEmpty() ? new HashMap<>() : colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getCode, withoutBarcodeGoods.stream().map(SalesPlanBillGoodsResult::getColorCode).collect(Collectors.toSet()))).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
-        Map<String, Goods> goodsMap = withoutBarcodeGoods.isEmpty() ? new HashMap<>() : goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getCode, withoutBarcodeGoods.stream().map(SalesPlanBillGoodsResult::getGoodsCode).collect(Collectors.toSet()))).stream().collect(Collectors.toMap(Goods::getCode, Function.identity()));
-        Map<String, SizeDetail> sizeDetailMap = goodsMap.isEmpty() ? new HashMap<>() : sizeDetailDao.selectList(new QueryWrapper<SizeDetail>().in("size_class_id", goodsMap.values().stream().map(Goods::getSizeClassId).collect(Collectors.toSet()))).stream().collect(Collectors.toMap(e -> e.getSizeClassId() + e.getName(), Function.identity()));
+        List<Goods> goodsList = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getCode, withoutBarcodeGoods.stream().map(SalesPlanBillGoodsResult::getGoodsCode).collect(Collectors.toSet())));
+        Integer type = goodsList.stream().filter(e -> e.getCode().equals(param.getGoodsDetailData().get(0).getGoodsCode())).findFirst().get().getType();
+        Map<String, Long> longNameIdMap = type == 2 ? Collections.emptyMap() : withoutBarcodeGoods.isEmpty() ? new HashMap<>() : longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getName, withoutBarcodeGoods.stream().map(SalesPlanBillGoodsResult::getLongName).collect(Collectors.toSet()))).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
+        Map<String, Long> colorCodeIdMap = type == 2 ? Collections.emptyMap() : withoutBarcodeGoods.isEmpty() ? new HashMap<>() : colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getCode, withoutBarcodeGoods.stream().map(SalesPlanBillGoodsResult::getColorCode).collect(Collectors.toSet()))).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
+        Map<String, Goods> goodsMap = withoutBarcodeGoods.isEmpty() ? new HashMap<>() : goodsList.stream().collect(Collectors.toMap(Goods::getCode, Function.identity()));
+        List<SizeDetail> sizeClassList = type == 2 ? Collections.emptyList() : baseDbDao.getSizeNameList(StreamUtil.toList(goodsList, Goods::getId), StreamUtil.toList(param.getGoodsDetailData(), v -> v.getSize()));
+        Map<String, Long> sizeMap = type == 2 ? Collections.emptyMap() : sizeClassList.stream().collect(Collectors.toMap(v -> v.getGoodsId() + StrUtil.UNDERLINE + v.getName(), SizeDetail::getId, (x1, x2) -> x1));
         List<String> barcodes = param.getGoodsDetailData().isEmpty() ? new ArrayList<>() : param.getGoodsDetailData().stream().map(SalesPlanBillGoodsResult::getBarcode).distinct().collect(Collectors.toList());
         Map<String, Barcode> barcodeMap = barcodes.isEmpty() ? new HashMap<>() : barcodeDao.selectList(new LambdaQueryWrapper<Barcode>().in(Barcode::getBarcode, barcodes)).stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
 
@@ -273,89 +277,66 @@ public class SalesPlanBillServiceBean implements SalesPlanBillService {
         SalePlanBill salePlanBill = context.getSalePlanBill();
         param.getGoodsDetailData().forEach(g -> {
             if (StrUtil.isNotEmpty(g.getBarcode())) {
-                Barcode barcode;
-                if ((barcode = barcodeMap.get(g.getBarcode())) == null)
-                    errorMsgList.add(String.format("条形码(barcode) %s 不存在", g.getBarcode()));
-                else {
-                    SalePlanBillGoods billGoods = null;
-                    SalePlanBillGoods.GoodsIdBalancePricePair key = new SalePlanBillGoods.GoodsIdBalancePricePair(barcode.getGoodsId(), g.getBalancePrice());
-                    if ((billGoods = salePlanBillGoodsMap.get(key)) == null) {
-                        billGoods = new SalePlanBillGoods();
-                        billGoods.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-                        BeanUtil.copyProperties(g, billGoods, "goodsCustomizeData");
-                        billGoods.setGoodsId(barcode.getGoodsId());
-                        billGoods.setBillId(salePlanBill.getId());
-                        HashMap<String, Object> customData = new HashMap<>();
-                        g.getGoodsCustomizeData().forEach(item -> customData.put(item.getCode(), item.getValue()));
-                        customData.put("id", billGoods.getId());
-                        billGoods.setGoodsCustomizeData(customData);
-                        salePlanBillGoodsMap.put(key, billGoods);
-                    }
-                    SalePlanBillSize billGoodsSize = new SalePlanBillSize();
-                    BeanUtil.copyProperties(g, billGoodsSize);
-                    BeanUtil.copyProperties(barcode, billGoodsSize);
-                    billGoodsSize.setBillGoodsId(billGoods.getId());
-                    billGoodsSize.setBillId(salePlanBill.getId());
-                    List<SalePlanBillSize> gbc = salePlanBillSizeMap.getOrDefault(key, new ArrayList<>());
-                    gbc.add(billGoodsSize);
-                    salePlanBillSizeMap.putIfAbsent(key, gbc);
-                    context.addSalePlanBillSize(billGoodsSize);
+                Barcode barcode = barcodeMap.get(g.getBarcode());
+                SalePlanBillGoods billGoods = null;
+                SalePlanBillGoods.GoodsIdBalancePricePair key = new SalePlanBillGoods.GoodsIdBalancePricePair(barcode.getGoodsId(), g.getBalancePrice());
+                if ((billGoods = salePlanBillGoodsMap.get(key)) == null) {
+                    billGoods = new SalePlanBillGoods();
+                    billGoods.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                    BeanUtil.copyProperties(g, billGoods, "goodsCustomizeData");
+                    billGoods.setGoodsId(barcode.getGoodsId());
+                    billGoods.setBillId(salePlanBill.getId());
+                    HashMap<String, Object> customData = new HashMap<>();
+                    g.getGoodsCustomizeData().forEach(item -> customData.put(item.getCode(), item.getValue()));
+                    customData.put("id", billGoods.getId());
+                    billGoods.setGoodsCustomizeData(customData);
+                    salePlanBillGoodsMap.put(key, billGoods);
                 }
+                SalePlanBillSize billGoodsSize = new SalePlanBillSize();
+                BeanUtil.copyProperties(g, billGoodsSize);
+                BeanUtil.copyProperties(barcode, billGoodsSize);
+                billGoodsSize.setBillGoodsId(billGoods.getId());
+                billGoodsSize.setBillId(salePlanBill.getId());
+                List<SalePlanBillSize> gbc = salePlanBillSizeMap.getOrDefault(key, new ArrayList<>());
+                gbc.add(billGoodsSize);
+                salePlanBillSizeMap.putIfAbsent(key, gbc);
+                context.addSalePlanBillSize(billGoodsSize);
             } else {
                 Goods goods = null;
-                if ((goods = goodsMap.get(g.getGoodsCode())) == null) {
-                    errorMsgList.add(String.format("货号(goodsCode) %s 不存在", g.getGoodsCode()));
-                } else {
-                    SalePlanBillGoods billGoods = null;
-                    SalePlanBillGoods.GoodsIdBalancePricePair key = new SalePlanBillGoods.GoodsIdBalancePricePair(goods.getId(), g.getBalancePrice());
-                    if ((billGoods = salePlanBillGoodsMap.get(key)) == null) {
-                        billGoods = new SalePlanBillGoods();
-                        billGoods.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-                        BeanUtil.copyProperties(g, billGoods, "goodsCustomizeData");
-                        billGoods.setGoodsId(goods.getId());
-                        HashMap<String, Object> customData = new HashMap<>();
-                        g.getGoodsCustomizeData().forEach(item -> customData.put(item.getCode(), item.getValue()));
-                        customData.put("id", billGoods.getId());
-                        billGoods.setGoodsCustomizeData(customData);
-                        billGoods.setBillId(salePlanBill.getId());
-                        salePlanBillGoodsMap.put(key, billGoods);
-                    }
-
-                    SalePlanBillSize billGoodsSize = new SalePlanBillSize();
-                    BeanUtil.copyProperties(g, billGoodsSize);
-                    Long billId = salePlanBill.getId();
-                    Long goodsId = goods.getId();
-                    Long longId = Optional.ofNullable(longMap.get(g.getLongName())).map(LongInfo::getId).orElse(null);
-                    Long colorId = Optional.ofNullable(colorMap.get(g.getColorCode())).orElse(null);
-                    Long sizeId = Optional.ofNullable(sizeDetailMap.get(goods.getSizeClassId() + g.getSize())).map(SizeDetail::getId).orElse(null);
-                    billGoodsSize.setBillId(billId);
-                    billGoodsSize.setGoodsId(goodsId);
-                    billGoodsSize.setBillGoodsId(billGoods.getId());
-                    billGoodsSize.setSizeId(sizeId);
-                    billGoodsSize.setColorId(colorId);
-                    billGoodsSize.setLongId(longId);
-                    List<SalePlanBillSize> gbc = salePlanBillSizeMap.getOrDefault(key, new ArrayList<>());
-                    gbc.add(billGoodsSize);
-                    salePlanBillSizeMap.putIfAbsent(key, gbc);
-                    context.addSalePlanBillSize(billGoodsSize);
+                SalePlanBillGoods billGoods = null;
+                SalePlanBillGoods.GoodsIdBalancePricePair key = new SalePlanBillGoods.GoodsIdBalancePricePair(goods.getId(), g.getBalancePrice());
+                if ((billGoods = salePlanBillGoodsMap.get(key)) == null) {
+                    billGoods = new SalePlanBillGoods();
+                    billGoods.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                    BeanUtil.copyProperties(g, billGoods, "goodsCustomizeData");
+                    billGoods.setGoodsId(goods.getId());
+                    HashMap<String, Object> customData = new HashMap<>();
+                    g.getGoodsCustomizeData().forEach(item -> customData.put(item.getCode(), item.getValue()));
+                    customData.put("id", billGoods.getId());
+                    billGoods.setGoodsCustomizeData(customData);
+                    billGoods.setBillId(salePlanBill.getId());
+                    salePlanBillGoodsMap.put(key, billGoods);
                 }
+
+                SalePlanBillSize billGoodsSize = new SalePlanBillSize();
+                BeanUtil.copyProperties(g, billGoodsSize);
+                Long billId = salePlanBill.getId();
+                Long goodsId = goods.getId();
+                billGoodsSize.setBillId(billId);
+                billGoodsSize.setGoodsId(goodsId);
+                billGoodsSize.setBillGoodsId(billGoods.getId());
+                billGoodsSize.setSizeId(sizeMap.getOrDefault(billGoodsSize.getGoodsId() + StrUtil.UNDERLINE + g.getSize(), 1200000000000005L));
+                billGoodsSize.setColorId(colorCodeIdMap.getOrDefault(g.getColorCode(), 1200000000000002L));
+                billGoodsSize.setLongId(longNameIdMap.getOrDefault(g.getLongName(), 1200000000000003L));
+                List<SalePlanBillSize> gbc = salePlanBillSizeMap.getOrDefault(key, new ArrayList<>());
+                gbc.add(billGoodsSize);
+                salePlanBillSizeMap.putIfAbsent(key, gbc);
+                context.addSalePlanBillSize(billGoodsSize);
+
             }
 
         });
         salePlanBillGoodsMap.values().forEach(context::addSalePlanBillGoods);
-
-        for (int i = 0; i < context.getSalePlanBillSizeList().size(); i++) {
-            if (StrUtil.isNotEmpty(param.getGoodsDetailData().get(i).getColorCode()) && context.getSalePlanBillSizeList().get(i).getColorId() == null) {
-                errorMsgList.add(String.format("颜色编号(colorCode) %s 不存在", param.getGoodsDetailData().get(i).getColorCode()));
-            }
-            if (context.getSalePlanBillSizeList().get(i).getLongId() == null) {
-                errorMsgList.add(String.format("内长(longName) %s 不存在", param.getGoodsDetailData().get(i).getLongName()));
-            }
-            if (context.getSalePlanBillSizeList().get(i).getSizeId() == null) {
-                errorMsgList.add(String.format("尺码(size) %s 不存在", param.getGoodsDetailData().get(i).getSize()));
-            }
-        }
-
         return errorMsgList;
     }
 

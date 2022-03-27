@@ -6,6 +6,7 @@ import com.regent.rbp.api.dto.validate.*;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -49,7 +50,9 @@ public class SalePlanSaveParam {
     @ApiModelProperty(notes = "自定义字段")
     private List<CustomizeDataDto> customizeData;
 
+    @Valid
     @NotEmpty
+    @GoodsInfo
     private List<SalesPlanBillGoodsResult> goodsDetailData;
 
     // ---- 物流信息

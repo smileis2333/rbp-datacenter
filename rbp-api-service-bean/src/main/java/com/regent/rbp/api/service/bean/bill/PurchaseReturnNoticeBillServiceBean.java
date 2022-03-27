@@ -34,7 +34,6 @@ import com.regent.rbp.api.dto.purchaseReturn.PurchaseReturnNoticeBillGoodsDetail
 import com.regent.rbp.api.dto.purchaseReturn.PurchaseReturnNoticeBillQueryParam;
 import com.regent.rbp.api.dto.purchaseReturn.PurchaseReturnNoticeBillQueryResult;
 import com.regent.rbp.api.dto.purchaseReturn.PurchaseReturnNoticeBillSaveParam;
-import com.regent.rbp.api.dto.validate.group.Complex;
 import com.regent.rbp.api.service.base.BaseDbService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.api.service.constants.TableConstants;
@@ -51,7 +50,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.Validator;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
@@ -99,9 +97,6 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
     BaseDbService baseDbService;
     @Autowired
     private SystemCommonService systemCommonService;
-    @Autowired
-    private Validator validator;
-
 
     @Override
     public PageDataResponse<PurchaseReturnNoticeBillQueryResult> query(PurchaseReturnNoticeBillQueryParam param) {
@@ -401,16 +396,17 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
         List<String> barcodes = CollUtil.map(goodsDetailData, e -> StrUtil.isNotBlank(e.getBarcode()) ? e.getBarcode() : null, true);
         List<String> goodsCode = CollUtil.map(goodsDetailData, e -> StrUtil.isNotBlank(e.getGoodsCode()) ? e.getGoodsCode() : null, true);
         List<Goods> goodsList = goodsDao.selectList(new QueryWrapper<Goods>().in("code", goodsCode));
+        Integer type = goodsList.stream().filter(e -> e.getCode().equals(param.getGoodsDetailData().get(0).getGoodsCode())).findFirst().get().getType();
         List<Long> goodsIdsList = CollUtil.map(goodsList, Goods::getId, true);
-        List<String> colorCodes = CollUtil.distinct(CollUtil.map(goodsDetailData, PurchaseReturnNoticeBillGoodsDetailData::getColorCode, true));
-        List<String> longNames = CollUtil.distinct(CollUtil.map(goodsDetailData, PurchaseReturnNoticeBillGoodsDetailData::getLongName, true));
-        List<String> sizeNames = CollUtil.map(goodsDetailData, PurchaseReturnNoticeBillGoodsDetailData::getSize, true); // don't distinct, must align
+        List<String> colorCodes = type == 2 ? Collections.emptyList() : CollUtil.distinct(CollUtil.map(goodsDetailData, PurchaseReturnNoticeBillGoodsDetailData::getColorCode, true));
+        List<String> longNames = type == 2 ? Collections.emptyList() : CollUtil.distinct(CollUtil.map(goodsDetailData, PurchaseReturnNoticeBillGoodsDetailData::getLongName, true));
+        List<String> sizeNames = type == 2 ? Collections.emptyList() : CollUtil.map(goodsDetailData, PurchaseReturnNoticeBillGoodsDetailData::getSize, true); // don't distinct, must align
 
         Map<String, Barcode> barcodeMap = barcodes.isEmpty() ? Collections.emptyMap() : barcodeDao.selectList(new QueryWrapper<Barcode>().in("barcode", barcodes)).stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
         Map<String, Long> goodsMap = goodsIdsList.isEmpty() ? Collections.emptyMap() : goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
         Map<String, Long> colorMap = colorCodes.isEmpty() ? Collections.emptyMap() : colorDao.selectList(new QueryWrapper<Color>().in("code", colorCodes)).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
-        Map<String, Long> longMap = longDao.selectList(new QueryWrapper<LongInfo>().in("name", longNames)).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
-        Map<Long, Map<String, Long>> goodsSizeNameMap = baseDbDao.getGoodsIdSizeNameIdMap(goodsCode, sizeNames, goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId)));
+        Map<String, Long> longMap = longNames.isEmpty() ? Collections.emptyMap() : longDao.selectList(new QueryWrapper<LongInfo>().in("name", longNames)).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
+        Map<Long, Map<String, Long>> goodsSizeNameMap = type == 2 ? Collections.emptyMap() : baseDbDao.getGoodsIdSizeNameIdMap(goodsCode, sizeNames, goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId)));
         goodsDetailData.forEach(e -> {
             if (StrUtil.isNotBlank(e.getBarcode())) {
                 Barcode barcode = null;
@@ -423,18 +419,16 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
                 }
             } else {
                 e.setGoodsId(goodsMap.get(e.getGoodsCode()));
-                e.setColorId(colorMap.get(e.getColorCode()));
-                e.setLongId(longMap.get(e.getLongName()));
-                e.setSizeId(goodsSizeNameMap.getOrDefault(e.getGoodsId(), Collections.emptyMap()).get(e.getSize()));
+                e.setColorId(colorMap.getOrDefault(e.getColorCode(), 1200000000000002L));
+                e.setLongId(longMap.getOrDefault(e.getLongName(), 1200000000000003L));
+                e.setSizeId(goodsSizeNameMap.getOrDefault(e.getGoodsId(), Collections.emptyMap()).getOrDefault(e.getSize(), 1200000000000005L));
             }
         });
-
-        if (!ValidateMessageUtil.pass(validator.validate(param, Complex.class), messageList)) return;
 
         // 根据货品+价格分组，支持同款多价
         param.getGoodsDetailData().stream().collect(Collectors.groupingBy(GoodsDetailIdentifier::getSameGoodsDiffPriceKey)).forEach((key, sizes) -> {
             PurchaseReturnNoticeBillGoods billGoods = BeanUtil.copyProperties(sizes.get(0), PurchaseReturnNoticeBillGoods.class);
-            billGoods.setQuantity(sizes.stream().map(PurchaseReturnNoticeBillGoodsDetailData::getQuantity).reduce(BigDecimal.ZERO,BigDecimal::add));
+            billGoods.setQuantity(sizes.stream().map(PurchaseReturnNoticeBillGoodsDetailData::getQuantity).reduce(BigDecimal.ZERO, BigDecimal::add));
             context.addBillGoods(billGoods);
             context.addGoodsDetailCustomData(sizes.get(0).getGoodsCustomizeData(), billGoods.getId());
             sizes.forEach(size -> {
@@ -444,33 +438,6 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
             });
         });
 
-    }
-
-    private PurchaseReturnNoticeBillGoods giveBillGoods(Long billId, PurchaseReturnNoticeBillGoodsDetailData goodsResult, Long goodsId) {
-        PurchaseReturnNoticeBillGoods billGoods = new PurchaseReturnNoticeBillGoods();
-        billGoods.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-        billGoods.setBillId(billId);
-        billGoods.setGoodsId(goodsId);
-        billGoods.setDiscount(goodsResult.getDiscount());
-        billGoods.setTagPrice(goodsResult.getTagPrice());
-        billGoods.setBalancePrice(goodsResult.getBalancePrice());
-        billGoods.setCurrencyPrice(goodsResult.getCurrencyPrice());
-        billGoods.setQuantity(goodsResult.getQuantity());
-        billGoods.setRemark(goodsResult.getRemark());
-        return billGoods;
-    }
-
-    private PurchaseReturnNoticeBillSize giveBillSize(Long billId, Long billGoodsId, Barcode barcode, BigDecimal quantity) {
-        PurchaseReturnNoticeBillSize billSize = new PurchaseReturnNoticeBillSize();
-        billSize.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-        billSize.setBillId(billId);
-        billSize.setBillGoodsId(billGoodsId);
-        billSize.setGoodsId(barcode.getGoodsId());
-        billSize.setColorId(barcode.getColorId());
-        billSize.setLongId(barcode.getLongId());
-        billSize.setSizeId(barcode.getSizeId());
-        billSize.setQuantity(quantity);
-        return billSize;
     }
 
     private void save(PurchaseReturnNoticeBillSaveContext context) {
