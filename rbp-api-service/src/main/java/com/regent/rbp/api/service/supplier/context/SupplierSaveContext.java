@@ -60,7 +60,8 @@ public class SupplierSaveContext {
         item.setSupplierId(supplier.getId());
         item.setAddress(addressData.getAddress());
         item.setContactsPerson(addressData.getContactsPerson());
-        item.setPostCode(Long.valueOf(addressData.getPostCode()));
+        if (StrUtil.isNotEmpty(addressData.getPostCode()))
+            item.setPostCode(Long.valueOf(addressData.getPostCode()));
         item.setMobile(Long.valueOf(addressData.getMobile()));
         item.setDefaultFlag(false);
         item.setNation(addressData.getNation());
