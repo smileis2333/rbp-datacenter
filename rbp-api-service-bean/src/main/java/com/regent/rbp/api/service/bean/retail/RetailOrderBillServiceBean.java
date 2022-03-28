@@ -9,10 +9,12 @@ import com.regent.rbp.api.core.base.ModuleBusinessType;
 import com.regent.rbp.api.core.retail.RetailOrderBill;
 import com.regent.rbp.api.core.retail.RetailOrderBillCustomerInfo;
 import com.regent.rbp.api.core.retail.RetailOrderBillGoods;
+import com.regent.rbp.api.core.retail.RetailOrderBillPaymentInfo;
 import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.retail.RetailOrderBillCustomInfoDao;
 import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
+import com.regent.rbp.api.dao.retail.RetailOrderBillPaymentInfoDao;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.retail.RetailOrderBillGoodsDetailData;
@@ -34,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +53,8 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
 
     @Autowired
     private RetailOrderBillDao retailOrderBillDao;
+    @Autowired
+    private RetailOrderBillPaymentInfoDao retailOrderBillPaymentInfoDao;
     @Autowired
     private RetailOrderBillCustomInfoDao retailOrderBillCustomInfoDao;
     @Autowired
@@ -74,6 +79,7 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         RetailOrderBill bill = context.getBill();
         RetailOrderBillCustomerInfo customerInfo = context.getBillCustomerInfo();
         List<RetailOrderBillGoods> billGoodsList = context.getBillGoodsList();
+        List<RetailOrderBillPaymentInfo> paymentInfoList = context.getBillPaymentInfoList();
         // 参数验证
         String msg = this.verificationProperty(bill, customerInfo, billGoodsList);
         if (StringUtil.isNotEmpty(msg)) {
@@ -83,6 +89,10 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         bill.setBillNo(systemCommonService.getBillNo(bill.getModuleId()));
         // 新增订单
         retailOrderBillDao.insert(bill);
+        // 新增支付方式
+        if (CollUtil.isNotEmpty(paymentInfoList)) {
+            paymentInfoList.forEach(item -> retailOrderBillPaymentInfoDao.insert(item));
+        }
         // TODO 单据自定义字段
         // 新增客户信息
         retailOrderBillCustomInfoDao.insert(customerInfo);
@@ -203,6 +213,19 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
             Map<String, Object> customFieldMap = new HashMap<>();
             param.getCustomizeData().forEach(item -> customFieldMap.put(item.getCode(), item.getValue()));
         }
+        /****************   支付方式    ******************/
+        RetailOrderBillPaymentInfo paymentInfo = RetailOrderBillPaymentInfo.build();
+        paymentInfo.setBillId(bill.getId());
+        paymentInfo.setAmount(param.getAmount());
+        paymentInfo.setCardNo(param.getCardNo());
+        paymentInfo.setTransactionNo(param.getTransactionNo());
+        if (StringUtil.isNotEmpty(param.getPayCode())) {
+            paymentInfo.setRetailPaymentId(baseDbDao.getLongDataBySql(String.format("select id from rbp_retail_pay_type where code = '%s' limit 1", param.getPayCode())));
+        }
+        if (null != paymentInfo.getRetailPaymentId()) {
+            context.setBillPaymentInfoList(Arrays.asList(paymentInfo));
+        }
+
         /****************   顾客信息    ******************/
         RetailOrderBillCustomerInfo billCustomerInfo = RetailOrderBillCustomerInfo.build();
         context.setBillCustomerInfo(billCustomerInfo);

@@ -109,6 +109,19 @@ public class RetailOrderBillSaveParam {
     @ApiModelProperty(notes = "物流说明")
     private String note;
 
+    /************************* 付款方式 ************************************/
+    @ApiModelProperty(notes = "付款方式")
+    private String payCode;
+
+    @ApiModelProperty(notes = "卡号")
+    private String cardNo;
+
+    @ApiModelProperty(notes = "交易单号")
+    private String transactionNo;
+
+    @ApiModelProperty(notes = "支付金额")
+    private BigDecimal amount;
+
     /************************* 货品明细 ************************************/
     @ApiModelProperty(notes = "货品明细")
     private List<RetailOrderBillGoodsDetailData> goodsDetailData;

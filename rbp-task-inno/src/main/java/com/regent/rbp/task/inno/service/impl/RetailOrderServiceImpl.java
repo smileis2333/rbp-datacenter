@@ -3,11 +3,8 @@ package com.regent.rbp.task.inno.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
-import com.alibaba.excel.util.DateUtils;
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
-import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
 import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncCacheDao;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
@@ -20,7 +17,10 @@ import com.regent.rbp.api.service.retail.RetailOrderBillService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.DateUtil;
-import com.regent.rbp.task.inno.model.dto.*;
+import com.regent.rbp.task.inno.model.dto.RetailOrderGoodsDto;
+import com.regent.rbp.task.inno.model.dto.RetailOrderItemDto;
+import com.regent.rbp.task.inno.model.dto.RetailOrderMainDto;
+import com.regent.rbp.task.inno.model.dto.RetailOrderSearchDto;
 import com.regent.rbp.task.inno.model.param.RetailOrderDownloadOnlineOrderParam;
 import com.regent.rbp.task.inno.model.req.RetailOrderSearchReqDto;
 import com.regent.rbp.task.inno.model.resp.RetailOrderSearchRespDto;
@@ -59,6 +59,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
 
     /**
      * 拉取订单列表
+     *
      * @param param
      */
     @Transactional
@@ -259,6 +260,11 @@ public class RetailOrderServiceImpl implements RetailOrderService {
         targetDto.setPostCode(order.getZip());
         targetDto.setLogisticsAmount(new BigDecimal(order.getShipping_fee()));
         targetDto.setNote(StrUtil.EMPTY);
+        /********************** 货品明细信息 ******************************/
+        targetDto.setPayCode(order.getPay_code());
+        targetDto.setCardNo(order.getCard_num());
+        targetDto.setTransactionNo(order.getAlipay_sn());
+        targetDto.setAmount(StringUtils.isNotEmpty(order.getOrder_amount()) ? new BigDecimal(order.getOrder_amount()) : BigDecimal.ZERO);
         /********************** 货品明细信息 ******************************/
         if (CollUtil.isNotEmpty(goods)) {
             for (RetailOrderGoodsDto goodsDto : goods) {
