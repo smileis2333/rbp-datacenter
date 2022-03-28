@@ -93,10 +93,19 @@ public class GoodsSaveParam {
         return (type != null) && ((type == 2 && CollUtil.isEmpty(longList)) || (type == 1 && CollUtil.isNotEmpty(longList)));
     }
 
-    public List<BarcodeDto> getBarcodeData() {
-        if (CollUtil.isNotEmpty(barcodeData)){
-            barcodeData.forEach(e->e.setGoodsType(type));
+    // todo 消除参数注入顺序，为了静态校验，理论上可以控制jackson实现post construct 机制
+    public void setType(Integer type) {
+        this.type = type;
+        if (type!=null&&CollUtil.isNotEmpty(barcodeData)){
+            barcodeData.forEach(e -> e.setGoodsType(type));
         }
-        return barcodeData;
+    }
+
+    // // todo 消除参数注入顺序，为了静态校验，理论上可以控制jackson实现post construct 机制
+    public void setBarcodeData(List<BarcodeDto> barcodeData) {
+        this.barcodeData = barcodeData;
+        if (type!=null&&CollUtil.isNotEmpty(barcodeData)){
+            barcodeData.forEach(e -> e.setGoodsType(type));
+        }
     }
 }
