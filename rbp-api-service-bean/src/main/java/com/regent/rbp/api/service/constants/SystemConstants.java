@@ -68,4 +68,6 @@ public class SystemConstants {
     public static final String TASK_CARE_MEMBER_HANDLER = "taskCareMemberHandler";
 
     public static final String TASK_CARE_CHANNEL_HANDLER = "taskCareChannelHandler";
+
+    public static final String TASK_CHANNEL_NEW_GOODS_GUARD_JOB = "taskChannelNewGoodsGuardJob";
 }

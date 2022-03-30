@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.sourcing.TaskChannelNewGoodsGuardDao">
+
+
+
+    <select id="getWarehouseRange" resultType="java.lang.Long">
+        select a.channel_id
+        from rbp_warehourse_channel_range as a
+        where a.warehouse_id in
+        (select b.find_channel_id from rbp_sourcing_rule_channel as b where b.bill_id=  #{billId} )
+        group by a.channel_id
+    </select>
+    <select id="getRuleBill" resultType="com.regent.rbp.api.dto.sourcing.NewGoodsGuardOptionDto">
+        select a.bill_id,a.value from rbp_sourcing_rule_options as a
+        inner join rbp_sourcing_rule_bill as b on a.bill_id=b.id
+        inner join rbp_base_sourcing_options as c on a.options_id=c.id
+        where b.`status`=1 and c.notes='isNewGoodsGuardTime'
+    </select>
+    <select id="getOldGoodsList" resultType="com.regent.rbp.api.dto.sourcing.TaskChannelNewGoodsGuardDto">
+        select a.channel_id,b.goods_id,b.color_id,b.long_id,b.size_id
+        from rbp_receive_bill as a
+        inner join rbp_receive_bill_size as b on a.id=b.bill_id
+        where a.status=1 and a.check_time &lt; DATE_FORMAT(date_sub(now(), interval #{limit} hour),'%Y-%m-%d %H:%i:%s') and a.check_time &gt;DATE_FORMAT(date_sub(now(), interval 1 year)
+        and a.channel_id in
+        <foreach collection="channelIds" item="channelId" open="(" separator="," close=")">
+            #{channelId}
+        </foreach>
+    </select>
+</mapper>
