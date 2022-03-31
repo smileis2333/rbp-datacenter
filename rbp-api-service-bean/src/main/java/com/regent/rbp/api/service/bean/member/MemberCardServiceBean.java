@@ -457,7 +457,7 @@ public class MemberCardServiceBean implements MemberCardService {
         memberCard.setMemberTypeId(memberType.getId());
 
         if (StringUtils.isNotBlank(param.getMemberStatus())) {
-            MemberStatus memberStatus = memberStatusDao.selectOne(new QueryWrapper<MemberStatus>().eq("type_value", param.getMemberStatus()));
+            MemberStatus memberStatus = memberStatusDao.selectOne(new QueryWrapper<MemberStatus>().eq("name", param.getMemberStatus()));
             if (memberStatus != null) {
                 memberCard.setMemberStatusId(memberStatus.getId());
             }
