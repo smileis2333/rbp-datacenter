@@ -25,9 +25,6 @@ public class SaleClass {
     @ApiModelProperty(notes = "名称")
     private String name;
 
-    @ApiModelProperty(notes = "编号")
-    private String code;
-
     @ApiModelProperty(notes = "创建人")
     private Long createdBy;
 
@@ -51,7 +48,6 @@ public class SaleClass {
         SaleClass item = new SaleClass();
         item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         item.setName(name);
-        item.setCode("");
         item.setCreatedBy(userId);
         item.setUpdatedBy(userId);
         return item;
