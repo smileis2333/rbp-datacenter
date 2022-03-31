@@ -20,7 +20,7 @@ import java.util.Date;
 @TableName(value = "rbp_channel_receive_info")
 public class ChannelReceiveInfo {
 
-    public ChannelReceiveInfo(Long id, Long channelId, String nation, String province, String city, String county, String address, String contactsPerson, String mobile, String postCode, Integer defaultFlag, Long createdBy, Date createdTime, Long updatedBy, Date updatedTime) {
+    public ChannelReceiveInfo(Long id, Long channelId, String nation, String province, String city, String county, String address, String contactsPerson, String mobile, String postCode, Boolean defaultFlag, Long createdBy, Date createdTime, Long updatedBy, Date updatedTime) {
         this.id = id;
         this.channelId = channelId;
         this.nation = nation;
@@ -70,7 +70,7 @@ public class ChannelReceiveInfo {
     private String postCode;
 
     @ApiModelProperty(notes = "默认标记")
-    private Integer defaultFlag;
+    private Boolean defaultFlag;
 
     @ApiModelProperty(notes = "创建人")
     private Long createdBy;
