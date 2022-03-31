@@ -12,12 +12,13 @@ import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import org.apache.ibatis.io.VFS;
 import org.apache.ibatis.logging.stdout.StdOutImpl;
 import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.LocalCacheScope;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -47,8 +48,22 @@ import java.util.List;
 @Configuration
 @MapperScan(basePackages = "com.regent.rbp.**.dao")
 public class MyBatisPlusConfig2 {
-    @Autowired
-    private Environment env;
+
+    @Value("${mybatis-plus.typeAliasesPackage:com.regent.rbp.**.model}")
+    private String typeAliasesPackage;
+
+    @Value("${mybatis-plus.mapperLocations:classpath*:mappers/**/*Mapper.xml}")
+    private String mapperLocations;
+
+    @Value("${mybatis-plus.configuration.local-cache-scope:statement}")
+    private String localCacheScope;
+
+    @Value("${mybatis-plus.configuration.map-underscore-to-camel-case:false}")
+    private Boolean mapUnderscoreToCamelCase;
+
+    @Value("${mybatis-plus.configuration.cache-enabled:false}")
+    private Boolean cacheEnabled;
+
 
     static final String DEFAULT_RESOURCE_PATTERN = "**/*.class";
 
@@ -58,8 +73,6 @@ public class MyBatisPlusConfig2 {
 
     @Bean("sqlSessionFactory")
     public MybatisSqlSessionFactoryBean mybatisSqlSessionFactoryBean() throws Exception {
-        String typeAliasesPackage = env.getProperty("mybatis-plus.typeAliasesPackage");
-        String mapperLocations = env.getProperty("mybatis-plus.mapperLocations");
         typeAliasesPackage = setTypeAliasesPackage(typeAliasesPackage);
         VFS.addImplClass(SpringBootVFS.class);
         PaginationInterceptor pageInter = new PaginationInterceptor();
@@ -73,6 +86,11 @@ public class MyBatisPlusConfig2 {
         sessionFactory.setPlugins(new PaginationInterceptor[]{pageInter});
 
         MybatisConfiguration mybatisConfiguration = new MybatisConfiguration();
+        mybatisConfiguration.setCacheEnabled(cacheEnabled);
+        if (LocalCacheScope.STATEMENT.toString().toLowerCase().equals(localCacheScope)) {
+            mybatisConfiguration.setLocalCacheScope(LocalCacheScope.STATEMENT);
+        }
+        mybatisConfiguration.setMapUnderscoreToCamelCase(mapUnderscoreToCamelCase);
         mybatisConfiguration.setCallSettersOnNulls(true);
         mybatisConfiguration.setDefaultExecutorType(ExecutorType.SIMPLE);
         // 配置打印sql语句

@@ -7,6 +7,7 @@ import com.regent.rbp.api.dto.fundAccount.FundAccountQueryResult;
 import com.regent.rbp.api.dto.fundAccount.FundAccountSaveParam;
 import com.regent.rbp.api.service.fundAccount.FundAccountService;
 import com.regent.rbp.api.web.constants.ApiConstants;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +23,7 @@ import javax.validation.Valid;
  **/
 @RestController
 @RequestMapping(ApiConstants.API_FUND_ACCOUNT)
+@Api(tags = "资金号档案")
 public class FundAccountController {
     @Autowired
     FundAccountService fundAccountService;
