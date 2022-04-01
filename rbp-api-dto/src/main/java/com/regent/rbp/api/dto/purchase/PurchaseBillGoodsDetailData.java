@@ -22,10 +22,10 @@ public class PurchaseBillGoodsDetailData extends BillGoodsDetailData {
     private Date deliveryDate;
 
     @ApiModelProperty(notes = "来货超差类型")
-    private String receiveDifferentType;
+    private String receiveDifferentType = "货品";
 
     @ApiModelProperty(notes = "来货超差比例")
-    private BigDecimal receiveDifferentPercent;
+    private BigDecimal receiveDifferentPercent = new BigDecimal(0);
 
     @ApiModelProperty(notes = "行ID")
     @JsonIgnore
