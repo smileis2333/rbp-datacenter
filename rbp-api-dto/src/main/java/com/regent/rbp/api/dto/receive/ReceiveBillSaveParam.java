@@ -42,7 +42,7 @@ public class ReceiveBillSaveParam {
     @ChannelCodeCheck
     private String toChannelCode;
 
-    @CurrencyTypeCheck
+    @CurrencyType
     private String currencyType;
 
     private String notes;

@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  * the implment of this class is copy all config item from hibenrate default value,
  * and then inject regent custom validator(using reflect), and write back.
  * the key point is the jsr303 SPI.
- *
+ * <p>
  * META-INF/services/javax.validation.spi.ValidationProvider
  */
 @Log4j2
@@ -52,19 +52,15 @@ public class CustomConstraintHelper extends ConstraintHelper {
             Map<Class<? extends Annotation>, List<ConstraintValidatorDescriptor<?>>> tmpConstraints = new HashMap<>();
             tmpConstraints.putAll((Map<Class<? extends Annotation>, List<ConstraintValidatorDescriptor<?>>>) o);
             // 在这里注册我们自定义的注解和注解处理器
-            putConstraint(tmpConstraints, BarcodeCheck.class, BarcodeValidatorForQueryList.class);
-            putConstraints(tmpConstraints, BillStatus.class, BillStatusValidator.class, BillStatusValidatorForQueryList.class);
-            putConstraints(tmpConstraints, BusinessTypeCheck.class, BusinessTypeValidatorForSingle.class, BusinessTypeValidatorForQueryList.class);
-            putConstraints(tmpConstraints, ChannelCodeCheck.class, ChannelCodeValidatorForSingle.class, ChannelCodeValidatorForQueryList.class);
-            putConstraint(tmpConstraints, ColorCode.class, ColorCodeValidator.class);
+            putConstraint(tmpConstraints, BusinessTypeCheck.class, BusinessTypeValidatorForSingle.class);
+            putConstraint(tmpConstraints, ChannelCodeCheck.class, ChannelCodeValidatorForSingle.class);
             putConstraint(tmpConstraints, ConflictManualIdCheck.class, ConflictManualIdValidator.class);
-            putConstraints(tmpConstraints, CurrencyTypeCheck.class, CurrencyTypeCheckValidatorForQueryList.class,CurrencyTypeCheckValidatorForSingle.class);
             putConstraint(tmpConstraints, FromTo.class, FromToValidator.class);
             putConstraint(tmpConstraints, BillNo.class, BillNoValidator.class);
-            putConstraints(tmpConstraints, SupplierCodeCheck.class, SupplierCodeValidatorForSingle.class, SupplierCodeValidatorForQueryList.class);
+            putConstraint(tmpConstraints, SupplierCodeCheck.class, SupplierCodeValidatorForSingle.class);
             putConstraint(tmpConstraints, ChannelOrganizationCheck.class, ChannelOrganizationCheckValidator.class);
             putConstraint(tmpConstraints, DiscreteRange.class, DiscreteRangeValidator.class);
-            putConstraints(tmpConstraints, Code.class, CodeValidatorForQueryList.class,CodeValidator.class);
+            putConstraint(tmpConstraints, Code.class, CodeValidator.class);
             putConstraint(tmpConstraints, UniqueFields.class, UniqueFieldsValidator.class);
             putConstraint(tmpConstraints, Dictionary.class, DictionaryValidator.class);
             putConstraint(tmpConstraints, GoodsInfo.class, GoodsInfoValidator.class);

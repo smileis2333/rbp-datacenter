@@ -14,9 +14,10 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-@Constraint(validatedBy = { })
-public @interface CurrencyTypeCheck {
-    String message() default "(${validatedValue})不存在";
+@Constraint(validatedBy = {})
+@Dictionary(targetTable = "rbp_currency_type", targetField = "name")
+public @interface CurrencyType {
+    String message() default "${validatedValue}不存在";
 
     Class<?>[] groups() default {};
 

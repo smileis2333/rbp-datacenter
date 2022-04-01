@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * @description
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.TYPE})
 @Constraint(validatedBy = {})
 public @interface Code {
     String message() default "(${validatedValue})不存在";
