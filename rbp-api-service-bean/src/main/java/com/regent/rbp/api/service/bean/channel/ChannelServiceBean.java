@@ -578,6 +578,13 @@ public class ChannelServiceBean implements ChannelService {
                     }
             ).collect(Collectors.toList());
             context.setChannelReceiveInfoList(channelReceiveInfos);
+
+            List<ChannelReceiveInfo> defaultAddresses = channelReceiveInfos.stream().filter(e -> e.getDefaultFlag() == true).collect(Collectors.toList());
+            if (CollUtil.isEmpty(defaultAddresses)) {
+                channelReceiveInfos.get(0).setDefaultFlag(true);
+            } else if (defaultAddresses.size() > 1) {
+                errorMsgList.add("默认地址只能设置一个");
+            }
         }
 
         if (null != param.getChannelorganization()) {

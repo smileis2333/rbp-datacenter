@@ -3,7 +3,9 @@ package com.regent.rbp.api.dto.purchase;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.validate.BillStatus;
+import com.regent.rbp.api.dto.validate.BusinessTypeCheck;
 import com.regent.rbp.api.dto.validate.GoodsInfo;
+import com.regent.rbp.api.dto.validate.SupplierCodeCheck;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -24,6 +26,7 @@ import java.util.List;
 public class PurchaseBillSaveParam {
 
     @ApiModelProperty(notes = "模块编号")
+    @NotBlank
     private String moduleId;
 
     @ApiModelProperty(notes = "外部单号，唯一。对应Nebual手工单号")
@@ -41,9 +44,12 @@ public class PurchaseBillSaveParam {
 
     @ApiModelProperty(notes = "供应商编号")
     @NotBlank
+    @SupplierCodeCheck
     private String supplierCode;
 
     @ApiModelProperty(notes = "业务类型名称")
+    @NotBlank
+    @BusinessTypeCheck
     private String businessType;
 
     @ApiModelProperty(notes = "供货类型")

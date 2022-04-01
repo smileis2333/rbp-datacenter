@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 /**
  * @program: rbp-datacenter
@@ -29,6 +28,5 @@ public class AddressData {
     private String mobile;
     private String postCode;
 
-    @NotNull
-    private Boolean defaultFlag;
+    private Boolean defaultFlag = false;
 }

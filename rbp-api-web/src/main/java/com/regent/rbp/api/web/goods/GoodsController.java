@@ -8,6 +8,7 @@ import com.regent.rbp.api.dto.goods.GoodsSaveParam;
 import com.regent.rbp.api.service.goods.GoodsService;
 import com.regent.rbp.api.web.constants.ApiConstants;
 import com.regent.rbp.infrastructure.annotation.PassToken;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +22,7 @@ import javax.validation.Valid;
  */
 @RestController
 @RequestMapping(ApiConstants.API_GOODS)
+@Api(tags = "货品档案")
 public class GoodsController {
 
     @Autowired
