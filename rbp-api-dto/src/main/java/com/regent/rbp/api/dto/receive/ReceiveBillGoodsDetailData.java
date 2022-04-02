@@ -2,6 +2,8 @@ package com.regent.rbp.api.dto.receive;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.regent.rbp.api.dto.base.BillGoodsDetailData;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -13,10 +15,15 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 public class ReceiveBillGoodsDetailData extends BillGoodsDetailData {
+    @ApiModelProperty("价格类型名称")
     @NotBlank
     private String priceType;
+
     @JsonIgnore
+    @ApiModelProperty(hidden = true)
     private Long goodsId;
+
+    @ApiModelProperty(hidden = true)
     @JsonIgnore
     private Long columnId;
 }
