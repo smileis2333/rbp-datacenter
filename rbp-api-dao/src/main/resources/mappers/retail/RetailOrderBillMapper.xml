@@ -16,5 +16,25 @@
         </foreach>
     </insert>
 
+    <update id="updateDistributionStatus" parameterType="java.lang.Long">
+        update rbp_retail_order_bill a set status = 4, updated_by = #{userId}, updated_time = now(),
+        distribution_status = (select if(cunt > 0, 1, 2) from (
+            select count(*) cunt from rbp_retail_order_bill_goods rrobg
+            where rrobg.process_status = 0 and rrobg.bill_id = a.id) t)
+        where id = #{id}
+    </update>
+
+    <update id="updateSendStatus" parameterType="java.lang.Long">
+        update rbp_retail_order_bill a set status = 5, updated_by = #{userId}, updated_time = now(),
+           distribution_status = 2,send_status = 2
+        where id = #{id}
+    </update>
+
+    <select id="getDataCenterRetailOrderSampleList" resultType="com.regent.rbp.api.dto.retail.RetailOrderSampleDto">
+        select a.id,a.bill_no,a.online_order_code,a.online_platform_type_id,a.online_platform_id,b.code as onlinePlatformCode from rbp_retail_order_bill a
+        inner join rbp_online_platform b on b.status = 1 and b.id = a.online_platform_id
+        WHERE a.online_platform_type_id != 0 and a.online_order_code is not null
+        and a.id in (<foreach item="id" collection="billIdList" open="" separator="," close="" >#{id}</foreach>)
+    </select>
 
 </mapper>

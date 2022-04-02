@@ -97,6 +97,10 @@ public class RetailOrderBill {
     @ApiModelProperty(notes = "失效人")
     private Long cancelBy;
 
+    @ApiModelProperty(notes = "失效人名称")
+    @TableField(exist = false)
+    private String cancelByName;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(notes = "失效时间")
     private Date cancelTime;
@@ -108,9 +112,9 @@ public class RetailOrderBill {
     @ApiModelProperty(notes = "反审核时间")
     private Date uncheckTime;
 
-    @ApiModelProperty(notes = "自定义字段")
+    @ApiModelProperty(notes = "反审核人名称")
     @TableField(exist = false)
-    private Map<String, Object> customFieldMap;
+    private String uncheckByName;
 
     @ApiModelProperty(notes = "创建人")
     private Long createdBy;
@@ -125,6 +129,21 @@ public class RetailOrderBill {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(notes = "更新时间")
     private Date updatedTime;
+
+    @ApiModelProperty(notes = "审核人")
+    private Long checkBy;
+
+    @ApiModelProperty(notes = "审核人名称")
+    @TableField(exist = false)
+    private String checkByName;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(notes = "审核时间")
+    private Date checkTime;
+
+    @ApiModelProperty(notes = "自定义字段")
+    @TableField(exist = false)
+    private Map<String, Object> customFieldMap;
 
     public static RetailOrderBill build() {
         Long userId = ThreadLocalGroup.getUserId();

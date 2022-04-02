@@ -37,6 +37,12 @@ public class ApiConstants {
 
     public static final String API_SALES_ORDER = "api/salesOrderBill";
 
+    public static final String API_SALES_SEND = "api/retailSendBill";
+
+    public static final String API_SALES_SEND_YUMEI = "/api/retailSendBill/yuMei";
+
+    public static final String API_RETAIL_DISTRIBUTION = "/api/retailDistributionBill";
+
     public static final String API_FUND_ACCOUNT = "api/fundAccount";
 
     public static final String API_NOTICE_BILL = "api/noticeBill";
