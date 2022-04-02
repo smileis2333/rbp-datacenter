@@ -26,15 +26,15 @@ public class SendBillGoodsDetailData extends BillGoodsDetailData {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date deliveryDate;
 
-    @ApiModelProperty(notes = "行ID")
+    @ApiModelProperty(notes = "行ID", hidden = true)
     @JsonIgnore
     private Long columnId;
 
-    @ApiModelProperty(notes = "指令单ID")
+    @ApiModelProperty(notes = "指令单ID", hidden = true)
     @JsonIgnore
     private Long noticeId;
 
-    @ApiModelProperty(notes = "销售计划ID")
+    @ApiModelProperty(notes = "销售计划ID", hidden = true)
     @JsonIgnore
     private Long salePlanId;
 

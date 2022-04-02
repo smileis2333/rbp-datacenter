@@ -1,5 +1,6 @@
 package com.regent.rbp.api.dto.fundAccount;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -11,6 +12,9 @@ import java.math.BigDecimal;
  **/
 @Data
 public class PricePolicy {
+    @ApiModelProperty("价格类型名称")
     private String priceTypeName;
+
+    @ApiModelProperty("折扣")
     private BigDecimal discount;
 }

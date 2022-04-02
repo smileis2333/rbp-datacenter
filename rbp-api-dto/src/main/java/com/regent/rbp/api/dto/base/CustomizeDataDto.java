@@ -2,6 +2,7 @@ package com.regent.rbp.api.dto.base;
 
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.AssertTrue;
@@ -16,6 +17,7 @@ import javax.validation.constraints.Pattern;
 public class CustomizeDataDto {
 
     @JsonIgnore
+    @ApiModelProperty(hidden = true)
     private Long id;
 
     /**
@@ -23,10 +25,14 @@ public class CustomizeDataDto {
      * ref https://stackoverflow.com/a/38846455/10827862
      */
     @Pattern(regexp = "^(?:(?!id).)*$", message = "自定义字段不允许为'id'")
+    @ApiModelProperty("字段编码" +
+            "code和name必填其中一个，都传值时以code为准")
     private String code;
 
+    @ApiModelProperty("字段名称")
     private String name;
 
+    @ApiModelProperty("字段值")
     private String value;
 
     public CustomizeDataDto() {
