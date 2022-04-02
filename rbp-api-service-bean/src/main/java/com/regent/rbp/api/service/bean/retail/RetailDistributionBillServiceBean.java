@@ -43,7 +43,6 @@ import com.regent.rbp.common.model.bill.entity.LogisticsCompany;
 import com.regent.rbp.common.service.basic.DbService;
 import com.regent.rbp.common.service.basic.SystemCommonService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
-import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StreamUtil;
@@ -224,10 +223,9 @@ public class RetailDistributionBillServiceBean extends ServiceImpl<RetailDistrib
         List<RetailOrderBillGoods> updateOrderBillGoodsList = new ArrayList<>();
         // TODO 线上单号
         List<RetailOrderBill> retailOrderBillList = retailOrderBillDao.selectList(new LambdaQueryWrapper<RetailOrderBill>()
-                .in(RetailOrderBill::getBillNo, StreamUtil.toSet(param.getGoodsDetailData(), RetailDistributionBillGoodsDetailData::getRetailOrderBillNo))
-                .eq(RetailOrderBill::getStatus, StatusEnum.CHECK.getStatus()));
+                .in(RetailOrderBill::getBillNo, StreamUtil.toSet(param.getGoodsDetailData(), RetailDistributionBillGoodsDetailData::getRetailOrderBillNo)));
         List<Long> toChannelIdList = retailOrderBillList.stream().map(RetailOrderBill::getChannelId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
-        if (toChannelIdList.size() > 1) {
+        if (toChannelIdList.size() != 1) {
             messageList.add(getMessageByParams("retailOrderChannelDiff", null));
             return String.join(StrUtil.COMMA, messageList);
         }
@@ -291,16 +289,16 @@ public class RetailDistributionBillServiceBean extends ServiceImpl<RetailDistrib
                     entity.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
                     entity.setBillId(bill.getId());
                     entity.setRetailOrderBillGoodsId(detail.getId());
-                    entity.setRetailOrderBillId(bill.getId());
+                    entity.setRetailOrderBillId(detail.getBillId());
                     entity.setGoodsId(detail.getGoodsId());
                     entity.setColorId(detail.getColorId());
                     entity.setLongId(detail.getLongId());
                     entity.setSizeId(detail.getSizeId());
                     entity.setBarcode(detail.getBarcode());
-                    entity.setTagPrice(goods.getTagPrice());
-                    entity.setBalancePrice(goods.getBalancePrice());
+                    entity.setTagPrice(detail.getTagPrice());
+                    entity.setBalancePrice(detail.getBalancePrice());
                     entity.setQuantity(goods.getQuantity());
-                    entity.setDiscount(goods.getDiscount());
+                    entity.setDiscount(detail.getDiscount());
                     distributionBillGoodsList.add(entity);
 
                     flag = false;

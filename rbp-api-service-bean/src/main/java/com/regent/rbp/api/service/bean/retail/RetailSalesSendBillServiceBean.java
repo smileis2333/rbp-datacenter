@@ -235,9 +235,11 @@ public class RetailSalesSendBillServiceBean extends ServiceImpl<RetailSalesSendB
         SalesSendBillCustomerInfo customerInfo = context.getBillCustomerInfo();
         // 物流公司信息
         List<IdNameCodeDto> logisticsCompanyList = dbService.selectIdNameCodeList(new QueryWrapper<LogisticsCompany>().eq("id", customerInfo.getLogisticsCompanyId()), LogisticsCompany.class);
-        IdNameCodeDto logisticsCompany = logisticsCompanyList.get(0);
-        item.setLogisticsCompanyName(OptionalUtil.ofNullable(logisticsCompany, IdNameCodeDto::getName));
-        item.setLogisticsCompanyCode(OptionalUtil.ofNullable(logisticsCompany, IdNameCodeDto::getCode));
+        if (CollUtil.isNotEmpty(logisticsCompanyList)) {
+            IdNameCodeDto logisticsCompany = logisticsCompanyList.get(0);
+            item.setLogisticsCompanyName(OptionalUtil.ofNullable(logisticsCompany, IdNameCodeDto::getName));
+            item.setLogisticsCompanyCode(OptionalUtil.ofNullable(logisticsCompany, IdNameCodeDto::getCode));
+        }
         item.setContactsPerson(customerInfo.getContactsPerson());
         item.setAddress(customerInfo.getAddress());
         item.setNation(customerInfo.getNation());
