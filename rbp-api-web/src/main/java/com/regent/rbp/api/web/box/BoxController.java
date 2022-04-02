@@ -7,6 +7,7 @@ import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.service.box.BoxService;
 import com.regent.rbp.api.web.constants.ApiConstants;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,7 @@ import javax.validation.Valid;
  */
 @RestController
 @RequestMapping(ApiConstants.API_BOX)
+@Api(tags = "箱档案")
 public class BoxController {
     @Autowired
     private BoxService boxService;

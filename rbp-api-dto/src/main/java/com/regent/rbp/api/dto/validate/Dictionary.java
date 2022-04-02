@@ -13,10 +13,10 @@ import java.lang.annotation.Target;
  * @description
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.TYPE})
 @Constraint(validatedBy = {})
 public @interface Dictionary {
-    String message() default "(${validatedValue})不存在";
+    String message() default "{regent.validation.constraints.mapNotFound}";
 
     Class<?>[] groups() default {};
 
@@ -31,5 +31,9 @@ public @interface Dictionary {
 
     String targetField();
 
-    String operator() default "=";
+    String operator() default Operator.EQUAL;
+}
+
+interface Operator {
+    String EQUAL = "=";
 }

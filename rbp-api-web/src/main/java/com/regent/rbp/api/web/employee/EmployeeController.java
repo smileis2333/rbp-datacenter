@@ -1,12 +1,13 @@
 package com.regent.rbp.api.web.employee;
 
-import com.regent.rbp.api.dto.employee.EmployeeQueryParam;
-import com.regent.rbp.api.dto.employee.EmployeeQueryResult;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
+import com.regent.rbp.api.dto.employee.EmployeeQueryParam;
+import com.regent.rbp.api.dto.employee.EmployeeQueryResult;
 import com.regent.rbp.api.dto.employee.EmployeeSaveParam;
 import com.regent.rbp.api.service.employee.EmployeeService;
 import com.regent.rbp.api.web.constants.ApiConstants;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +23,7 @@ import javax.validation.Valid;
  **/
 @RestController
 @RequestMapping(ApiConstants.API_EMPLOYEE)
+@Api(tags = "员工档案")
 public class EmployeeController {
     @Autowired
     EmployeeService employeeService;

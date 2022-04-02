@@ -9,7 +9,6 @@ import com.regent.rbp.api.web.config.DataCenterConfig;
 import com.regent.rbp.api.web.constants.ApiConstants;
 import com.regent.rbp.api.web.constants.DataCenterRedisPrefix;
 import com.regent.rbp.infrastructure.annotation.PassToken;
-import com.regent.rbp.infrastructure.constants.RedisPrefix;
 import com.regent.rbp.infrastructure.util.RedisUtil;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,12 +42,12 @@ public class AuthorizationController {
             String token = generateToken(AppKey, AppSecret);
 
             response.put("Flag", "1");
-            response.put("Message", "成功");
+            response.put("message", "成功");
             response.put("data", token);
         } else {
             response.put("Flag", "-1");
-            response.put("Message", "AppId 或者 AppSecret 不正确");
             response.put("data", "");
+            response.put("message", "AppId 或者 AppSecret 不正确");
         }
         return response;
     }

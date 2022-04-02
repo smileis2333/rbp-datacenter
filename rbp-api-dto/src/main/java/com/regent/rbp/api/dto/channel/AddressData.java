@@ -27,4 +27,6 @@ public class AddressData {
     @NotBlank
     private String mobile;
     private String postCode;
+
+    private Boolean defaultFlag = false;
 }

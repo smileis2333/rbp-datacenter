@@ -36,7 +36,7 @@ public class PurchaseReturnBillSaveParam extends BaseBillSaveParam {
 
     private BigDecimal taxRate;
 
-    @CurrencyTypeCheck
+    @CurrencyType
     private String currencyType;
 
     @Valid

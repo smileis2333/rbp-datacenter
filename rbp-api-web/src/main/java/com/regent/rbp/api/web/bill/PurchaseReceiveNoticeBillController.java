@@ -32,7 +32,7 @@ public class PurchaseReceiveNoticeBillController {
 
     @ApiOperation(value = "查询")
     @PostMapping("/query")
-    public PageDataResponse<PurchaseReceiveNoticeBillQueryResult> query(@RequestBody @Valid PurchaseReceiveNoticeBillQueryParam param) {
+    public PageDataResponse<PurchaseReceiveNoticeBillQueryResult> query(@RequestBody PurchaseReceiveNoticeBillQueryParam param) {
         return purchaseReceiveNoticeBillService.query(param);
     }
 

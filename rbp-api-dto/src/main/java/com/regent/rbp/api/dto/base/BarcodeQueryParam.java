@@ -1,6 +1,5 @@
 package com.regent.rbp.api.dto.base;
 
-import com.regent.rbp.api.dto.validate.BarcodeCheck;
 import lombok.Data;
 
 import java.util.List;
@@ -17,6 +16,5 @@ public class BarcodeQueryParam extends DefaultParam{
     private String goodsName;
     private String mnemonicCode;
     private String ruleId;
-    @BarcodeCheck
     private List<String> barcode;
 }

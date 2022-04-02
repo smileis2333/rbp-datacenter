@@ -88,10 +88,10 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
                 BillGoodsDetailData item = goodsInfos.get(i);
                 if (StrUtil.isNotEmpty(item.getGoodsCode()) && !goodsCodeIdMap.containsKey(item.getGoodsCode())) {
                     pass = false;
-                    context.addMessageParameter("validatedValue", item.getGoodsCode());
+                    context.addExpressionVariable("validatedValue", item.getGoodsCode());
                     context.buildConstraintViolationWithTemplate("{regent.validation.constraints.mapNotFound}").addPropertyNode("goodsCode").inIterable().atIndex(i).addConstraintViolation();
                     if (StrUtil.isNotEmpty(item.getSize())) {
-                        context.addMessageParameter("validatedValue", item.getSize());
+                        context.addExpressionVariable("validatedValue", item.getSize());
                         context.buildConstraintViolationWithTemplate("{regent.validation.constraints.mapNotFound}").addPropertyNode("size").inIterable().atIndex(i).addConstraintViolation();
                     }
                 }

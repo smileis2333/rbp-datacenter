@@ -1,6 +1,7 @@
 package com.regent.rbp.api.service.supplier.context;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.regent.rbp.api.core.fundAccount.FundAccount;
 import com.regent.rbp.api.core.supplier.*;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 public class SupplierSaveContext {
@@ -79,6 +81,15 @@ public class SupplierSaveContext {
             params.getContactsPerson().forEach(this::addContactsPersonList);
         if (params.getAddressData() != null)
             params.getAddressData().forEach(this::addSendAddress);
+        if (CollUtil.isNotEmpty(supplierSendAddresses)) {
+            List<SupplierSendAddress> defaultAddresses = supplierSendAddresses.stream().filter(e -> e.getDefaultFlag() == true).collect(Collectors.toList());
+            if (CollUtil.isEmpty(defaultAddresses)) {
+                supplierSendAddresses.get(0).setDefaultFlag(true);
+            } else if (defaultAddresses.size() > 1) {
+                throw new RuntimeException("默认地址只能设置一个");
+            }
+        }
+
         if (params.getCustomizeData() != null)
             params.getCustomizeData().forEach(e -> customizeDataDtos.put(e.getCode(), e.getValue()));
         if (StrUtil.isNotEmpty(params.getNation())) {

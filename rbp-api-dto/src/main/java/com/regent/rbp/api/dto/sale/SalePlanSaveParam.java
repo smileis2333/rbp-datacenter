@@ -38,7 +38,7 @@ public class SalePlanSaveParam {
     @ApiModelProperty(notes = "价格类型名称")
     private String priceType;
 
-    @CurrencyTypeCheck
+    @CurrencyType
     private String currencyType;
 
     private String notes;

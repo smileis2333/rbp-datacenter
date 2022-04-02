@@ -48,7 +48,7 @@ public class PurchaseReceiveBillSaveParam {
 
     private BigDecimal taxRate;
 
-    @CurrencyTypeCheck
+    @CurrencyType
     private String currencyType;
 
     private String notes;

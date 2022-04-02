@@ -2,7 +2,6 @@ package com.regent.rbp.api.dto.purchase;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.DefaultParam;
-import com.regent.rbp.api.dto.validate.*;
 import lombok.Data;
 
 import java.util.Date;
@@ -15,15 +14,10 @@ import java.util.List;
  */
 @Data
 public class PurchaseReceiveBillQueryParam extends DefaultParam {
-    @BusinessTypeCheck
     private List<String> businessType;
-    @SupplierCodeCheck
     private List<String> supplierCode;
-    @ChannelCodeCheck
     private List<String> toChannelCode;
-    @CurrencyTypeCheck
     private List<String> currencyType;
-    @BillStatus
     private List<Integer> status;
     private String moduleId;
     private String billNo;

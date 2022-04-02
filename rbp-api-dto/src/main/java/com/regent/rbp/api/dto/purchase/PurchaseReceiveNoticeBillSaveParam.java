@@ -49,7 +49,7 @@ public class PurchaseReceiveNoticeBillSaveParam {
     private String purchaseNo;
 
     private BigDecimal taxRate;
-    @CurrencyTypeCheck
+    @CurrencyType
     private String currencyType;
     private String notes;
     @Valid

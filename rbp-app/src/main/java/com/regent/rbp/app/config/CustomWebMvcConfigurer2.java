@@ -92,8 +92,9 @@ public class CustomWebMvcConfigurer2 implements WebMvcConfigurer {
     public CommonsMultipartResolver getCommonsMultipartResolver() {
         CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
         multipartResolver.setResolveLazily(true);//resolveLazily属性启用是为了推迟文件解析，以在在UploadAction中捕获文件大小异常
-        multipartResolver.setMaxUploadSize(50 * 1024 * 1024); //上传文件大小 50M
-        multipartResolver.setMaxInMemorySize(1048576);
+        // 上传文件大小 100M
+        multipartResolver.setMaxUploadSize(100 * 1024 * 1024);
+        multipartResolver.setMaxInMemorySize(100 * 1024 * 1024);
         return multipartResolver;
     }
 

@@ -44,12 +44,32 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+			<exclusions>
+				<exclusion>
+					<!--Xstream: <= 1.4.15有安全漏洞,屏蔽xtream,手动加入更高版本.-->
+					<groupId>com.thoughtworks.xstream</groupId>
+					<artifactId>xstream</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- 解决Xstream安全漏洞-->
+		<dependency>
+			<groupId>com.thoughtworks.xstream</groupId>
+			<artifactId>xstream</artifactId>
+			<version>1.4.19</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
 			<version>0.9.0.RELEASE</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.alibaba</groupId>
+					<artifactId>fastjson</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!--admin-client-->
@@ -145,13 +165,6 @@
 			<version>1.1.10</version>
 		</dependency>
 
-		<!-- json -->
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>fastjson</artifactId>
-			<version>1.2.51</version>
-		</dependency>
-
 		<!-- mybatis-plus -->
 		<dependency>
 			<groupId>com.baomidou</groupId>
@@ -196,6 +209,12 @@
 			<groupId>com.plumelog</groupId>
 			<artifactId>plumelog-logback</artifactId>
 			<version>3.1.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.alibaba</groupId>
+					<artifactId>fastjson</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -226,6 +245,12 @@
 			<groupId>com.regent.rbp.app.config</groupId>
 			<artifactId>rbp-app-config</artifactId>
 			<version>0.0.0.8</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.alibaba</groupId>
+					<artifactId>fastjson</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -236,6 +261,10 @@
 				<exclusion>
 					<groupId>com.xuxueli</groupId>
 					<artifactId>xxl-job-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.alibaba</groupId>
+					<artifactId>fastjson</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -250,6 +279,19 @@
 			<groupId>com.regent</groupId>
 			<artifactId>regent-job-core</artifactId>
 			<version>2.3.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.alibaba</groupId>
+					<artifactId>fastjson</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- json -->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>1.2.69</version>
 		</dependency>
 	</dependencies>
 

@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @ApiModel(description = "采购入库单尺码明细 ")
-@TableName(value = "rbp_purchase_bill_size")
+@TableName(value = "rbp_purchase_receive_bill_size")
 public class PurchaseReceiveBillSize extends BillGoodsSizeData {
 
 }

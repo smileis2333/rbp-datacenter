@@ -61,7 +61,7 @@ public class RegentPlatformExceptionResolver2 extends DefaultErrorAttributes imp
                 if (bindingResult.hasErrors()){
                     Map<String, Object> attributes = new LinkedHashMap<>();
                     attributes.put("code", 0);
-                    attributes.put("msg", ErrorMessage.CODE_MAP.get(0));
+                    attributes.put("message", ErrorMessage.CODE_MAP.get(0));
                     attributes.put("totalCount",0);
                     attributes.put("data", Collections.emptyList());
                     view.setAttributesMap(attributes);
@@ -79,7 +79,7 @@ public class RegentPlatformExceptionResolver2 extends DefaultErrorAttributes imp
         e.printStackTrace();
         Map<String, Object> attributes = new LinkedHashMap<>();
         attributes.put("code", code);
-        attributes.put("msg", message);
+        attributes.put("message", message);
         attributes.put("errorStack", e.toString());
         view.setAttributesMap(attributes);
         mav.setView(view);

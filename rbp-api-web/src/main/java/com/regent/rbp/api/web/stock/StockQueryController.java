@@ -5,6 +5,7 @@ import com.regent.rbp.api.dto.stock.StockQueryParam;
 import com.regent.rbp.api.dto.stock.StockQueryResult;
 import com.regent.rbp.api.service.stock.StockQueryService;
 import com.regent.rbp.api.web.constants.ApiConstants;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController(value = "datacenterStockQueryController")
 @RequestMapping(ApiConstants.API_STOCK_QUERY)
+@Api(tags = "数据中台库存查询")
 public class StockQueryController {
 
     @Autowired
