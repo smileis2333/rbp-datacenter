@@ -193,7 +193,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         // 核算设置
         this.balanceSetting(context);
         // 库存调整
-        if (StatusEnum.CHECK.equals(bill.getStatus())) {
+        if (StatusEnum.CHECK.getStatus().equals(bill.getStatus())) {
             this.checkModifyStock(context);
         } else {
             this.updateStock(context);
@@ -834,7 +834,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         Long toChannelId = sendBill.getToChannelId();
 
         List<SendBillSize> sendBillSizes = context.getBillSizeList();
-        Map<Long, Long> noticeMap = context.getBillGoodsList().stream().collect(Collectors.toMap(SendBillGoods::getId, SendBillGoods::getNoticeId));
+        Map<Long, Long> noticeMap = context.getBillGoodsList().stream().filter(e -> e.getNoticeId() != null).collect(Collectors.toMap(SendBillGoods::getId, SendBillGoods::getNoticeId));
         //是否允许负库存
         boolean isMustPositive = !systemCommonService.isAllowNegativeInventory(channelId);
 
