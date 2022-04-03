@@ -11,6 +11,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author liuzhicheng
@@ -265,12 +266,9 @@ public class RetailSalesSendBill {
     @ApiModelProperty(notes = "反审核时间")
     private Date uncheckTime;
 
-    /**
-     * 销售单支付方式列表
-     */
-//    @ApiModelProperty(notes = "销售单支付方式列表")
-//    @TableField(exist = false)
-//    private List<SalesOrderBillPayment> salesOrderBillPaymentList;
+    @ApiModelProperty(notes = "自定义字段")
+    @TableField(exist = false)
+    private Map<String, Object> customFieldMap;
 
     /**
      * 货品

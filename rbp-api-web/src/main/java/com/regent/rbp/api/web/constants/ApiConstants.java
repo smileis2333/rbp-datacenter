@@ -43,6 +43,8 @@ public class ApiConstants {
 
     public static final String API_RETAIL_DISTRIBUTION = "/api/retailDistributionBill";
 
+    public static final String API_RETAIL_RECEIVE_BACK = "/api/retailReceiveBackBill";
+
     public static final String API_FUND_ACCOUNT = "api/fundAccount";
 
     public static final String API_NOTICE_BILL = "api/noticeBill";

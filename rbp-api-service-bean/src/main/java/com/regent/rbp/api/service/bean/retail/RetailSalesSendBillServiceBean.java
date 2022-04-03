@@ -50,6 +50,8 @@ import com.regent.rbp.api.dto.retail.RetailSendBillGoodsCheckReqDto;
 import com.regent.rbp.api.dto.retail.RetailSendBillGoodsUploadParam;
 import com.regent.rbp.api.dto.retail.RetailSendBillUploadDto;
 import com.regent.rbp.api.dto.retail.RetailSendBillUploadParam;
+import com.regent.rbp.api.service.base.BaseDbService;
+import com.regent.rbp.api.service.constants.TableConstants;
 import com.regent.rbp.api.service.finder.BaseRetailSendBillServiceFinder;
 import com.regent.rbp.api.service.retail.RetailDistributionBillGoodsService;
 import com.regent.rbp.api.service.retail.RetailOrderBillGoodsService;
@@ -171,6 +173,9 @@ public class RetailSalesSendBillServiceBean extends ServiceImpl<RetailSalesSendB
 
     @Autowired
     private RetailOrderBillGoodsService retailOrderBillGoodsService;
+
+    @Autowired
+    private BaseDbService baseDbService;
 
     @Transactional
     @Override
@@ -303,6 +308,8 @@ public class RetailSalesSendBillServiceBean extends ServiceImpl<RetailSalesSendB
         if (context.getBillCustomerInfo() != null) {
             salesSendBillCustomerInfoDao.insert(context.getBillCustomerInfo());
         }
+        // 单据自定义字段
+        baseDbService.saveOrUpdateCustomFieldData(context.getBill().getModuleId(), TableConstants.SALES_SEND_BILL, context.getBill().getId(), context.getBill().getCustomFieldMap());
         if (context.getBill() != null) {
             retailSalesSendBillDao.insert(context.getBill());
         }
@@ -458,6 +465,7 @@ public class RetailSalesSendBillServiceBean extends ServiceImpl<RetailSalesSendB
         if (CollUtil.isNotEmpty(param.getCustomizeData())) {
             Map<String, Object> customFieldMap = new HashMap<>();
             param.getCustomizeData().forEach(item -> customFieldMap.put(item.getCode(), item.getValue()));
+            bill.setCustomFieldMap(customFieldMap);
         }
 
         RetailDistributionBill retailDistributionBill = null;

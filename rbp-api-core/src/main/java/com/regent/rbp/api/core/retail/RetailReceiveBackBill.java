@@ -1,14 +1,17 @@
 package com.regent.rbp.api.core.retail;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * @program: rbp-datacenter
@@ -104,6 +107,10 @@ public class RetailReceiveBackBill {
     @ApiModelProperty(notes = "反审核时间")
     private Date uncheckTime;
 
+    @ApiModelProperty(notes = "自定义字段")
+    @TableField(exist = false)
+    private Map<String, Object> customFieldMap;
+
     public static RetailReceiveBackBill build() {
         Long userId = ThreadLocalGroup.getUserId();
         RetailReceiveBackBill item = new RetailReceiveBackBill();
@@ -112,6 +119,18 @@ public class RetailReceiveBackBill {
         item.setCreatedBy(userId);
         item.setUpdatedBy(userId);
         return item;
+    }
+
+    /**
+     * 插入之前执行方法，子类实现
+     */
+    public void preInsert() {
+        Date date = new Date();
+        date = DateUtil.getDateTime(date);
+        setCreatedBy(ThreadLocalGroup.getUserId());
+        setUpdatedBy(ThreadLocalGroup.getUserId());
+        setCreatedTime(date);
+        setUpdatedTime(date);
     }
 
     public void preUpdate() {

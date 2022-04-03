@@ -3,6 +3,7 @@ package com.regent.rbp.api.core.retail;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import io.swagger.annotations.ApiModelProperty;
@@ -28,8 +29,8 @@ public class RetailReceiveBackBillGoods {
     @ApiModelProperty(notes = "单据编码")
     private Long billId;
 
-    @ApiModelProperty(notes = "全渠道订单行号")
-    private Long retailOrderBillGoodsId;
+//    @ApiModelProperty(notes = "全渠道订单行号")
+//    private Long retailOrderBillGoodsId;
 
     @ApiModelProperty(notes = "条码")
     private String barcode;
@@ -79,6 +80,18 @@ public class RetailReceiveBackBillGoods {
         item.setCreatedBy(userId);
         item.setUpdatedBy(userId);
         return item;
+    }
+
+    /**
+     * 插入之前执行方法，子类实现
+     */
+    public void preInsert() {
+        Date date = new Date();
+        date = DateUtil.getDateTime(date);
+        setCreatedBy(ThreadLocalGroup.getUserId());
+        setUpdatedBy(ThreadLocalGroup.getUserId());
+        setCreatedTime(date);
+        setUpdatedTime(date);
     }
 
     public void preUpdate() {
