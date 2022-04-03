@@ -17,4 +17,9 @@ public class YumeiApiUrl {
      * 销售订单_确认收货
      */
     public static final String SALE_ORDER_CONFIRM_RECEIPT = "api/trade/orderReceipt";
+
+    /**
+     * 订单查询接口
+     */
+    public static final String SALE_ORDER_QUERY = "api/trade/orderQuery";
 }
