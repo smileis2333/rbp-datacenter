@@ -76,6 +76,8 @@ public class RetailReceiveBackServiceImpl implements RetailReceiveBackService {
                         onlinePlatformSyncErrorService.failure(errorId);
                     } else {
                         onlinePlatformSyncErrorService.succeed(errorId);
+
+
                     }
                 }
             }
