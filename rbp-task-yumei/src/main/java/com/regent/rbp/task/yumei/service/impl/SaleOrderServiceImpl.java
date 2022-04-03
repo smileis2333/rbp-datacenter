@@ -7,6 +7,9 @@ import cn.hutool.http.Method;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.regent.rbp.infrastructure.constants.ResponseCode;
+import com.regent.rbp.infrastructure.exception.BusinessException;
+import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.task.yumei.constants.YumeiApiUrl;
 import com.regent.rbp.task.yumei.model.YumeiCredential;
 import com.regent.rbp.task.yumei.model.YumeiOrder;
@@ -43,22 +46,24 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     public void pushOrder(String storeNo, String orderSource, List<YumeiOrder> orders) {
         HashMap<String, Object> body = new HashMap<>();
         try {
-            body.put("storeNo",storeNo);
-            body.put("orderSource",orderSource);
-            body.put("orders",orders);
+            body.put("storeNo", storeNo);
+            body.put("orderSource", orderSource);
+            body.put("orders", orders);
             String jsonBody = objectMapper.writeValueAsString(body);
             String returnJson = HttpUtil.createRequest(Method.POST, YumeiApiUrl.SALE_ORDER_PUSH)
                     .body(jsonBody)
                     .header(Header.CONTENT_TYPE, "application/json")
-                    .header("X-AUTH-TOKEN",credential.getAccessToken())
+                    .header("X-AUTH-TOKEN", credential.getAccessToken())
                     .execute()
                     .body();
-            Map<String,Object> returnData = (Map<String,Object>)objectMapper.readValue(returnJson, Map.class);
+            Map<String, Object> returnData = (Map<String, Object>) objectMapper.readValue(returnJson, Map.class);
 
         } catch (JsonProcessingException e) {
             e.printStackTrace();
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "paramError");
         } catch (IOException e) {
             e.printStackTrace();
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "returnDataError");
         }
     }
 }

@@ -1,15 +1,17 @@
 package com.regent.rbp.task.yumei.config;
 
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
-import com.regent.rbp.task.yumei.config.YumeiConfig;
 import com.regent.rbp.task.yumei.model.YumeiCredential;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,31 +26,41 @@ import java.util.Map;
 @Configuration
 public class AuthConfig {
 
-    @Autowired
-    private YumeiConfig yumeiConfig;
+    @Value("${yumei.url:}")
+    private String url;
+
+    @Value("${yumei.account:}")
+    private String account;
+
+    @Value("${yumei.password:}")
+    private String password;
     @Autowired
     private ObjectMapper objectMapper;
 
     @Bean
     public YumeiCredential getCredential() {
-        FetchWrapper body = new FetchWrapper(yumeiConfig.getAccount(), yumeiConfig.getPassword());
-
-        try {
-            String jsonBody = objectMapper.writeValueAsString(body);
-            String returnBody = HttpUtil.createPost(yumeiConfig.getUrl()).contentType("application/json").body(jsonBody).execute().body();
-            Map<String, Object> returnData = objectMapper.readValue(returnBody, Map.class);
-            if ("00000".equals(returnData.get("code"))) {
-                Map<String, Object> data = (Map<String, Object>) returnData.get("data");
-                return new YumeiCredential((String) data.get("accessToken"), (String) data.get("refreshToken"), (Long) data.get("expiresIn"));
-            } else {
-                throw new BusinessException(ResponseCode.PARAMS_ERROR, "玉美配置信息错误");
+        if (StrUtil.isAllNotBlank(url, account, password)) {
+            FetchWrapper body = new FetchWrapper(account, password);
+            try {
+                String jsonBody = objectMapper.writeValueAsString(body);
+                HttpResponse response = HttpUtil.createPost(url).contentType("application/json").body(jsonBody).execute();
+                if (response.isOk()) {
+                    String returnBody = response.body();
+                    Map<String, Object> returnData = objectMapper.readValue(returnBody, Map.class);
+                    if ("00000".equals(returnData.get("code"))) {
+                        Map<String, Object> data = (Map<String, Object>) returnData.get("data");
+                        return new YumeiCredential((String) data.get("accessToken"), (String) data.get("refreshToken"), (Long) data.get("expiresIn"));
+                    } else {
+                        throw new BusinessException(ResponseCode.PARAMS_ERROR, "玉美配置信息错误");
+                    }
+                }
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return null;
+        return YumeiCredential.INVALID;
     }
 
     @Data
