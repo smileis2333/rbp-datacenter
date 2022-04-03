@@ -4,12 +4,14 @@ import cn.hutool.http.Header;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.regent.rbp.task.yumei.constants.YumeiApiUrl;
 import com.regent.rbp.task.yumei.model.YumeiCredential;
 import com.regent.rbp.task.yumei.model.YumeiOrder;
+import com.regent.rbp.task.yumei.model.YumeiOrderItems;
 import com.regent.rbp.task.yumei.service.SaleOrderService;
 import lombok.Data;
 import org.apache.http.client.methods.HttpPost;
@@ -61,4 +63,66 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void orderRefund(String storeNo, String outOrderNo, String notifyUrl, List<YumeiOrderItems> data) {
+        HashMap<String, Object> body = new HashMap<>();
+        try {
+            body.put("storeNo", storeNo);
+            body.put("orderSource", 3);
+            body.put("outOrderNo", outOrderNo);
+            body.put("orderItems", data);
+            body.put("notifyUrl", notifyUrl);
+
+            String jsonBody = objectMapper.writeValueAsString(body);
+            String returnJson = HttpUtil.createRequest(Method.POST, YumeiApiUrl.SALE_ORDER_REFUND)
+                    .body(jsonBody)
+                    .header(Header.CONTENT_TYPE, "application/json")
+                    .header("X-AUTH-TOKEN",credential.getAccessToken())
+                    .execute()
+                    .body();
+            Map<String,Object> returnData = (Map<String,Object>)objectMapper.readValue(returnJson, Map.class);
+            if (!returnData.get("code").equals("TFS00000")) {
+                throw new Exception(returnData.get("msg").toString());
+            }
+            // 更新退款状态
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void orderReceipt(String storeNo, String outOrderNo) {
+        HashMap<String, Object> body = new HashMap<>();
+        try {
+            body.put("storeNo", storeNo);
+            body.put("orderSource", 3);
+            body.put("outOrderNo", outOrderNo);
+
+            String jsonBody = objectMapper.writeValueAsString(body);
+            String returnJson = HttpUtil.createRequest(Method.POST, YumeiApiUrl.SALE_ORDER_CONFIRM_RECEIPT)
+                    .body(jsonBody)
+                    .header(Header.CONTENT_TYPE, "application/json")
+                    .header("X-AUTH-TOKEN",credential.getAccessToken())
+                    .execute()
+                    .body();
+            Map<String,Object> returnData = (Map<String,Object>)objectMapper.readValue(returnJson, Map.class);
+            if (!returnData.get("code").equals("TRS00000")) {
+                throw new Exception(returnData.get("msg").toString());
+            }
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
