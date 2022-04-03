@@ -180,18 +180,26 @@ public class RetailSalesSendBillServiceBean extends ServiceImpl<RetailSalesSendB
         // 参数验证
         String msg = this.convertSaveContext(context, param);
         if (StringUtil.isNotEmpty(msg)) {
-            return new ModelDataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("paramVerifyError", new String[]{msg}));
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, msg);
         }
         // 检查订单是否可以发货
         msg = this.checkOrderCanDelivery(context.getDistributionBillGoodsList());
         if (StringUtil.isNotEmpty(msg)) {
-            return new ModelDataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("paramVerifyError", new String[]{msg}));
+            throw new RuntimeException(msg);
         }
         // 按配单生成发货单
         this.saveRetailSalesSendBill(context);
         // 上传inno
         ListDataResponse<RetailSendBillUploadDto> result = this.uploadSendBill(context);
         log.info(result.toString());
+        for (RetailSendBillUploadDto retailSendBillUploadDto : result.getData()) {
+            if (!"1".equals(retailSendBillUploadDto.getCode())) {
+                msg += " " +  retailSendBillUploadDto.getMessage();
+            }
+        }
+        if (StringUtil.isNotEmpty(msg)) {
+            throw new RuntimeException(msg);
+        }
         return ModelDataResponse.Success(context.getBill().getBillNo());
     }
 

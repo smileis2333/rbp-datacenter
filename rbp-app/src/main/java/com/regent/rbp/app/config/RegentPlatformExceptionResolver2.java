@@ -107,6 +107,8 @@ public class RegentPlatformExceptionResolver2 extends DefaultErrorAttributes imp
                 if (externalResourceBundle.containsKey(key)) {
                     message = externalResourceBundle.getString(StringUtil.isEmpty(businessException.getLanguageKey()) ? businessException.getCode() + "" : businessException.getLanguageKey());  //通过key获取对应的
                     message = LanguageUtil.convertGlobalKey(message, language);
+                } else {
+                    message = key;
                 }
             }
         } catch (Exception e) {

@@ -43,6 +43,7 @@ import com.regent.rbp.common.model.bill.entity.LogisticsCompany;
 import com.regent.rbp.common.service.basic.DbService;
 import com.regent.rbp.common.service.basic.SystemCommonService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
+import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StreamUtil;
@@ -55,6 +56,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -125,7 +127,7 @@ public class RetailDistributionBillServiceBean extends ServiceImpl<RetailDistrib
         // 参数验证
         String msg = this.convertSaveContext(context, param);
         if (StringUtil.isNotEmpty(msg)) {
-            return new ModelDataResponse(ResponseCode.PARAMS_ERROR, getMessageByParams("paramVerifyError", new String[]{msg}));
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, msg);
         }
         // 保存配单
         String billNo = this.saveRetailDisrtibutionbill(context);
@@ -224,6 +226,12 @@ public class RetailDistributionBillServiceBean extends ServiceImpl<RetailDistrib
         // TODO 线上单号
         List<RetailOrderBill> retailOrderBillList = retailOrderBillDao.selectList(new LambdaQueryWrapper<RetailOrderBill>()
                 .in(RetailOrderBill::getBillNo, StreamUtil.toSet(param.getGoodsDetailData(), RetailDistributionBillGoodsDetailData::getRetailOrderBillNo)));
+        List<Integer> statusList = Arrays.asList(0,2,3);
+        for (RetailOrderBill retailOrderBill : retailOrderBillList) {
+            if (statusList.contains(retailOrderBill.getStatus())) {
+                messageList.add("订单:" + retailOrderBill.getBillNo() + " 状态未审核、反审核或已作废");
+            }
+        }
         List<Long> toChannelIdList = retailOrderBillList.stream().map(RetailOrderBill::getChannelId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
         if (toChannelIdList.size() != 1) {
             messageList.add(getMessageByParams("retailOrderChannelDiff", null));
