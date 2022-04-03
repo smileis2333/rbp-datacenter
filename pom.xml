@@ -336,6 +336,7 @@
 		<module>rbp-api-service-bean</module>
 		<module>rbp-task-inno</module>
 		<module>rbp-task-standard</module>
+		<module>rbp-task-yumei</module>
 	</modules>
 
 </project>
