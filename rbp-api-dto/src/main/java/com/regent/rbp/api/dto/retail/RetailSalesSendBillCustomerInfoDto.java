@@ -56,5 +56,5 @@ public class RetailSalesSendBillCustomerInfoDto {
     private BigDecimal logisticsAmount;
 
     @ApiModelProperty(notes = "物流说明")
-    private String note;
+    private String notes;
 }

@@ -23,5 +23,5 @@ public class SalesSendYuMeiLogisticsInfoDto {
     private String logisticsBillCode;
 
     @ApiModelProperty(notes = "物流说明")
-    private String note;
+    private String notes;
 }
