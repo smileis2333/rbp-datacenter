@@ -2,6 +2,7 @@ package com.regent.rbp.api.service.bean.retail;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.regent.rbp.api.core.base.Barcode;
@@ -14,6 +15,7 @@ import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.retail.RetailOrderBillCustomInfoDao;
 import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
+import com.regent.rbp.api.dao.retail.RetailOrderBillGoodsDao;
 import com.regent.rbp.api.dao.retail.RetailOrderBillPaymentInfoDao;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
@@ -63,6 +65,8 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
     private BarcodeDao barcodeDao;
     @Autowired
     private SystemCommonService systemCommonService;
+    @Autowired
+    private RetailOrderBillGoodsDao retailOrderBillGoodsDao;
 
     /**
      * 创建
@@ -394,6 +398,44 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
 
     public static String getMessageByParams(String languageKey, Object[] params) {
         return LanguageUtil.getMessage(LanguageUtil.ZH, languageKey, params);
+    }
+
+    @Override
+    public Map<String, String> getOrderStatus(String eorderid, String barcode) {
+        Map<String, String> response = new HashMap<>();
+        RetailOrderBill orderBill = retailOrderBillDao.selectOne(new LambdaQueryWrapper<RetailOrderBill>().eq(RetailOrderBill::getOnlineOrderCode, eorderid));
+        if (null == orderBill) {
+            response.put("Flag", "1");
+            response.put("Message", LanguageUtil.getMessage("onlineOrderCodeNotExist"));
+            response.put("data", eorderid);
+            return response;
+        }
+        // 查询条码
+        Barcode barCode = barcodeDao.selectOne(new LambdaQueryWrapper<Barcode>().eq(Barcode::getBarcode, barcode));
+        if (null == barCode) {
+            response.put("Flag", "0");
+            response.put("Message", LanguageUtil.getMessage("barcodeNotExist"));
+            return response;
+        }
+        RetailOrderBillGoods billGoods = retailOrderBillGoodsDao.selectOne(new LambdaQueryWrapper<RetailOrderBillGoods>().eq(RetailOrderBillGoods::getGoodsId, barCode.getGoodsId())
+                .eq(RetailOrderBillGoods::getColorId, barCode.getColorId()).eq(RetailOrderBillGoods::getLongId, barCode.getLongId()).eq(RetailOrderBillGoods::getSizeId, barCode.getSizeId()));
+        if (null == billGoods) {
+            response.put("Flag", "0");
+            response.put("Message", "goodsNotExist");
+            return response;
+        }
+        if (billGoods.getProcessStatus().equals(4)) {
+            response.put("Flag", "0");
+            response.put("Message", LanguageUtil.getMessage("notAllowedCcancel"));
+            return response;
+        }
+        // 更新全渠道订单状态
+        billGoods.preUpdate();
+        billGoods.setRefundStatus(4);
+        retailOrderBillGoodsDao.updateById(billGoods);
+        response.put("Flag", "1");
+        response.put("Message", LanguageUtil.getMessage("allowedCancel"));
+        return response;
     }
 
 }
