@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
+import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncCacheDao;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
@@ -53,9 +54,9 @@ public class RetailOrderServiceImpl implements RetailOrderService {
     @Autowired
     private OnlinePlatformSyncCacheDao onlinePlatformSyncCacheDao;
     @Autowired
-    OnlinePlatformSyncCacheService onlinePlatformSyncCacheService;
+    private OnlinePlatformSyncCacheService onlinePlatformSyncCacheService;
     @Autowired
-    OnlinePlatformSyncErrorService onlinePlatformSyncErrorService;
+    private OnlinePlatformSyncErrorService onlinePlatformSyncErrorService;
 
     /**
      * 拉取订单列表
@@ -281,5 +282,6 @@ public class RetailOrderServiceImpl implements RetailOrderService {
             }
         }
     }
+
 
 }

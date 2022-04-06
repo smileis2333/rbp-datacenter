@@ -5,6 +5,8 @@ import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.retail.RetailOrderBillSaveParam;
 import com.regent.rbp.api.dto.retail.RetailOrderBillUpdateParam;
 
+import java.util.Map;
+
 /**
  * @author chenchungui
  * @date 2021/9/14
@@ -15,4 +17,6 @@ public interface RetailOrderBillService {
     ModelDataResponse<String> save(RetailOrderBillSaveParam param);
 
     DataResponse updateStatus(RetailOrderBillUpdateParam param);
+
+    Map<String, String> getOrderStatus(String eorderid, String barcode);
 }
