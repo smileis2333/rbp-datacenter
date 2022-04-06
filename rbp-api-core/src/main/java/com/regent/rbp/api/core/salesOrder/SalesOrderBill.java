@@ -94,8 +94,8 @@ public class SalesOrderBill {
     @ApiModelProperty(notes = "原单号")
     private String originBillNo;
 
-    @ApiModelProperty(notes = "单据类型")
-    private Integer billType;
+//    @ApiModelProperty(notes = "单据类型")
+//    private Integer billType;
 
     @ApiModelProperty(notes = "销售渠道编码")
     private Long saleChannelId;

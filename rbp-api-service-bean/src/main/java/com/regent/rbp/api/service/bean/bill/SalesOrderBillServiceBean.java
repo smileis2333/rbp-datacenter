@@ -117,7 +117,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         context.setNotes(param.getNotes());
         context.setOrigin(param.getOrigin());
         context.setOriginBillNo(param.getOriginBillNo());
-        context.setBillType(param.getBillType());
+//        context.setBillType(param.getBillType());
 
         // 销售渠道
         if (param.getSaleChannelCode() != null && param.getSaleChannelCode().length > 0) {
@@ -321,7 +321,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
             queryResult.setNotes(bill.getNotes());
             queryResult.setOrigin(bill.getOrigin());
             queryResult.setOriginBillNo(bill.getOriginBillNo());
-            queryResult.setBillType(bill.getBillType());
+//            queryResult.setBillType(bill.getBillType());
 
             // 单据日期
             String billDate = DateUtil.getDateStr(bill.getBillDate(), DateUtil.SHORT_DATE_FORMAT);
@@ -365,7 +365,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                     for (SalesOrderBillSize billSize : salesSizeList) {
                         SalesOrderBillGoodsResult goodsQueryResult = new SalesOrderBillGoodsResult();
 
-                        goodsQueryResult.setSaleType(billGoods.getSaleType());
+//                        goodsQueryResult.setSaleType(billGoods.getSaleType());
                         goodsQueryResult.setTagPrice(billGoods.getTagPrice());
                         goodsQueryResult.setRetailPrice(billGoods.getRetailPrice());
                         goodsQueryResult.setSalesPrice(billGoods.getSalesPrice());
@@ -635,8 +635,8 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         billGoods.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
         billGoods.setBillId(salesOrderBill.getId());
         billGoods.setGoodsId(goodsId);
-        billGoods.setStatus(goodsResult.getStatus());
-        billGoods.setSaleType(goodsResult.getSaleType());
+//        billGoods.setStatus(goodsResult.getStatus());
+//        billGoods.setSaleType(goodsResult.getSaleType());
         billGoods.setTagPrice(goodsResult.getTagPrice());
         billGoods.setTagDiscount(goodsResult.getTagDiscount());
         billGoods.setRetailPrice(goodsResult.getRetailPrice());

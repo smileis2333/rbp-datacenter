@@ -42,8 +42,8 @@ public class SaleOrderQueryParam {
     @ApiModelProperty(notes = "原单号")
     private String originBillNo;
 
-    @ApiModelProperty(notes = "单据类型（0-线下销售，1-全渠道发货，2-线上发货，3-线上退货，4-定金)")
-    private Integer[] billType;
+//    @ApiModelProperty(notes = "单据类型（0-线下销售，1-全渠道发货，2-线上发货，3-线上退货，4-定金)")
+//    private Integer[] billType;
 
     @ApiModelProperty(notes = "创建日期(开始日期)")
     private String createdDateStart;

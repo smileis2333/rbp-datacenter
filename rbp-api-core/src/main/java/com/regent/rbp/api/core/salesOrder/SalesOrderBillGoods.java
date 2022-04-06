@@ -28,11 +28,11 @@ public class SalesOrderBillGoods {
     @ApiModelProperty(notes = "货品编码")
     private Long goodsId;
 
-    @ApiModelProperty(notes = "状态")
-    private Integer status;
+//    @ApiModelProperty(notes = "状态")
+//    private Integer status;
 
-    @ApiModelProperty(notes = "销售类型")
-    private Integer saleType;
+//    @ApiModelProperty(notes = "销售类型")
+//    private Integer saleType;
 
     @ApiModelProperty(notes = "数量")
     private BigDecimal quantity;
