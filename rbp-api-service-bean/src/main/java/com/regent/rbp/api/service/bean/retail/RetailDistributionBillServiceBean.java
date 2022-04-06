@@ -49,6 +49,7 @@ import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StreamUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -69,6 +70,7 @@ import java.util.stream.Collectors;
  * @createTime 2022-03-31
  * @Description
  */
+@Slf4j
 @Service
 public class RetailDistributionBillServiceBean extends ServiceImpl<RetailDistributionBillDao, RetailDistributionBill> implements RetailDistributionBillService {
 
@@ -123,6 +125,10 @@ public class RetailDistributionBillServiceBean extends ServiceImpl<RetailDistrib
     @Transactional
     @Override
     public ModelDataResponse<String> save(RetailDistributionBillSaveParam param) {
+        if (null == param) {
+            return ModelDataResponse.errorParameter("参数不能为空");
+        }
+        log.info("全渠道配货单 请求参数:" + param.toString());
         RetailDistributionBillSaveContext context = new RetailDistributionBillSaveContext();
         // 参数验证
         String msg = this.convertSaveContext(context, param);
@@ -131,7 +137,7 @@ public class RetailDistributionBillServiceBean extends ServiceImpl<RetailDistrib
         }
         // 保存配单
         String billNo = this.saveRetailDisrtibutionbill(context);
-
+        log.info("全渠道配货单 生成单号:" + billNo);
         return ModelDataResponse.Success(billNo);
     }
 

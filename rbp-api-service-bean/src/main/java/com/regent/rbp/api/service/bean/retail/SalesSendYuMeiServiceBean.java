@@ -14,6 +14,7 @@ import com.regent.rbp.api.service.retail.RetailDistributionBillService;
 import com.regent.rbp.api.service.retail.RetailSalesSendBillService;
 import com.regent.rbp.api.service.retail.SalesSendYuMeiService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import java.util.List;
  * @createTime 2022-04-01
  * @Description
  */
+@Slf4j
 @Service
 public class SalesSendYuMeiServiceBean implements SalesSendYuMeiService {
 
@@ -39,7 +41,10 @@ public class SalesSendYuMeiServiceBean implements SalesSendYuMeiService {
     @Transactional
     @Override
     public ModelDataResponse<String> save(SalesSendYuMeiSaveParam param) {
-
+        if (null == param) {
+            return ModelDataResponse.errorParameter("参数不能为空");
+        }
+        log.info("全渠道发货单(玉美) 请求参数:" + param.toString());
         RetailDistributionBillSaveParam retailDistributionBillSaveParam = new RetailDistributionBillSaveParam();
         BeanUtils.copyProperties(param, retailDistributionBillSaveParam);
         retailDistributionBillSaveParam.setAcceptOrderStatus(1);

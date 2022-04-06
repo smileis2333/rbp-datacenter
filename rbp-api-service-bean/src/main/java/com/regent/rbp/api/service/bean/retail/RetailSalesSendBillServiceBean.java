@@ -180,6 +180,10 @@ public class RetailSalesSendBillServiceBean extends ServiceImpl<RetailSalesSendB
     @Transactional
     @Override
     public ModelDataResponse<String> save(RetailSalesSendBillSaveParam param) {
+        if (null == param) {
+            return ModelDataResponse.errorParameter("参数不能为空");
+        }
+        log.info("全渠道发货单 请求参数:" + param.toString());
         RetailSalesSendBillSaveContext context = new RetailSalesSendBillSaveContext();
 
         // 参数验证
@@ -190,7 +194,7 @@ public class RetailSalesSendBillServiceBean extends ServiceImpl<RetailSalesSendB
         // 检查订单是否可以发货
         msg = this.checkOrderCanDelivery(context.getDistributionBillGoodsList());
         if (StringUtil.isNotEmpty(msg)) {
-            throw new RuntimeException(msg);
+            throw new BusinessException(ResponseCode.INTERNAL_ERROR, msg);
         }
         // 按配单生成发货单
         this.saveRetailSalesSendBill(context);
@@ -203,7 +207,7 @@ public class RetailSalesSendBillServiceBean extends ServiceImpl<RetailSalesSendB
             }
         }
         if (StringUtil.isNotEmpty(msg)) {
-            throw new RuntimeException(msg);
+            throw new BusinessException(ResponseCode.INTERNAL_ERROR, msg);
         }
         return ModelDataResponse.Success(context.getBill().getBillNo());
     }

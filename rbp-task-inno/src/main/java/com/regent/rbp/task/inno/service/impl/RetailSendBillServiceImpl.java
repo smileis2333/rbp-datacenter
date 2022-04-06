@@ -29,6 +29,7 @@ import com.regent.rbp.task.inno.model.req.CheckRetailSendBillReqDto;
 import com.regent.rbp.task.inno.model.req.UploadRetailSendBillReqDto;
 import com.regent.rbp.task.inno.model.resp.CheckRetailSendBillRespDto;
 import com.regent.rbp.task.inno.model.resp.UploadRetailSendBillRespDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
  * @date 2021/9/27
  * @description
  */
+@Slf4j
 @Service
 public class RetailSendBillServiceImpl implements BaseRetailSendBillService {
 
@@ -79,7 +81,10 @@ public class RetailSendBillServiceImpl implements BaseRetailSendBillService {
         reqDto.setData(billList);
         // 接口调用
         String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), Post_ErpDeliveryOrder);
+        log.info("api_url:" + api_url);
+        log.info("request_data:" + JSON.toJSONString(reqDto));
         String result = HttpUtil.post(api_url, JSON.toJSONString(reqDto));
+        log.info("result:" + result);
         // 装换
         UploadRetailSendBillRespDto responseDto = JSON.parseObject(result, UploadRetailSendBillRespDto.class);
         if (responseDto != null && SystemConstants.FAIL_CODE.equals(responseDto.getCode())) {
@@ -111,7 +116,10 @@ public class RetailSendBillServiceImpl implements BaseRetailSendBillService {
         reqDto.setData(new CheckRetailSendBillDto(orderBill.getBillNo()));
         // 接口调用
         String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), Post_CheckOrderCanDelivery);
+        log.info("api_url:" + api_url);
+        log.info("request_data:" + JSON.toJSONString(reqDto));
         String result = HttpUtil.post(api_url, JSON.toJSONString(reqDto));
+        log.info("result:" + result);
         // 装换
         CheckRetailSendBillRespDto responseDto = JSON.parseObject(result, CheckRetailSendBillRespDto.class);
         if (responseDto != null && SystemConstants.FAIL_CODE.equals(responseDto.getCode())) {
