@@ -14,7 +14,7 @@ import java.util.List;
 public class YumeiOrderQueryPageResp {
 
     @ApiModelProperty(notes = "总数")
-    private String totalCount;
+    private Integer totalCount;
 
     @ApiModelProperty(notes = "列表")
     private List<YumeiOrderQueryPage> orders;

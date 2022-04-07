@@ -7,16 +7,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.regent.rbp.api.core.base.Barcode;
 import com.regent.rbp.api.core.base.ModuleBusinessType;
-import com.regent.rbp.api.core.retail.RetailOrderBill;
-import com.regent.rbp.api.core.retail.RetailOrderBillCustomerInfo;
-import com.regent.rbp.api.core.retail.RetailOrderBillGoods;
-import com.regent.rbp.api.core.retail.RetailOrderBillPaymentInfo;
+import com.regent.rbp.api.core.retail.*;
 import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.base.BaseDbDao;
-import com.regent.rbp.api.dao.retail.RetailOrderBillCustomInfoDao;
-import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
-import com.regent.rbp.api.dao.retail.RetailOrderBillGoodsDao;
-import com.regent.rbp.api.dao.retail.RetailOrderBillPaymentInfoDao;
+import com.regent.rbp.api.dao.retail.*;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.retail.RetailOrderBillGoodsDetailData;
@@ -27,12 +21,15 @@ import com.regent.rbp.api.service.enums.BaseModuleEnum;
 import com.regent.rbp.api.service.retail.RetailOrderBillService;
 import com.regent.rbp.api.service.retail.context.RetailOrderBillSaveContext;
 import com.regent.rbp.api.service.retail.context.RetailOrderBillUpdateContext;
+import com.regent.rbp.common.dao.UserDao;
 import com.regent.rbp.common.service.basic.SystemCommonService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
+import com.regent.rbp.task.yumei.model.*;
+import com.regent.rbp.task.yumei.service.SaleOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,10 +64,13 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
     private SystemCommonService systemCommonService;
     @Autowired
     private RetailOrderBillGoodsDao retailOrderBillGoodsDao;
+    @Autowired
+    private RetailOrderBillDstbDao retailOrderBillDstbDao;
+    @Autowired
+    private SaleOrderService saleOrderService;
 
     /**
      * 创建
-     *
      * @param param
      * @return
      */
@@ -84,6 +84,7 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         RetailOrderBillCustomerInfo customerInfo = context.getBillCustomerInfo();
         List<RetailOrderBillGoods> billGoodsList = context.getBillGoodsList();
         List<RetailOrderBillPaymentInfo> paymentInfoList = context.getBillPaymentInfoList();
+        List<RetailOrderBillDstb> dstbList = context.getBillDstbList();
         // 参数验证
         String msg = this.verificationProperty(bill, customerInfo, billGoodsList);
         if (StringUtil.isNotEmpty(msg)) {
@@ -111,6 +112,11 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
                 list.clear();
             }
         }
+        // 批量新增 分销信息
+        for (RetailOrderBillDstb dstb : dstbList) {
+            retailOrderBillDstbDao.insert(dstb);
+        }
+
         return ModelDataResponse.Success(bill.getBillNo());
     }
 
@@ -290,6 +296,29 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
                 billGoodsList.add(goods);
             }
         });
+        /****************   分销信息    ******************/
+        if (CollUtil.isEmpty(param.getDstbInfo())) {
+            return;
+        }
+        List<RetailOrderBillDstb> billDstbList = new ArrayList<>();
+        context.setBillDstbList(billDstbList);
+        param.getDstbInfo().forEach(item -> {
+
+            RetailOrderBillDstb dstb = RetailOrderBillDstb.build();
+            dstb.setBillId(bill.getId());
+            dstb.setLevel(item.getLevel());
+            dstb.setPhone(item.getPhone());
+            dstb.setCommType(item.getCommType());
+            // 分销员
+            if (StringUtil.isNotEmpty(item.getDstbCode())) {
+                dstb.setDstbId(baseDbDao.getLongDataBySql(String.format("select id from rbp_user where code = '%s' limit 1", item.getDstbCode(), item.getDstbCode())));
+            }
+            // 关联卡号
+            if (StringUtil.isNotEmpty(item.getMemberCode())) {
+                dstb.setMemberId(baseDbDao.getLongDataBySql(String.format("select id from rbp_logistics_company where status = 100 and code = '%s'", item.getMemberCode())));
+            }
+            billDstbList.add(dstb);
+        });
     }
 
     /**
@@ -403,6 +432,47 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
     @Override
     public Map<String, String> getOrderStatus(String eorderid, String barcode) {
         Map<String, String> response = new HashMap<>();
+
+        // 查询玉美订单
+        YumeiOrderQueryReq yumeiOrderQueryReq = new YumeiOrderQueryReq();
+        yumeiOrderQueryReq.setOutOrderNo(eorderid);
+        YumeiOrderQueryPageResp page = saleOrderService.orderQuery(yumeiOrderQueryReq);
+        if (page.getTotalCount() == 0) {
+            // 找不到订单允许取消
+            response.put("Flag", "1");
+            response.put("Message", LanguageUtil.getMessage("onlineOrderCodeNotExist"));
+            response.put("data", eorderid);
+            return response;
+        }
+        // 订单信息
+        YumeiOrderQueryPage order = page.getOrders().get(0);
+        // 判断货品明细状态
+        YumeiOrderGoods orderBill = order.getOrderItems().stream().filter(f -> f.getSkuCode().equals(barcode)).findAny().orElse(null);
+        if (null == orderBill) {
+            // 未找到条码信息
+            response.put("Flag", "0");
+            response.put("Message", LanguageUtil.getMessage("barcodeNotExist"));
+            return response;
+        }
+        if (orderBill.getItemStatus().equals(1) || orderBill.getItemStatus().equals(2)) {
+            // 允许退款
+            response.put("Flag", "1");
+            response.put("Message", LanguageUtil.getMessage("allowedCancel"));
+
+            // 退款货品
+            List<YumeiOrderItems> items = new ArrayList<>();
+            YumeiOrderItems orderItem = new YumeiOrderItems();
+            orderItem.setSkuCode(barcode);
+            orderItem.setRefundAmount(orderBill.getUnitPrice());
+            items.add(orderItem);
+            saleOrderService.orderRefund(order.getStoreNo(), order.getOrderSource(), order.getOutOrderNo(), "", items);
+        } else {
+            // 不允许
+            response.put("Flag", "0");
+            response.put("Message", LanguageUtil.getMessage("notAllowedCcancel"));
+        }
+
+        /*// rbp状态更改
         RetailOrderBill orderBill = retailOrderBillDao.selectOne(new LambdaQueryWrapper<RetailOrderBill>().eq(RetailOrderBill::getOnlineOrderCode, eorderid));
         if (null == orderBill) {
             response.put("Flag", "1");
@@ -434,7 +504,7 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         billGoods.setRefundStatus(4);
         retailOrderBillGoodsDao.updateById(billGoods);
         response.put("Flag", "1");
-        response.put("Message", LanguageUtil.getMessage("allowedCancel"));
+        response.put("Message", LanguageUtil.getMessage("allowedCancel"));*/
         return response;
     }
 

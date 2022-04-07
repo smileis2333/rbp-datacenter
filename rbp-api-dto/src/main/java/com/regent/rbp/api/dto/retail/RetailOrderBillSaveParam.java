@@ -125,4 +125,8 @@ public class RetailOrderBillSaveParam {
     /************************* 货品明细 ************************************/
     @ApiModelProperty(notes = "货品明细")
     private List<RetailOrderBillGoodsDetailData> goodsDetailData;
+
+    /************************* 分销信息 ************************************/
+    @ApiModelProperty(notes = "分销信息")
+    private List<RetailOrderBillDstbInfo> dstbInfo;
 }

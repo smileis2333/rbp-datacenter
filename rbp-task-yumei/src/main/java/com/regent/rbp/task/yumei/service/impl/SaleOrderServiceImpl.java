@@ -73,6 +73,66 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         }
     }
 
+    @Override
+    public void orderRefund(String storeNo, Integer orderSource, String outOrderNo, String notifyUrl, List<YumeiOrderItems> data) {
+        HashMap<String, Object> body = new HashMap<>();
+        try {
+            body.put("storeNo", storeNo);
+            body.put("orderSource", orderSource);
+            body.put("outOrderNo", outOrderNo);
+            body.put("orderItems", data);
+            body.put("notifyUrl", notifyUrl);
+
+            String jsonBody = objectMapper.writeValueAsString(body);
+            String returnJson = HttpUtil.createRequest(Method.POST, YumeiApiUrl.SALE_ORDER_REFUND)
+                    .body(jsonBody)
+                    .header(Header.CONTENT_TYPE, "application/json")
+                    .header("X-AUTH-TOKEN",credential.getAccessToken())
+                    .execute()
+                    .body();
+            Map<String,Object> returnData = (Map<String,Object>)objectMapper.readValue(returnJson, Map.class);
+            if (!returnData.get("code").equals("TFS00000")) {
+                throw new Exception(returnData.get("msg").toString());
+            }
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void orderReceipt(String storeNo, Integer orderSource, String outOrderNo) {
+        HashMap<String, Object> body = new HashMap<>();
+        try {
+            body.put("storeNo", storeNo);
+            body.put("orderSource", orderSource);
+            body.put("outOrderNo", outOrderNo);
+
+            String jsonBody = objectMapper.writeValueAsString(body);
+            String returnJson = HttpUtil.createRequest(Method.POST, YumeiApiUrl.SALE_ORDER_CONFIRM_RECEIPT)
+                    .body(jsonBody)
+                    .header(Header.CONTENT_TYPE, "application/json")
+                    .header("X-AUTH-TOKEN",credential.getAccessToken())
+                    .execute()
+                    .body();
+            Map<String,Object> returnData = (Map<String,Object>)objectMapper.readValue(returnJson, Map.class);
+            if (!returnData.get("code").equals("TRS00000")) {
+                throw new Exception(returnData.get("msg").toString());
+            }
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * 订单查询接口
      *
@@ -84,18 +144,21 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         if (null == query) {
             throw new BusinessException(ResponseCode.PARAMS_EMPTY);
         }
-        if (StringUtils.isEmpty(query.getStoreNo())) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"门店编号"});
+        if (StringUtils.isEmpty(query.getOutOrderNo())) {
+            if (StringUtils.isEmpty(query.getStoreNo())) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"门店编号"});
+            }
+            if (null == query.getOrderSource()) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"订单来源"});
+            }
+            if (null == query.getStartTime()) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"开始时间"});
+            }
+            if (null == query.getEndTime()) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"结束时间"});
+            }
         }
-        if (null == query.getOrderSource()) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"订单来源"});
-        }
-        if (null == query.getStartTime()) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"开始时间"});
-        }
-        if (null == query.getEndTime()) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"结束时间"});
-        }
+
         YumeiOrderQueryPageResp resp = null;
         try {
             HashMap<String, Object> body = new HashMap<>();
@@ -129,67 +192,6 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             throw new BusinessException(ResponseCode.INTERNAL_ERROR, "paramVerifyError", new Object[]{e.getMessage()});
         }
         return resp;
-    }
-
-    @Override
-    public void orderRefund(String storeNo, String outOrderNo, String notifyUrl, List<YumeiOrderItems> data) {
-        HashMap<String, Object> body = new HashMap<>();
-        try {
-            body.put("storeNo", storeNo);
-            body.put("orderSource", 3);
-            body.put("outOrderNo", outOrderNo);
-            body.put("orderItems", data);
-            body.put("notifyUrl", notifyUrl);
-
-            String jsonBody = objectMapper.writeValueAsString(body);
-            String returnJson = HttpUtil.createRequest(Method.POST, YumeiApiUrl.SALE_ORDER_REFUND)
-                    .body(jsonBody)
-                    .header(Header.CONTENT_TYPE, "application/json")
-                    .header("X-AUTH-TOKEN",credential.getAccessToken())
-                    .execute()
-                    .body();
-            Map<String,Object> returnData = (Map<String,Object>)objectMapper.readValue(returnJson, Map.class);
-            if (!returnData.get("code").equals("TFS00000")) {
-                throw new Exception(returnData.get("msg").toString());
-            }
-            // 更新退款状态
-
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void orderReceipt(String storeNo, String outOrderNo) {
-        HashMap<String, Object> body = new HashMap<>();
-        try {
-            body.put("storeNo", storeNo);
-            body.put("orderSource", 3);
-            body.put("outOrderNo", outOrderNo);
-
-            String jsonBody = objectMapper.writeValueAsString(body);
-            String returnJson = HttpUtil.createRequest(Method.POST, YumeiApiUrl.SALE_ORDER_CONFIRM_RECEIPT)
-                    .body(jsonBody)
-                    .header(Header.CONTENT_TYPE, "application/json")
-                    .header("X-AUTH-TOKEN",credential.getAccessToken())
-                    .execute()
-                    .body();
-            Map<String,Object> returnData = (Map<String,Object>)objectMapper.readValue(returnJson, Map.class);
-            if (!returnData.get("code").equals("TRS00000")) {
-                throw new Exception(returnData.get("msg").toString());
-            }
-
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 }
