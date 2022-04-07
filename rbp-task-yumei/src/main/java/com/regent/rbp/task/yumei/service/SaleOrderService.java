@@ -24,6 +24,13 @@ public interface SaleOrderService {
     void confirmReceive(String storeNo, String orderSource, String outOrderNo);
 
     /**
+     * 推送订单到玉美
+     *
+     * @param orderNoList 线上单号
+     */
+    public void pushOrderToYuMei(List<String> orderNoList);
+
+    /**
      * 订单推送接口
      *
      * @param storeNo

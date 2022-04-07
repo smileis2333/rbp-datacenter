@@ -68,10 +68,17 @@ public class SaleOrderServiceImpl implements SaleOrderService {
 
     }
 
+    /**
+     * 推送订单到玉美
+     *
+     * @param orderNoList 线上单号
+     */
     @Transactional
+    @Override
     public void pushOrderToYuMei(List<String> orderNoList) {
+        log.info("线上订单号：" + orderNoList.toString());
         List<RetailOrderBill> retailOrderBillList = retailOrderBillDao.selectList(new LambdaQueryWrapper<RetailOrderBill>()
-                .in(RetailOrderBill::getBillNo, orderNoList));
+                .in(RetailOrderBill::getManualId, orderNoList));
         for (RetailOrderBill retailOrderBill : retailOrderBillList) {
             OrderBusinessPersonDto orderBusinessPersonDto = retailOrderBillDao.getOrderBusinessPersonDto(retailOrderBill.getId());
             if (null == orderBusinessPersonDto) {
@@ -96,6 +103,12 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             // 订单来源（1：美人计会员商城、2：酒会员商城、3：丽晶
             String orderSource = "3";
             this.pushOrder(orderBusinessPersonDto.getChannelNo(), orderSource, orderList);
+
+            // 更新为已审核状态
+            RetailOrderBill updateBill = new RetailOrderBill();
+            updateBill.setId(retailOrderBill.getId());
+            updateBill.setStatus(1);
+            retailOrderBillDao.updateById(updateBill);
         }
     }
 

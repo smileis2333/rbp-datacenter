@@ -28,8 +28,7 @@ import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
-import com.regent.rbp.task.yumei.model.*;
-import com.regent.rbp.task.yumei.service.SaleOrderService;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,8 +36,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -66,8 +67,8 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
     private RetailOrderBillGoodsDao retailOrderBillGoodsDao;
     @Autowired
     private RetailOrderBillDstbDao retailOrderBillDstbDao;
-    @Autowired
-    private SaleOrderService saleOrderService;
+//    @Autowired
+//    private SaleOrderService saleOrderService;
 
     /**
      * 创建
@@ -77,6 +78,14 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
     @Transactional
     @Override
     public ModelDataResponse<String> save(RetailOrderBillSaveParam param) {
+        Object orderNoList = ThreadLocalGroup.get("yumei_orderno_list");
+        Set<String> orderNoList2 = (Set<String>) orderNoList;
+        if (null == orderNoList2) {
+            orderNoList2 = new HashSet<String>();
+        }
+        orderNoList2.add(param.getManualNo());
+        ThreadLocalGroup.set("yumei_orderno_list", orderNoList2);
+
         RetailOrderBillSaveContext context = new RetailOrderBillSaveContext();
         // 转换
         this.convertSaveContext(context, param);
@@ -433,44 +442,44 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
     public Map<String, String> getOrderStatus(String eorderid, String barcode) {
         Map<String, String> response = new HashMap<>();
 
-        // 查询玉美订单
-        YumeiOrderQueryReq yumeiOrderQueryReq = new YumeiOrderQueryReq();
-        yumeiOrderQueryReq.setOutOrderNo(eorderid);
-        YumeiOrderQueryPageResp page = saleOrderService.orderQuery(yumeiOrderQueryReq);
-        if (page.getTotalCount() == 0) {
-            // 找不到订单允许取消
-            response.put("Flag", "1");
-            response.put("Message", LanguageUtil.getMessage("onlineOrderCodeNotExist"));
-            response.put("data", eorderid);
-            return response;
-        }
-        // 订单信息
-        YumeiOrderQueryPage order = page.getOrders().get(0);
-        // 判断货品明细状态
-        YumeiOrderGoods orderBill = order.getOrderItems().stream().filter(f -> f.getSkuCode().equals(barcode)).findAny().orElse(null);
-        if (null == orderBill) {
-            // 未找到条码信息
-            response.put("Flag", "0");
-            response.put("Message", LanguageUtil.getMessage("barcodeNotExist"));
-            return response;
-        }
-        if (orderBill.getItemStatus().equals(1) || orderBill.getItemStatus().equals(2)) {
-            // 允许退款
-            response.put("Flag", "1");
-            response.put("Message", LanguageUtil.getMessage("allowedCancel"));
-
-            // 退款货品
-            List<YumeiOrderItems> items = new ArrayList<>();
-            YumeiOrderItems orderItem = new YumeiOrderItems();
-            orderItem.setSkuCode(barcode);
-            orderItem.setRefundAmount(orderBill.getUnitPrice());
-            items.add(orderItem);
-            saleOrderService.orderRefund(order.getStoreNo(), order.getOrderSource(), order.getOutOrderNo(), "", items);
-        } else {
-            // 不允许
-            response.put("Flag", "0");
-            response.put("Message", LanguageUtil.getMessage("notAllowedCcancel"));
-        }
+//        // 查询玉美订单
+//        YumeiOrderQueryReq yumeiOrderQueryReq = new YumeiOrderQueryReq();
+//        yumeiOrderQueryReq.setOutOrderNo(eorderid);
+//        YumeiOrderQueryPageResp page = saleOrderService.orderQuery(yumeiOrderQueryReq);
+//        if (page.getTotalCount() == 0) {
+//            // 找不到订单允许取消
+//            response.put("Flag", "1");
+//            response.put("Message", LanguageUtil.getMessage("onlineOrderCodeNotExist"));
+//            response.put("data", eorderid);
+//            return response;
+//        }
+//        // 订单信息
+//        YumeiOrderQueryPage order = page.getOrders().get(0);
+//        // 判断货品明细状态
+//        YumeiOrderGoods orderBill = order.getOrderItems().stream().filter(f -> f.getSkuCode().equals(barcode)).findAny().orElse(null);
+//        if (null == orderBill) {
+//            // 未找到条码信息
+//            response.put("Flag", "0");
+//            response.put("Message", LanguageUtil.getMessage("barcodeNotExist"));
+//            return response;
+//        }
+//        if (orderBill.getItemStatus().equals(1) || orderBill.getItemStatus().equals(2)) {
+//            // 允许退款
+//            response.put("Flag", "1");
+//            response.put("Message", LanguageUtil.getMessage("allowedCancel"));
+//
+//            // 退款货品
+//            List<YumeiOrderItems> items = new ArrayList<>();
+//            YumeiOrderItems orderItem = new YumeiOrderItems();
+//            orderItem.setSkuCode(barcode);
+//            orderItem.setRefundAmount(orderBill.getUnitPrice());
+//            items.add(orderItem);
+//            saleOrderService.orderRefund(order.getStoreNo(), order.getOrderSource(), order.getOutOrderNo(), "", items);
+//        } else {
+//            // 不允许
+//            response.put("Flag", "0");
+//            response.put("Message", LanguageUtil.getMessage("notAllowedCcancel"));
+//        }
 
         /*// rbp状态更改
         RetailOrderBill orderBill = retailOrderBillDao.selectOne(new LambdaQueryWrapper<RetailOrderBill>().eq(RetailOrderBill::getOnlineOrderCode, eorderid));

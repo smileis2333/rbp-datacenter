@@ -1,5 +1,6 @@
 package com.regent.rbp.task.inno.job;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -17,13 +18,17 @@ import com.regent.rbp.infrastructure.util.StringUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.model.param.RetailOrderDownloadOnlineOrderParam;
 import com.regent.rbp.task.inno.service.RetailOrderService;
+import com.regent.rbp.task.yumei.service.SaleOrderService;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import org.apache.http.client.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author chenchungui
@@ -45,6 +50,9 @@ public class RetailOrderJob {
     private OnlinePlatformSyncCacheDao onlinePlatformSyncCacheDao;
     @Autowired
     private OnlinePlatformDao onlinePlatformDao;
+
+    @Autowired
+    private SaleOrderService saleOrderService;
 
     /**
      * 拉取订单列表
@@ -99,8 +107,21 @@ public class RetailOrderJob {
             //下载线上订单列表
             retailOrderService.downloadOnlineOrderList(orderParam, onlinePlatform);
 
+            // 推送订单到玉美
+            this.pushOrderToYuMei();
+
         } catch (Exception ex) {
             XxlJobHelper.handleFail(ex.getMessage());
         }
+    }
+
+    private void pushOrderToYuMei() {
+        Object orderNoList = ThreadLocalGroup.get("yumei_orderno_list");
+        Set<String> orderNoList2 = (Set<String>) orderNoList;
+        if (CollUtil.isNotEmpty(orderNoList2)) {
+            saleOrderService.pushOrderToYuMei(new ArrayList<>(orderNoList2));
+        }
+
+        ThreadLocalGroup.remove();
     }
 }
