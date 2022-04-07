@@ -100,6 +100,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                 yumeiOrder.setActualTotalAmount(retalOrderGoodsInfoDtoList.stream().map(RetalOrderGoodsInfoDto::getUnitPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
                 yumeiOrder.setOrderItems(orderItemList);
             }
+            orderList.add(yumeiOrder);
             // 订单来源（1：美人计会员商城、2：酒会员商城、3：丽晶
             String orderSource = "3";
             this.pushOrder(orderBusinessPersonDto.getChannelNo(), orderSource, orderList);
