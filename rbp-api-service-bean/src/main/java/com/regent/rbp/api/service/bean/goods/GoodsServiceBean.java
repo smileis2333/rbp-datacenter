@@ -611,7 +611,7 @@ public class GoodsServiceBean implements GoodsService {
 
     @Override
     @Transactional
-    public DataResponse save(GoodsSaveParam param) {
+    public synchronized DataResponse save(GoodsSaveParam param) {
         boolean createFlag = true;
         GoodsSaveContext context = new GoodsSaveContext(param);
         //判断是新增还是更新
@@ -629,36 +629,34 @@ public class GoodsServiceBean implements GoodsService {
             return DataResponse.errorParameter(message);
         }
 
-        synchronized (this) {
-            //自动补充不存在的数据字典
-            processAutoCompleteDictionary(param, context);
-            //写入货品表
-            saveGoods(createFlag, goods);
+        //自动补充不存在的数据字典
+        processAutoCompleteDictionary(param, context);
+        //写入货品表
+        saveGoods(createFlag, goods);
 
-            //写入颜色
-            if (CollUtil.isNotEmpty(context.getGoodsColorList())) {
-                saveGoodsColor(createFlag, context.getGoodsColorList());
-            }
-            //写入内长
-            if (CollUtil.isNotEmpty(context.getGoodsLongList())) {
-                saveGoodsLong(createFlag, context.getGoodsLongList());
-            }
-            //写入尺码停用
-            if (CollUtil.isNotEmpty(context.getSizeDisableList())) {
-                saveDisableSizeData(createFlag, context.getSizeDisableList());
-            }
-            //写入吊牌价列表
-            if (CollUtil.isNotEmpty(context.getGoodsTagPriceList())) {
-                saveGoodsTagPrice(createFlag, context.getGoodsTagPriceList());
-            }
-            //写入条形码
-            if (CollUtil.isNotEmpty(context.getBarcodeList())) {
-                saveGoodsBarcode(createFlag, context.getBarcodeList());
-            }
-            //写入自定义字段
-            if (CollUtil.isNotEmpty(context.getCustomizeData())) {
-                baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.GOODS_INFO, TableConstants.GOODS, goods.getId(), context.getCustomizeData());
-            }
+        //写入颜色
+        if (CollUtil.isNotEmpty(context.getGoodsColorList())) {
+            saveGoodsColor(createFlag, context.getGoodsColorList());
+        }
+        //写入内长
+        if (CollUtil.isNotEmpty(context.getGoodsLongList())) {
+            saveGoodsLong(createFlag, context.getGoodsLongList());
+        }
+        //写入尺码停用
+        if (CollUtil.isNotEmpty(context.getSizeDisableList())) {
+            saveDisableSizeData(createFlag, context.getSizeDisableList());
+        }
+        //写入吊牌价列表
+        if (CollUtil.isNotEmpty(context.getGoodsTagPriceList())) {
+            saveGoodsTagPrice(createFlag, context.getGoodsTagPriceList());
+        }
+        //写入条形码
+        if (CollUtil.isNotEmpty(context.getBarcodeList())) {
+            saveGoodsBarcode(createFlag, context.getBarcodeList());
+        }
+        //写入自定义字段
+        if (CollUtil.isNotEmpty(context.getCustomizeData())) {
+            baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.GOODS_INFO, TableConstants.GOODS, goods.getId(), context.getCustomizeData());
         }
 
         return DataResponse.success();
@@ -862,7 +860,7 @@ public class GoodsServiceBean implements GoodsService {
                     item.setBarcode(barcodeDto.getBarcode());
                     item.setRuleId(barcodeDto.getRuleId());
 
-                    if (param.getType()==1) {
+                    if (param.getType() == 1) {
                         Color color = colorDao.selectOne(new QueryWrapper<Color>().select("id", "code", "name")
                                 .eq("code", barcodeDto.getColorCode()));
                         if (color == null) {
@@ -885,7 +883,7 @@ public class GoodsServiceBean implements GoodsService {
                         } else {
                             item.setSizeId(sizeDetail.getId());
                         }
-                    }else if (param.getType()==2){
+                    } else if (param.getType() == 2) {
                         item.setColorId(1200000000000002L);
                         item.setLongId(1200000000000003L);
                         item.setSizeId(1200000000000004L);
