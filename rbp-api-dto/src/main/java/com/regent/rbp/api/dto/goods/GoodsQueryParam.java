@@ -1,5 +1,6 @@
 package com.regent.rbp.api.dto.goods;
 
+import com.regent.rbp.api.dto.base.DefaultParam;
 import com.regent.rbp.infrastructure.request.PageRequest;
 import lombok.Data;
 
@@ -7,7 +8,7 @@ import lombok.Data;
  * @author xuxing
  */
 @Data
-public class GoodsQueryParam {
+public class GoodsQueryParam extends DefaultParam {
     private String[] goodsCode;
     private String[] goodsName;
     private String[] mnemonicCode;
@@ -30,8 +31,4 @@ public class GoodsQueryParam {
     private String checkDateEnd;
     private String updatedDateStart;
     private String updatedDateEnd;
-    private String fields;
-
-    private int pageNo;
-    private int pageSize;
 }
