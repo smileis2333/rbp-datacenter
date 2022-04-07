@@ -175,7 +175,7 @@ public class RetailSendBillServiceImpl implements BaseRetailSendBillService {
             bill.setOrderSn(param.getOnlineOrderNo());
             bill.setAddTime(param.getBillDate());
             bill.setShippingName(param.getLogisticsCompanyName());
-            bill.setShipping_Code(param.getLogisticsCompanyCode());
+            bill.setShipping_Code(param.getLogisticsNo());
             bill.setConsignee(param.getContactsPerson());
             bill.setAddress(param.getAddress());
             bill.setCountry(param.getNation());

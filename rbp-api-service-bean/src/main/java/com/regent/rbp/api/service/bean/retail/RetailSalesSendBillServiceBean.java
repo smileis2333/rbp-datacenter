@@ -250,12 +250,17 @@ public class RetailSalesSendBillServiceBean extends ServiceImpl<RetailSalesSendB
         item.setOnlineOrderNo(OptionalUtil.ofNullable(retailOrderBill, RetailOrderBill::getOnlineOrderCode));
         // 客户信息
         SalesSendBillCustomerInfo customerInfo = context.getBillCustomerInfo();
-        // 物流公司信息
-        List<IdNameCodeDto> logisticsCompanyList = dbService.selectIdNameCodeList(new QueryWrapper<LogisticsCompany>().eq("id", customerInfo.getLogisticsCompanyId()), LogisticsCompany.class);
-        if (CollUtil.isNotEmpty(logisticsCompanyList)) {
-            IdNameCodeDto logisticsCompany = logisticsCompanyList.get(0);
-            item.setLogisticsCompanyName(OptionalUtil.ofNullable(logisticsCompany, IdNameCodeDto::getName));
-            item.setLogisticsCompanyCode(OptionalUtil.ofNullable(logisticsCompany, IdNameCodeDto::getCode));
+        if (CollUtil.isNotEmpty(context.getBillLogisticsInfoList())) {
+            // 物流公司信息
+            List<IdNameCodeDto> logisticsCompanyList = dbService.selectIdNameCodeList(new QueryWrapper<LogisticsCompany>()
+                    .in("id", StreamUtil.toSet(context.getBillLogisticsInfoList(), SalesSendBillLogisticsInfo::getLogisticsCompanyId)), LogisticsCompany.class);
+            if (CollUtil.isNotEmpty(logisticsCompanyList)) {
+                IdNameCodeDto logisticsCompany = logisticsCompanyList.get(0);
+                item.setLogisticsCompanyName(OptionalUtil.ofNullable(logisticsCompany, IdNameCodeDto::getName));
+                item.setLogisticsCompanyCode(OptionalUtil.ofNullable(logisticsCompany, IdNameCodeDto::getCode));
+            }
+            item.setLogisticsNo(context.getBillLogisticsInfoList().get(0).getLogisticsBillCode());
+            item.setLogisticsAmount(context.getBillLogisticsInfoList().get(0).getLogisticsAmount());
         }
         item.setContactsPerson(customerInfo.getContactsPerson());
         item.setAddress(customerInfo.getAddress());
@@ -268,8 +273,6 @@ public class RetailSalesSendBillServiceBean extends ServiceImpl<RetailSalesSendB
         item.setTel(customerInfo.getMobile());
         item.setMobile(customerInfo.getMobile());
         item.setInsureFee(BigDecimal.ZERO);
-        item.setLogisticsAmount(customerInfo.getLogisticsAmount());
-        item.setLogisticsNo(StrUtil.EMPTY);
         item.setDeliveryStoreCode(StrUtil.EMPTY);
         item.setDeliveryType("001".equals(type) ? 1 : 0);
         // 货品明细
