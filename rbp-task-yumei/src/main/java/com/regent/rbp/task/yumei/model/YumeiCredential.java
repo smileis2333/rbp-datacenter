@@ -15,5 +15,5 @@ public class YumeiCredential {
     private String refreshToken;
     private Long expiresTime;
 
-    public static YumeiCredential INVALID = new YumeiCredential("","",0l);
+    public static YumeiCredential credential = new YumeiCredential("","",0l);
 }
