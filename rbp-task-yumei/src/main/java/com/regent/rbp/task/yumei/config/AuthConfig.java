@@ -60,7 +60,7 @@ public class AuthConfig {
                 e.printStackTrace();
             }
         }
-        return YumeiCredential.INVALID;
+        return YumeiCredential.credential;
     }
 
     @Data
