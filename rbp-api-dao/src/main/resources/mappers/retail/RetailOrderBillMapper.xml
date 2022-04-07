@@ -37,4 +37,31 @@
         and a.id in (<foreach item="id" collection="billIdList" open="" separator="," close="" >#{id}</foreach>)
     </select>
 
+    <select id="getOrderBusinessPersonDto" resultType="com.regent.rbp.api.dto.retail.OrderBusinessPersonDto">
+        select b.code as guideNo, c.code as channelCode
+        from rbp_retail_order_bill_dstb a
+        inner join rbp_user b on a.dstb_id = b.id
+        left join rbp_channel c on b.channel_id = c.id
+        where a.bill_id = #{id}
+        order by a.id
+        limit 1
+    </select>
+
+    <select id="getRetailOrderInfoDto" resultType="com.regent.rbp.api.dto.retail.RetailOrderInfoDto">
+        select a.manual_id as outTradeNo, b.buyer_nickname as buyerNick,b.contacts_person as receiver, b.province provinceName, b.city cityName,
+               b.county as areaName, b.address as addrDetail, b.mobile, b.notes as userRemark, b.logistics_amount as freightAmount
+        from rbp_retail_order_bill a
+                 left join rbp_retail_order_bill_customer_info b on a.id = b.bill_id
+        where a.id = #{id}
+    </select>
+
+    <select id="getRetalOrderGoodsInfoDto" resultType="com.regent.rbp.api.dto.retail.RetalOrderGoodsInfoDto">
+        select b.name as goodsName, a.barcode as skuCode, a.balance_price as unitPrice, a.remark as buyerRemark,
+               sum(a.quantity) as skuQty
+        from rbp_retail_order_bill_goods a
+                 inner join rbp_goods b on a.goods_id  = b.id
+        where a.bill_id  = #{id}
+        group by b.name, a.barcode, a.balance_price, a.remark
+    </select>
+
 </mapper>

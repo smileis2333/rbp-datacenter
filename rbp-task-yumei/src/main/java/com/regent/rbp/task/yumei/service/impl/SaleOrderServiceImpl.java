@@ -1,10 +1,17 @@
 package com.regent.rbp.task.yumei.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.http.Header;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.regent.rbp.api.core.retail.RetailOrderBill;
+import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
+import com.regent.rbp.api.dto.retail.OrderBusinessPersonDto;
+import com.regent.rbp.api.dto.retail.RetailOrderInfoDto;
+import com.regent.rbp.api.dto.retail.RetalOrderGoodsInfoDto;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
@@ -19,11 +26,15 @@ import com.regent.rbp.task.yumei.model.YumeiOrderQueryReq;
 import com.regent.rbp.task.yumei.service.SaleOrderService;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,9 +54,43 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private RetailOrderBillDao retailOrderBillDao;
+
     @Override
     public void confirmReceive(String storeNo, String orderSource, String outOrderNo) {
 
+    }
+
+    @Transactional
+    public void pushOrderToYuMei(List<String> orderNoList) {
+        List<RetailOrderBill> retailOrderBillList = retailOrderBillDao.selectList(new LambdaQueryWrapper<RetailOrderBill>()
+                .in(RetailOrderBill::getBillNo, orderNoList));
+        for (RetailOrderBill retailOrderBill : retailOrderBillList) {
+            OrderBusinessPersonDto orderBusinessPersonDto = retailOrderBillDao.getOrderBusinessPersonDto(retailOrderBill.getId());
+            if (null == orderBusinessPersonDto) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "订单" + retailOrderBill.getBillNo() + "没有分销员");
+            }
+            List<YumeiOrder> orderList = new ArrayList<>();
+            RetailOrderInfoDto retailOrderInfoDto = retailOrderBillDao.getRetailOrderInfoDto(retailOrderBill.getId());
+            YumeiOrder yumeiOrder = new YumeiOrder();
+            BeanUtils.copyProperties(retailOrderInfoDto, yumeiOrder);
+            List<RetalOrderGoodsInfoDto> retalOrderGoodsInfoDtoList = retailOrderBillDao.getRetalOrderGoodsInfoDto(retailOrderBill.getId());
+            if (CollUtil.isNotEmpty(retalOrderGoodsInfoDtoList)) {
+                List<YumeiOrder.OrderItem> orderItemList = new ArrayList<>();
+                for (RetalOrderGoodsInfoDto retalOrderGoodsInfoDto : retalOrderGoodsInfoDtoList) {
+                    YumeiOrder.OrderItem orderItem = new YumeiOrder().new OrderItem();
+                    BeanUtils.copyProperties(retalOrderGoodsInfoDto, orderItem);
+                    orderItemList.add(orderItem);
+                }
+                yumeiOrder.setGoodsQty(retalOrderGoodsInfoDtoList.stream().map(RetalOrderGoodsInfoDto::getSkuQty).reduce(BigDecimal.ZERO, BigDecimal::add));
+                yumeiOrder.setActualTotalAmount(retalOrderGoodsInfoDtoList.stream().map(RetalOrderGoodsInfoDto::getUnitPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
+                yumeiOrder.setOrderItems(orderItemList);
+            }
+            // 订单来源（1：美人计会员商城、2：酒会员商城、3：丽晶
+            String orderSource = "3";
+            this.pushOrder(orderBusinessPersonDto.getChannelNo(), orderSource, orderList);
+        }
     }
 
     @Override

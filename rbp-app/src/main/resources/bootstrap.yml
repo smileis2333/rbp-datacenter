@@ -1,11 +1,11 @@
 spring:
   application:
-    name: datacenter-server
+    name: datacenter
   profiles:
-    active: dev
+    active: lzc
   cloud:
     nacos:
       config:
-        server-addr: 127.0.0.1:8848
+        server-addr: 120.55.60.202:8848
         file-extension: yml
         group: DEFAULT_GROUP
