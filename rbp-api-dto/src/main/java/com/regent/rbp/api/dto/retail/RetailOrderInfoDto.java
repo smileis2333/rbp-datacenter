@@ -1,19 +1,18 @@
-package com.regent.rbp.task.yumei.model;
+package com.regent.rbp.api.dto.retail;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.apache.kafka.common.protocol.types.Field;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * @author huangjie
- * @date : 2022/04/03
- * @description
+ * @author liuzhicheng
+ * @createTime 2022-04-07
+ * @Description
  */
 @Data
-public class YumeiOrder {
+public class RetailOrderInfoDto {
+
     private String outTradeNo;
     private String buyerNick;
     private String receiver;
@@ -31,14 +30,6 @@ public class YumeiOrder {
      * 分销员编号
      */
     private String guideNo;
-    private List<OrderItem> orderItems;
 
-    @Data
-    public class OrderItem {
-        private String goodsName;
-        private String skuCode;
-        private BigDecimal skuQty;
-        private BigDecimal unitPrice;
-        private String buyerRemark;
-    }
+    private List<RetalOrderGoodsInfoDto> orderItems;
 }
