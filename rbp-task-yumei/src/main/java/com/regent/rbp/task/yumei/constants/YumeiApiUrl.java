@@ -3,6 +3,8 @@ package com.regent.rbp.task.yumei.constants;
 
 public class YumeiApiUrl {
 
+    public static final String ACCESS_TOKEN = "/auth/accessToken";
+
     /**
      * 销售订单_推送
      */

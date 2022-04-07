@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
+import com.regent.rbp.task.yumei.constants.YumeiApiUrl;
 import com.regent.rbp.task.yumei.model.YumeiCredential;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -43,7 +44,7 @@ public class AuthConfig {
             FetchWrapper body = new FetchWrapper(account, password);
             try {
                 String jsonBody = objectMapper.writeValueAsString(body);
-                HttpResponse response = HttpUtil.createPost(url).contentType("application/json").body(jsonBody).execute();
+                HttpResponse response = HttpUtil.createPost(url + YumeiApiUrl.ACCESS_TOKEN).contentType("application/json").body(jsonBody).execute();
                 if (response.isOk()) {
                     String returnBody = response.body();
                     Map<String, Object> returnData = objectMapper.readValue(returnBody, Map.class);

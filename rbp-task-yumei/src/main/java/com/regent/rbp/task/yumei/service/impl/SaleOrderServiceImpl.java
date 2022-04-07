@@ -26,8 +26,10 @@ import com.regent.rbp.task.yumei.model.YumeiOrderQueryReq;
 import com.regent.rbp.task.yumei.service.SaleOrderService;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -45,12 +47,16 @@ import java.util.Optional;
  * @date : 2022/04/03
  * @description
  */
-@Log4j2
+@Slf4j
 @Data
 @Service
 public class SaleOrderServiceImpl implements SaleOrderService {
+    @Value("${yumei.url:}")
+    private String url;
+
     @Autowired
     private YumeiCredential credential;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -101,12 +107,15 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             body.put("orderSource", orderSource);
             body.put("orders", orders);
             String jsonBody = objectMapper.writeValueAsString(body);
-            String returnJson = HttpUtil.createRequest(Method.POST, YumeiApiUrl.SALE_ORDER_PUSH)
+            log.info("请求url：" + url + YumeiApiUrl.SALE_ORDER_PUSH);
+            log.info("请求参数：" + jsonBody);
+            String returnJson = HttpUtil.createRequest(Method.POST, url + YumeiApiUrl.SALE_ORDER_PUSH)
                     .body(jsonBody)
                     .header(Header.CONTENT_TYPE, "application/json")
                     .header("X-AUTH-TOKEN", credential.getAccessToken())
                     .execute()
                     .body();
+            log.info("请求结果：" + returnJson);
             Map<String, Object> returnData = (Map<String, Object>) objectMapper.readValue(returnJson, Map.class);
 
         } catch (JsonProcessingException e) {
