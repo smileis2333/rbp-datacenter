@@ -9,6 +9,7 @@ import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncCacheDao;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
+import com.regent.rbp.api.dto.retail.RetailOrderBillDstbInfo;
 import com.regent.rbp.api.dto.retail.RetailOrderBillGoodsDetailData;
 import com.regent.rbp.api.dto.retail.RetailOrderBillSaveParam;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
@@ -18,10 +19,7 @@ import com.regent.rbp.api.service.retail.RetailOrderBillService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.DateUtil;
-import com.regent.rbp.task.inno.model.dto.RetailOrderGoodsDto;
-import com.regent.rbp.task.inno.model.dto.RetailOrderItemDto;
-import com.regent.rbp.task.inno.model.dto.RetailOrderMainDto;
-import com.regent.rbp.task.inno.model.dto.RetailOrderSearchDto;
+import com.regent.rbp.task.inno.model.dto.*;
 import com.regent.rbp.task.inno.model.param.RetailOrderDownloadOnlineOrderParam;
 import com.regent.rbp.task.inno.model.req.RetailOrderSearchReqDto;
 import com.regent.rbp.task.inno.model.resp.RetailOrderSearchRespDto;
@@ -79,8 +77,8 @@ public class RetailOrderServiceImpl implements RetailOrderService {
 
         try {
             RetailOrderSearchDto searchDto = new RetailOrderSearchDto();
-            searchDto.setBeginTime(DateUtil.getStartDateTimeStr(param.getBeginTime()));
-            searchDto.setEndTime(DateUtil.getEndDateTimeStr(param.getEndTime()));
+            searchDto.setBeginTime(DateUtil.getFullDateStr(param.getBeginTime()));
+            searchDto.setEndTime(DateUtil.getFullDateStr(param.getEndTime()));
             searchDto.setOrder_sn_list(param.getOrder_sn_list());
             searchDto.setPageIndex(1);
 
@@ -226,8 +224,11 @@ public class RetailOrderServiceImpl implements RetailOrderService {
     private void convertOrder(RetailOrderMainDto sourceDto, RetailOrderBillSaveParam targetDto) {
         RetailOrderItemDto order = sourceDto.getOrderinfo();
         List<RetailOrderGoodsDto> goods = sourceDto.getOrdergoods();
+        List<RetailDstbInfoDto> dstbInfos = sourceDto.getDstbInfo();
         List<RetailOrderBillGoodsDetailData> goodsDetailData = new ArrayList<>();
+        List<RetailOrderBillDstbInfo> dstbInfoList = new ArrayList<>();
         targetDto.setGoodsDetailData(goodsDetailData);
+        targetDto.setDstbInfo(dstbInfoList);
         /********************** 订单主体 ******************************/
         targetDto.setBillDate(DateUtil.getDate(order.getAdd_time(), DateUtil.SHORT_DATE_FORMAT));
         targetDto.setManualNo(order.getOrder_sn());
@@ -279,6 +280,18 @@ public class RetailOrderServiceImpl implements RetailOrderService {
                 item.setDiscount(item.getBalancePrice().divide(new BigDecimal(goodsDto.getMarket_price()), 4, BigDecimal.ROUND_HALF_UP));
                 item.setQuantity(new BigDecimal(goodsDto.getGoods_num()));
                 item.setRemark(StrUtil.EMPTY);
+            }
+        }
+        /********************** 分销信息 ******************************/
+        if (CollUtil.isNotEmpty(dstbInfos)) {
+            for (RetailDstbInfoDto info : dstbInfos) {
+                RetailOrderBillDstbInfo item = new RetailOrderBillDstbInfo();
+                dstbInfoList.add(item);
+                item.setLevel(info.getCommLevel());
+                item.setDstbCode(info.getDstbStaffCode());
+                item.setPhone(info.getDstbStaffPhone());
+                item.setMemberCode(info.getDstbCardNum());
+                item.setCommType(info.getCommType());
             }
         }
     }

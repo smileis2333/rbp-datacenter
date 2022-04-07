@@ -17,6 +17,9 @@ public class YumeiOrderItems {
     @ApiModelProperty(notes = "sku条形码")
     private String skuCode;
 
+    @ApiModelProperty(notes = "sku退货数量")
+    private BigDecimal skuQty;
+
     @ApiModelProperty(notes = "退款金额")
     private BigDecimal refundAmount;
 

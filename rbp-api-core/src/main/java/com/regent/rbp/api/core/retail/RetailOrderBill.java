@@ -94,6 +94,9 @@ public class RetailOrderBill {
     @ApiModelProperty(notes = "退款状态 (0.无;1.待同意;2.待退货;3.拒绝退款;4.退款成功;5.退款关闭)")
     private Integer refundStatus;
 
+    @ApiModelProperty(notes = "分销员")
+    private Long dstbId;
+
     @ApiModelProperty(notes = "失效人")
     private Long cancelBy;
 

@@ -1,9 +1,6 @@
 package com.regent.rbp.api.service.retail.context;
 
-import com.regent.rbp.api.core.retail.RetailOrderBill;
-import com.regent.rbp.api.core.retail.RetailOrderBillCustomerInfo;
-import com.regent.rbp.api.core.retail.RetailOrderBillGoods;
-import com.regent.rbp.api.core.retail.RetailOrderBillPaymentInfo;
+import com.regent.rbp.api.core.retail.*;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -29,6 +26,9 @@ public class RetailOrderBillSaveContext {
 
     @ApiModelProperty(notes = "全渠道订单顾客信息")
     private RetailOrderBillCustomerInfo billCustomerInfo;
+
+    @ApiModelProperty(notes = "分销信息")
+    private List<RetailOrderBillDstb> billDstbList;
 
 
 }

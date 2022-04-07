@@ -38,14 +38,14 @@ public interface SaleOrderService {
      * @param notifyUrl 回调地址
      * @param data 订单只项
      */
-    void orderRefund(String storeNo, String outOrderNo, String notifyUrl, List<YumeiOrderItems> data);
+    void orderRefund(String storeNo, Integer orderSource, String outOrderNo, String notifyUrl, List<YumeiOrderItems> data);
 
     /**
      * 确认收货
      * @param storeNo 门店编号
      * @param outOrderNo 订单编号
      */
-    void orderReceipt(String storeNo, String outOrderNo);
+    void orderReceipt(String storeNo, Integer orderSource, String outOrderNo);
 
 
     /**

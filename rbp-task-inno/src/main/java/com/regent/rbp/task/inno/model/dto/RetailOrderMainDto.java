@@ -20,4 +20,7 @@ public class RetailOrderMainDto {
     @ApiModelProperty(notes = "订单明细信息")
     private List<RetailOrderGoodsDto> ordergoods;
 
+    @ApiModelProperty(notes = "订单分销信息")
+    private List<RetailDstbInfoDto> dstbInfo;
+
 }
