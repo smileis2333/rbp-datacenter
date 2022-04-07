@@ -1,8 +1,6 @@
 package com.regent.rbp.task.inno.controller;
 
 import com.regent.rbp.api.service.retail.RetailOrderBillService;
-import com.regent.rbp.task.inno.model.dto.CustomerVipDto;
-import com.regent.rbp.task.inno.service.RetailOrderService;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

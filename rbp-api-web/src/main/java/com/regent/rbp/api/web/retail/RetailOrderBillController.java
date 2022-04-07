@@ -8,11 +8,10 @@ import com.regent.rbp.api.service.retail.RetailOrderBillService;
 import com.regent.rbp.api.web.constants.ApiConstants;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author chenchungui
@@ -37,5 +36,18 @@ public class RetailOrderBillController {
         DataResponse result = retailOrderBillService.updateStatus(param);
         return result;
     }
+
+    @GetMapping("/GetOrderStatus")
+    public Map<String, String> getOrderStatus(@RequestParam(name = "eorderid") String eorderid, @RequestParam(name = "barcode") String barcode) {
+        Map<String, String> response = new HashMap<>();
+        try {
+            response = retailOrderBillService.getOrderStatus(eorderid, barcode);
+        }catch (Exception ex) {
+            response.put("Flag", "-1");
+            response.put("Message", "单据异常：" + ex.getMessage());
+        }
+        return response;
+    }
+
 
 }

@@ -91,7 +91,7 @@ public class RetailOrderJob {
                 onlinePlatformSyncCacheDao.insert(syncCache);
             }
             // 开始时间不存在则读取缓存
-            if (orderParam.getBeginTime() != null) {
+            if (orderParam.getBeginTime() == null) {
                 Date cacheTime = DateUtil.getDate(syncCache.getData(), SystemConstants.FULL_DATE_FORMAT);
                 // 默认查询10分钟前
                 orderParam.setBeginTime(new Date(cacheTime.getTime() - SystemConstants.DEFAULT_TEN_MINUTES));
