@@ -23,7 +23,7 @@ public class SystemConstants {
 
     public static final String NATION = "中国";
 
-    public static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    public static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     public static final Long DEFAULT_TEN_MINUTES = 10 * 60 * 1000L;
 
