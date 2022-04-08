@@ -1,6 +1,7 @@
 package com.regent.rbp.task.yumei.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.Header;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
@@ -76,7 +77,8 @@ public class SaleOrderServiceImpl implements SaleOrderService {
      */
     @Transactional
     @Override
-    public void pushOrderToYuMei(List<String> orderNoList) {
+    public String pushOrderToYuMei(List<String> orderNoList) {
+        List<String> errorMsgList = new ArrayList<>();
         log.info("线上订单号：" + orderNoList.toString());
         List<RetailOrderBill> retailOrderBillList = retailOrderBillDao.selectList(new LambdaQueryWrapper<RetailOrderBill>()
                 .in(RetailOrderBill::getManualId, orderNoList));
@@ -105,7 +107,10 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             orderList.add(yumeiOrder);
             // 订单来源（1：美人计会员商城、2：酒会员商城、3：丽晶
             String orderSource = "3";
-            this.pushOrder(orderBusinessPersonDto.getChannelNo(), orderSource, orderList);
+            String errorMsg = this.pushOrder(orderBusinessPersonDto.getChannelNo(), orderSource, orderList);
+            if (StrUtil.isNotEmpty(errorMsg)) {
+                errorMsgList.add("订单 " + yumeiOrder.getOutTradeNo() + " 推送失败：" + errorMsg);
+            }
 
             // 更新为已审核状态
             RetailOrderBill updateBill = new RetailOrderBill();
@@ -113,12 +118,14 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             updateBill.setStatus(1);
             retailOrderBillDao.updateById(updateBill);
         }
+        return String.join(StrUtil.COMMA, errorMsgList);
     }
 
     @Override
-    public void pushOrder(String storeNo, String orderSource, List<YumeiOrder> orders) {
+    public String pushOrder(String storeNo, String orderSource, List<YumeiOrder> orders) {
+        String errorMsg = null;
         if (CollUtil.isEmpty(orders)) {
-            return;
+            return errorMsg;
         }
         HashMap<String, Object> body = new HashMap<>();
         try {
@@ -138,6 +145,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             Map<String, Object> returnData = (Map<String, Object>) objectMapper.readValue(returnJson, Map.class);
             if (!(Boolean)returnData.getOrDefault("success", false)) {
                 log.error("调用玉美订单推送接口失败" + orders.stream().map(YumeiOrder::getOutTradeNo).collect(Collectors.toList()).toString());
+                errorMsg = (String)returnData.get("msg");
             } else {
                 log.info("调用玉美订单推送接口成功" + orders.stream().map(YumeiOrder::getOutTradeNo).collect(Collectors.toList()).toString());
             }
@@ -148,6 +156,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             e.printStackTrace();
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "returnDataError");
         }
+        return errorMsg;
     }
 
     @Override

@@ -28,7 +28,7 @@ public interface SaleOrderService {
      *
      * @param orderNoList 线上单号
      */
-    public void pushOrderToYuMei(List<String> orderNoList);
+    public String pushOrderToYuMei(List<String> orderNoList);
 
     /**
      * 订单推送接口
@@ -36,7 +36,7 @@ public interface SaleOrderService {
      * @param storeNo
      * @param orderSource
      */
-    void pushOrder(String storeNo, String orderSource, List<YumeiOrder> orders);
+    String pushOrder(String storeNo, String orderSource, List<YumeiOrder> orders);
 
     /**
      * 订单退款
