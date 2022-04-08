@@ -11,6 +11,7 @@ import com.regent.rbp.task.yumei.constants.YumeiApiUrl;
 import com.regent.rbp.task.yumei.model.YumeiCredential;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +25,7 @@ import java.util.Map;
  * @date : 2022/04/03
  * @description
  */
+@Slf4j
 @Configuration
 public class AuthConfig {
 
@@ -47,10 +49,13 @@ public class AuthConfig {
                 HttpResponse response = HttpUtil.createPost(url + YumeiApiUrl.ACCESS_TOKEN).contentType("application/json").body(jsonBody).execute();
                 if (response.isOk()) {
                     String returnBody = response.body();
+                    log.info("玉美获取token结果：" + returnBody);
                     Map<String, Object> returnData = objectMapper.readValue(returnBody, Map.class);
                     if ("00000".equals(returnData.get("code"))) {
                         Map<String, Object> data = (Map<String, Object>) returnData.get("data");
-                        return new YumeiCredential((String) data.get("accessToken"), (String) data.get("refreshToken"), (Long) data.get("expiresIn"));
+                        Integer expiresIn = (Integer)data.getOrDefault("expiresIn", 0);
+
+                        return new YumeiCredential((String) data.get("accessToken"), (String) data.get("refreshToken"), expiresIn.longValue());
                     } else {
                         throw new BusinessException(ResponseCode.PARAMS_ERROR, "玉美配置信息错误");
                     }
@@ -60,6 +65,7 @@ public class AuthConfig {
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (Exception e) {
+                log.error("玉美获取token异常");
                 e.printStackTrace();
             }
         }

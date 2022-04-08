@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author huangjie
@@ -96,6 +97,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                     BeanUtils.copyProperties(retalOrderGoodsInfoDto, orderItem);
                     orderItemList.add(orderItem);
                 }
+                yumeiOrder.setGuideNo(orderBusinessPersonDto.getGuideNo());
                 yumeiOrder.setGoodsQty(retalOrderGoodsInfoDtoList.stream().map(RetalOrderGoodsInfoDto::getSkuQty).reduce(BigDecimal.ZERO, BigDecimal::add));
                 yumeiOrder.setActualTotalAmount(retalOrderGoodsInfoDtoList.stream().map(RetalOrderGoodsInfoDto::getUnitPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
                 yumeiOrder.setOrderItems(orderItemList);
@@ -115,6 +117,9 @@ public class SaleOrderServiceImpl implements SaleOrderService {
 
     @Override
     public void pushOrder(String storeNo, String orderSource, List<YumeiOrder> orders) {
+        if (CollUtil.isEmpty(orders)) {
+            return;
+        }
         HashMap<String, Object> body = new HashMap<>();
         try {
             body.put("storeNo", storeNo);
@@ -131,7 +136,11 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                     .body();
             log.info("请求结果：" + returnJson);
             Map<String, Object> returnData = (Map<String, Object>) objectMapper.readValue(returnJson, Map.class);
-
+            if (!(Boolean)returnData.getOrDefault("success", false)) {
+                log.error("调用玉美订单推送接口失败" + orders.stream().map(YumeiOrder::getOutTradeNo).collect(Collectors.toList()).toString());
+            } else {
+                log.info("调用玉美订单推送接口成功" + orders.stream().map(YumeiOrder::getOutTradeNo).collect(Collectors.toList()).toString());
+            }
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "paramError");
