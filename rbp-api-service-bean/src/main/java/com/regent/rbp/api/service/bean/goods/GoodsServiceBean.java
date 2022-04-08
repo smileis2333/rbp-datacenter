@@ -24,6 +24,7 @@ import com.regent.rbp.api.service.goods.GoodsService;
 import com.regent.rbp.api.service.goods.context.GoodsQueryContext;
 import com.regent.rbp.api.service.goods.context.GoodsSaveContext;
 import com.regent.rbp.common.constants.InformationConstants;
+import com.regent.rbp.common.model.information.entity.InnerLong;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
@@ -750,6 +751,29 @@ public class GoodsServiceBean implements GoodsService {
             goods.setId(existGoods.getId());
         }
 
+        /**货品类型。 type=1.普通物料; type=2.单一物料**/
+        if(param.getType() == 2) {
+            /*单一物料，自动补上颜色*/
+            if (StringUtil.isEmpty(param.getColorList())) {
+                Color color = colorDao.selectOne(new QueryWrapper<Color>().eq("id", 1200000000000002L));
+                Set<String> colorList = new HashSet<String>();
+                colorList.add(color.getName());
+                param.setColorList(colorList);
+            }
+            /*单一物料，自动补上颜色*/
+            if (StringUtil.isEmpty(param.getLongList())) {
+                LongInfo longInfo = longDao.selectOne(new QueryWrapper<LongInfo>().eq("id", 1200000000000003L));
+                Set<String> longList = new HashSet<String>();
+                longList.add(longInfo.getName());
+                param.setLongList(longList);
+            }
+            /*单一物料，自动补上尺码类别*/
+            if (StringUtil.isEmpty(param.getSizeClassName())) {
+                SizeClass sizeClass = sizeClassDao.selectOne(new QueryWrapper<SizeClass>().eq("id", 1200000000000004L));
+                param.setSizeClassName(sizeClass.getName());
+            }
+        }
+
         //验证尺码列表
         SizeClass sizeClass;
         if (StrUtil.isNotEmpty(param.getSizeClassName()) && (sizeClass = sizeClassDao.selectOne(new QueryWrapper<SizeClass>().eq("name", param.getSizeClassName()))) != null) {
@@ -886,7 +910,7 @@ public class GoodsServiceBean implements GoodsService {
                     } else if (param.getType() == 2) {
                         item.setColorId(1200000000000002L);
                         item.setLongId(1200000000000003L);
-                        item.setSizeId(1200000000000004L);
+                        item.setSizeId(1200000000000005L);
                     }
                     barcodeList.add(item);
                 }
