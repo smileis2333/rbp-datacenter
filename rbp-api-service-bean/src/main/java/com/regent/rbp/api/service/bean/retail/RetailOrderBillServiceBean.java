@@ -76,13 +76,7 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
     @Transactional
     @Override
     public ModelDataResponse<String> save(RetailOrderBillSaveParam param) {
-        Object orderNoList = ThreadLocalGroup.get("yumei_orderno_list");
-        Set<String> orderNoList2 = (Set<String>) orderNoList;
-        if (null == orderNoList2) {
-            orderNoList2 = new HashSet<String>();
-        }
-        orderNoList2.add(param.getManualNo());
-        ThreadLocalGroup.set("yumei_orderno_list", orderNoList2);
+
 
         RetailOrderBillSaveContext context = new RetailOrderBillSaveContext();
         // 转换

@@ -24,4 +24,9 @@ public class YumeiApiUrl {
      * 订单查询接口
      */
     public static final String SALE_ORDER_QUERY = "api/trade/orderQuery";
+
+    /**
+     * 订单取消
+     */
+    public static final String SALE_ORDER_CANCEL = "api/trade/orderCancel";
 }

@@ -19,6 +19,7 @@ import com.regent.rbp.api.service.retail.RetailOrderBillService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.DateUtil;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.model.dto.*;
 import com.regent.rbp.task.inno.model.param.RetailOrderDownloadOnlineOrderParam;
 import com.regent.rbp.task.inno.model.req.RetailOrderSearchReqDto;
@@ -31,9 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author chenchungui
@@ -66,6 +65,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
     public void downloadOnlineOrderList(RetailOrderDownloadOnlineOrderParam param, OnlinePlatform onlinePlatform) throws Exception {
         String key = SystemConstants.DOWNLOAD_ONLINE_ORDER_LIST_JOB;
         Map<String, Long> map = onlinePlatformSyncErrorService.getErrorBillId(key);
+
         // 获取销售渠道编号
         String channelCode = baseDbDao.getStringDataBySql(String.format("select code from rbp_channel where id = %s", onlinePlatform.getChannelId()));
         if (map.size() > 0) {
@@ -89,7 +89,6 @@ public class RetailOrderServiceImpl implements RetailOrderService {
         } finally {
             onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatform.getId(), key, param.getEndTime());
         }
-
         /*RetailOrderSearchReqDto searchReqDto = new RetailOrderSearchReqDto();
         searchReqDto.setApp_key(onlinePlatform.getAppKey());
         searchReqDto.setApp_secrept(onlinePlatform.getAppSecret());
@@ -208,6 +207,15 @@ public class RetailOrderServiceImpl implements RetailOrderService {
             if (response.getCode() != ResponseCode.OK) {
                 onlinePlatformSyncErrorService.failure(errorId);
             } else {
+                // 线上订单
+                Object orderNoList = ThreadLocalGroup.get("yumei_orderno_list");
+                Set<String> orderNoList2 = (Set<String>) orderNoList;
+                if (null == orderNoList2) {
+                    orderNoList2 = new HashSet<String>();
+                }
+                orderNoList2.add(orderSn);
+                ThreadLocalGroup.set("yumei_orderno_list", orderNoList2);
+
                 onlinePlatformSyncErrorService.succeed(errorId);
             }
         } else {
