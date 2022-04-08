@@ -87,7 +87,6 @@ public class RetailOrderServiceImpl implements RetailOrderService {
         } catch (Exception e) {
             XxlJobHelper.handleFail(e.getMessage());
         } finally {
-            ThreadLocalGroup.set("yumei_orderno_list", orderNoList2);
             onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatform.getId(), key, param.getEndTime());
         }
         /*RetailOrderSearchReqDto searchReqDto = new RetailOrderSearchReqDto();
@@ -215,6 +214,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
                     orderNoList2 = new HashSet<String>();
                 }
                 orderNoList2.add(orderSn);
+                ThreadLocalGroup.set("yumei_orderno_list", orderNoList2);
 
                 onlinePlatformSyncErrorService.succeed(errorId);
             }
