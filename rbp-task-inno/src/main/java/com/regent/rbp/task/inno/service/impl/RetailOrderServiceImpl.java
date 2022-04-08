@@ -207,6 +207,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
             if (response.getCode() != ResponseCode.OK) {
                 onlinePlatformSyncErrorService.failure(errorId);
             } else {
+                onlinePlatformSyncErrorService.succeed(errorId);
                 // 线上订单
                 Object orderNoList = ThreadLocalGroup.get("yumei_orderno_list");
                 Set<String> orderNoList2 = (Set<String>) orderNoList;
@@ -215,14 +216,23 @@ public class RetailOrderServiceImpl implements RetailOrderService {
                 }
                 orderNoList2.add(orderSn);
                 ThreadLocalGroup.set("yumei_orderno_list", orderNoList2);
-
-                onlinePlatformSyncErrorService.succeed(errorId);
             }
         } else {
             if (response.getCode() != ResponseCode.OK) {
                 onlinePlatformSyncErrorService.saveOnlinePlatformSyncError(onlinePlatformId, SystemConstants.DOWNLOAD_ONLINE_ORDER_LIST_JOB, orderSn);
                 XxlJobHelper.log(String.format("错误信息：%s %s", orderSn, response.getMessage()));
+            } else {
+                // 线上订单
+                Object orderNoList = ThreadLocalGroup.get("yumei_orderno_list");
+                Set<String> orderNoList2 = (Set<String>) orderNoList;
+                if (null == orderNoList2) {
+                    orderNoList2 = new HashSet<String>();
+                }
+                orderNoList2.add(orderSn);
+                ThreadLocalGroup.set("yumei_orderno_list", orderNoList2);
             }
+
+
         }
     }
 
