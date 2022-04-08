@@ -38,7 +38,7 @@
     </select>
 
     <select id="getOrderBusinessPersonDto" resultType="com.regent.rbp.api.dto.retail.OrderBusinessPersonDto">
-        select b.code as guideNo, c.code as channelCode
+        select b.code as guideNo, c.code as channelNo
         from rbp_retail_order_bill_dstb a
         inner join rbp_user b on a.dstb_id = b.id
         left join rbp_channel c on b.channel_id = c.id
