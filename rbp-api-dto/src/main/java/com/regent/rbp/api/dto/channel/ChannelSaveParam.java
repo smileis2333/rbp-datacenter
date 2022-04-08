@@ -35,7 +35,7 @@ public class ChannelSaveParam {
 
     @ApiModelProperty("建档日期")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date channelBuildDate;
+    private Date channelBuildDate = new Date();
     @ApiModelProperty("详细地址")
     private String channelAddress;
     @ApiModelProperty("品牌")
