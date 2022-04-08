@@ -245,11 +245,9 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
             }
         }
         // 库存调整
+        this.updateStock(context);
         if (StatusEnum.CHECK.getStatus().equals(bill.getStatus())) {
-            this.updateStock(context);
             this.checkModifyStock(context);
-        } else {
-            this.updateStock(context);
         }
         return ModelDataResponse.Success(bill.getBillNo());
     }
