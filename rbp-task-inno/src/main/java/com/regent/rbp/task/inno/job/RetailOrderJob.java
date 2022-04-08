@@ -121,7 +121,5 @@ public class RetailOrderJob {
         if (CollUtil.isNotEmpty(orderNoList2)) {
             saleOrderService.pushOrderToYuMei(new ArrayList<>(orderNoList2));
         }
-
-        ThreadLocalGroup.remove();
     }
 }
