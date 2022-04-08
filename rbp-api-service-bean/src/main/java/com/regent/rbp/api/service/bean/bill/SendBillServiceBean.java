@@ -192,12 +192,6 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         sendBillDao.insert(bill);
         // 核算设置
         this.balanceSetting(context);
-        // 库存调整
-        if (StatusEnum.CHECK.getStatus().equals(bill.getStatus())) {
-            this.checkModifyStock(context);
-        } else {
-            this.updateStock(context);
-        }
         // 单据自定义字段
         baseDbService.saveOrUpdateCustomFieldData(bill.getModuleId(), TableConstants.SEND_BILL, bill.getId(), bill.getCustomFieldMap());
         // 新增物流信息
@@ -249,6 +243,13 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
             } finally {
                 baseDbDao.dropTemplateTable(tmpTableName);
             }
+        }
+        // 库存调整
+        if (StatusEnum.CHECK.getStatus().equals(bill.getStatus())) {
+            this.updateStock(context);
+            this.checkModifyStock(context);
+        } else {
+            this.updateStock(context);
         }
         return ModelDataResponse.Success(bill.getBillNo());
     }
