@@ -10,7 +10,7 @@ import java.util.Map;
 
 public interface StockAPI {
     @Api(value = "wms.StockSpec.queryAvailableStock", paged = true)
-    StockSearchResponse searchAvailable(StockSearchRequest request, Pager pager);
+    UsableStockResponse searchAvailable(StockSearchRequest request, Pager pager);
 
     @Api(value = "wms.StockSpec.search", paged = true)
     StockSearchResponse search(StockSearchRequest request, Pager pager);

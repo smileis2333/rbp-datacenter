@@ -7,7 +7,6 @@ import com.regent.rbp.api.core.base.Barcode;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
-import com.regent.rbp.api.service.channel.ChannelService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.common.model.stock.entity.StockDetail;
 import com.regent.rbp.common.model.stock.entity.UsableStockDetail;
@@ -17,7 +16,7 @@ import com.regent.rbp.task.yumei.wandian.sdk.Client;
 import com.regent.rbp.task.yumei.wandian.sdk.Pager;
 import com.regent.rbp.task.yumei.wandian.sdk.api.wms.StockAPI;
 import com.regent.rbp.task.yumei.wandian.sdk.api.wms.dto.StockSearchRequest;
-import com.regent.rbp.task.yumei.wandian.sdk.api.wms.dto.StockSearchResponse;
+import com.regent.rbp.task.yumei.wandian.sdk.api.wms.dto.UsableStockResponse;
 import com.regent.rbp.task.yumei.wandian.sdk.impl.ApiFactory;
 import com.regent.rbp.task.yumei.wandian.sdk.impl.DefaultClient;
 import com.xxl.job.core.context.XxlJobHelper;
@@ -26,6 +25,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.URL;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.validation.ConstraintViolation;
@@ -33,10 +33,7 @@ import javax.validation.Validator;
 import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -54,9 +51,13 @@ public class StockJob {
     @Autowired
     private BarcodeDao barcodeDao;
     @Autowired
-    private ChannelService channelService;
-    @Autowired
     private ChannelDao channelDao;
+
+    @Value("${yumei.stock.originalChannels:}")
+    private String originalChannelsStr;
+
+    @Value("${yumei.stock.summaryChannel}")
+    private String summaryChannel;
 
     /**
      * 从旺店通拉取可用库存
@@ -86,6 +87,13 @@ public class StockJob {
             return;
         }
 
+        Set<String> originalChannels = Arrays.stream(originalChannelsStr.split(",")).map(String::trim).collect(Collectors.toSet());
+        Long summaryChannelId = null;
+        Channel channel;
+        if ((channel = channelDao.selectOne(Wrappers.lambdaQuery(Channel.class).eq(Channel::getCode, summaryChannel))) != null) {
+            summaryChannelId = channel.getId();
+        }
+
         Client client = DefaultClient.get(wdtParam.getSid(), wdtParam.getUrl(), wdtParam.getKey(),
                 wdtParam.getSecret());
         StockAPI stockAPI = ApiFactory.get(client, StockAPI.class);
@@ -95,18 +103,18 @@ public class StockJob {
         String tomorrowDay = LocalDate.now().plusDays(1).toString();
         request.setStartTime(currentDay);
         request.setEndTime(tomorrowDay);
-        StockSearchResponse response = stockAPI.searchAvailable(request, new Pager(1000, 0, true)); // 一页最多1000
-        int total = response.getTotal();
+        UsableStockResponse response = stockAPI.searchAvailable(request, new Pager(1000, 0, true)); // 一页最多1000
+        int total = response.getTotalCount();
         Set<String> failMsgs = new HashSet<>();
-        processStockWritting(response, failMsgs);
+        processStockWritting(response, failMsgs, originalChannels, summaryChannelId);
 
         if (total > 1000) {
             for (int i = 1; i < (total / 1000) + 1; i++) {
                 StockSearchRequest leftRequest = new StockSearchRequest();
                 request.setStartTime(currentDay);
                 request.setEndTime(tomorrowDay);
-                StockSearchResponse leftResponse = stockAPI.searchAvailable(leftRequest, new Pager(1000, i, false));
-                processStockWritting(leftResponse, failMsgs);
+                UsableStockResponse leftResponse = stockAPI.searchAvailable(leftRequest, new Pager(1000, i, false));
+                processStockWritting(leftResponse, failMsgs, originalChannels, summaryChannelId);
             }
         }
 
@@ -115,48 +123,55 @@ public class StockJob {
         }
     }
 
-    private void processStockWritting(StockSearchResponse response, Set<String> failMsgs) {
-
-        List<StockSearchResponse.StockSearchDto> stockSearchDtos = response.getStockSearchDtos();
-        List<String> barcodes = CollUtil.distinct(CollUtil.map(stockSearchDtos, StockSearchResponse.StockSearchDto::getSpecNo, true));
+    private void processStockWritting(UsableStockResponse response, Set<String> failMsgs, Set<String> passChannels, Long summaryChannelId) {
+        List<UsableStockResponse.UsableStock> stockSearchDtos = response.getStocks().stream().filter(e -> passChannels.contains(e.getWarehouseNo())).collect(Collectors.toList());
+        List<String> barcodes = response.getStocks().stream().map(UsableStockResponse.UsableStock::getSpecNo).distinct().collect(Collectors.toList());
         Map<String, Barcode> barcodeMap = barcodeDao.selectList(Wrappers.lambdaQuery(Barcode.class).in(Barcode::getBarcode, barcodes)).stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
 
         // tolerate error
-        stockSearchDtos.stream().collect(Collectors.groupingBy(StockSearchResponse.StockSearchDto::getWarehouseNo)).forEach((channelCode, stocks) -> {
+        stockSearchDtos.stream().collect(Collectors.groupingBy(UsableStockResponse.UsableStock::getWarehouseNo)).forEach((channelCode, stocks) -> {
             try {
-                Channel channel = channelDao.selectOne(Wrappers.lambdaQuery(Channel.class).eq(Channel::getCode, channelCode));
-                if (channel == null) {
-                    failMsgs.add(String.format("渠道%s不存在，对应库存写入失败", channelCode));
-                    return;
+
+                Long channelId;
+                if (summaryChannelId != null) {
+                    channelId = summaryChannelId;
+                } else {
+                    Channel channel = channelDao.selectOne(Wrappers.lambdaQuery(Channel.class).eq(Channel::getCode, channelCode));
+                    if (channel == null) {
+                        failMsgs.add(String.format("渠道%s不存在，对应库存写入失败", channelCode));
+                        return;
+                    }
+                    channelId = channel.getId();
                 }
+
                 Set<UsableStockDetail> usableStockDetails = new HashSet<>();
                 Set<StockDetail> stockDetails = new HashSet<>();
-                for (StockSearchResponse.StockSearchDto stockSearchDto : stockSearchDtos) {
+                for (UsableStockResponse.UsableStock stockSearchDto : stockSearchDtos) {
                     // 商家编码对应丽晶条形码
                     String barcode = stockSearchDto.getSpecNo();
                     Barcode goodsData = barcodeMap.get(barcode);
                     UsableStockDetail usableStockDetail = new UsableStockDetail();
-                    usableStockDetail.setChannelId(channel.getId());
+                    usableStockDetail.setChannelId(channelId);
                     usableStockDetail.setGoodsId(goodsData.getGoodsId());
                     usableStockDetail.setColorId(goodsData.getColorId());
                     usableStockDetail.setLongId(goodsData.getLongId());
                     usableStockDetail.setSizeId(goodsData.getSizeId());
-                    usableStockDetail.setQuantity(stockSearchDto.getAvailableSendStock());
-                    usableStockDetail.setReduceQuantity(stockSearchDto.getAvailableSendStock()); // 兼容性代码
+                    usableStockDetail.setQuantity(stockSearchDto.getNum());
+                    usableStockDetail.setReduceQuantity(stockSearchDto.getNum()); // 兼容性代码
                     usableStockDetail.setSkuHashCode(StockUtils.calculateSkuHashCode(goodsData.getGoodsId(), goodsData.getColorId(), goodsData.getLongId(), goodsData.getSizeId()));
-                    usableStockDetail.setHashCode(StockUtils.calculateHashCode(channel.getId(), goodsData.getGoodsId(), goodsData.getColorId(), goodsData.getLongId(), goodsData.getSizeId()));
+                    usableStockDetail.setHashCode(StockUtils.calculateHashCode(channelId, goodsData.getGoodsId(), goodsData.getColorId(), goodsData.getLongId(), goodsData.getSizeId()));
                     usableStockDetails.add(usableStockDetail);
 
                     StockDetail stockDetail = new StockDetail();
-                    stockDetail.setChannelId(channel.getId());
+                    stockDetail.setChannelId(channelId);
                     stockDetail.setGoodsId(goodsData.getGoodsId());
                     stockDetail.setColorId(goodsData.getColorId());
                     stockDetail.setLongId(goodsData.getLongId());
                     stockDetail.setSizeId(goodsData.getSizeId());
-                    stockDetail.setQuantity(stockSearchDto.getAvailableSendStock());
-                    stockDetail.setReduceQuantity(stockSearchDto.getAvailableSendStock()); // 兼容性代码
+                    stockDetail.setQuantity(stockSearchDto.getNum());
+                    stockDetail.setReduceQuantity(stockSearchDto.getNum()); // 兼容性代码
                     stockDetail.setSkuHashCode(StockUtils.calculateSkuHashCode(goodsData.getGoodsId(), goodsData.getColorId(), goodsData.getLongId(), goodsData.getSizeId()));
-                    stockDetail.setHashCode(StockUtils.calculateHashCode(channel.getId(), goodsData.getGoodsId(), goodsData.getColorId(), goodsData.getLongId(), goodsData.getSizeId()));
+                    stockDetail.setHashCode(StockUtils.calculateHashCode(channelId, goodsData.getGoodsId(), goodsData.getColorId(), goodsData.getLongId(), goodsData.getSizeId()));
                     stockDetails.add(stockDetail);
 
                 }
