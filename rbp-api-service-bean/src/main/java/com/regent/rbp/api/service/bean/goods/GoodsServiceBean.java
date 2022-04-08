@@ -24,7 +24,6 @@ import com.regent.rbp.api.service.goods.GoodsService;
 import com.regent.rbp.api.service.goods.context.GoodsQueryContext;
 import com.regent.rbp.api.service.goods.context.GoodsSaveContext;
 import com.regent.rbp.common.constants.InformationConstants;
-import com.regent.rbp.common.model.information.entity.InnerLong;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
@@ -752,7 +751,7 @@ public class GoodsServiceBean implements GoodsService {
         }
 
         /**货品类型。 type=1.普通物料; type=2.单一物料**/
-        if(param.getType() == 2) {
+        if (param.getType() == 2) {
             /*单一物料，自动补上颜色*/
             if (StringUtil.isEmpty(param.getColorList())) {
                 Color color = colorDao.selectOne(new QueryWrapper<Color>().eq("id", 1200000000000002L));
@@ -832,8 +831,8 @@ public class GoodsServiceBean implements GoodsService {
                         goodsColors.add(goodsColor);
                     }
                 }
-                context.setGoodsColorList(goodsColors);
             }
+            context.setGoodsColorList(goodsColors);
         }
 
         //验证内长列表(货品内长 只追加，不替换)
@@ -843,8 +842,8 @@ public class GoodsServiceBean implements GoodsService {
             Collection<Long> longIds = longNameIdMap.values();
             Set<Long> existLongId = CollUtil.isEmpty(longIds) ? Collections.emptySet() : goodsLongDao.selectList(Wrappers.lambdaQuery(GoodsLong.class).eq(GoodsLong::getGoodsId, goods.getId()).in(GoodsLong::getLongId, longIds)).stream().map(GoodsLong::getLongId).collect(Collectors.toSet());
 
+            List<GoodsLong> goodsLongs = new ArrayList<>(param.getLongList().size());
             for (String longName : param.getLongList()) {
-                List<GoodsLong> goodsLongs = new ArrayList<>(param.getLongList().size());
                 Long longId = longNameIdMap.get(longName);
 
                 if (longId == null) {
@@ -861,8 +860,8 @@ public class GoodsServiceBean implements GoodsService {
                         goodsLongs.add(goodsLong);
                     }
                 }
-                context.setGoodsLongList(goodsLongs);
             }
+            context.setGoodsLongList(goodsLongs);
         }
 
         //验证条码列表
