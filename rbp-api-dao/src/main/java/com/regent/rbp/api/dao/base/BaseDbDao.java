@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 /**
  * @author xuxing
  */
-@CacheNamespace
 public interface BaseDbDao {
 
     List<Map> selectTableDataByMap(@Param("tableName") String tableName, @Param("conditionMap") Map conditionMap);

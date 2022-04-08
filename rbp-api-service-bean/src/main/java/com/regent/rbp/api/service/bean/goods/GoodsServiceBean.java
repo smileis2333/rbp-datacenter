@@ -24,6 +24,7 @@ import com.regent.rbp.api.service.goods.GoodsService;
 import com.regent.rbp.api.service.goods.context.GoodsQueryContext;
 import com.regent.rbp.api.service.goods.context.GoodsSaveContext;
 import com.regent.rbp.common.constants.InformationConstants;
+import com.regent.rbp.common.model.information.entity.InnerLong;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
@@ -750,6 +751,29 @@ public class GoodsServiceBean implements GoodsService {
             goods.setId(existGoods.getId());
         }
 
+        /**货品类型。 type=1.普通物料; type=2.单一物料**/
+        if(param.getType() == 2) {
+            /*单一物料，自动补上颜色*/
+            if (StringUtil.isEmpty(param.getColorList())) {
+                Color color = colorDao.selectOne(new QueryWrapper<Color>().eq("id", 1200000000000002L));
+                Set<String> colorList = new HashSet<String>();
+                colorList.add(color.getName());
+                param.setColorList(colorList);
+            }
+            /*单一物料，自动补上颜色*/
+            if (StringUtil.isEmpty(param.getLongList())) {
+                LongInfo longInfo = longDao.selectOne(new QueryWrapper<LongInfo>().eq("id", 1200000000000003L));
+                Set<String> longList = new HashSet<String>();
+                longList.add(longInfo.getName());
+                param.setLongList(longList);
+            }
+            /*单一物料，自动补上尺码类别*/
+            if (StringUtil.isEmpty(param.getSizeClassName())) {
+                SizeClass sizeClass = sizeClassDao.selectOne(new QueryWrapper<SizeClass>().eq("id", 1200000000000004L));
+                param.setSizeClassName(sizeClass.getName());
+            }
+        }
+
         //验证尺码列表
         SizeClass sizeClass;
         if (StrUtil.isNotEmpty(param.getSizeClassName()) && (sizeClass = sizeClassDao.selectOne(new QueryWrapper<SizeClass>().eq("name", param.getSizeClassName()))) != null) {
@@ -791,25 +815,24 @@ public class GoodsServiceBean implements GoodsService {
             Collection<Long> colorIds = colorCodeIdMap.values();
             Set<Long> existColorIds = CollUtil.isEmpty(colorIds) ? Collections.EMPTY_SET : goodsColorDao.selectList(new QueryWrapper<GoodsColor>().eq("goods_id", goods.getId()).in("color_id", colorIds)).stream().map(GoodsColor::getColorId).collect(Collectors.toSet());
             List<GoodsColor> goodsColors = new ArrayList<>(param.getColorList().size());
-            if (param.getType() != 2) {
-                for (String colorCode : param.getColorList()) {
-                    Long colorId = colorCodeIdMap.get(colorCode);
-                    if (colorId == null) {
-                        //颜色不存在，给予提示
-                        errorMsgList.add(String.format("颜色编号{%s}不存在", colorCode));
-                    } else {
-                        GoodsColor goodsColor = new GoodsColor();
-                        goodsColor.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-                        goodsColor.setGoodsId(context.getGoods().getId());
-                        goodsColor.setColorId(colorId);
-                        if (createFlag) {
-                            goodsColors.add(goodsColor);
-                        } else if (!existColorIds.contains(colorId)) {
-                            goodsColors.add(goodsColor);
-                        }
+
+            for (String colorCode : param.getColorList()) {
+                Long colorId = colorCodeIdMap.get(colorCode);
+                if (colorId == null) {
+                    //颜色不存在，给予提示
+                    errorMsgList.add(String.format("颜色编号{%s}不存在", colorCode));
+                } else {
+                    GoodsColor goodsColor = new GoodsColor();
+                    goodsColor.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                    goodsColor.setGoodsId(context.getGoods().getId());
+                    goodsColor.setColorId(colorId);
+                    if (createFlag) {
+                        goodsColors.add(goodsColor);
+                    } else if (!existColorIds.contains(colorId)) {
+                        goodsColors.add(goodsColor);
                     }
-                    context.setGoodsColorList(goodsColors);
                 }
+                context.setGoodsColorList(goodsColors);
             }
         }
 
@@ -819,27 +842,26 @@ public class GoodsServiceBean implements GoodsService {
             Map<String, Long> longNameIdMap = longDao.selectList(Wrappers.lambdaQuery(LongInfo.class).in(LongInfo::getName, longNames)).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
             Collection<Long> longIds = longNameIdMap.values();
             Set<Long> existLongId = CollUtil.isEmpty(longIds) ? Collections.emptySet() : goodsLongDao.selectList(Wrappers.lambdaQuery(GoodsLong.class).eq(GoodsLong::getGoodsId, goods.getId()).in(GoodsLong::getLongId, longIds)).stream().map(GoodsLong::getLongId).collect(Collectors.toSet());
-            if (param.getType() != 2) {
-                for (String longName : param.getLongList()) {
-                    List<GoodsLong> goodsLongs = new ArrayList<>(param.getLongList().size());
-                    Long longId = longNameIdMap.get(longName);
 
-                    if (longId == null) {
-                        //内长不存在，给予提示
-                        errorMsgList.add(String.format("内长{%s}不存在", longName));
-                    } else {
-                        GoodsLong goodsLong = new GoodsLong();
-                        goodsLong.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-                        goodsLong.setGoodsId(context.getGoods().getId());
-                        goodsLong.setLongId(longId);
-                        if (createFlag) {
-                            goodsLongs.add(goodsLong);
-                        } else if (!existLongId.contains(longId)) {
-                            goodsLongs.add(goodsLong);
-                        }
+            for (String longName : param.getLongList()) {
+                List<GoodsLong> goodsLongs = new ArrayList<>(param.getLongList().size());
+                Long longId = longNameIdMap.get(longName);
+
+                if (longId == null) {
+                    //内长不存在，给予提示
+                    errorMsgList.add(String.format("内长{%s}不存在", longName));
+                } else {
+                    GoodsLong goodsLong = new GoodsLong();
+                    goodsLong.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                    goodsLong.setGoodsId(context.getGoods().getId());
+                    goodsLong.setLongId(longId);
+                    if (createFlag) {
+                        goodsLongs.add(goodsLong);
+                    } else if (!existLongId.contains(longId)) {
+                        goodsLongs.add(goodsLong);
                     }
-                    context.setGoodsLongList(goodsLongs);
                 }
+                context.setGoodsLongList(goodsLongs);
             }
         }
 
@@ -851,8 +873,9 @@ public class GoodsServiceBean implements GoodsService {
 
                 if (item != null) {
                     //内长不存在，给予提示
-                    if (createFlag)
+                    if (createFlag) {
                         errorMsgList.add(String.format("条形码(%s)已经存在", barcodeDto.getBarcode()));
+                    }
                 } else {
                     item = new Barcode();
                     item.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
@@ -886,7 +909,7 @@ public class GoodsServiceBean implements GoodsService {
                     } else if (param.getType() == 2) {
                         item.setColorId(1200000000000002L);
                         item.setLongId(1200000000000003L);
-                        item.setSizeId(1200000000000004L);
+                        item.setSizeId(1200000000000005L);
                     }
                     barcodeList.add(item);
                 }
