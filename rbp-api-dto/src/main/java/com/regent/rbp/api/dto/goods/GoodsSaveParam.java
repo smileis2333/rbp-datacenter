@@ -112,7 +112,7 @@ public class GoodsSaveParam {
 
     @JsonFormat(pattern = SHORT_DATE_FORMAT)
     @ApiModelProperty("建档日期")
-    private Date buildDate;
+    private Date buildDate = new Date();
 
     @ApiModelProperty("货品的颜色编号列表。\n" +
             "注：只追加，不替换。\n" +
