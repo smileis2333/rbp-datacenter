@@ -67,8 +67,6 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
     private RetailOrderBillGoodsDao retailOrderBillGoodsDao;
     @Autowired
     private RetailOrderBillDstbDao retailOrderBillDstbDao;
-//    @Autowired
-//    private SaleOrderService saleOrderService;
 
     /**
      * 创建
@@ -438,83 +436,6 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         return LanguageUtil.getMessage(LanguageUtil.ZH, languageKey, params);
     }
 
-    @Override
-    public Map<String, String> getOrderStatus(String eorderid, String barcode) {
-        Map<String, String> response = new HashMap<>();
 
-//        // 查询玉美订单
-//        YumeiOrderQueryReq yumeiOrderQueryReq = new YumeiOrderQueryReq();
-//        yumeiOrderQueryReq.setOutOrderNo(eorderid);
-//        YumeiOrderQueryPageResp page = saleOrderService.orderQuery(yumeiOrderQueryReq);
-//        if (page.getTotalCount() == 0) {
-//            // 找不到订单允许取消
-//            response.put("Flag", "1");
-//            response.put("Message", LanguageUtil.getMessage("onlineOrderCodeNotExist"));
-//            response.put("data", eorderid);
-//            return response;
-//        }
-//        // 订单信息
-//        YumeiOrderQueryPage order = page.getOrders().get(0);
-//        // 判断货品明细状态
-//        YumeiOrderGoods orderBill = order.getOrderItems().stream().filter(f -> f.getSkuCode().equals(barcode)).findAny().orElse(null);
-//        if (null == orderBill) {
-//            // 未找到条码信息
-//            response.put("Flag", "0");
-//            response.put("Message", LanguageUtil.getMessage("barcodeNotExist"));
-//            return response;
-//        }
-//        if (orderBill.getItemStatus().equals(1) || orderBill.getItemStatus().equals(2)) {
-//            // 允许退款
-//            response.put("Flag", "1");
-//            response.put("Message", LanguageUtil.getMessage("allowedCancel"));
-//
-//            // 退款货品
-//            List<YumeiOrderItems> items = new ArrayList<>();
-//            YumeiOrderItems orderItem = new YumeiOrderItems();
-//            orderItem.setSkuCode(barcode);
-//            orderItem.setRefundAmount(orderBill.getUnitPrice());
-//            items.add(orderItem);
-//            saleOrderService.orderRefund(order.getStoreNo(), order.getOrderSource(), order.getOutOrderNo(), "", items);
-//        } else {
-//            // 不允许
-//            response.put("Flag", "0");
-//            response.put("Message", LanguageUtil.getMessage("notAllowedCcancel"));
-//        }
-
-        /*// rbp状态更改
-        RetailOrderBill orderBill = retailOrderBillDao.selectOne(new LambdaQueryWrapper<RetailOrderBill>().eq(RetailOrderBill::getOnlineOrderCode, eorderid));
-        if (null == orderBill) {
-            response.put("Flag", "1");
-            response.put("Message", LanguageUtil.getMessage("onlineOrderCodeNotExist"));
-            response.put("data", eorderid);
-            return response;
-        }
-        // 查询条码
-        Barcode barCode = barcodeDao.selectOne(new LambdaQueryWrapper<Barcode>().eq(Barcode::getBarcode, barcode));
-        if (null == barCode) {
-            response.put("Flag", "0");
-            response.put("Message", LanguageUtil.getMessage("barcodeNotExist"));
-            return response;
-        }
-        RetailOrderBillGoods billGoods = retailOrderBillGoodsDao.selectOne(new LambdaQueryWrapper<RetailOrderBillGoods>().eq(RetailOrderBillGoods::getGoodsId, barCode.getGoodsId())
-                .eq(RetailOrderBillGoods::getColorId, barCode.getColorId()).eq(RetailOrderBillGoods::getLongId, barCode.getLongId()).eq(RetailOrderBillGoods::getSizeId, barCode.getSizeId()));
-        if (null == billGoods) {
-            response.put("Flag", "0");
-            response.put("Message", "goodsNotExist");
-            return response;
-        }
-        if (billGoods.getProcessStatus().equals(4)) {
-            response.put("Flag", "0");
-            response.put("Message", LanguageUtil.getMessage("notAllowedCcancel"));
-            return response;
-        }
-        // 更新全渠道订单状态
-        billGoods.preUpdate();
-        billGoods.setRefundStatus(4);
-        retailOrderBillGoodsDao.updateById(billGoods);
-        response.put("Flag", "1");
-        response.put("Message", LanguageUtil.getMessage("allowedCancel"));*/
-        return response;
-    }
 
 }

@@ -18,5 +18,5 @@ public interface RetailOrderBillService {
 
     DataResponse updateStatus(RetailOrderBillUpdateParam param);
 
-    Map<String, String> getOrderStatus(String eorderid, String barcode);
+
 }
