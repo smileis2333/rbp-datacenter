@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.*;
 import com.regent.rbp.api.core.channel.*;
@@ -22,6 +23,7 @@ import com.regent.rbp.api.service.channel.context.ChannelQueryContext;
 import com.regent.rbp.api.service.channel.context.ChannelSaveContext;
 import com.regent.rbp.api.service.constants.TableConstants;
 import com.regent.rbp.common.constants.InformationConstants;
+import com.regent.rbp.infrastructure.enums.ChannelSettingEnum;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
@@ -30,7 +32,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -74,6 +79,8 @@ public class ChannelServiceBean implements ChannelService {
     BaseDbService baseDbService;
     @Autowired
     AreaDao areaDao;
+    @Autowired
+    ChannelSettingValueDao channelSettingValueDao;
 
     @Override
     public PageDataResponse<ChannelQueryResult> query(ChannelQueryParam param) {
@@ -533,6 +540,17 @@ public class ChannelServiceBean implements ChannelService {
         // 自定义字段
         baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.CHANNEL_INFO, TableConstants.CHANNEL, context.getChannel().getId(), param.getCustomizeData());
         return ModelDataResponse.Success(context.getChannel().getId());
+    }
+
+    @Override
+    public boolean isAllowNegativeInventory(Long channelId) {
+        String keyCode = ChannelSettingEnum.ALLOW_NEGATIVE_INVENTORY.getCode(); //允许负库存
+        boolean value = Boolean.parseBoolean(ChannelSettingEnum.ALLOW_NEGATIVE_INVENTORY.getDefaultValue());
+        ChannelSettingValue channelSettingValue = channelSettingValueDao.selectOne(new QueryWrapper<ChannelSettingValue>().eq("key_code", keyCode).eq("channel_id", channelId));
+        if (null != channelSettingValue) {
+            value = Boolean.parseBoolean(channelSettingValue.getValue());
+        }
+        return value;
     }
 
     /**

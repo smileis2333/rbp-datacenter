@@ -5,7 +5,6 @@ import com.regent.rbp.api.dto.channel.ChannelQueryResult;
 import com.regent.rbp.api.dto.channel.ChannelSaveParam;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
-import com.regent.rbp.api.dto.goods.GoodsSaveParam;
 
 /**
  * @program: rbp-datacenter
@@ -28,4 +27,6 @@ public interface ChannelService {
      * @return
      */
     DataResponse save(ChannelSaveParam param);
+
+    boolean isAllowNegativeInventory(Long channelId);
 }
