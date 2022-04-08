@@ -2,7 +2,6 @@ package com.regent.rbp.task.inno.service.impl;
 
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
-import com.regent.rbp.task.inno.service.OnlineSyncGoodsStockService;
 import com.regent.rbp.task.inno.service.RetailOrderInnoService;
 import com.regent.rbp.task.yumei.model.*;
 import com.regent.rbp.task.yumei.service.SaleOrderService;
@@ -13,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @program: rbp-datacenter
@@ -72,13 +72,13 @@ public class RetailOrderInnoServiceImpl implements RetailOrderInnoService {
             }
         } else {
             // 无条码
-            Integer status = 0;
+            AtomicReference<Boolean> orderStatus = new AtomicReference<>(true);
             order.getOrderItems().stream().forEach(item -> {
                 if (item.getItemStatus().equals(1) || item.getItemStatus().equals(2)) {
-                    status = 1;
+                    orderStatus.set(false);
                 }
             });
-            if (status == 0) {
+            if (orderStatus.get()) {
                 // 允许退款
                 response.put("Flag", "1");
                 response.put("Message", LanguageUtil.getMessage("allowedCancel"));
