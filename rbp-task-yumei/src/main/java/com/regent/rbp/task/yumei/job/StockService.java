@@ -2,7 +2,9 @@ package com.regent.rbp.task.yumei.job;
 
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.regent.rbp.common.dao.StockDetailDao;
 import com.regent.rbp.common.dao.UsableStockDetailDao;
+import com.regent.rbp.common.model.stock.entity.StockDetail;
 import com.regent.rbp.common.model.stock.entity.UsableStockDetail;
 import com.regent.rbp.common.service.basic.SystemCommonService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
@@ -31,6 +33,14 @@ public class StockService {
     private YumeiStockDao stockDao;
     @Autowired
     private SystemCommonService systemCommonService;
+    @Autowired
+    private StockDetailDao stockDetailDao;
+
+    @Transactional
+    public void settingStock(Set<UsableStockDetail> usableStockDetailList, Set<StockDetail> stockDetailSet) {
+        overwriteUsableStockDetail(usableStockDetailList);
+        overwriteStockDetail(stockDetailSet);
+    }
 
     @Transactional
     public void overwriteUsableStockDetail(Set<UsableStockDetail> usableStockDetailList) {
@@ -84,6 +94,53 @@ public class StockService {
 
     }
 
+    @Transactional
+    public void overwriteStockDetail(Set<StockDetail> stockDetailSet) {
+        List<StockDetail> insertStockDetailList = new ArrayList<>();
+        List<StockDetail> updateStockDetailList = new ArrayList<>();
+        if (CollUtil.isNotEmpty(stockDetailSet)) {
+            //hashInsert记录插入操作的实例，解决同款多价的多个相同sku的记录。
+            ConcurrentHashMap<String, StockDetail> hashInsert = new ConcurrentHashMap<>(stockDetailSet.size());
+            for (StockDetail stockDetail : stockDetailSet) {
+                String hashCode = getHashCode(stockDetail);
+                String skuHashCode = getSkuHashCode(stockDetail);
+                StockDetail dbStockDetail = stockDetailDao.selectOne(new QueryWrapper<StockDetail>().eq("hash_code", hashCode));
+                //不存在
+                if (null == dbStockDetail && !hashInsert.containsKey(hashCode)) {
+                    Long id = systemCommonService.getId();
+                    stockDetail.setId(id);
+                    stockDetail.preUpdate();
+                    stockDetail.setHashCode(hashCode);
+                    stockDetail.setSkuHashCode(skuHashCode);
+                    insertStockDetailList.add(stockDetail);
+                    hashInsert.put(hashCode, stockDetail);
+                } else {
+                    if (hashInsert.containsKey(hashCode) && dbStockDetail == null) {
+                        //同款多价的场景，找到之前插入的那条数据。
+                        dbStockDetail = hashInsert.get(hashCode);
+                    }
+                    stockDetail.setId(dbStockDetail.getId());
+                    updateStockDetailList.add(stockDetail);
+                }
+            }
+        }
+
+        //新增
+        if (CollUtil.isNotEmpty(insertStockDetailList)) {
+            int insertRow = stockDetailDao.insertStockDetailList(insertStockDetailList, false);
+            if (insertRow != insertStockDetailList.size()) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "10101");
+            }
+        }
+        //修改
+        if (CollUtil.isNotEmpty(updateStockDetailList)) {
+            int updateRow = stockDao.overwriteStockDetailList(updateStockDetailList);
+            if (updateRow != updateStockDetailList.size()) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "10101");
+            }
+        }
+    }
+
     private String getHashCode(UsableStockDetail usableStockDetail) {
         String channelIdStr = usableStockDetail.getChannelId().toString();
         String goodsIdStr = usableStockDetail.getGoodsId().toString();
@@ -98,6 +155,23 @@ public class StockService {
         String colorIdStr = usableStockDetail.getColorId().toString();
         String longIdStr = usableStockDetail.getLongId().toString();
         String sizeIdStr = usableStockDetail.getSizeId().toString();
+        return MD5Util.md5(goodsIdStr.concat(colorIdStr).concat(longIdStr).concat(sizeIdStr));
+    }
+
+    private String getHashCode(StockDetail stockDetail) {
+        String channelIdStr = stockDetail.getChannelId().toString();
+        String goodsIdStr = stockDetail.getGoodsId().toString();
+        String colorIdStr = stockDetail.getColorId().toString();
+        String longIdStr = stockDetail.getLongId().toString();
+        String sizeIdStr = stockDetail.getSizeId().toString();
+        return MD5Util.md5(channelIdStr.concat(goodsIdStr).concat(colorIdStr).concat(longIdStr).concat(sizeIdStr));
+    }
+
+    private String getSkuHashCode(StockDetail stockDetail) {
+        String goodsIdStr = stockDetail.getGoodsId().toString();
+        String colorIdStr = stockDetail.getColorId().toString();
+        String longIdStr = stockDetail.getLongId().toString();
+        String sizeIdStr = stockDetail.getSizeId().toString();
         return MD5Util.md5(goodsIdStr.concat(colorIdStr).concat(longIdStr).concat(sizeIdStr));
     }
 

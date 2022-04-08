@@ -20,4 +20,21 @@
     </select>
 
 
+    <select id="overwriteStockDetailList" resultType="int">
+        <!--mysql临时变量, 跨线程不可见, decrStockTempVariable在下面进行累加操作-->
+        set @decrStockTempVariable = 0;
+        <foreach collection="stockDetailList" item="stockDetail" index="index" separator=";">
+            update rbp_stock_detail
+            <set >
+                quantity = (#{stockDetail.quantity}) ,
+            </set>
+            where id = #{stockDetail.id}
+            <if test=" isMustPositive ">
+                and (#{stockDetail.quantity}) >= 0
+            </if>
+            and (@decrStockTempVariable:=@decrStockTempVariable + 1)
+        </foreach>;
+        select @decrStockTempVariable;
+    </select>
+
 </mapper>

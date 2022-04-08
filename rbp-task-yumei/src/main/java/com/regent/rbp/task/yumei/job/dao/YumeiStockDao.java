@@ -1,6 +1,7 @@
 package com.regent.rbp.task.yumei.job.dao;
 
 import com.regent.rbp.common.dao.BaseDao;
+import com.regent.rbp.common.model.stock.entity.StockDetail;
 import com.regent.rbp.common.model.stock.entity.UsableStockDetail;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -15,4 +16,6 @@ import java.util.List;
 @Mapper
 public interface YumeiStockDao extends BaseDao<UsableStockDetail> {
     int overwriteUsableStockDetailList(@Param("usableStockDetailList") List<UsableStockDetail> usableStockDetailList);
+
+    int overwriteStockDetailList(@Param("stockDetailList") List<StockDetail> stockDetailList);
 }

@@ -9,8 +9,8 @@ import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.service.channel.ChannelService;
 import com.regent.rbp.api.service.constants.SystemConstants;
+import com.regent.rbp.common.model.stock.entity.StockDetail;
 import com.regent.rbp.common.model.stock.entity.UsableStockDetail;
-import com.regent.rbp.common.service.stock.UsableStockDetailService;
 import com.regent.rbp.common.utils.StockUtils;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.yumei.wandian.sdk.Client;
@@ -46,8 +46,6 @@ import java.util.stream.Collectors;
 public class StockJob {
 
     @Autowired
-    private UsableStockDetailService usableStockDetailService;
-    @Autowired
     private StockService stockService;
     @Autowired
     private Validator validator;
@@ -61,14 +59,13 @@ public class StockJob {
     private ChannelDao channelDao;
 
     /**
-     * todo 由于旺店通的接口限制和接口的查询压力，可能需要进行任务分片
      * 从旺店通拉取可用库存
      * 调用频率：30分钟1次
      *
      * @return
      */
     @XxlJob("yumei.onlineDownloadGoodsStockJobHandler")
-    public void downloadAvailableStockJobHandler() {
+    public void onlineDownloadGoodsStockJobHandler() {
         ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
         //读取参数
         String param = XxlJobHelper.getJobParam();
@@ -132,8 +129,8 @@ public class StockJob {
                     failMsgs.add(String.format("渠道%s不存在，对应库存写入失败", channelCode));
                     return;
                 }
-                boolean isMustPositive = !channelService.isAllowNegativeInventory(channel.getId());
                 Set<UsableStockDetail> usableStockDetails = new HashSet<>();
+                Set<StockDetail> stockDetails = new HashSet<>();
                 for (StockSearchResponse.StockSearchDto stockSearchDto : stockSearchDtos) {
                     // 商家编码对应丽晶条形码
                     String barcode = stockSearchDto.getSpecNo();
@@ -149,8 +146,21 @@ public class StockJob {
                     usableStockDetail.setSkuHashCode(StockUtils.calculateSkuHashCode(goodsData.getGoodsId(), goodsData.getColorId(), goodsData.getLongId(), goodsData.getSizeId()));
                     usableStockDetail.setHashCode(StockUtils.calculateHashCode(channel.getId(), goodsData.getGoodsId(), goodsData.getColorId(), goodsData.getLongId(), goodsData.getSizeId()));
                     usableStockDetails.add(usableStockDetail);
+
+                    StockDetail stockDetail = new StockDetail();
+                    stockDetail.setChannelId(channel.getId());
+                    stockDetail.setGoodsId(goodsData.getGoodsId());
+                    stockDetail.setColorId(goodsData.getColorId());
+                    stockDetail.setLongId(goodsData.getLongId());
+                    stockDetail.setSizeId(goodsData.getSizeId());
+                    stockDetail.setQuantity(stockSearchDto.getAvailableSendStock());
+                    stockDetail.setReduceQuantity(stockSearchDto.getAvailableSendStock()); // 兼容性代码
+                    stockDetail.setSkuHashCode(StockUtils.calculateSkuHashCode(goodsData.getGoodsId(), goodsData.getColorId(), goodsData.getLongId(), goodsData.getSizeId()));
+                    stockDetail.setHashCode(StockUtils.calculateHashCode(channel.getId(), goodsData.getGoodsId(), goodsData.getColorId(), goodsData.getLongId(), goodsData.getSizeId()));
+                    stockDetails.add(stockDetail);
+
                 }
-                stockService.overwriteUsableStockDetail(usableStockDetails);
+                stockService.settingStock(usableStockDetails, stockDetails);
             } catch (Exception ex) {
                 failMsgs.add(ex.getMessage());
             }
