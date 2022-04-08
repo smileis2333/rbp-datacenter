@@ -63,4 +63,11 @@ public interface SaleOrderService {
      */
     YumeiOrderQueryPageResp orderQuery(YumeiOrderQueryReq query);
 
+    /**
+     * 订单取消
+     * @param storeNo
+     * @param orderSource
+     * @param outOrderNo
+     */
+    void orderCancel(String storeNo, Integer orderSource, String outOrderNo);
 }

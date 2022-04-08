@@ -271,4 +271,33 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         return resp;
     }
 
+    @Override
+    public void orderCancel(String storeNo, Integer orderSource, String outOrderNo) {
+        HashMap<String, Object> body = new HashMap<>();
+        try {
+            body.put("storeNo", storeNo);
+            body.put("orderSource", orderSource);
+            body.put("outOrderNo", outOrderNo);
+
+            String jsonBody = objectMapper.writeValueAsString(body);
+            String returnJson = HttpUtil.createRequest(Method.POST, YumeiApiUrl.SALE_ORDER_CANCEL)
+                    .body(jsonBody)
+                    .header(Header.CONTENT_TYPE, "application/json")
+                    .header("X-AUTH-TOKEN",credential.getAccessToken())
+                    .execute()
+                    .body();
+            Map<String,Object> returnData = (Map<String,Object>)objectMapper.readValue(returnJson, Map.class);
+            if (!returnData.get("code").equals("00000")) {
+                throw new Exception(returnData.get("msg").toString());
+            }
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
