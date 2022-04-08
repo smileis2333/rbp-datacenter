@@ -37,17 +37,4 @@ public class RetailOrderBillController {
         return result;
     }
 
-    @GetMapping("/GetOrderStatus")
-    public Map<String, String> getOrderStatus(@RequestParam(name = "eorderid") String eorderid, @RequestParam(name = "barcode") String barcode) {
-        Map<String, String> response = new HashMap<>();
-        try {
-            response = retailOrderBillService.getOrderStatus(eorderid, barcode);
-        }catch (Exception ex) {
-            response.put("Flag", "-1");
-            response.put("Message", "单据异常：" + ex.getMessage());
-        }
-        return response;
-    }
-
-
 }
