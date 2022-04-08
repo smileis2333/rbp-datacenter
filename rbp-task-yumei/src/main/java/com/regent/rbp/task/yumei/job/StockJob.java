@@ -95,7 +95,7 @@ public class StockJob {
         String tomorrowDay = LocalDate.now().plusDays(1).toString();
         request.setStartTime(currentDay);
         request.setEndTime(tomorrowDay);
-        StockSearchResponse response = stockAPI.search(request, new Pager(1000, 0, true)); // 一页最多1000
+        StockSearchResponse response = stockAPI.searchAvailable(request, new Pager(1000, 0, true)); // 一页最多1000
         int total = response.getTotal();
         Set<String> failMsgs = new HashSet<>();
         processStockWritting(response, failMsgs);
@@ -105,7 +105,7 @@ public class StockJob {
                 StockSearchRequest leftRequest = new StockSearchRequest();
                 request.setStartTime(currentDay);
                 request.setEndTime(tomorrowDay);
-                StockSearchResponse leftResponse = stockAPI.search(leftRequest, new Pager(1000, i, false));
+                StockSearchResponse leftResponse = stockAPI.searchAvailable(leftRequest, new Pager(1000, i, false));
                 processStockWritting(leftResponse, failMsgs);
             }
         }
