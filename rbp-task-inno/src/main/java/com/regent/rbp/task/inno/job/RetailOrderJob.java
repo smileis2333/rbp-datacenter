@@ -10,6 +10,7 @@ import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncCacheDao;
+import com.regent.rbp.api.dao.retail.RetailOrderPushLogDao;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
@@ -52,7 +53,6 @@ public class RetailOrderJob {
     private OnlinePlatformSyncCacheDao onlinePlatformSyncCacheDao;
     @Autowired
     private OnlinePlatformDao onlinePlatformDao;
-
     @Autowired
     private SaleOrderService saleOrderService;
 
@@ -125,13 +125,6 @@ public class RetailOrderJob {
             if (StrUtil.isNotEmpty(errorMsg)) {
                 XxlJobHelper.log(errorMsg);
                 XxlJobHelper.handleFail(errorMsg);
-                try {
-                    // 保存错误日志
-                    OnlinePlatformSyncCache syncCache = OnlinePlatformSyncCache.build(onlinePlatformId, YumeiApiUrl.SALE_ORDER_PUSH, errorMsg.substring(0, Math.min(errorMsg.length(), 99)));
-                    onlinePlatformSyncCacheDao.insert(syncCache);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
             }
         }
     }

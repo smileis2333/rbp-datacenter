@@ -9,7 +9,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.regent.rbp.api.core.retail.RetailOrderBill;
+import com.regent.rbp.api.core.retail.RetailOrderPushLog;
 import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
+import com.regent.rbp.api.dao.retail.RetailOrderPushLogDao;
 import com.regent.rbp.api.dto.retail.OrderBusinessPersonDto;
 import com.regent.rbp.api.dto.retail.RetailOrderInfoDto;
 import com.regent.rbp.api.dto.retail.RetalOrderGoodsInfoDto;
@@ -18,6 +20,7 @@ import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
+import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.task.yumei.constants.YumeiApiUrl;
 import com.regent.rbp.task.yumei.model.YumeiCredential;
 import com.regent.rbp.task.yumei.model.YumeiOrder;
@@ -64,6 +67,9 @@ public class SaleOrderServiceImpl implements SaleOrderService {
 
     @Autowired
     private RetailOrderBillDao retailOrderBillDao;
+
+    @Autowired
+    private RetailOrderPushLogDao retailOrderPushLogDao;
 
     @Override
     public void confirmReceive(String storeNo, String orderSource, String outOrderNo) {
@@ -142,13 +148,24 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                     .execute()
                     .body();
             log.info("请求结果：" + returnJson);
+            String billNo = StrUtil.join(StrUtil.COMMA, orders.stream().map(YumeiOrder::getOutTradeNo).collect(Collectors.toList()));
+            RetailOrderPushLog retailOrderPushLog = new RetailOrderPushLog();
+            retailOrderPushLog.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+            retailOrderPushLog.setBillNo(billNo);
+            retailOrderPushLog.setUrl(url + YumeiApiUrl.SALE_ORDER_PUSH);
+            retailOrderPushLog.setRequestParam(jsonBody);
+            retailOrderPushLog.setResult(returnJson);
+            retailOrderPushLog.preInsert();
             Map<String, Object> returnData = (Map<String, Object>) objectMapper.readValue(returnJson, Map.class);
             if (!(Boolean)returnData.getOrDefault("success", false)) {
-                log.error("调用玉美订单推送接口失败" + orders.stream().map(YumeiOrder::getOutTradeNo).collect(Collectors.toList()).toString());
+                retailOrderPushLog.setSucess(0);
+                log.error("调用玉美订单推送接口失败" + billNo);
                 errorMsg = (String)returnData.get("msg");
             } else {
-                log.info("调用玉美订单推送接口成功" + orders.stream().map(YumeiOrder::getOutTradeNo).collect(Collectors.toList()).toString());
+                retailOrderPushLog.setSucess(1);
+                log.info("调用玉美订单推送接口成功" + billNo);
             }
+            retailOrderPushLogDao.insert(retailOrderPushLog);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "paramError");
