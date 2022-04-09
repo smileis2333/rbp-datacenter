@@ -1,5 +1,12 @@
 package com.regent.rbp.task.inno.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.regent.rbp.api.core.channel.Channel;
+import com.regent.rbp.api.core.retail.RetailOrderBill;
+import com.regent.rbp.api.dao.channel.ChannelDao;
+import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
+import com.regent.rbp.api.dto.retail.OrderBusinessPersonDto;
+import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import com.regent.rbp.task.inno.service.RetailOrderInnoService;
@@ -8,10 +15,7 @@ import com.regent.rbp.task.yumei.service.SaleOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -25,14 +29,24 @@ public class RetailOrderInnoServiceImpl implements RetailOrderInnoService {
 
     @Autowired
     private SaleOrderService saleOrderService;
+    @Autowired
+    private RetailOrderBillDao retailOrderBillDao;
 
     @Override
     public Map<String, String> getOrderStatus(String eorderid, String barcode) {
         Map<String, String> response = new HashMap<>();
 
+        RetailOrderBill retailOrderBill = retailOrderBillDao.selectOne(new LambdaQueryWrapper<RetailOrderBill>().eq(RetailOrderBill::getManualId, eorderid));
+        OrderBusinessPersonDto person = retailOrderBillDao.getOrderBusinessPersonDto(retailOrderBill.getId());
+
         // 查询玉美订单
         YumeiOrderQueryReq yumeiOrderQueryReq = new YumeiOrderQueryReq();
         yumeiOrderQueryReq.setOutOrderNo(eorderid);
+        yumeiOrderQueryReq.setStoreNo(person.getChannelNo());
+        yumeiOrderQueryReq.setOrderSource(3);
+        yumeiOrderQueryReq.setStartTime(DateUtil.getDate("2021-01-01", DateUtil.SHORT_DATE_FORMAT));
+        yumeiOrderQueryReq.setEndTime(DateUtil.getEndDateTime(new Date()));
+
         YumeiOrderQueryPageResp page = saleOrderService.orderQuery(yumeiOrderQueryReq);
         if (page.getTotalCount() == 0) {
             // 找不到订单允许取消
