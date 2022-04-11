@@ -182,7 +182,11 @@ public class RetailOrderServiceImpl implements RetailOrderService {
         }
         if (respDto.getData().getData().size() > 0) {
             for (RetailOrderMainDto mainDto : respDto.getData().getData()) {
-                this.saveRetailOrderBill(onlinePlatform.getId(), onlinePlatformCode, channelCode, mainDto, map);
+                try {
+                    this.saveRetailOrderBill(onlinePlatform.getId(), onlinePlatformCode, channelCode, mainDto, map);
+                } catch (Exception ex) {
+                    XxlJobHelper.log(String.format("错误信息：%s", ex.getMessage()));
+                }
             }
             for (int i = 2; i <= reqDto.getData().getPageIndex(); i++) {
                 retailOrderSearch.setPageIndex(i);
