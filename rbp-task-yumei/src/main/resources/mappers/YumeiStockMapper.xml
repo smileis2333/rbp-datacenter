@@ -29,9 +29,6 @@
                 quantity = (#{stockDetail.quantity}) ,
             </set>
             where id = #{stockDetail.id}
-            <if test=" isMustPositive ">
-                and (#{stockDetail.quantity}) >= 0
-            </if>
             and (@decrStockTempVariable:=@decrStockTempVariable + 1)
         </foreach>;
         select @decrStockTempVariable;
