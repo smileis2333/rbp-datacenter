@@ -1,6 +1,7 @@
 package com.regent.rbp.api.dto.notice;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.regent.rbp.api.dto.base.DefaultParam;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -13,7 +14,7 @@ import java.util.Date;
  * @create: 2021-12-07
  */
 @Data
-public class NoticeBillQueryParam {
+public class NoticeBillQueryParam extends DefaultParam {
 
     @ApiModelProperty(notes = "模块编号")
     private String moduleId;
@@ -74,14 +75,5 @@ public class NoticeBillQueryParam {
     @ApiModelProperty(notes = "修改日期(截止日期)")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updatedDateEnd;
-
-    @ApiModelProperty(notes = "需返回的字段列表")
-    private String fields;
-
-    @ApiModelProperty(notes = "页码：默认1")
-    private Integer pageNo;
-
-    @ApiModelProperty(notes = "每页条数：默认100条")
-    private Integer pageSize;
 
 }

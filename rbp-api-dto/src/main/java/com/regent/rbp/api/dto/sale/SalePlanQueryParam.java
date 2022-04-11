@@ -1,13 +1,14 @@
 package com.regent.rbp.api.dto.sale;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.regent.rbp.api.dto.base.DefaultParam;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
-public class SalePlanQueryParam {
+public class SalePlanQueryParam extends DefaultParam {
     @ApiModelProperty(notes = "模块编号")
     private String moduleId;
 
@@ -60,14 +61,5 @@ public class SalePlanQueryParam {
     @ApiModelProperty(notes = "修改日期(截止日期)")
     @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     private Date updatedDateEnd;
-
-    @ApiModelProperty(notes = "需返回的字段列表")
-    private String fields;
-
-    @ApiModelProperty(notes = "页码：默认1")
-    private Integer pageNo;
-
-    @ApiModelProperty(notes = "每页条数：默认100条")
-    private Integer pageSize;
 
 }

@@ -298,8 +298,11 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
 
         // 零售付款方式
         List<Long> payIds = salesOrderBillPaymentList.stream().map(SalesOrderBillPayment::getRetailPayTypeId).collect(Collectors.toList());
-        List<RetailPayType> retailPayTypeList = retailPayTypeDao.selectList(new LambdaQueryWrapper<RetailPayType>().in(RetailPayType::getId, payIds));
-        Map<Long, String> payMap = retailPayTypeList.stream().collect(Collectors.toMap(RetailPayType::getId, RetailPayType::getCode));
+        Map<Long, String> payMap = new HashMap<>();
+        if (CollUtil.isNotEmpty(payIds)){
+            List<RetailPayType> retailPayTypeList = retailPayTypeDao.selectList(new LambdaQueryWrapper<RetailPayType>().in(RetailPayType::getId, payIds));
+            payMap = retailPayTypeList.stream().collect(Collectors.toMap(RetailPayType::getId, RetailPayType::getCode));
+        }
 
         // 销售渠道&渠道
         List<Long> channelIds = list.stream().map(SalesOrderBill::getSaleChannelId).distinct().collect(Collectors.toList());
