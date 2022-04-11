@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.task.yumei.job.dao.YumeiStockDao">
+
+    <select id="overwriteUsableStockDetailList" resultType="int">
+        <!--mysql临时变量, 跨线程不可见, decrUsableStockTempVariable在下面进行累加操作-->
+        set @decrUsableStockTempVariable = 0;
+        <foreach collection="usableStockDetailList" item="stockDetail" index="index" separator=";">
+            update rbp_usable_stock_detail
+            <set>
+                quantity = (#{stockDetail.quantity}) ,
+            </set>
+            where id = #{stockDetail.id}
+            and (@decrUsableStockTempVariable:=@decrUsableStockTempVariable + 1)
+        </foreach>
+        ;
+        select @decrUsableStockTempVariable;
+    </select>
+
+
+    <select id="overwriteStockDetailList" resultType="int">
+        <!--mysql临时变量, 跨线程不可见, decrStockTempVariable在下面进行累加操作-->
+        set @decrStockTempVariable = 0;
+        <foreach collection="stockDetailList" item="stockDetail" index="index" separator=";">
+            update rbp_stock_detail
+            <set >
+                quantity = (#{stockDetail.quantity}) ,
+            </set>
+            where id = #{stockDetail.id}
+            <if test=" isMustPositive ">
+                and (#{stockDetail.quantity}) >= 0
+            </if>
+            and (@decrStockTempVariable:=@decrStockTempVariable + 1)
+        </foreach>;
+        select @decrStockTempVariable;
+    </select>
+
+</mapper>

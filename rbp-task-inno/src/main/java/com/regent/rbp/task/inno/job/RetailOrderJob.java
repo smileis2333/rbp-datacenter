@@ -1,6 +1,7 @@
 package com.regent.rbp.task.inno.job;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -9,6 +10,7 @@ import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncCacheDao;
+import com.regent.rbp.api.dao.retail.RetailOrderPushLogDao;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
@@ -18,6 +20,7 @@ import com.regent.rbp.infrastructure.util.StringUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.model.param.RetailOrderDownloadOnlineOrderParam;
 import com.regent.rbp.task.inno.service.RetailOrderService;
+import com.regent.rbp.task.yumei.constants.YumeiApiUrl;
 import com.regent.rbp.task.yumei.service.SaleOrderService;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
@@ -50,7 +53,6 @@ public class RetailOrderJob {
     private OnlinePlatformSyncCacheDao onlinePlatformSyncCacheDao;
     @Autowired
     private OnlinePlatformDao onlinePlatformDao;
-
     @Autowired
     private SaleOrderService saleOrderService;
 
@@ -108,20 +110,22 @@ public class RetailOrderJob {
             retailOrderService.downloadOnlineOrderList(orderParam, onlinePlatform);
 
             // 推送订单到玉美
-            this.pushOrderToYuMei();
+            this.pushOrderToYuMei(onlinePlatform.getId());
 
         } catch (Exception ex) {
             XxlJobHelper.handleFail(ex.getMessage());
         }
     }
 
-    private void pushOrderToYuMei() {
+    private void pushOrderToYuMei(Long onlinePlatformId) {
         Object orderNoList = ThreadLocalGroup.get("yumei_orderno_list");
         Set<String> orderNoList2 = (Set<String>) orderNoList;
         if (CollUtil.isNotEmpty(orderNoList2)) {
-            saleOrderService.pushOrderToYuMei(new ArrayList<>(orderNoList2));
+            String errorMsg = saleOrderService.pushOrderToYuMei(new ArrayList<>(orderNoList2));
+            if (StrUtil.isNotEmpty(errorMsg)) {
+                XxlJobHelper.log(errorMsg);
+                XxlJobHelper.handleFail(errorMsg);
+            }
         }
-
-        ThreadLocalGroup.remove();
     }
 }

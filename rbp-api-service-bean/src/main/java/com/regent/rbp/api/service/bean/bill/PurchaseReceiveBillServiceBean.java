@@ -302,9 +302,9 @@ public class PurchaseReceiveBillServiceBean implements PurchaseReceiveBillServic
 
     private void updateStock(PurchaseReceiveBillSaveContext context) {
         Integer status = context.getBill().getStatus();
-        if (status == CheckEnum.CHECK.getStatus()) {
+        if (CheckEnum.CHECK.getStatus().equals(status)) {
             checkModifyStock(context.getBill().getId());
-        } else if (status == CheckEnum.UNCHECK.getStatus()) {
+        } else if (CheckEnum.UNCHECK.getStatus().equals(status)) {
             unCheckModifyStock(context.getBill().getId());
         }
     }
