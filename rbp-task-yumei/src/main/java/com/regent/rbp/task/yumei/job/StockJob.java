@@ -56,7 +56,7 @@ public class StockJob {
     @Value("${yumei.stock.originalChannels:}")
     private String originalChannelsStr;
 
-    @Value("${yumei.stock.summaryChannel}")
+    @Value("${yumei.stock.summaryChannel:}")
     private String summaryChannel;
 
     /**

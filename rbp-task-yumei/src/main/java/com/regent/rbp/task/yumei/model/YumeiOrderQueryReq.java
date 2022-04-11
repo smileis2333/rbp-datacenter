@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -22,11 +24,11 @@ public class YumeiOrderQueryReq {
 
     @ApiModelProperty(notes = "开始时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date startTime;
+    private LocalDateTime startTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(notes = "结束时间")
-    private Date endTime;
+    private LocalDateTime endTime;
 
     @ApiModelProperty(notes = "订单编号")
     private String outOrderNo;

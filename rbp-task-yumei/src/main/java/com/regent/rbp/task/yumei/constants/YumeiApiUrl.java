@@ -13,20 +13,20 @@ public class YumeiApiUrl {
     /**
      * 销售订单_退款
      */
-    public static final String SALE_ORDER_REFUND = "api/trade/orderRefund";
+    public static final String SALE_ORDER_REFUND = "/api/trade/orderRefund";
 
     /**
      * 销售订单_确认收货
      */
-    public static final String SALE_ORDER_CONFIRM_RECEIPT = "api/trade/orderReceipt";
+    public static final String SALE_ORDER_CONFIRM_RECEIPT = "/api/trade/orderReceipt";
 
     /**
      * 订单查询接口
      */
-    public static final String SALE_ORDER_QUERY = "api/trade/orderQuery";
+    public static final String SALE_ORDER_QUERY = "/api/trade/orderQuery";
 
     /**
      * 订单取消
      */
-    public static final String SALE_ORDER_CANCEL = "api/trade/orderCancel";
+    public static final String SALE_ORDER_CANCEL = "/api/trade/orderCancel";
 }

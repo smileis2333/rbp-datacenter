@@ -5,6 +5,8 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.Header;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
+import com.alibaba.excel.util.DateUtils;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +19,7 @@ import com.regent.rbp.api.dto.retail.RetailOrderInfoDto;
 import com.regent.rbp.api.dto.retail.RetalOrderGoodsInfoDto;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
+import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
@@ -31,6 +34,7 @@ import com.regent.rbp.task.yumei.service.SaleOrderService;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
+import org.h2.util.LocalDateTimeUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +44,8 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -192,7 +198,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             body.put("notifyUrl", notifyUrl);
 
             String jsonBody = objectMapper.writeValueAsString(body);
-            String returnJson = HttpUtil.createRequest(Method.POST, YumeiApiUrl.SALE_ORDER_REFUND)
+            String returnJson = HttpUtil.createRequest(Method.POST, url + YumeiApiUrl.SALE_ORDER_REFUND)
                     .body(jsonBody)
                     .header(Header.CONTENT_TYPE, "application/json")
                     .header("X-AUTH-TOKEN",credential.getAccessToken())
@@ -221,7 +227,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             body.put("outOrderNo", outOrderNo);
 
             String jsonBody = objectMapper.writeValueAsString(body);
-            String returnJson = HttpUtil.createRequest(Method.POST, YumeiApiUrl.SALE_ORDER_CONFIRM_RECEIPT)
+            String returnJson = HttpUtil.createRequest(Method.POST, url + YumeiApiUrl.SALE_ORDER_CONFIRM_RECEIPT)
                     .body(jsonBody)
                     .header(Header.CONTENT_TYPE, "application/json")
                     .header("X-AUTH-TOKEN",credential.getAccessToken())
@@ -252,19 +258,18 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         if (null == query) {
             throw new BusinessException(ResponseCode.PARAMS_EMPTY);
         }
-        if (StringUtils.isEmpty(query.getOutOrderNo())) {
-            if (StringUtils.isEmpty(query.getStoreNo())) {
-                throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"门店编号"});
-            }
-            if (null == query.getOrderSource()) {
-                throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"订单来源"});
-            }
-            if (null == query.getStartTime()) {
-                throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"开始时间"});
-            }
-            if (null == query.getEndTime()) {
-                throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"结束时间"});
-            }
+
+        if (StringUtils.isEmpty(query.getStoreNo())) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"门店编号"});
+        }
+        if (null == query.getOrderSource()) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"订单来源"});
+        }
+        if (null == query.getStartTime()) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"开始时间"});
+        }
+        if (null == query.getEndTime()) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotNull", new Object[]{"结束时间"});
         }
 
         YumeiOrderQueryPageResp resp = null;
@@ -273,13 +278,13 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             body.put("storeNo", query.getStoreNo());
             body.put("orderSource", query.getOrderSource());
             body.put("status", query.getStatus());
-            body.put("startTime", query.getStartTime());
-            body.put("endTime", query.getEndTime());
+            body.put("startTime", query.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            body.put("endTime", query.getEndTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             body.put("outOrderNo", query.getOutOrderNo());
             body.put("pageNum", Optional.ofNullable(query.getPageNum()).orElse(1));
             body.put("pageSize", Optional.ofNullable(query.getPageSize()).orElse(10));
             // 查询
-            String returnJson = HttpUtil.createRequest(Method.POST, YumeiApiUrl.SALE_ORDER_QUERY)
+            String returnJson = HttpUtil.createRequest(Method.POST, url + YumeiApiUrl.SALE_ORDER_QUERY)
                     .body(objectMapper.writeValueAsString(body))
                     .header(Header.CONTENT_TYPE, "application/json")
                     .header("X-AUTH-TOKEN", credential.getAccessToken())
@@ -289,7 +294,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             if (null == resultMap || null == resultMap.get("code")) {
                 throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExist", new Object[]{"返回结果"});
             }
-            if (!resultMap.get("code").equals("1")) {
+            if (!resultMap.get("code").equals("00000")) {
                 throw new BusinessException(ResponseCode.PARAMS_ERROR, "paramVerifyError", new Object[]{String.format("requestId:%s, msg:%s", resultMap.get("requestId"), resultMap.get("msg"))});
             }
             resp = objectMapper.readValue(resultMap.get("data"), YumeiOrderQueryPageResp.class);
@@ -311,7 +316,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             body.put("outOrderNo", outOrderNo);
 
             String jsonBody = objectMapper.writeValueAsString(body);
-            String returnJson = HttpUtil.createRequest(Method.POST, YumeiApiUrl.SALE_ORDER_CANCEL)
+            String returnJson = HttpUtil.createRequest(Method.POST, url + YumeiApiUrl.SALE_ORDER_CANCEL)
                     .body(jsonBody)
                     .header(Header.CONTENT_TYPE, "application/json")
                     .header("X-AUTH-TOKEN",credential.getAccessToken())

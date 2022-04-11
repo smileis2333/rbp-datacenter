@@ -17,6 +17,7 @@
 
 	<properties>
 		<java.version>1.8</java.version>
+		<log4j2.version>2.17.1</log4j2.version>
 	</properties>
 	<dependencies>
 
@@ -24,6 +25,25 @@
 			<groupId>com.regent.rbp.app.config</groupId>
 			<artifactId>rbp-app-config</artifactId>
 			<version>0.0.0.8</version>
+			<exclusions>
+				<exclusion>
+					<!--屏蔽自带的低版本日志组件,用高版本替换-->
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-to-slf4j</artifactId>
+				</exclusion>
+				<exclusion>
+					<!--屏蔽自带的低版本日志组件,用高版本替换-->
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- log4j日志组件 -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j2.version}</version>
 		</dependency>
 
 		<dependency>
