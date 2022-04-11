@@ -20,7 +20,7 @@ public class SalesSendYuMeiSaveParam {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date billDate;
 
-    @ApiModelProperty(notes = "全渠道订单号")
+    @ApiModelProperty(notes = "线上订单号")
     private String retailOrderBillNo;
 
     @ApiModelProperty(notes = "外部单号，唯一")
