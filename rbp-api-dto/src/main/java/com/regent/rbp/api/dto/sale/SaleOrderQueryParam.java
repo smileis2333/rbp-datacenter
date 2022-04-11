@@ -1,5 +1,6 @@
 package com.regent.rbp.api.dto.sale;
 
+import com.regent.rbp.api.dto.base.DefaultParam;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -10,7 +11,7 @@ import lombok.Data;
  * @create: 2021-11-08 13:50
  */
 @Data
-public class SaleOrderQueryParam {
+public class SaleOrderQueryParam extends DefaultParam {
 
     @ApiModelProperty(notes = "外部单号（RBP手工单号），唯一。")
     private String manualId;
@@ -62,14 +63,5 @@ public class SaleOrderQueryParam {
 
     @ApiModelProperty(notes = "修改日期(截止日期)")
     private String updatedDateEnd;
-
-    @ApiModelProperty(notes = "需返回的字段列表")
-    private String fields;
-
-    @ApiModelProperty(notes = "页码：默认1")
-    private Integer pageNo;
-
-    @ApiModelProperty(notes = "每页条数：默认100条")
-    private Integer pageSize;
 
 }
