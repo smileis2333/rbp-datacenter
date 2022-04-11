@@ -88,6 +88,11 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         log.info("线上订单号：" + orderNoList.toString());
         List<RetailOrderBill> retailOrderBillList = retailOrderBillDao.selectList(new LambdaQueryWrapper<RetailOrderBill>()
                 .in(RetailOrderBill::getManualId, orderNoList));
+        if (retailOrderBillList.size() != orderNoList.size()) {
+            orderNoList.removeAll(retailOrderBillList.stream().map(RetailOrderBill::getManualId).collect(Collectors.toList()));
+            errorMsgList.add("单号不存在" + StrUtil.join(StrUtil.COMMA, orderNoList));
+        }
+
         for (RetailOrderBill retailOrderBill : retailOrderBillList) {
             OrderBusinessPersonDto orderBusinessPersonDto = retailOrderBillDao.getOrderBusinessPersonDto(retailOrderBill.getId());
             if (null == orderBusinessPersonDto) {
@@ -124,7 +129,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             updateBill.setStatus(1);
             retailOrderBillDao.updateById(updateBill);
         }
-        return String.join(StrUtil.COMMA, errorMsgList);
+        return StrUtil.join(StrUtil.COMMA, errorMsgList);
     }
 
     @Override
