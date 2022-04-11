@@ -336,6 +336,7 @@ public class RetailSalesSendBillServiceBean extends ServiceImpl<RetailSalesSendB
                 RetailOrderBillGoods retailOrderBillGoods = new RetailOrderBillGoods();
                 retailOrderBillGoods.setId(goods.getRetailOrderBillGoodsId());
                 retailOrderBillGoods.setProcessStatus(4);
+                retailOrderBillGoods.setOnlineStatus(5);
                 retailOrderBillGoods.preUpdate();
                 retailOrderBillGoodsList.add(retailOrderBillGoods);
             }

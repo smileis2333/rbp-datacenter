@@ -5,6 +5,7 @@ import lombok.Data;
 import org.apache.kafka.common.protocol.types.Field;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -27,6 +28,7 @@ public class YumeiOrder {
     private BigDecimal freightAmount;
     private BigDecimal actualTotalAmount;
     private BigDecimal goodsQty;
+    private Date payTime;
     /**
      * 分销员编号
      */

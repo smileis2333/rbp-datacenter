@@ -88,6 +88,10 @@ public class RetailOrderBill {
     @ApiModelProperty(notes = "支付状态 (0.未支付;1.已支付)")
     private Integer payStatus;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(notes = "付款时间")
+    private Date payTime;
+
     @ApiModelProperty(notes = "售后处理状态 0-无、1-待处理、2-同意退款、3-同意退货、4-拒绝退款、5-拒绝退货、6-仓库已收货、7-仓库已拒收、8-换货中、9-换货已发货、10-换货部分发货、11-作废")
     private Integer afterSaleProcessStatus;
 

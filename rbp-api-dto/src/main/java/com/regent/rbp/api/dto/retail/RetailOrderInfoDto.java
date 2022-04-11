@@ -3,6 +3,7 @@ package com.regent.rbp.api.dto.retail;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -26,6 +27,7 @@ public class RetailOrderInfoDto {
     private BigDecimal freightAmount;
     private BigDecimal actualTotalAmount;
     private BigDecimal goodsQty;
+    private Date payTime;
     /**
      * 分销员编号
      */

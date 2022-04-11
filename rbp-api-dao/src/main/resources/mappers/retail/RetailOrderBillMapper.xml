@@ -49,7 +49,7 @@
 
     <select id="getRetailOrderInfoDto" resultType="com.regent.rbp.api.dto.retail.RetailOrderInfoDto">
         select a.manual_id as outTradeNo, b.buyer_nickname as buyerNick,b.contacts_person as receiver, b.province provinceName, b.city cityName,
-               b.county as areaName, b.address as addrDetail, b.mobile, b.notes as userRemark, b.logistics_amount as freightAmount
+               b.county as areaName, b.address as addrDetail, b.mobile, b.notes as userRemark, b.logistics_amount as freightAmount, a.pay_time as payTime
         from rbp_retail_order_bill a
                  left join rbp_retail_order_bill_customer_info b on a.id = b.bill_id
         where a.id = #{id}
