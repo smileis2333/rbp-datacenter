@@ -55,11 +55,12 @@ public class SalesSendYuMeiServiceBean implements SalesSendYuMeiService {
         log.info("全渠道发货单(玉美) 请求参数:" + param.toString());
         RetailOrderBill retailOrderBill = null;
         if (StrUtil.isEmpty(param.getRetailOrderBillNo())) {
-            retailOrderBill = retailOrderBillDao.selectOne(new LambdaQueryWrapper<RetailOrderBill>()
-                    .eq(RetailOrderBill::getManualId, param.getRetailOrderBillNo()));
-            if (null == retailOrderBill) {
-                throw new BusinessException(ResponseCode.PARAMS_ERROR, "线上订单号(retailOrderBillNo)不存在");
-            }
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "线上订单号(retailOrderBillNo)不能为空");
+        }
+        retailOrderBill = retailOrderBillDao.selectOne(new LambdaQueryWrapper<RetailOrderBill>()
+                .eq(RetailOrderBill::getManualId, param.getRetailOrderBillNo()));
+        if (null == retailOrderBill) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "线上订单号(retailOrderBillNo)不存在");
         }
 
         RetailDistributionBillSaveParam retailDistributionBillSaveParam = new RetailDistributionBillSaveParam();
