@@ -268,6 +268,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
         targetDto.setBuyerNotes(order.getUser_remark());
         targetDto.setSellerNotes(StrUtil.EMPTY);
         targetDto.setNotes(order.getAdmin_remark());
+        targetDto.setPayTime(DateUtil.getDate(order.getPay_time(), DateUtil.FULL_DATE_FORMAT));
         /********************** 物流信息 ******************************/
         targetDto.setMemberCardCode(order.getCard_num());
         targetDto.setBuyerNickname(order.getUser_name());

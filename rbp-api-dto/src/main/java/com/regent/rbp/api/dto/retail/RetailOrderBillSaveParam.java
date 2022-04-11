@@ -109,6 +109,10 @@ public class RetailOrderBillSaveParam {
     @ApiModelProperty(notes = "物流说明")
     private String note;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(notes = "付款时间")
+    private Date payTime;
+
     /************************* 付款方式 ************************************/
     @ApiModelProperty(notes = "付款方式")
     private String payCode;

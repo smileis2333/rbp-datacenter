@@ -201,6 +201,7 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         bill.setSellerNotes(param.getSellerNotes());
         bill.setPrintNotes(param.getPrintNotes());
         bill.setNotes(param.getNotes());
+        bill.setPayTime(param.getPayTime());
         // 支付状态
         if (null != bill.getOnlineStatus() && (bill.getOnlineStatus().equals(1) || bill.getOnlineStatus().equals(3))) {
             bill.setPayStatus(1);
