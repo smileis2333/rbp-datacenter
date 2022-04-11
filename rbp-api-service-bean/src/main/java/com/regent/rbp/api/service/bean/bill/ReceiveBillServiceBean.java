@@ -191,6 +191,12 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             List<NoticeBill> noticeBillList = noticeBillDao.selectList(new LambdaQueryWrapper<NoticeBill>().in(NoticeBill::getId, noticeIds));
             noticeNoMap = noticeBillList.stream().collect(Collectors.toMap(NoticeBill::getId, NoticeBill::getBillNo));
         }
+        // 发货单
+        Map<Long, String> sendBillIdNoMap = new HashMap<>();
+        List<Long> sendBillIds = CollUtil.distinct(CollUtil.map(list, ReceiveBill::getSendId, true));
+        if (CollUtil.isNotEmpty(sendBillIds)) {
+            sendBillIdNoMap = sendBillDao.selectList(new LambdaQueryWrapper<SendBill>().in(SendBill::getId, sendBillIds)).stream().collect(Collectors.toMap(SendBill::getId, SendBill::getBillNo));
+        }
         // 模块自定义字段定义
         Map<String, List<CustomizeColumnDto>> moduleCustomizeMap = baseDbService.getModuleCustomizeColumnListMap(CollUtil.map(list, ReceiveBill::getModuleId, true));
         // 单据自定义字段
@@ -215,6 +221,8 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             queryResult.setCheckTime(bill.getCheckTime());
             queryResult.setCreatedTime(bill.getCreatedTime());
             queryResult.setUpdatedTime(bill.getUpdatedTime());
+            queryResult.setNoticeNo(noticeNoMap.get(bill.getNoticeId()));
+            queryResult.setSendNo(sendBillIdNoMap.get(bill.getSendId()));
             // 模块自定义字段定义
             List<CustomizeColumnDto> moduleColumnDtoList = moduleCustomizeMap.get(bill.getModuleId());
             // 过滤未启用的自定义字段，格式化单选类型字段
