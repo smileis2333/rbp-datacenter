@@ -28,7 +28,7 @@ public class RetailOrderInnoController {
 
     @PassToken
     @GetMapping("/GetOrderStatus")
-    public Map<String, String> getOrderStatus(@RequestParam(name = "eorderid") String eorderid, @RequestParam(name = "barcode") String barcode) {
+    public Map<String, String> getOrderStatus(@RequestParam(name = "eorderid") String eorderid, @RequestParam(name = "barcode", required = false) String barcode) {
         Map<String, String> response = new HashMap<>();
         try {
             response = retailOrderInnoService.getOrderStatus(eorderid, barcode);

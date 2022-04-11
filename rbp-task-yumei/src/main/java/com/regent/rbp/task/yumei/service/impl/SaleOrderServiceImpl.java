@@ -7,6 +7,7 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
 import com.alibaba.excel.util.DateUtils;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,7 +35,6 @@ import com.regent.rbp.task.yumei.service.SaleOrderService;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
-import org.h2.util.LocalDateTimeUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,11 +46,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -290,14 +286,15 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                     .header("X-AUTH-TOKEN", credential.getAccessToken())
                     .execute()
                     .body();
-            Map<String, String> resultMap = objectMapper.readValue(returnJson, Map.class);
+            Map<String, Object> resultMap = objectMapper.readValue(returnJson, Map.class);
             if (null == resultMap || null == resultMap.get("code")) {
                 throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExist", new Object[]{"返回结果"});
             }
             if (!resultMap.get("code").equals("00000")) {
                 throw new BusinessException(ResponseCode.PARAMS_ERROR, "paramVerifyError", new Object[]{String.format("requestId:%s, msg:%s", resultMap.get("requestId"), resultMap.get("msg"))});
             }
-            resp = objectMapper.readValue(resultMap.get("data"), YumeiOrderQueryPageResp.class);
+            LinkedHashMap<String, Object> data =  (LinkedHashMap<String, Object>)resultMap.get("data");
+            resp = objectMapper.readValue(JSONObject.toJSONString(data), YumeiOrderQueryPageResp.class);
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
