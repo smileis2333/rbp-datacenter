@@ -1,5 +1,6 @@
 package com.regent.rbp.task.yumei.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.apache.kafka.common.protocol.types.Field;
@@ -28,6 +29,7 @@ public class YumeiOrder {
     private BigDecimal freightAmount;
     private BigDecimal actualTotalAmount;
     private BigDecimal goodsQty;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date payTime;
     /**
      * 分销员编号

@@ -252,7 +252,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
         targetDto.setGoodsDetailData(goodsDetailData);
         targetDto.setDstbInfo(dstbInfoList);
         /********************** 订单主体 ******************************/
-        targetDto.setBillDate(DateUtil.getDate(order.getAdd_time(), DateUtil.SHORT_DATE_FORMAT));
+        targetDto.setBillDate(DateUtil.getDate(order.getPay_time(), "yyyy-MM-dd HH:mm:ss"));
         targetDto.setManualNo(order.getOrder_sn());
         targetDto.setAcceptGoodsCode(order.getPickup_code());
         targetDto.setOnlineOrderCode(order.getOrder_sn());
@@ -268,7 +268,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
         targetDto.setBuyerNotes(order.getUser_remark());
         targetDto.setSellerNotes(StrUtil.EMPTY);
         targetDto.setNotes(order.getAdmin_remark());
-        targetDto.setPayTime(DateUtil.getDate(order.getPay_time(), DateUtil.FULL_DATE_FORMAT));
+        targetDto.setPayTime(DateUtil.getDate(order.getPay_time(), "yyyy-MM-dd HH:mm:ss"));
         /********************** 物流信息 ******************************/
         targetDto.setMemberCardCode(order.getCard_num());
         targetDto.setBuyerNickname(order.getUser_name());
