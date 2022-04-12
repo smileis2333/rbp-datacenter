@@ -34,8 +34,8 @@ public class BillNoValidator implements ConstraintValidator<BillNo, String> {
     @Override
     public boolean isValid(String billNo, ConstraintValidatorContext context) {
         if (StrUtil.isNotEmpty(billNo) && StrUtil.isNotEmpty(tableName)) {
-            String existRow = baseDbDao.getStringDataBySql(String.format("select * from %s where bill_no = '%s' limit 1", tableName, billNo));
-            return StrUtil.isEmpty(existRow);
+            String existRow = baseDbDao.getStringDataBySql(String.format("select bill_no from %s where bill_no = '%s' limit 1", tableName, billNo));
+            return StrUtil.isNotBlank(existRow);
         }
         return true;
     }
