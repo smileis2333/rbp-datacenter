@@ -185,7 +185,8 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     }
 
     @Override
-    public void orderRefund(String storeNo, Integer orderSource, String outOrderNo, String notifyUrl, List<YumeiOrderItems> data) {
+    public Boolean orderRefund(String storeNo, Integer orderSource, String outOrderNo, String notifyUrl, List<YumeiOrderItems> data) {
+        Boolean success = false;
         HashMap<String, Object> body = new HashMap<>();
         try {
             body.put("storeNo", storeNo);
@@ -202,10 +203,10 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                     .execute()
                     .body();
             Map<String,Object> returnData = (Map<String,Object>)objectMapper.readValue(returnJson, Map.class);
-            if (!returnData.get("code").equals("TFS00000")) {
+            if (returnData.get("success").equals("false")) {
+                success = false;
                 throw new Exception(returnData.get("msg").toString());
             }
-
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -213,6 +214,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return success;
     }
 
     @Override
@@ -306,7 +308,8 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     }
 
     @Override
-    public void orderCancel(String storeNo, Integer orderSource, String outOrderNo) {
+    public Boolean orderCancel(String storeNo, Integer orderSource, String outOrderNo) {
+        Boolean success = false;
         HashMap<String, Object> body = new HashMap<>();
         try {
             body.put("storeNo", storeNo);
@@ -321,7 +324,8 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                     .execute()
                     .body();
             Map<String,Object> returnData = (Map<String,Object>)objectMapper.readValue(returnJson, Map.class);
-            if (!returnData.get("code").equals("00000")) {
+            if (returnData.get("success").equals("false")) {
+                success = false;
                 throw new Exception(returnData.get("msg").toString());
             }
 
@@ -332,6 +336,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return success;
     }
 
 }

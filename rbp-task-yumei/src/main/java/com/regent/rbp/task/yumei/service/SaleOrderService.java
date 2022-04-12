@@ -45,7 +45,7 @@ public interface SaleOrderService {
      * @param notifyUrl 回调地址
      * @param data 订单只项
      */
-    void orderRefund(String storeNo, Integer orderSource, String outOrderNo, String notifyUrl, List<YumeiOrderItems> data);
+    Boolean orderRefund(String storeNo, Integer orderSource, String outOrderNo, String notifyUrl, List<YumeiOrderItems> data);
 
     /**
      * 确认收货
@@ -69,5 +69,5 @@ public interface SaleOrderService {
      * @param orderSource
      * @param outOrderNo
      */
-    void orderCancel(String storeNo, Integer orderSource, String outOrderNo);
+    Boolean orderCancel(String storeNo, Integer orderSource, String outOrderNo);
 }
