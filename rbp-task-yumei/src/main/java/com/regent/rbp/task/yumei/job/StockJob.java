@@ -99,7 +99,7 @@ public class StockJob {
         StockAPI stockAPI = ApiFactory.get(client, StockAPI.class);
 
         StockSearchRequest request = new StockSearchRequest();
-        String currentDay = LocalDate.now().toString();
+        String currentDay = LocalDate.now().minusDays(29).toString();
         String tomorrowDay = LocalDate.now().plusDays(1).toString();
         request.setStartTime(currentDay);
         request.setEndTime(tomorrowDay);
@@ -124,6 +124,9 @@ public class StockJob {
     }
 
     private void processStockWritting(UsableStockResponse response, Set<String> failMsgs, Set<String> passChannels, Long summaryChannelId) {
+        if (CollUtil.isEmpty(response.getStocks())){
+            return;
+        }
         List<UsableStockResponse.UsableStock> stockSearchDtos = response.getStocks().stream().filter(e -> passChannels.contains(e.getWarehouseNo())).collect(Collectors.toList());
         List<String> barcodes = response.getStocks().stream().map(UsableStockResponse.UsableStock::getSpecNo).distinct().collect(Collectors.toList());
         Map<String, Barcode> barcodeMap = barcodeDao.selectList(Wrappers.lambdaQuery(Barcode.class).in(Barcode::getBarcode, barcodes)).stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
@@ -184,6 +187,23 @@ public class StockJob {
 
 }
 
+/**
+ * 旺店通客户端构造参数
+ * sid, key, secret可在旺店通面板上 -> 接口环境
+ * 以测试环境为例，在
+ * https://open.wangdian.cn/qjb/open/abut/apply_test下
+ *
+ * url区分调用前缀，主要是区分测试环境和正式环境
+ *
+ * eg.
+ * 测试环境
+ * {
+ *     "sid": "wdtapi3",
+ *     "key": "mrj3-test",
+ *     "secret": "2602a0f71:133987450537485811ec9059884eb04c",
+ *     "url": "http://47.92.239.46"
+ * }
+ */
 @Data
 class WDTParam {
     @NotBlank
