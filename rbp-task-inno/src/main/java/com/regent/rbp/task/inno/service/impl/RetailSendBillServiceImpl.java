@@ -6,6 +6,7 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.regent.rbp.api.core.eum.OnlinePlatformTypeEnum;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
+import com.regent.rbp.api.core.retail.LogisticsCompanyPlatformMapping;
 import com.regent.rbp.api.dto.core.ListDataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.retail.RetailSendBillCheckReqDto;
@@ -17,6 +18,7 @@ import com.regent.rbp.api.dto.retail.RetailSendBillUploadDto;
 import com.regent.rbp.api.dto.retail.RetailSendBillUploadParam;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.api.service.retail.BaseRetailSendBillService;
+import com.regent.rbp.api.service.retail.LogisticsCompanyPlatformMappingService;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.task.inno.model.dto.CheckRetailSendBillDto;
@@ -30,6 +32,7 @@ import com.regent.rbp.task.inno.model.req.UploadRetailSendBillReqDto;
 import com.regent.rbp.task.inno.model.resp.CheckRetailSendBillRespDto;
 import com.regent.rbp.task.inno.model.resp.UploadRetailSendBillRespDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -58,6 +61,8 @@ public class RetailSendBillServiceImpl implements BaseRetailSendBillService {
     private static final String Post_ErpDeliveryOrder = "api/DeliveryOrder/Post_ErpDeliveryOrder";
     private static final String Post_CheckOrderCanDelivery = "api/DeliveryOrder/Post_CheckOrderCanDelivery";
 
+    @Autowired
+    private LogisticsCompanyPlatformMappingService logisticsCompanyPlatformMappingService;
 
     /**
      * 上传ERP发货单到线上
@@ -175,7 +180,9 @@ public class RetailSendBillServiceImpl implements BaseRetailSendBillService {
             bill.setOrderSn(param.getOnlineOrderNo());
             bill.setAddTime(param.getBillDate());
             bill.setShippingName(param.getLogisticsCompanyName());
-            bill.setShipping_Code(param.getLogisticsCompanyCode());
+            // 物流编号转为inno平台物流编号
+            LogisticsCompanyPlatformMapping logisticsCompanyPlatformMapping = logisticsCompanyPlatformMappingService.getOnlinePlatformLogisticsCode(param.getLogisticsCompanyCode(), OnlinePlatformTypeEnum.INNO.getId());
+            bill.setShipping_Code(OptionalUtil.ofNullable(logisticsCompanyPlatformMapping, LogisticsCompanyPlatformMapping::getOnlinePlatformLogisticsCode, param.getLogisticsCompanyCode()));
             bill.setInvoiceNo(param.getLogisticsNo());
             bill.setConsignee(param.getContactsPerson());
             bill.setAddress(param.getAddress());

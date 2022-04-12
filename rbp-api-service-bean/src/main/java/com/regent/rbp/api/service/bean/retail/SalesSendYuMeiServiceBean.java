@@ -3,6 +3,8 @@ package com.regent.rbp.api.service.bean.retail;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.regent.rbp.api.core.eum.OnlinePlatformTypeEnum;
+import com.regent.rbp.api.core.retail.LogisticsCompany;
 import com.regent.rbp.api.core.retail.RetailOrderBill;
 import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
@@ -14,11 +16,13 @@ import com.regent.rbp.api.dto.retail.RetailSalesSendBillSaveParam;
 import com.regent.rbp.api.dto.retail.SalesSendYuMeiGoodsDetailData;
 import com.regent.rbp.api.dto.retail.SalesSendYuMeiLogisticsInfoDto;
 import com.regent.rbp.api.dto.retail.SalesSendYuMeiSaveParam;
+import com.regent.rbp.api.service.retail.LogisticsCompanyPlatformMappingService;
 import com.regent.rbp.api.service.retail.RetailDistributionBillService;
 import com.regent.rbp.api.service.retail.RetailSalesSendBillService;
 import com.regent.rbp.api.service.retail.SalesSendYuMeiService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
+import com.regent.rbp.infrastructure.util.OptionalUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +49,9 @@ public class SalesSendYuMeiServiceBean implements SalesSendYuMeiService {
 
     @Autowired
     private RetailOrderBillDao retailOrderBillDao;
+
+    @Autowired
+    private LogisticsCompanyPlatformMappingService logisticsCompanyPlatformMappingService;
 
     @Transactional
     @Override
@@ -86,6 +93,9 @@ public class SalesSendYuMeiServiceBean implements SalesSendYuMeiService {
         List<RetailDistributionBillLogisticsInfoDto> logisticsInfoDtoList = new ArrayList<>();
         if (CollUtil.isNotEmpty(param.getLogisticsInfo())) {
             for (SalesSendYuMeiLogisticsInfoDto yuMeiLogisticsInfoDto : param.getLogisticsInfo()) {
+                // 旺店通平台物流编号转为系统物流编号
+                LogisticsCompany logisticsCompany = logisticsCompanyPlatformMappingService.getLogisticsCompanyCode(yuMeiLogisticsInfoDto.getLogisticsCompanyCode(), OnlinePlatformTypeEnum.WDT.getId());
+                yuMeiLogisticsInfoDto.setLogisticsCompanyCode(OptionalUtil.ofNullable(logisticsCompany, LogisticsCompany::getCode, yuMeiLogisticsInfoDto.getLogisticsCompanyCode()));
                 RetailDistributionBillLogisticsInfoDto logisticsInfoDto = new RetailDistributionBillLogisticsInfoDto();
                 BeanUtils.copyProperties(yuMeiLogisticsInfoDto, logisticsInfoDto);
                 logisticsInfoDtoList.add(logisticsInfoDto);

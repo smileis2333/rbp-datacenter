@@ -9,7 +9,10 @@ public enum OnlinePlatformTypeEnum {
 
     // inno 电商
     INNO(1, "INNO"),
-
+    /**
+     * 旺店通
+     */
+    WDT(3, "旺店通"),
     ;
 
     private Integer id;
