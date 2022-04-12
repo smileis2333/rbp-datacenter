@@ -99,7 +99,7 @@ public class StockJob {
         StockAPI stockAPI = ApiFactory.get(client, StockAPI.class);
 
         StockSearchRequest request = new StockSearchRequest();
-        String currentDay = LocalDate.now().toString();
+        String currentDay = LocalDate.now().minusDays(29).toString();
         String tomorrowDay = LocalDate.now().plusDays(1).toString();
         request.setStartTime(currentDay);
         request.setEndTime(tomorrowDay);
