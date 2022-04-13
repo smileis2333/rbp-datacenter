@@ -114,8 +114,10 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
             }
         }
         // 批量新增 分销信息
-        for (RetailOrderBillDstb dstb : dstbList) {
-            retailOrderBillDstbDao.insert(dstb);
+        if (CollUtil.isNotEmpty(dstbList)) {
+            for (RetailOrderBillDstb dstb : dstbList) {
+                retailOrderBillDstbDao.insert(dstb);
+            }
         }
 
         return ModelDataResponse.Success(bill.getBillNo());
