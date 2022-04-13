@@ -1,5 +1,6 @@
 package com.regent.rbp.api.service.purchaseReturn.context;
 
+import cn.hutool.core.collection.CollUtil;
 import com.regent.rbp.api.core.purchaseReturnNoticeBill.PurchaseReturnBill;
 import com.regent.rbp.api.core.purchaseReturnNoticeBill.PurchaseReturnBillGoods;
 import com.regent.rbp.api.core.purchaseReturnNoticeBill.PurchaseReturnBillSize;
@@ -40,6 +41,9 @@ public class PurchaseReturnBillSaveContext {
 
     public void addGoodsDetailCustomData(List<CustomizeDataDto> customizeDataDto, Long billGoodsId) {
         HashMap<String, Object> ele = new HashMap<>();
+        if (CollUtil.isEmpty(customizeDataDto)){
+            return;
+        }
         customizeDataDto.forEach(e -> {
             ele.put(e.getCode(), e.getValue());
         });

@@ -186,7 +186,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
 
     @Override
     public Boolean orderRefund(String storeNo, Integer orderSource, String outOrderNo, String notifyUrl, List<YumeiOrderItems> data) {
-        Boolean success = false;
+        Boolean success = true;
         HashMap<String, Object> body = new HashMap<>();
         try {
             body.put("storeNo", storeNo);
@@ -309,7 +309,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
 
     @Override
     public Boolean orderCancel(String storeNo, Integer orderSource, String outOrderNo) {
-        Boolean success = false;
+        Boolean success = true;
         HashMap<String, Object> body = new HashMap<>();
         try {
             body.put("storeNo", storeNo);
