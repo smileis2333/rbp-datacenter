@@ -116,10 +116,10 @@ public class RetailOrderInnoServiceImpl implements RetailOrderInnoService {
                 this.failure(response, "notAllowedCcancel");
             }
         }
-        /*// 更新 订单状态
+        // 更新 订单状态
         if (response.get("Flag").equals("1")) {
             this.updOrderByStatus(retailOrderBill.getId(), barcode);
-        }*/
+        }
         return response;
     }
 
