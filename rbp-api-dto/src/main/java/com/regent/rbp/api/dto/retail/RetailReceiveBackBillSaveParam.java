@@ -26,12 +26,6 @@ public class RetailReceiveBackBillSaveParam {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date billDate;
 
-    @ApiModelProperty(notes = "快递公司")
-    private String logisticsCompanyCode;
-
-    @ApiModelProperty(notes = "快递单号")
-    private String logisticsBillCode;
-
     @ApiModelProperty(notes = "单据状态;(0.未审核,1.已审核,2.反审核,3.已作废)")
     private Integer status;
 

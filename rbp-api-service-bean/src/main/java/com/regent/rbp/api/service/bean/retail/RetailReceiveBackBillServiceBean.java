@@ -164,14 +164,6 @@ public class RetailReceiveBackBillServiceBean extends ServiceImpl<RetailReceiveB
         bill.setBillDate(param.getBillDate());
         bill.setManualId(param.getManualId());
         bill.setStatus(param.getStatus());
-        bill.setLogisticsBillCode(param.getLogisticsBillCode());
-        // 物流公司信息
-        if (StrUtil.isNotEmpty(param.getLogisticsCompanyCode())) {
-            List<IdNameCodeDto> logisticsCompanyList = dbService.selectIdNameCodeList(new QueryWrapper<LogisticsCompany>().eq("code", param.getLogisticsCompanyCode()), LogisticsCompany.class);
-            if (CollUtil.isNotEmpty(logisticsCompanyList)) {
-                bill.setLogisticsCompanyId(logisticsCompanyList.get(0).getId());
-            }
-        }
 
         // 自定义字段
         if (CollUtil.isNotEmpty(param.getCustomizeData())) {
@@ -189,6 +181,8 @@ public class RetailReceiveBackBillServiceBean extends ServiceImpl<RetailReceiveB
             messageList.add(getNotExistMessage("retailReturnNoticeBillNo"));
             return String.join(StrUtil.COMMA, messageList);
         }
+        bill.setLogisticsBillCode(retailReturnNoticeBill.getLogisticsBillCode());
+        bill.setLogisticsCompanyId(retailReturnNoticeBill.getLogisticsCompanyId());
         bill.setSaleChannelId(retailReturnNoticeBill.getSaleChannelId());
         bill.setReceiveChannelId(retailReturnNoticeBill.getReceiveChannelId());
         bill.setRetailReturnNoticeBillId(retailReturnNoticeBill.getId());
@@ -236,8 +230,11 @@ public class RetailReceiveBackBillServiceBean extends ServiceImpl<RetailReceiveB
                     entity.setBarcode(detail.getBarcode());
                     entity.setTagPrice(detail.getTagPrice());
                     entity.setDiscount(detail.getDiscount());
-                    entity.setBalancePrice(goods.getBalancePrice());
+                    entity.setBalancePrice(detail.getBalancePrice());
                     entity.setQuantity(goods.getQuantity());
+                    if (null != goods.getBalancePrice()) {
+                        entity.setBalancePrice(goods.getBalancePrice());
+                    }
                     // 折扣
                     if (null != entity.getBalancePrice() && entity.getTagPrice().compareTo(BigDecimal.ZERO) != 0) {
                         entity.setDiscount(entity.getBalancePrice().divide(entity.getTagPrice(), 4, BigDecimal.ROUND_HALF_UP));

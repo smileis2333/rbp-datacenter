@@ -24,7 +24,7 @@ public class RetailReceiveBackBillController {
     @Autowired
     private RetailReceiveBackBillService retailReceiveBackBillService;
 
-    @PostMapping()
+    @PostMapping
     public ModelDataResponse<String> save(@RequestBody RetailReceiveBackBillSaveParam param) {
         return retailReceiveBackBillService.save(param);
     }
