@@ -24,8 +24,8 @@ import java.util.Map;
 @RequestMapping(ApiConstants.API_ACCESSTOKEN)
 @Api(tags = "授权")
 public class AuthorizationController {
-    //2小时
-    private static final long TOKEN_EXPIRE_TIME = 2 * 60 * 60;
+    //24小时
+    private static final long TOKEN_EXPIRE_TIME = 24 * 60 * 60;
 
     @Autowired
     private RedisUtil redisUtil;

@@ -14,6 +14,7 @@ import com.regent.rbp.api.dao.retail.RetailOrderPushLogDao;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
+import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
@@ -112,8 +113,14 @@ public class RetailOrderJob {
             // 推送订单到玉美
             this.pushOrderToYuMei(onlinePlatform.getId());
 
-        } catch (Exception ex) {
-            XxlJobHelper.handleFail(ex.getMessage());
+        } catch (BusinessException e) {
+            e.printStackTrace();
+            XxlJobHelper.log(e.getMessage());
+            XxlJobHelper.handleFail(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            XxlJobHelper.log(e.getMessage());
+            XxlJobHelper.handleFail(e.getMessage());
         }
     }
 
