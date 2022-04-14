@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.model.param.CouponPolicyDownLoadParam;
-import com.regent.rbp.task.inno.service.CouponService;
+import com.regent.rbp.task.inno.service.Coupon2Service;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CouponPolicyJob {
     @Autowired
-    private CouponService couponService;
+    private Coupon2Service coupon2Service;
 
     @XxlJob(SystemConstants.GET_COUPON_POLICY)
     public void downloadCouponPolicy() {
@@ -31,7 +31,7 @@ public class CouponPolicyJob {
             XxlJobHelper.log(param);
             CouponPolicyDownLoadParam downLoadParam = JSON.parseObject(param, CouponPolicyDownLoadParam.class);
             //开始下载
-            couponService.getAppCouponsListByCreateTime(downLoadParam);
+            coupon2Service.getAppCouponsListByCreateTime(downLoadParam);
         } catch (Exception ex) {
             String message = ex.getMessage();
             XxlJobHelper.log(message);
