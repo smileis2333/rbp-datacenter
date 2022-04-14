@@ -90,9 +90,11 @@ public class RetailOrderJob {
             // 获取任务执行缓存
             OnlinePlatformSyncCache syncCache = onlinePlatformSyncCacheDao.selectOne(new LambdaQueryWrapper<OnlinePlatformSyncCache>()
                     .eq(OnlinePlatformSyncCache::getOnlinePlatformId, onlinePlatform.getId()).eq(OnlinePlatformSyncCache::getSyncKey, SystemConstants.DOWNLOAD_ONLINE_ORDER_LIST_JOB));
+
             if (null == orderParam.getBeginTime() && null == syncCache) {
-                XxlJobHelper.handleFail(ERROR_BEGIN_TIME_NOT_EMPTY);
-                return;
+                orderParam.setBeginTime(DateUtil.getDate("2021-10-01", DateUtil.SHORT_DATE_FORMAT));
+                /*XxlJobHelper.handleFail(ERROR_BEGIN_TIME_NOT_EMPTY);
+                return;*/
             }
             // 设置结束时间
             orderParam.setEndTime(OptionalUtil.ofNullable(orderParam, v -> v.getEndTime() == null ? new Date() : v.getEndTime()));
