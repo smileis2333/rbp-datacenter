@@ -48,6 +48,26 @@ public class SalesOrderBillGoodsResult extends BillGoodsDetailData {
     @ApiModelProperty(notes = "结算折扣")
     private BigDecimal balanceDiscount;
 
+    @DiscreteRange(ranges = {0, 1, 2, 3}, message = "入参非法，合法输入0-销售 1-退货 2-换货 3-发货")
+    @ApiModelProperty(notes = "类型 (0-销售 1-退货 2-换货 3-发货)")
+    private Integer type;
+
+    @DiscreteRange(ranges = {0, 1, 2, 3}, message = "入参非法，合法输入0-零售 1-团购 2-内购 3-赠送")
+    @ApiModelProperty(notes = "销售模式 (0-零售 1-团购 2-内购 3-赠送)")
+    private Integer saleModel;
+
+    @DiscreteRange(ranges = {0, 1, 2}, message = "入参非法，合法输入0-现货 1-全渠道 2-预售")
+    @ApiModelProperty(notes = "属性 (0-现货 1-全渠道 2-预售)")
+    private Integer attribute;
+
+    @DiscreteRange(ranges = {0, 1, 2}, message = "入参非法，合法输入0-库存 1-直发 2-自提")
+    @ApiModelProperty(notes = "交付方式 (0-库存 1-直发 2-自提)")
+    private Integer deliveryMethod;
+
+    @DiscreteRange(ranges = {0, 1}, message = "入参非法，合法输入0-本店 1-寻源")
+    @ApiModelProperty(notes = "库存模式 (0-本店 1-寻源)")
+    private Integer stockModel;
+
     @Valid
     private List<EmployeeAchievement> employeeGoodsAchievement;
 

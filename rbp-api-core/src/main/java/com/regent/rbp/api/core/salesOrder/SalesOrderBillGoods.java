@@ -100,6 +100,19 @@ public class SalesOrderBillGoods {
     @ApiModelProperty(notes = "更新时间")
     private Date updatedTime;
 
+    @ApiModelProperty(notes = "类型 (0-销售 1-退货 2-换货 3-发货)")
+    private Integer type;
 
+    @ApiModelProperty(notes = "销售模式 (0-零售 1-团购 2-内购 3-赠送)")
+    private Integer saleModel;
+
+    @ApiModelProperty(notes = "属性 (0-现货 1-全渠道 2-预售)")
+    private Integer attribute;
+
+    @ApiModelProperty(notes = "交付方式 (0-库存 1-直发 2-自提)")
+    private Integer deliveryMethod;
+
+    @ApiModelProperty(notes = "库存模式 (0-本店 1-寻源)")
+    private Integer stockModel;
 
 }
