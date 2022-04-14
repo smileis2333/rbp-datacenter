@@ -7,6 +7,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * @author LuZijian
  * @date 2021/4/14 2:06 下午
@@ -51,5 +53,17 @@ public class RetailPayType extends Model<RetailPayType> {
     private Integer dpPrice;
     @ApiModelProperty(notes = "限制比例")
     private Integer limitRatio;
+
+    @ApiModelProperty(notes = "创建人")
+    private Long createdBy;
+
+    @ApiModelProperty(notes = "创建时间")
+    private Date createdTime;
+
+    @ApiModelProperty(notes = "更新人")
+    private Long updatedBy;
+
+    @ApiModelProperty(notes = "更新时间")
+    private Date updatedTime;
 
 }
