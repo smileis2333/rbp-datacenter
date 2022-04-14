@@ -74,7 +74,6 @@ public class CouponModelServiceBean implements CouponModelService {
                 oldCouponModel.setUpdatedTime(new Date());
                 couponModelDao.update(oldCouponModel, new QueryWrapper<CouponModel>().eq("id", oldCouponModel.getId()));
             }
-            retailPayTypeDao.delete(new QueryWrapper<RetailPayType>().eq("code", data.getPaymentCode()));
             if (data.getBonusType().equals(DISCOUNT_COUPON)) {
                 couponModelDiscountPropertyDao.delete(new QueryWrapper<CouponModelDiscountProperty>().eq("coupon_model_id", couponModelId));
                 CouponModelDiscountProperty property = new CouponModelDiscountProperty();
@@ -101,23 +100,29 @@ public class CouponModelServiceBean implements CouponModelService {
                     property.setBalancePriceLimit(new BigDecimal(data.getMinGoodsAmount()));
                 }
                 if (StringUtils.isNotEmpty(data.getPaymentCode())) {
-                    retailPayTypeDao.delete(new QueryWrapper<RetailPayType>().eq("code", data.getPaymentCode()));
-                    RetailPayType retailPayType = new RetailPayType();
-                    retailPayType.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-                    retailPayType.setCode(data.getPaymentCode());
-                    retailPayType.setName("inno券支付方式");
-                    retailPayType.setRetailPayPlatform("6");
-                    retailPayType.setRetailPayPlatformId(1609200376474119L);
-                    retailPayType.setUseAble(1);
-                    retailPayType.setVisible(1);
-                    retailPayType.setNotIncome(1);
-                    retailPayType.setNotInPoint(1);
-                    retailPayType.setPos(1);
-                    retailPayType.setSystemInline(0);
-                    retailPayType.setDpPrice(0);
-                    retailPayType.setLimitRatio(100);
-                    retailPayTypeDao.insert(retailPayType);
-                    property.setPayId(retailPayType.getId());
+                    RetailPayType oldRetailPayType = retailPayTypeDao.selectOne(new QueryWrapper<RetailPayType>().eq("code", data.getPaymentCode()));
+                    if (oldRetailPayType == null) {
+                        RetailPayType retailPayType = new RetailPayType();
+                        retailPayType.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                        retailPayType.setCode(data.getPaymentCode());
+                        retailPayType.setName("inno券支付方式");
+                        retailPayType.setRetailPayPlatform("6");
+                        retailPayType.setRetailPayPlatformId(1609200376474119L);
+                        retailPayType.setUseAble(1);
+                        retailPayType.setVisible(1);
+                        retailPayType.setNotIncome(0);
+                        retailPayType.setNotInPoint(0);
+                        retailPayType.setPos(1);
+                        retailPayType.setSystemInline(0);
+                        retailPayType.setDpPrice(0);
+                        retailPayType.setLimitRatio(0);
+                        retailPayType.setCreatedTime(new Date());
+                        retailPayType.setUpdatedTime(new Date());
+                        retailPayTypeDao.insert(retailPayType);
+                        property.setPayId(retailPayType.getId());
+                    } else {
+                        property.setPayId(oldRetailPayType.getId());
+                    }
                 }
                 property.setOverlayNumLimit(0);
                 property.setSelfOverlayNumLimit(0);
