@@ -63,7 +63,7 @@ public class Coupon2ServiceImpl implements Coupon2Service {
     /**
      * 抵用券
      */
-    private static final String CASH_COUPON = "5";
+    private static final String CASH_COUPON = "1";
 
     public static final String YYYY_MM_DD = "yyyy-MM-dd";
 
@@ -209,6 +209,7 @@ public class Coupon2ServiceImpl implements Coupon2Service {
         couponModel.setDiscount(sonGroupList.get(0).getDiscount());
         couponModel.setMaxAmount(sonGroupList.get(0).getMaxAmount());
         couponModel.setTypeMoney(sonGroupList.get(0).getTypeMoney());
+        couponModel.setMinGoodsAmount(sonGroupList.get(0).getMinGoodsAmount());
         return couponModel;
     }
 

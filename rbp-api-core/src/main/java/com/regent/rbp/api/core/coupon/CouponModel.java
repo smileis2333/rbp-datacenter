@@ -97,6 +97,10 @@ public class CouponModel extends Model<CouponModel> {
     @TableField(exist = false)
     private String maxAmount;
 
+    @ApiModelProperty(notes = "最低商品金额")
+    @TableField(exist = false)
+    private String minGoodsAmount;
+
     @ApiModelProperty(notes = "优惠券金额")
     @TableField(exist = false)
     private String typeMoney;

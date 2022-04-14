@@ -40,7 +40,7 @@ public class CouponModelServiceBean implements CouponModelService {
     /**
      * 抵用券
      */
-    private static final String CASH_COUPON = "5";
+    private static final String CASH_COUPON = "1";
 
     @Autowired
     private RetailPayTypeDao retailPayTypeDao;
@@ -96,6 +96,9 @@ public class CouponModelServiceBean implements CouponModelService {
                 property.setCouponModelId(couponModelId);
                 if (StringUtils.isNotEmpty(data.getTypeMoney())) {
                     property.setAmount(new BigDecimal(data.getTypeMoney()));
+                }
+                if (StringUtils.isNotEmpty(data.getMinGoodsAmount())) {
+                    property.setBalancePriceLimit(new BigDecimal(data.getMinGoodsAmount()));
                 }
                 if (StringUtils.isNotEmpty(data.getPaymentCode())) {
                     retailPayTypeDao.delete(new QueryWrapper<RetailPayType>().eq("code", data.getPaymentCode()));
