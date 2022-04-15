@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,6 +69,22 @@ public class SalesSendYuMeiServiceBean implements SalesSendYuMeiService {
                 .eq(RetailOrderBill::getManualId, param.getRetailOrderBillNo()));
         if (null == retailOrderBill) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "线上订单号(retailOrderBillNo)不存在");
+        }
+
+        // 将货品拆成一行一件
+        if (CollUtil.isNotEmpty(param.getGoodsDetailData())) {
+            List<SalesSendYuMeiGoodsDetailData> goodsDetailDataList = new ArrayList<>();
+            for (SalesSendYuMeiGoodsDetailData goodsDetail : param.getGoodsDetailData()) {
+                if (null != goodsDetail.getQuantity() && BigDecimal.ZERO.compareTo(goodsDetail.getQuantity()) < 0) {
+                    for (int i = 0; i < goodsDetail.getQuantity().intValue(); i++) {
+                        SalesSendYuMeiGoodsDetailData goods = new SalesSendYuMeiGoodsDetailData();
+                        BeanUtils.copyProperties(goodsDetail, goods);
+                        goods.setQuantity(BigDecimal.ONE);
+                        goodsDetailDataList.add(goods);
+                    }
+                }
+            }
+            param.setGoodsDetailData(goodsDetailDataList);
         }
 
         RetailDistributionBillSaveParam retailDistributionBillSaveParam = new RetailDistributionBillSaveParam();
