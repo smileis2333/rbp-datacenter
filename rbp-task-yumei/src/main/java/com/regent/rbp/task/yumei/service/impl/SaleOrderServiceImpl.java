@@ -99,6 +99,10 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         for (RetailOrderBill retailOrderBill : retailOrderBillList) {
             OrderBusinessPersonDto orderBusinessPersonDto = retailOrderBillDao.getOrderBusinessPersonDto(retailOrderBill.getId());
             if (null == orderBusinessPersonDto) {
+                // 没有分销员，取会员所属店铺
+                orderBusinessPersonDto = retailOrderBillDao.getMemberCardChannel(retailOrderBill.getId());
+            }
+            if (null == orderBusinessPersonDto) {
                 throw new BusinessException(ResponseCode.PARAMS_ERROR, "订单" + retailOrderBill.getBillNo() + "没有分销员");
             }
             List<YumeiOrder> orderList = new ArrayList<>();

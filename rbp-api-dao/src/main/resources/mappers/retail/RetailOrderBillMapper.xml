@@ -47,6 +47,16 @@
         limit 1
     </select>
 
+    <select id="getMemberCardChannel" resultType="com.regent.rbp.api.dto.retail.OrderBusinessPersonDto">
+        select b.code as channelNo
+        from rbp_member_card a
+        inner join rbp_channel b on a.channel_id = b.id
+        inner join rbp_retail_order_bill_customer_info c on c.member_card_id = a.id
+        where c.bill_id = #{id}
+        limit 1
+    </select>
+
+
     <select id="getRetailOrderInfoDto" resultType="com.regent.rbp.api.dto.retail.RetailOrderInfoDto">
         select a.manual_id as outTradeNo, b.buyer_nickname as buyerNick,b.contacts_person as receiver, b.province provinceName, b.city cityName,
                b.county as areaName, b.address as addrDetail, b.mobile, a.buyer_notes as userRemark, b.logistics_amount as freightAmount, a.pay_time as payTime

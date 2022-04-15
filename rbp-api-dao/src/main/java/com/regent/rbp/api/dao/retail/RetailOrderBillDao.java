@@ -47,6 +47,14 @@ public interface RetailOrderBillDao extends BaseMapper<RetailOrderBill> {
     OrderBusinessPersonDto getOrderBusinessPersonDto(@Param("id") Long id);
 
     /**
+     * 获取会员发卡渠道
+     *
+     * @param id
+     * @return
+     */
+    OrderBusinessPersonDto getMemberCardChannel(@Param("id") Long id);
+
+    /**
      * 获取全渠道订单信息
      *
      * @param id
