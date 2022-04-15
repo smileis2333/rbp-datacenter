@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -274,32 +275,39 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
         // 根据条形码获取货品尺码信息
         List<Barcode> barcodes = barcodeDao.selectList(new QueryWrapper<Barcode>().in("barcode", param.getGoodsDetailData().stream().map(RetailOrderBillGoodsDetailData::getBarcode).collect(Collectors.toSet())));
         Map<String, Barcode> barcodeMap = barcodes.stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
-        param.getGoodsDetailData().forEach(item -> {
+        for (RetailOrderBillGoodsDetailData item : param.getGoodsDetailData()) {
             Barcode barcode = barcodeMap.get(item.getBarcode());
             if (null != barcode) {
-                RetailOrderBillGoods goods = RetailOrderBillGoods.build();
-                goods.setGoodsId(barcode.getGoodsId());
-                goods.setLongId(barcode.getLongId());
-                goods.setColorId(barcode.getColorId());
-                goods.setSizeId(barcode.getSizeId());
-                goods.setBarcode(item.getBarcode());
-                goods.setSaleType(item.getSaleType());
-                goods.setRetailGoodsType(item.getRetailGoodsType());
-                goods.setDiscount(item.getDiscount());
-                goods.setBalancePrice(item.getBalancePrice());
-                goods.setTagPrice(item.getTagPrice());
-                goods.setQuantity(item.getQuantity());
-                goods.setRemark(item.getRemark());
-                // 初始化状态
-                goods.setAfterSaleProcessStatus(StatusEnum.NONE.getStatus());
-                goods.setRefundStatus(StatusEnum.NONE.getStatus());
-                goods.setProcessStatus(StatusEnum.NONE.getStatus());
-                goods.setReturnStatus(StatusEnum.NONE.getStatus());
-                goods.setOnlineStatus(bill.getOnlineStatus());
-                goods.setBillId(bill.getId());
-                billGoodsList.add(goods);
+                // 一行一件
+                BigDecimal quantity = item.getQuantity();
+                while (quantity.compareTo(BigDecimal.ZERO) == 1) {
+                    RetailOrderBillGoods goods = RetailOrderBillGoods.build();
+                    goods.setGoodsId(barcode.getGoodsId());
+                    goods.setLongId(barcode.getLongId());
+                    goods.setColorId(barcode.getColorId());
+                    goods.setSizeId(barcode.getSizeId());
+                    goods.setBarcode(item.getBarcode());
+                    goods.setSaleType(item.getSaleType());
+                    goods.setRetailGoodsType(item.getRetailGoodsType());
+                    goods.setDiscount(item.getDiscount());
+                    goods.setBalancePrice(item.getBalancePrice());
+                    goods.setTagPrice(item.getTagPrice());
+                    goods.setQuantity(BigDecimal.ZERO);
+                    goods.setRemark(item.getRemark());
+                    // 初始化状态
+                    goods.setAfterSaleProcessStatus(StatusEnum.NONE.getStatus());
+                    goods.setRefundStatus(StatusEnum.NONE.getStatus());
+                    goods.setProcessStatus(StatusEnum.NONE.getStatus());
+                    goods.setReturnStatus(StatusEnum.NONE.getStatus());
+                    goods.setOnlineStatus(bill.getOnlineStatus());
+                    goods.setBillId(bill.getId());
+                    billGoodsList.add(goods);
+
+                    quantity = quantity.subtract(BigDecimal.ONE);
+                }
             }
-        });
+        }
+
         /****************   分销信息    ******************/
         if (CollUtil.isEmpty(param.getDstbInfo())) {
             return;

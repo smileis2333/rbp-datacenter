@@ -66,7 +66,8 @@ public class RetailOrderInnoServiceImpl implements RetailOrderInnoService {
         if (StringUtil.isNotEmpty(barcode)) {
             // 有条码
             // 判断货品明细状态
-            YumeiOrderGoods orderBill = order.getOrderItems().stream().filter(f -> f.getSkuCode().equals(barcode)).findAny().orElse(null);
+            YumeiOrderGoods orderBill = order.getOrderItems().stream().filter(f -> f.getSkuCode().equals(barcode)
+                    && (f.getItemStatus().equals(1) || f.getItemStatus().equals(2))).findAny().orElse(null);
             if (null == orderBill) {
                 // 未找到条码信息
                 this.failure(response, "barcodeNotExist");
