@@ -103,7 +103,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                 orderBusinessPersonDto = retailOrderBillDao.getMemberCardChannel(retailOrderBill.getId());
             }
             if (null == orderBusinessPersonDto) {
-                throw new BusinessException(ResponseCode.PARAMS_ERROR, "订单" + retailOrderBill.getBillNo() + "没有分销员");
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "订单" + retailOrderBill.getBillNo() + "没有分销员或会员没有归属渠道");
             }
             List<YumeiOrder> orderList = new ArrayList<>();
             RetailOrderInfoDto retailOrderInfoDto = retailOrderBillDao.getRetailOrderInfoDto(retailOrderBill.getId());
@@ -135,6 +135,39 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             updateBill.setId(retailOrderBill.getId());
             updateBill.setStatus(1);
             retailOrderBillDao.updateById(updateBill);
+        }
+        return StrUtil.join(StrUtil.COMMA, errorMsgList);
+    }
+
+    @Transactional
+    @Override
+    public String pushOrderReceiveStatusToYuMei(List<String> orderNoList) {
+        List<String> errorMsgList = new ArrayList<>();
+        log.info("线上订单号：" + orderNoList.toString());
+        List<RetailOrderBill> retailOrderBillList = retailOrderBillDao.selectList(new LambdaQueryWrapper<RetailOrderBill>()
+                .in(RetailOrderBill::getManualId, orderNoList));
+        if (retailOrderBillList.size() != orderNoList.size()) {
+            orderNoList.removeAll(retailOrderBillList.stream().map(RetailOrderBill::getManualId).collect(Collectors.toList()));
+            errorMsgList.add("单号不存在" + StrUtil.join(StrUtil.COMMA, orderNoList));
+        }
+
+        for (RetailOrderBill retailOrderBill : retailOrderBillList) {
+            OrderBusinessPersonDto orderBusinessPersonDto = retailOrderBillDao.getOrderBusinessPersonDto(retailOrderBill.getId());
+            if (null == orderBusinessPersonDto) {
+                // 没有分销员，取会员所属店铺
+                orderBusinessPersonDto = retailOrderBillDao.getMemberCardChannel(retailOrderBill.getId());
+            }
+            if (null == orderBusinessPersonDto) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "订单" + retailOrderBill.getBillNo() + "没有分销员或会员没有归属渠道");
+            }
+
+            // 订单来源（1：美人计会员商城、2：酒会员商城、3：丽晶
+            Integer orderSource = 3;
+            String errorMsg = this.orderReceipt(orderBusinessPersonDto.getChannelNo(), orderSource, retailOrderBill.getManualId());
+            if (StrUtil.isNotEmpty(errorMsg)) {
+                errorMsgList.add("订单 " + retailOrderBill.getManualId() + " 确认收货状态推送失败：" + errorMsg);
+            }
+
         }
         return StrUtil.join(StrUtil.COMMA, errorMsgList);
     }
@@ -222,32 +255,53 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     }
 
     @Override
-    public void orderReceipt(String storeNo, Integer orderSource, String outOrderNo) {
+    public String orderReceipt(String storeNo, Integer orderSource, String outOrderNo) {
+        String errorMsg = null;
+        if (StrUtil.isEmpty(outOrderNo)) {
+            return errorMsg;
+        }
         HashMap<String, Object> body = new HashMap<>();
         try {
             body.put("storeNo", storeNo);
             body.put("orderSource", orderSource);
             body.put("outOrderNo", outOrderNo);
-
             String jsonBody = objectMapper.writeValueAsString(body);
+            log.info("请求url：" + url + YumeiApiUrl.SALE_ORDER_CONFIRM_RECEIPT);
+            log.info("请求参数：" + jsonBody);
             String returnJson = HttpUtil.createRequest(Method.POST, url + YumeiApiUrl.SALE_ORDER_CONFIRM_RECEIPT)
                     .body(jsonBody)
                     .header(Header.CONTENT_TYPE, "application/json")
                     .header("X-AUTH-TOKEN",credential.getAccessToken())
                     .execute()
                     .body();
-            Map<String,Object> returnData = (Map<String,Object>)objectMapper.readValue(returnJson, Map.class);
-            if (!returnData.get("code").equals("TRS00000")) {
-                throw new Exception(returnData.get("msg").toString());
-            }
+            log.info("请求结果：" + returnJson);
 
-        } catch (JsonProcessingException e) {
+            RetailOrderPushLog retailOrderPushLog = new RetailOrderPushLog();
+            retailOrderPushLog.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+            retailOrderPushLog.setBillNo(outOrderNo);
+            retailOrderPushLog.setUrl(url + YumeiApiUrl.SALE_ORDER_CONFIRM_RECEIPT);
+            retailOrderPushLog.setRequestParam(jsonBody);
+            retailOrderPushLog.setResult(returnJson);
+            retailOrderPushLog.preInsert();
+            Map<String, Object> returnData = (Map<String, Object>) objectMapper.readValue(returnJson, Map.class);
+            if (!(Boolean)returnData.getOrDefault("success", false)) {
+                retailOrderPushLog.setSucess(0);
+                log.error("调用玉美订单推送接口失败" + outOrderNo);
+                errorMsg = (String)returnData.get("msg");
+            } else {
+                retailOrderPushLog.setSucess(1);
+                log.info("调用玉美订单推送接口成功" + outOrderNo);
+            }
+            retailOrderPushLogDao.insert(retailOrderPushLog);
+
+        }  catch (JsonProcessingException e) {
             e.printStackTrace();
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "paramError");
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "returnDataError");
         }
+        return errorMsg;
     }
 
     /**

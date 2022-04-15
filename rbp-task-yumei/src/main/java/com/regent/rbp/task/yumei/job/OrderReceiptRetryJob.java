@@ -22,12 +22,12 @@ import java.util.List;
 
 /**
  * @author liuzhicheng
- * @createTime 2022-04-09
+ * @createTime 2022-04-15
  * @Description
  */
 @Slf4j
 @Component
-public class OrderPushRetryJob {
+public class OrderReceiptRetryJob {
 
     @Value("${yumei.url:}")
     private String url;
@@ -39,11 +39,11 @@ public class OrderPushRetryJob {
     private BaseDbDao baseDbDao;
 
     /**
-     * 推送订单到玉美失败重试
+     * 确认收货状态推送到玉美失败重试
      * 请求Json：{ "billNo": "123456,2333333" }
      */
-    @XxlJob(SystemConstants.ORDER_PUSH_RETRY_JOB)
-    public void orderPushRetryHandler() {
+    @XxlJob(SystemConstants.ORDER_RECEIPT_PUSH_RETRY_JOB)
+    public void orderReceiptPushRetryHandler() {
         ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
         try {
             List<String> billNoList = new ArrayList<>();
@@ -56,11 +56,11 @@ public class OrderPushRetryJob {
             } else {
                 // 一天内，重试次数不超过3次
                 StringBuilder sb = new StringBuilder();
-                sb.append("select bill_no from rbp_retail_order_push_log a \n");
-                sb.append("where sucess = 0 and created_time > sysdate() - 1 \n");
-                sb.append(" and a.url = '").append(url + YumeiApiUrl.SALE_ORDER_PUSH).append("' \n");
-                sb.append("and not exists (select 1 from rbp_retail_order_push_log b where b.sucess = 1 and a.bill_no = b.bill_no)\n");
-                sb.append("group by bill_no having count(*) < 3");
+                sb.append(" select bill_no from rbp_retail_order_push_log a \n");
+                sb.append(" where sucess = 0 and created_time > sysdate() - 1 \n");
+                sb.append(" and a.url = '").append(url + YumeiApiUrl.SALE_ORDER_CONFIRM_RECEIPT).append("' \n");
+                sb.append(" and not exists (select 1 from rbp_retail_order_push_log b where b.sucess = 1 and a.bill_no = b.bill_no)\n");
+                sb.append(" group by bill_no having count(*) < 3");
                 List<String> list = baseDbDao.getStringListDataBySql(sb.toString());
                 XxlJobHelper.log(sb.toString());
                 if (CollUtil.isNotEmpty(list)) {
@@ -72,7 +72,7 @@ public class OrderPushRetryJob {
             }
 
             if (CollUtil.isNotEmpty(billNoList)) {
-                String errorMsg = saleOrderService.pushOrderToYuMei(billNoList);
+                String errorMsg = saleOrderService.pushOrderReceiveStatusToYuMei(billNoList);
                 if (StrUtil.isNotEmpty(errorMsg)) {
                     XxlJobHelper.log(errorMsg);
                     XxlJobHelper.handleFail(errorMsg);

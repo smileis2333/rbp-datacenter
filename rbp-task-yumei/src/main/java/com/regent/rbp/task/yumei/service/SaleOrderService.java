@@ -31,6 +31,13 @@ public interface SaleOrderService {
     public String pushOrderToYuMei(List<String> orderNoList);
 
     /**
+     * 确认收货状态推送到玉美
+     *
+     * @param orderNoList 线上单号
+     */
+    String pushOrderReceiveStatusToYuMei(List<String> orderNoList);
+
+    /**
      * 订单推送接口
      *
      * @param storeNo
@@ -52,7 +59,7 @@ public interface SaleOrderService {
      * @param storeNo 门店编号
      * @param outOrderNo 订单编号
      */
-    void orderReceipt(String storeNo, Integer orderSource, String outOrderNo);
+    String orderReceipt(String storeNo, Integer orderSource, String outOrderNo);
 
 
     /**

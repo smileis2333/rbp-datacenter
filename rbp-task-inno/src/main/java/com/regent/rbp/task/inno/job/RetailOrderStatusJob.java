@@ -10,44 +10,40 @@ import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncCacheDao;
-import com.regent.rbp.api.dao.retail.RetailOrderPushLogDao;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
-import com.regent.rbp.infrastructure.util.StringUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.model.param.RetailOrderDownloadOnlineOrderParam;
+import com.regent.rbp.task.inno.model.param.RetailOrderStatusDownloadParam;
 import com.regent.rbp.task.inno.service.RetailOrderService;
-import com.regent.rbp.task.yumei.constants.YumeiApiUrl;
 import com.regent.rbp.task.yumei.service.SaleOrderService;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
-import org.apache.http.client.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @author chenchungui
- * @date 2021-09-22
+ * @author liuzhicheng
+ * @createTime 2022-04-15
+ * @Description
  */
 @Component
-public class RetailOrderJob {
+public class RetailOrderStatusJob {
 
     private static final String ERROR_PARAM_NOT_EMPTY = "[inno拉取订单列表]:拉取订单列表参数不能为空";
     private static final String ERROR_ONLINE_PLATFORM_CODE_NOT_EXIST = "[inno拉取订单列表]:电商平台编号不存在";
-    private static final String ERROR_BEGIN_TIME_NOT_EMPTY = "[inno拉取订单列表]:第一次拉取订单列表开始时间不能为空";
 
-    @Value("${yumei.tradeCreate:false}")
-    private boolean tradeCreate;
+    @Value("${yumei.orderReceipt:false}")
+    private boolean orderReceipt;
 
     @Autowired
     private RetailOrderService retailOrderService;
@@ -60,24 +56,14 @@ public class RetailOrderJob {
     @Autowired
     private SaleOrderService saleOrderService;
 
-    /**
-     * 拉取订单列表
-     * 调用频率：60分钟1次
-     * 入参格式：{ "onlinePlatformCode": "RBP",
-     * "beginTime": "2021-01-01 00:00:01",
-     * "endTime": "2021-01-02 00:00:01",
-     * "order_sn_list": "201510010002,201510010003"}
-     *
-     * @return
-     */
-    @XxlJob(SystemConstants.DOWNLOAD_ONLINE_ORDER_LIST_JOB)
-    public void downloadOnlineOrderListJobHandler() {
+    @XxlJob(SystemConstants.DOWNLOAD_ONLINE_ORDER_STATUS_LIST_JOB)
+    public void downloadOnlineOrderStatusListJobHandler() {
         ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
         try {
             //读取参数
             String param = XxlJobHelper.getJobParam();
             XxlJobHelper.log(param);
-            RetailOrderDownloadOnlineOrderParam orderParam = JSON.parseObject(param, RetailOrderDownloadOnlineOrderParam.class);
+            RetailOrderStatusDownloadParam orderParam = JSON.parseObject(param, RetailOrderStatusDownloadParam.class);
             // 参数验证
             if (null == orderParam || "{}".equals(JSONUtil.toJsonStr(orderParam))) {
                 XxlJobHelper.handleFail(ERROR_PARAM_NOT_EMPTY);
@@ -92,7 +78,7 @@ public class RetailOrderJob {
             }
             // 获取任务执行缓存
             OnlinePlatformSyncCache syncCache = onlinePlatformSyncCacheDao.selectOne(new LambdaQueryWrapper<OnlinePlatformSyncCache>()
-                    .eq(OnlinePlatformSyncCache::getOnlinePlatformId, onlinePlatform.getId()).eq(OnlinePlatformSyncCache::getSyncKey, SystemConstants.DOWNLOAD_ONLINE_ORDER_LIST_JOB));
+                    .eq(OnlinePlatformSyncCache::getOnlinePlatformId, onlinePlatform.getId()).eq(OnlinePlatformSyncCache::getSyncKey, SystemConstants.DOWNLOAD_ONLINE_ORDER_STATUS_LIST_JOB));
 
             if (null == orderParam.getBeginTime() && null == syncCache) {
                 orderParam.setBeginTime(DateUtil.getNowDateShort());
@@ -111,11 +97,11 @@ public class RetailOrderJob {
                 orderParam.setBeginTime(new Date(cacheTime.getTime() - SystemConstants.DEFAULT_TEN_MINUTES));
             }
             //下载线上订单列表
-            retailOrderService.downloadOnlineOrderList(orderParam, onlinePlatform);
+            retailOrderService.downloadOnlineOrderStatusList(orderParam, onlinePlatform);
 
-            // 推送订单到玉美
-            if (tradeCreate) {
-                this.pushOrderToYuMei(onlinePlatform.getId());
+            // 确认收货状态推送到玉美
+            if (orderReceipt) {
+                this.pushOrderReceiveStatusToYuMei(onlinePlatform.getId());
             }
 
         } catch (BusinessException e) {
@@ -129,8 +115,8 @@ public class RetailOrderJob {
         }
     }
 
-    private void pushOrderToYuMei(Long onlinePlatformId) {
-        Object orderNoList = ThreadLocalGroup.get("yumei_orderno_list");
+    private void pushOrderReceiveStatusToYuMei(Long onlinePlatformId) {
+        Object orderNoList = ThreadLocalGroup.get("yumei_receive_orderno_list");
         Set<String> orderNoList2 = (Set<String>) orderNoList;
         if (CollUtil.isNotEmpty(orderNoList2)) {
             String errorMsg = saleOrderService.pushOrderToYuMei(new ArrayList<>(orderNoList2));

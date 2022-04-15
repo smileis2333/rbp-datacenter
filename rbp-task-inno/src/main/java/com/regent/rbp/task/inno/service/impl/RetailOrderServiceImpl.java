@@ -4,10 +4,13 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
+import com.regent.rbp.api.core.retail.RetailOrderBill;
 import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncCacheDao;
+import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.retail.RetailOrderBillDstbInfo;
 import com.regent.rbp.api.dto.retail.RetailOrderBillGoodsDetailData;
@@ -22,8 +25,10 @@ import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.model.dto.*;
 import com.regent.rbp.task.inno.model.param.RetailOrderDownloadOnlineOrderParam;
+import com.regent.rbp.task.inno.model.param.RetailOrderStatusDownloadParam;
 import com.regent.rbp.task.inno.model.req.RetailOrderSearchReqDto;
 import com.regent.rbp.task.inno.model.resp.RetailOrderSearchRespDto;
+import com.regent.rbp.task.inno.model.resp.RetailOrderStatusSearchRespDto;
 import com.regent.rbp.task.inno.service.RetailOrderService;
 import com.xxl.job.core.context.XxlJobHelper;
 import org.apache.commons.lang.StringUtils;
@@ -44,6 +49,8 @@ public class RetailOrderServiceImpl implements RetailOrderService {
 
     private static final String POST_GET_APP_ORDER_LIST = "api/Order/Post_Get_App_Order_Info";
 
+    private static final String POST_GET_ORDER_STATUS_LIST = "api/Order/Get_OrderStatusList";
+
     @Autowired
     private RetailOrderBillService retailOrderBillService;
     @Autowired
@@ -54,6 +61,8 @@ public class RetailOrderServiceImpl implements RetailOrderService {
     private OnlinePlatformSyncCacheService onlinePlatformSyncCacheService;
     @Autowired
     private OnlinePlatformSyncErrorService onlinePlatformSyncErrorService;
+    @Autowired
+    private RetailOrderBillDao retailOrderBillDao;
 
     /**
      * 拉取订单列表
@@ -86,9 +95,110 @@ public class RetailOrderServiceImpl implements RetailOrderService {
 
         } catch (Exception e) {
             XxlJobHelper.handleFail(e.getMessage());
+            e.printStackTrace();
+            throw e;
         } finally {
             onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatform.getId(), key, param.getEndTime());
         }
+    }
+
+    /**
+     * 拉取订单状态
+     * @param param
+     * @param onlinePlatform
+     * @throws Exception
+     */
+    @Transactional
+    @Override
+    public void downloadOnlineOrderStatusList(RetailOrderStatusDownloadParam param, OnlinePlatform onlinePlatform) throws Exception {
+        String key = SystemConstants.DOWNLOAD_ONLINE_ORDER_STATUS_LIST_JOB;
+        // 获取销售渠道编号
+        String channelCode = baseDbDao.getStringDataBySql(String.format("select code from rbp_channel where id = %s", onlinePlatform.getChannelId()));
+        try {
+            RetailOrderSearchDto searchDto = new RetailOrderSearchDto();
+            searchDto.setBeginTime(DateUtil.getFullDateStr(param.getBeginTime()));
+            searchDto.setEndTime(DateUtil.getFullDateStr(param.getEndTime()));
+            searchDto.setOrder_sn_list(param.getOrder_sn_list());
+            searchDto.setPageIndex(1);
+
+            this.pullRetailOrderStatusList(channelCode, param.getOnlinePlatformCode(), onlinePlatform, searchDto);
+
+        } catch (Exception e) {
+            XxlJobHelper.handleFail(e.getMessage());
+            e.printStackTrace();
+            throw e;
+        } finally {
+            onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatform.getId(), key, param.getEndTime());
+        }
+    }
+
+    private void pullRetailOrderStatusList(String channelCode, String onlinePlatformCode, OnlinePlatform onlinePlatform, RetailOrderSearchDto retailOrderSearch) throws Exception {
+        RetailOrderSearchReqDto reqDto = new RetailOrderSearchReqDto();
+        reqDto.setApp_key(onlinePlatform.getAppKey());
+        reqDto.setApp_secrept(onlinePlatform.getAppSecret());
+        reqDto.setData(retailOrderSearch);
+
+        String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), POST_GET_ORDER_STATUS_LIST);
+        String result = HttpUtil.post(api_url, JSON.toJSONString(reqDto));
+
+        XxlJobHelper.log(String.format("请求Url：%s", api_url));
+        XxlJobHelper.log(String.format("请求Json：%s", JSON.toJSONString(reqDto)));
+        XxlJobHelper.log(String.format("返回Json：%s", result));
+
+        RetailOrderStatusSearchRespDto respDto = JSON.parseObject(result, RetailOrderStatusSearchRespDto.class);
+        if (respDto.getCode().equals("-1")) {
+            throw new Exception(respDto.getMsg());
+        }
+        if (CollUtil.isNotEmpty(respDto.getData().getData())) {
+            for (RetailOrderStatusDto dto : respDto.getData().getData()) {
+                try {
+                    // TODO 先只处理确认收货状态
+                    this.receiveGoods(dto);
+                } catch (Exception ex) {
+                    XxlJobHelper.log(String.format("错误信息：%s", ex.getMessage()));
+                    ex.printStackTrace();
+                    throw ex;
+                }
+            }
+            for (int i = 2; i <= reqDto.getData().getPageIndex(); i++) {
+                retailOrderSearch.setPageIndex(i);
+                this.pullRetailOrderStatusList(channelCode, onlinePlatformCode, onlinePlatform, retailOrderSearch);
+            }
+        }
+
+    }
+
+    /**
+     * 确认收货
+     *
+     * @param retailOrderStatusDto
+     */
+    private void receiveGoods(RetailOrderStatusDto retailOrderStatusDto) {
+        if (null == retailOrderStatusDto) {
+            return;
+        }
+        // 确认收货：orderStatus=1,payStatus=2,shippingStatus=2（此状态为正常订单的最终状态，申请退换货不会改变状态）
+        if ("1".equals(retailOrderStatusDto.getOrderStatus())
+                || "2".equals(retailOrderStatusDto.getPayStatus())
+                || "2".equals(retailOrderStatusDto.getShippingStatus())) {
+            RetailOrderBill retailOrderBill = new RetailOrderBill();
+            // 6-买家已签收
+            retailOrderBill.setOnlineStatus(6);
+            retailOrderBill.preUpdate();
+            // 更新
+            retailOrderBillDao.update(retailOrderBill, new UpdateWrapper<RetailOrderBill>().eq(retailOrderBill.getManualId(), retailOrderStatusDto.getOrderSn()));
+
+            // 线上订单
+            Object orderNoList = ThreadLocalGroup.get("yumei_receive_orderno_list");
+            Set<String> orderNoList2 = (Set<String>) orderNoList;
+            if (null == orderNoList2) {
+                orderNoList2 = new HashSet<String>();
+            }
+            orderNoList2.add(retailOrderStatusDto.getOrderSn());
+            ThreadLocalGroup.set("yumei_receive_orderno_list", orderNoList2);
+
+        }
+
     }
 
     private void pullRetailOrderBill(String channelCode, String onlinePlatformCode, OnlinePlatform onlinePlatform, RetailOrderSearchDto retailOrderSearch, Map<String, Long> map) throws Exception {
@@ -114,6 +224,8 @@ public class RetailOrderServiceImpl implements RetailOrderService {
                     this.saveRetailOrderBill(onlinePlatform.getId(), onlinePlatformCode, channelCode, mainDto, map);
                 } catch (Exception ex) {
                     XxlJobHelper.log(String.format("错误信息：%s", ex.getMessage()));
+                    ex.printStackTrace();
+                    throw ex;
                 }
             }
             for (int i = 2; i <= reqDto.getData().getPageIndex(); i++) {

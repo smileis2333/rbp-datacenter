@@ -31,6 +31,8 @@ public class SystemConstants {
 
     public static final String DOWNLOAD_ONLINE_ORDER_LIST_JOB = "inno.downloadOnlineOrderListJobHandler";
 
+    public static final String DOWNLOAD_ONLINE_ORDER_STATUS_LIST_JOB = "inno.downloadOnlineOrderStatusListJobHandler";
+
     public static final String ONLINE_SYNC_GOODS_STOCK_FULL_JOB = "inno.onlineSyncGoodsStockFullJobHandler";
 
     public static final String ONLINE_SYNC_GOODS_STOCK_JOB = "inno.onlineSyncGoodsStockJobHandler";
@@ -72,4 +74,7 @@ public class SystemConstants {
     public static final String TASK_CHANNEL_NEW_GOODS_GUARD_JOB = "taskChannelNewGoodsGuardJob";
 
     public static final String ORDER_PUSH_RETRY_JOB = "yumei.orderPushRetry";
+
+    public static final String ORDER_RECEIPT_PUSH_RETRY_JOB = "yumei.orderReceiptPushRetry";
+
 }
