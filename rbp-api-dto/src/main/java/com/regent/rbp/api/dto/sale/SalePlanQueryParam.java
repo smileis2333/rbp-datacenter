@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class SalePlanQueryParam extends DefaultParam {
@@ -37,7 +38,7 @@ public class SalePlanQueryParam extends DefaultParam {
     private String notes;
 
     @ApiModelProperty(notes = "单据状态(0.未审核,1.已审核,2.反审核,3.已作废)")
-    private Integer status;
+    private List<Integer> status;
 
     @ApiModelProperty(notes = "创建日期(开始日期)")
     private Date createdDateStart;
