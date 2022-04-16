@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import io.swagger.annotations.ApiModelProperty;
@@ -163,6 +164,9 @@ public class RetailOrderBill {
     }
 
     public void preUpdate() {
-        this.setUpdatedBy(ThreadLocalGroup.getUserId());
+        Date date = new Date();
+        date = DateUtil.getDateTime(date);
+        setUpdatedBy(ThreadLocalGroup.getUserId());
+        setUpdatedTime(date);
     }
 }

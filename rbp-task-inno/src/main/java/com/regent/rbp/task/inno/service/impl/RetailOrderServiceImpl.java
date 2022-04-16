@@ -179,14 +179,14 @@ public class RetailOrderServiceImpl implements RetailOrderService {
         }
         // 确认收货：orderStatus=1,payStatus=2,shippingStatus=2（此状态为正常订单的最终状态，申请退换货不会改变状态）
         if ("1".equals(retailOrderStatusDto.getOrderStatus())
-                || "2".equals(retailOrderStatusDto.getPayStatus())
-                || "2".equals(retailOrderStatusDto.getShippingStatus())) {
+                && "2".equals(retailOrderStatusDto.getPayStatus())
+                && "2".equals(retailOrderStatusDto.getShippingStatus())) {
             RetailOrderBill retailOrderBill = new RetailOrderBill();
             // 6-买家已签收
             retailOrderBill.setOnlineStatus(6);
             retailOrderBill.preUpdate();
             // 更新
-            retailOrderBillDao.update(retailOrderBill, new UpdateWrapper<RetailOrderBill>().eq(retailOrderBill.getManualId(), retailOrderStatusDto.getOrderSn()));
+            retailOrderBillDao.update(retailOrderBill, new UpdateWrapper<RetailOrderBill>().eq("manual_id", retailOrderStatusDto.getOrderSn()));
 
             // 线上订单
             Object orderNoList = ThreadLocalGroup.get("yumei_receive_orderno_list");
