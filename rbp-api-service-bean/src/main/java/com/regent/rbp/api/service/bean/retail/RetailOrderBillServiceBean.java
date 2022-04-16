@@ -292,7 +292,7 @@ public class RetailOrderBillServiceBean extends ServiceImpl<RetailOrderBillDao, 
                     goods.setDiscount(item.getDiscount());
                     goods.setBalancePrice(item.getBalancePrice());
                     goods.setTagPrice(item.getTagPrice());
-                    goods.setQuantity(BigDecimal.ZERO);
+                    goods.setQuantity(BigDecimal.ONE);
                     goods.setRemark(item.getRemark());
                     // 初始化状态
                     goods.setAfterSaleProcessStatus(StatusEnum.NONE.getStatus());
