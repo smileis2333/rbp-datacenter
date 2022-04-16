@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -203,8 +204,18 @@ public class RetailSendBillServiceImpl implements BaseRetailSendBillService {
             if (CollUtil.isNotEmpty(param.getBillGoodsList())) {
                 List<UploadRetailSendBillGoodsParam> deliveryGoodsList = new ArrayList<>();
                 bill.setDeliveryGoodsList(deliveryGoodsList);
+                // 合并同款数量
+                Map<String, UploadRetailSendBillGoodsParam> map = new HashMap<>();
                 for (RetailSendBillGoodsUploadParam goods : param.getBillGoodsList()) {
-                    deliveryGoodsList.add(new UploadRetailSendBillGoodsParam(goods.getBillNo(), goods.getBarcode(), goods.getQuantity().intValue()));
+                    String key = goods.getBillNo()+ "_" + goods.getBarcode();
+                    UploadRetailSendBillGoodsParam goodsParam = map.get(key);
+                    if (null == goodsParam) {
+                        goodsParam = new UploadRetailSendBillGoodsParam(goods.getBillNo(), goods.getBarcode(), goods.getQuantity().intValue());
+                        deliveryGoodsList.add(goodsParam);
+                        map.put(key, goodsParam);
+                    } else {
+                        goodsParam.setQty(goodsParam.getQty() + goods.getQuantity().intValue());
+                    }
                 }
             }
         }
