@@ -181,6 +181,7 @@ public class OnlineSyncGoodsStockServiceImpl extends ServiceImpl<OnlineSyncGoods
         String api_url = String.format("%s%s", url, POST_WAREHOUSE_INVERTORY);
         String json = JSON.toJSONString(stockReqDto);
         String result = HttpUtil.post(api_url, json);
+        XxlJobHelper.log("stock data :" + json);
         // 成功数量
         Long successTotal = 0L;
         // 转换
