@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import com.regent.rbp.api.core.omiChannel.OnlineSyncGoodsStock;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.dao.onlinePlatform.OnlineSyncGoodsStockDao;
@@ -15,7 +16,6 @@ import com.regent.rbp.api.dto.stock.StockQueryResult;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.api.service.stock.StockQueryService;
 import com.regent.rbp.infrastructure.util.StringUtil;
-import com.regent.rbp.task.inno.config.InnoConfig;
 import com.regent.rbp.task.inno.model.dto.OnlineSyncGoodsStockDto;
 import com.regent.rbp.task.inno.model.req.OnlineSyncGoodsStockReqDto;
 import com.regent.rbp.task.inno.model.resp.OnlineSyncGoodsStockRespDto;
@@ -130,24 +130,28 @@ public class OnlineSyncGoodsStockServiceImpl extends ServiceImpl<OnlineSyncGoods
                 if (CollUtil.isNotEmpty(goodsPages.getRecords())) {
                     List<OnlineSyncGoodsStock> stockList = goodsPages.getRecords();
                     // 获取条形码
-                    queryParam.setBarcodeList(stockList.stream().map(OnlineSyncGoodsStock::getBarcode).toArray(String[]::new));
-                    // 库存查询
-                    PageDataResponse<StockQueryResult> stockPages = stockQueryService.query(queryParam);
-                    if (CollUtil.isNotEmpty(stockPages.getData())) {
-                        Map<String, OnlineSyncGoodsStock> stockMap = stockList.stream().collect(Collectors.toMap(OnlineSyncGoodsStock::getBarcode, Function.identity()));
-                        // 转换
-                        for (StockQueryResult stock : stockPages.getData()) {
-                            OnlineSyncGoodsStock goodsStock = stockMap.get(stock.getBarcode());
-                            // 不存在或者数量相同则跳过
-                            if (null == goodsStock || stock.getQuantity().equals(goodsStock.getQuantity())) {
-                                continue;
-                            }
-                            goodsStockDtoList.add(OnlineSyncGoodsStockDto.build(stock.getBarcode(), stock.getQuantity().intValue(), onlinePlatform.getWarehouseCode()));
-                            // 批量上传实际库存
-                            if (goodsStockDtoList.size() >= SystemConstants.BATCH_SIZE) {
-                                successTotal += this.batchUploadStock(stockReqDto, onlinePlatform.getExternalApplicationApiUrl());
-                                // 清除数据
-                                goodsStockDtoList.clear();
+                    List<String> barcodes = stockList.stream().map(OnlineSyncGoodsStock::getBarcode).collect(Collectors.toList());
+                    // 查询接口限制barcode最多50
+                    for (List<String> subbarcodes : Lists.partition(barcodes, 50)) {
+                        queryParam.setBarcodeList(subbarcodes);
+                        // 库存查询
+                        PageDataResponse<StockQueryResult> stockPages = stockQueryService.query(queryParam);
+                        if (CollUtil.isNotEmpty(stockPages.getData())) {
+                            Map<String, OnlineSyncGoodsStock> stockMap = stockList.stream().collect(Collectors.toMap(OnlineSyncGoodsStock::getBarcode, Function.identity()));
+                            // 转换
+                            for (StockQueryResult stock : stockPages.getData()) {
+                                OnlineSyncGoodsStock goodsStock = stockMap.get(stock.getBarcode());
+                                // 不存在或者数量相同则跳过
+                                if (null == goodsStock || stock.getQuantity().equals(goodsStock.getQuantity())) {
+                                    continue;
+                                }
+                                goodsStockDtoList.add(OnlineSyncGoodsStockDto.build(stock.getBarcode(), stock.getQuantity().intValue(), onlinePlatform.getWarehouseCode()));
+                                // 批量上传实际库存
+                                if (goodsStockDtoList.size() >= SystemConstants.BATCH_SIZE) {
+                                    successTotal += this.batchUploadStock(stockReqDto, onlinePlatform.getExternalApplicationApiUrl());
+                                    // 清除数据
+                                    goodsStockDtoList.clear();
+                                }
                             }
                         }
                     }
