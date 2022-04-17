@@ -138,7 +138,7 @@ public class StockQueryServiceBean implements StockQueryService {
 
         List<Long> goodsIds = StreamUtil.toNoNullDistinctList(stockDetailList, StockDetail::getGoodsId);
         //货品
-        List<Goods> goodsList = goodsDao.selectList(new QueryWrapper<Goods>().select("id", "code") .in("id", goodsIds));
+        List<Goods> goodsList = goodsDao.selectList(new QueryWrapper<Goods>().select("id", "code").in("id", goodsIds));
         Map<Long, String> goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getId, Goods::getCode, (v1, v2) -> v1));
         //颜色
         List<Color> colorList = colorDao.selectList(new LambdaQueryWrapper<Color>()
@@ -206,7 +206,7 @@ public class StockQueryServiceBean implements StockQueryService {
         if (null != param.getGoodsCodeList() && param.getGoodsCodeList().length > 50) {
             errorMsg = "货号参数不能超过50";
         }
-        if (null != param.getBarcodeList() && param.getBarcodeList().length > 50) {
+        if (CollUtil.isNotEmpty(param.getBarcodeList()) && param.getBarcodeList().size() > 50) {
             errorMsg = "条形码参数不能超过50";
         }
         return errorMsg;

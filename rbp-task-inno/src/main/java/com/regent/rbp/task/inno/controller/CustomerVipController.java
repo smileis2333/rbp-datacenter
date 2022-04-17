@@ -6,6 +6,7 @@ import com.regent.rbp.task.inno.model.dto.CustomerVipDto;
 import com.regent.rbp.task.inno.service.CustomerVipService;
 import com.regent.rbp.task.inno.service.MemberService;
 import io.swagger.annotations.Api;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +22,7 @@ import java.util.Map;
  * @author: xuxing
  * @create: 2021-09-27 20:19
  */
+@Slf4j
 @RestController
 @RequestMapping("api")
 @Api(tags = "会员档案")
@@ -39,6 +41,9 @@ public class CustomerVipController {
         }catch (Exception ex) {
             response.put("Flag", "-1");
             response.put("Message", "新增会员异常：" + ex.getMessage());
+        }finally {
+            log.info("请求参数:" + customerVipDto.toString());
+            log.info("返回内容:" + response.toString());
         }
         return response;
     }
@@ -51,6 +56,9 @@ public class CustomerVipController {
         }catch (Exception ex) {
             response.put("Flag", "-1");
             response.put("Message", "更新会员异常：" + ex.getMessage());
+        }finally {
+            log.info("请求参数:" + customerVipDto.toString());
+            log.info("返回内容:" + response.toString());
         }
         return response;
     }

@@ -148,13 +148,15 @@ public class SalesPlanBillServiceBean implements SalesPlanBillService {
                         spbgr.setSize(Optional.ofNullable(sizeDetailMap.get(bsd.getSizeId())).map(SizeDetail::getName).orElse(null));
                         spbgr.setQuantity(bsd.getQuantity());
                         SalePlanBillGoods bgs = billGoodsMap.get(bsd.getBillGoodsId());
-                        spbgr.setDiscount(bgs.getDiscount());
-                        spbgr.setTagPrice(bgs.getTagPrice());
-                        spbgr.setBalancePrice(bgs.getBalancePrice());
-                        spbgr.setCurrencyPrice(bgs.getCurrencyPrice());
-                        spbgr.setExchangeRate(bgs.getExchangeRate());
-                        spbgr.setDeliveryDate(bgs.getDeliveryDate());
-                        spbgr.setRemark(bgs.getRemark());
+                        if (bgs!=null) {
+                            spbgr.setDiscount(bgs.getDiscount());
+                            spbgr.setTagPrice(bgs.getTagPrice());
+                            spbgr.setBalancePrice(bgs.getBalancePrice());
+                            spbgr.setCurrencyPrice(bgs.getCurrencyPrice());
+                            spbgr.setExchangeRate(bgs.getExchangeRate());
+                            spbgr.setDeliveryDate(bgs.getDeliveryDate());
+                            spbgr.setRemark(bgs.getRemark());
+                        }
                         spbgr.setGoodsCustomizeData(billGoodsCustomDataMap.get(bsd.getBillGoodsId()));
                         return spbgr;
                     }).collect(Collectors.toList());
@@ -192,8 +194,8 @@ public class SalesPlanBillServiceBean implements SalesPlanBillService {
         if (StrUtil.isNotEmpty(context.getNotes())) {
             queryWrapper.like("notes", context.getNotes());
         }
-        if (context.getStatus() != null) {
-            queryWrapper.like("status", context.getStatus());
+        if (CollUtil.isNotEmpty(context.getStatus())) {
+            queryWrapper.in("status", context.getStatus());
         }
         if (context.getCreatedDateStart() != null) {
             queryWrapper.ge("created_time", context.getCreatedDateStart());
@@ -227,6 +229,9 @@ public class SalesPlanBillServiceBean implements SalesPlanBillService {
         }
         if (StrUtil.isNotEmpty(param.getCurrencyType())) {
             context.setCurrencyTypeId(Optional.ofNullable(currencyTypeDao.selectOne(new QueryWrapper<CurrencyType>().eq("name", param.getCurrencyType()))).map(CurrencyType::getId).orElse(null));
+        }
+        if (CollUtil.isNotEmpty(param.getStatus())) {
+            context.setStatus(param.getStatus());
         }
 
         context.setPageNo(OptionalUtil.ofNullable(param, SalePlanQueryParam::getPageNo, SystemConstants.PAGE_NO));

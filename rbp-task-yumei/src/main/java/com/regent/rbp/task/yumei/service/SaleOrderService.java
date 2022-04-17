@@ -48,6 +48,7 @@ public interface SaleOrderService {
     /**
      * 订单退款
      * @param storeNo 门店编号
+     * @param orderSource 订单来源（1：美人计会员商城、2：酒会员商城、3：丽晶）
      * @param outOrderNo 订单编号
      * @param notifyUrl 回调地址
      * @param data 订单只项

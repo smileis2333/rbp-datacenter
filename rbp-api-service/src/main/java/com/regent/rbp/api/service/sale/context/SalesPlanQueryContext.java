@@ -17,7 +17,7 @@ public class SalesPlanQueryContext {
     private Long priceTypeId;
     private Long currencyTypeId;
     private String notes;
-    private Integer status;
+    private List<Integer> status;
     private Date createdDateStart;
     private Date createdDateEnd;
     private Date checkDateStart;

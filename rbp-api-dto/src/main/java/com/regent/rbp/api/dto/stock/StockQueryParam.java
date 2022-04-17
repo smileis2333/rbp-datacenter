@@ -3,8 +3,7 @@ package com.regent.rbp.api.dto.stock;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author liuzhicheng
@@ -30,7 +29,7 @@ public class StockQueryParam {
     private String[] goodsCodeList;
 
     @ApiModelProperty(notes = "条形码。注：如果传值，则忽略货号条件；最多50个sku。")
-    private String[] barcodeList;
+    private List<String> barcodeList;
 
     private int pageNo;
     private int pageSize;

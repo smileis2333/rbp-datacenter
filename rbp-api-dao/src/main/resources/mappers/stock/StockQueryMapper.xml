@@ -51,7 +51,7 @@
             </if>
             <!--有条形码就不查货号-->
             <choose>
-                <when test="queryParam.barcodeList != null and queryParam.barcodeList.length > 0">
+                <when test="@cn.hutool.core.collection.CollUtil@isNotEmpty(queryParam.barcodeList)">
                     and exists (select 1 from rbp_barcode bc where a.goods_id = bc.goods_id and a.color_id = bc.color_id
                     and a.long_id = bc.long_id and a.size_id = bc.size_id and bc.barcode in
                     <foreach collection="queryParam.barcodeList" item="code" open="(" separator="," close=")">

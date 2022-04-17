@@ -179,6 +179,10 @@ public class StockJob {
 
                 }
                 stockService.settingStock(usableStockDetails, stockDetails);
+                XxlJobHelper.log(String.format("渠道id: %s",channelId));
+                for (UsableStockResponse.UsableStock e : stockSearchDtos) {
+                    XxlJobHelper.log(String.format("条形码:%s，库存:%s",e.getSpecNo(),e.getNum()));
+                }
             } catch (Exception ex) {
                 failMsgs.add(ex.getMessage());
             }
