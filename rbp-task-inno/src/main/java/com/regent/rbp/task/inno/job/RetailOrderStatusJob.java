@@ -119,7 +119,7 @@ public class RetailOrderStatusJob {
         Object orderNoList = ThreadLocalGroup.get("yumei_receive_orderno_list");
         Set<String> orderNoList2 = (Set<String>) orderNoList;
         if (CollUtil.isNotEmpty(orderNoList2)) {
-            String errorMsg = saleOrderService.pushOrderToYuMei(new ArrayList<>(orderNoList2));
+            String errorMsg = saleOrderService.pushOrderReceiveStatusToYuMei(new ArrayList<>(orderNoList2));
             if (StrUtil.isNotEmpty(errorMsg)) {
                 XxlJobHelper.log(errorMsg);
                 XxlJobHelper.handleFail(errorMsg);
