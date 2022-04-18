@@ -108,9 +108,9 @@ public class SalesPlanBillServiceBean implements SalesPlanBillService {
             return new ArrayList<>();
         }
         List<Long> billIds = CollUtil.map(records, SalePlanBill::getId, true);
-        Map<Long, SalePlanBillGoods> billGoodsMap = salePlanBillGoodsDao.selectList(new QueryWrapper<SalePlanBillGoods>().in("bill_id", billIds)).stream().collect(Collectors.toMap(SalePlanBillGoods::getId, Function.identity()));
-        List<SalePlanBillGoods> billGoods = billGoodsMap.values().stream().collect(Collectors.toList());
-        ArrayList<Long> goodsIds = CollUtil.distinct(CollUtil.map(billGoods, SalePlanBillGoods::getGoodsId, true));
+        Map<Long, SalePlanBillGoodsFinal> billGoodsMap = salePlanBillGoodsFinalDao.selectList(new QueryWrapper<SalePlanBillGoodsFinal>().in("bill_id", billIds)).stream().collect(Collectors.toMap(SalePlanBillGoodsFinal::getId, Function.identity()));
+        List<SalePlanBillGoodsFinal> billGoods = billGoodsMap.values().stream().collect(Collectors.toList());
+        ArrayList<Long> goodsIds = CollUtil.distinct(CollUtil.map(billGoods, SalePlanBillGoodsFinal::getGoodsId, true));
         Map<Long, List<SalePlanBillSizeFinal>> billGoodsSizeMap = salePlanBillSizeFinalDao.selectList(new QueryWrapper<SalePlanBillSizeFinal>().in("bill_id", billIds)).stream().collect(Collectors.groupingBy(SalePlanBillSizeFinal::getBillId));
         List<SalePlanBillSizeFinal> billSizes = billGoodsSizeMap.values().stream().flatMap(p -> p.stream()).collect(Collectors.toList());
         ArrayList<Long> colorIds = CollUtil.distinct(CollUtil.map(billSizes, SalePlanBillSizeFinal::getColorId, true));
@@ -125,7 +125,7 @@ public class SalesPlanBillServiceBean implements SalesPlanBillService {
         Map<Long, String> colorMap = colorIds.isEmpty() ? new HashMap<>() : colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getId, colorIds)).stream().collect(Collectors.toMap(Color::getId, Color::getCode));
         Map<Long, SizeDetail> sizeDetailMap = goodsMap.isEmpty() ? new HashMap<>() : sizeDetailDao.selectList(new QueryWrapper<SizeDetail>().in("size_class_id", goodsMap.values().stream().map(Goods::getSizeClassId).collect(Collectors.toSet()))).stream().collect(Collectors.toMap(SizeDetail::getId, Function.identity()));
         Map<Long, List<CustomizeDataDto>> billCustomMap = baseDbService.getCustomizeColumnMap(TableConstants.SALE_PLAN_BILL, billIds);
-        Map<Long, List<CustomizeDataDto>> billGoodsCustomDataMap = baseDbService.getCustomizeColumnMap(TableConstants.SALE_PLAN_BILL_GOODS, CollUtil.map(billGoods, SalePlanBillGoods::getId, true));
+        Map<Long, List<CustomizeDataDto>> billGoodsCustomDataMap = baseDbService.getCustomizeColumnMap(TableConstants.SALE_PLAN_BILL_GOODS, CollUtil.map(billGoods, SalePlanBillGoodsFinal::getId, true));
 
 
         return records.stream().map(r -> {
@@ -147,7 +147,7 @@ public class SalesPlanBillServiceBean implements SalesPlanBillService {
                         spbgr.setLongName(Optional.ofNullable(longMap.get(bsd.getLongId())).map(LongInfo::getName).orElse(null));
                         spbgr.setSize(Optional.ofNullable(sizeDetailMap.get(bsd.getSizeId())).map(SizeDetail::getName).orElse(null));
                         spbgr.setQuantity(bsd.getQuantity());
-                        SalePlanBillGoods bgs = billGoodsMap.get(bsd.getBillGoodsId());
+                        SalePlanBillGoodsFinal bgs = billGoodsMap.get(bsd.getBillGoodsId());
                         if (bgs!=null) {
                             spbgr.setDiscount(bgs.getDiscount());
                             spbgr.setTagPrice(bgs.getTagPrice());
