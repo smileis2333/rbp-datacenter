@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 /**
  * @author liuzhicheng
  * @createTime 2022-04-03
@@ -25,7 +27,7 @@ public class RetailReceiveBackBillController {
     private RetailReceiveBackBillService retailReceiveBackBillService;
 
     @PostMapping
-    public ModelDataResponse<String> save(@RequestBody RetailReceiveBackBillSaveParam param) {
+    public ModelDataResponse<String> save(@RequestBody @Valid RetailReceiveBackBillSaveParam param) {
         return retailReceiveBackBillService.save(param);
     }
 }

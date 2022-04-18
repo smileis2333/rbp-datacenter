@@ -3,6 +3,7 @@ package com.regent.rbp.api.dto.retail;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 
 /**
@@ -29,6 +30,7 @@ public class RetailReceiveBackBillGoodsDetailData {
     private String size;
 
     @ApiModelProperty(notes = "数量。非计量货品的数量必须是1，可以分多行")
+    @Min(1)
     private BigDecimal quantity;
 
     @ApiModelProperty(notes = "折扣")

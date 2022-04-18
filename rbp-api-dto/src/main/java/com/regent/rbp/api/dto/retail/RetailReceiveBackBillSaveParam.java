@@ -5,6 +5,8 @@ import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.util.Date;
 import java.util.List;
 
@@ -36,5 +38,7 @@ public class RetailReceiveBackBillSaveParam {
     private List<CustomizeDataDto> customizeData;
 
     @ApiModelProperty(notes = "货品明细")
+    @Valid
+    @NotEmpty
     private List<RetailReceiveBackBillGoodsDetailData> goodsDetailData;
 }

@@ -30,8 +30,6 @@ import com.regent.rbp.api.service.retail.RetailReceiveBackBillGoodsService;
 import com.regent.rbp.api.service.retail.RetailReceiveBackBillService;
 import com.regent.rbp.api.service.retail.context.RetailReceiveBackBillSaveContext;
 import com.regent.rbp.common.constants.ModuleTableConstants;
-import com.regent.rbp.common.model.basic.dto.IdNameCodeDto;
-import com.regent.rbp.common.model.bill.entity.LogisticsCompany;
 import com.regent.rbp.common.service.basic.DbService;
 import com.regent.rbp.common.service.basic.SystemCommonService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
@@ -110,7 +108,6 @@ public class RetailReceiveBackBillServiceBean extends ServiceImpl<RetailReceiveB
         }
         // 保存配单
         String billNo = this.saveRetailReceiveBackBill(context);
-
         return ModelDataResponse.Success(billNo);
     }
 
@@ -133,10 +130,6 @@ public class RetailReceiveBackBillServiceBean extends ServiceImpl<RetailReceiveB
     private String convertSaveContext(RetailReceiveBackBillSaveContext context, RetailReceiveBackBillSaveParam param) {
         List<String> messageList = new ArrayList<>();
         RetailReceiveBackBill bill = new RetailReceiveBackBill();
-        if (CollUtil.isEmpty(param.getGoodsDetailData())) {
-            messageList.add(getNotNullMessage("goodsDetailData"));
-            return String.join(StrUtil.COMMA, messageList);
-        }
         if (ObjectUtil.isEmpty(param.getBillDate())) {
             messageList.add(getNotNullMessage("buildDate"));
         }
@@ -198,53 +191,54 @@ public class RetailReceiveBackBillServiceBean extends ServiceImpl<RetailReceiveB
         Map<String, Long> sizeMap = sizeDetailDao.selectList(new QueryWrapper<SizeDetail>().in("name", StreamUtil.toSet(param.getGoodsDetailData(), RetailReceiveBackBillGoodsDetailData::getSize))).stream().collect(Collectors.toMap(SizeDetail::getName, SizeDetail::getId));
         for (RetailReceiveBackBillGoodsDetailData goods : param.getGoodsDetailData()) {
             // TODO 校验计量货品
-            if (BigDecimal.ONE.compareTo(goods.getQuantity()) != 0) {
-                messageList.add(getMessageByParams("goodsQuantityMustBeOne", null));
-                continue;
-            }
-
-            Long goodsId = goodsMap.get(goods.getGoodsCode());
-            Long colorId = colorMap.get(goods.getColorCode());
-            Long longId = longMap.get(goods.getLongName());
-            Long sizeId = sizeMap.get(goods.getSize());
-
             boolean flag = true;
-            Iterator<RetailReturnNoticeBillGoods> iterator = retailReturnNoticeBillGoodsList.iterator();
-            while (iterator.hasNext()) {
-                RetailReturnNoticeBillGoods detail = iterator.next();
-                if (ObjectUtil.equal(detail.getBarcode(), goods.getBarcode()) ||
-                        (ObjectUtil.equal(detail.getGoodsId(), goodsId)
-                                && ObjectUtil.equal(detail.getColorId(), colorId)
-                                && ObjectUtil.equal(detail.getLongId(), longId)
-                                && ObjectUtil.equal(detail.getSizeId(), sizeId))) {
+            for (BigDecimal i = BigDecimal.ZERO; i.compareTo(goods.getQuantity())==-1;i = i.add(BigDecimal.ONE) )
+            {
+                Long goodsId = goodsMap.get(goods.getGoodsCode());
+                Long colorId = colorMap.get(goods.getColorCode());
+                Long longId = longMap.get(goods.getLongName());
+                Long sizeId = sizeMap.get(goods.getSize());
+                flag = true;
 
-                    // 配单货品
-                    RetailReceiveBackBillGoods entity = new RetailReceiveBackBillGoods();
-                    entity.preInsert();
-                    entity.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-                    entity.setBillId(bill.getId());
-                    entity.setGoodsId(detail.getGoodsId());
-                    entity.setColorId(detail.getColorId());
-                    entity.setLongId(detail.getLongId());
-                    entity.setSizeId(detail.getSizeId());
-                    entity.setBarcode(detail.getBarcode());
-                    entity.setTagPrice(detail.getTagPrice());
-                    entity.setDiscount(detail.getDiscount());
-                    entity.setBalancePrice(detail.getBalancePrice());
-                    entity.setQuantity(goods.getQuantity());
-                    if (null != goods.getBalancePrice()) {
-                        entity.setBalancePrice(goods.getBalancePrice());
-                    }
-                    // 折扣
-                    if (null != entity.getBalancePrice() && entity.getTagPrice().compareTo(BigDecimal.ZERO) != 0) {
-                        entity.setDiscount(entity.getBalancePrice().divide(entity.getTagPrice(), 4, BigDecimal.ROUND_HALF_UP));
-                    }
-                    retailReceiveBackBillGoodsList.add(entity);
+                Iterator<RetailReturnNoticeBillGoods> iterator = retailReturnNoticeBillGoodsList.iterator();
+                while (iterator.hasNext()) {
+                    RetailReturnNoticeBillGoods detail = iterator.next();
+                    if (ObjectUtil.equal(detail.getBarcode(), goods.getBarcode()) ||
+                            (ObjectUtil.equal(detail.getGoodsId(), goodsId)
+                                    && ObjectUtil.equal(detail.getColorId(), colorId)
+                                    && ObjectUtil.equal(detail.getLongId(), longId)
+                                    && ObjectUtil.equal(detail.getSizeId(), sizeId))) {
 
-                    flag = false;
-                    iterator.remove();
-                    break;
+                        // 配单货品
+                        RetailReceiveBackBillGoods entity = new RetailReceiveBackBillGoods();
+                        entity.preInsert();
+                        entity.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+                        entity.setBillId(bill.getId());
+                        entity.setGoodsId(detail.getGoodsId());
+                        entity.setColorId(detail.getColorId());
+                        entity.setLongId(detail.getLongId());
+                        entity.setSizeId(detail.getSizeId());
+                        entity.setBarcode(detail.getBarcode());
+                        entity.setTagPrice(detail.getTagPrice());
+                        entity.setDiscount(detail.getDiscount());
+                        entity.setBalancePrice(detail.getBalancePrice());
+                        entity.setQuantity(goods.getQuantity());
+                        if (null != goods.getBalancePrice()) {
+                            entity.setBalancePrice(goods.getBalancePrice());
+                        }
+                        // 折扣
+                        if (null != entity.getBalancePrice() && entity.getTagPrice().compareTo(BigDecimal.ZERO) != 0) {
+                            entity.setDiscount(entity.getBalancePrice().divide(entity.getTagPrice(), 4, BigDecimal.ROUND_HALF_UP));
+                        }
+                        retailReceiveBackBillGoodsList.add(entity);
+
+                        flag = false;
+
+                        iterator.remove();
+                        break;
+                    }
                 }
+
             }
             if (flag) {
                 messageList.add(getMessageByParams("sendSkuDataError", new String[]{LanguageUtil.getMessage(
