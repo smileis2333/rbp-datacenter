@@ -138,9 +138,9 @@ public class RetailReturnNoticePushOrderRefundJob {
             }
             if (CollUtil.isNotEmpty(updateList)) {
                 // 更新订单状态为已审核
+                dbService.update(String.format("update rbp_retail_return_notice_bill set check_by=%s,check_time=now(),status=1 where id %s",
+                        ThreadLocalGroup.getUserId(), AppendSqlUtil.getInSqlByLong(StreamUtil.toList(updateList, v -> v.getId()))));
                 XxlJobHelper.log(String.format("更新全渠道退货通知单据状态为已审核，单号为[%s]", updateList.stream().map(v -> v.getBillNo()).distinct().collect(Collectors.joining(StrUtil.COMMA))));
-                String.format("update rbp_retail_return_notice_bill set status=1 where id in %s", AppendSqlUtil.getInSqlByLong(StreamUtil.toList(updateList, v -> v.getId())));
-
             }
 
         } catch (Exception e) {
