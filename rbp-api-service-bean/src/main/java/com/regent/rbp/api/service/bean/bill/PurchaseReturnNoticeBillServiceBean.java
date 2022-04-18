@@ -135,24 +135,24 @@ public class PurchaseReturnNoticeBillServiceBean extends ServiceImpl<PurchaseRet
         }
         // 创建日期
         if (null != param.getCreatedDateStart()) {
-            context.setCreatedDateStart(DateUtil.getDate(param.getCreatedDateStart(), DateUtil.FULL_DATE_FORMAT));
+            context.setCreatedDateStart(DateUtil.getDate(param.getCreatedDateStart(), SystemConstants.FULL_DATE_FORMAT));
         }
         if (null != param.getCreatedDateEnd()) {
-            context.setCreatedDateEnd(DateUtil.getDate(param.getCreatedDateEnd(), DateUtil.FULL_DATE_FORMAT));
+            context.setCreatedDateEnd(DateUtil.getDate(param.getCreatedDateEnd(), SystemConstants.FULL_DATE_FORMAT));
         }
         // 审核日期
         if (null != param.getCheckDateStart()) {
-            context.setCheckDateStart(DateUtil.getDate(param.getCheckDateStart(), DateUtil.FULL_DATE_FORMAT));
+            context.setCheckDateStart(DateUtil.getDate(param.getCheckDateStart(), SystemConstants.FULL_DATE_FORMAT));
         }
         if (null != param.getCheckDateEnd()) {
-            context.setCheckDateEnd(DateUtil.getDate(param.getCheckDateEnd(), DateUtil.FULL_DATE_FORMAT));
+            context.setCheckDateEnd(DateUtil.getDate(param.getCheckDateEnd(), SystemConstants.FULL_DATE_FORMAT));
         }
         // 修改日期
         if (null != param.getUpdatedDateStart()) {
-            context.setUpdatedDateStart(DateUtil.getDate(param.getUpdatedDateStart(), DateUtil.FULL_DATE_FORMAT));
+            context.setUpdatedDateStart(DateUtil.getDate(param.getUpdatedDateStart(), SystemConstants.FULL_DATE_FORMAT));
         }
         if (null != param.getUpdatedDateEnd()) {
-            context.setUpdatedDateEnd(DateUtil.getDate(param.getUpdatedDateEnd(), DateUtil.FULL_DATE_FORMAT));
+            context.setUpdatedDateEnd(DateUtil.getDate(param.getUpdatedDateEnd(), SystemConstants.FULL_DATE_FORMAT));
         }
 
         // 业务类型

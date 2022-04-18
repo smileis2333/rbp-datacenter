@@ -3,9 +3,7 @@ package com.regent.rbp.api.service.bean.base;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.regent.rbp.api.core.base.SizeClass;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
-import com.regent.rbp.api.dao.base.SizeClassDao;
 import com.regent.rbp.api.dao.onlinePlatform.OnlinePlatformSyncCacheDao;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
 import com.regent.rbp.api.service.constants.SystemConstants;
@@ -36,7 +34,7 @@ public class OnlinePlatformSyncCacheServiceBean extends ServiceImpl<OnlinePlatfo
             return DateUtil.getDate("2020-01-01", DateUtil.SHORT_DATE_FORMAT);
         }
 
-        Date cacheTime = DateUtil.getDate(syncCache.getData(), DateUtil.FULL_DATE_FORMAT);
+        Date cacheTime = DateUtil.getDate(syncCache.getData(), SystemConstants.FULL_DATE_FORMAT);
         // 默认查询10分钟前
         Date time = new Date(cacheTime.getTime() - SystemConstants.DEFAULT_TEN_MINUTES);
         return time;
@@ -47,10 +45,10 @@ public class OnlinePlatformSyncCacheServiceBean extends ServiceImpl<OnlinePlatfo
         OnlinePlatformSyncCache syncCache = onlinePlatformSyncCacheDao.selectOne(new QueryWrapper<OnlinePlatformSyncCache>()
                 .eq("online_platform_id", onlinePlatformId).eq("sync_key", key));
         if (syncCache == null) {
-            syncCache = syncCache.build(onlinePlatformId, key, DateUtil.getDateStr(uploadingTime, DateUtil.FULL_DATE_FORMAT));
+            syncCache = syncCache.build(onlinePlatformId, key, DateUtil.getDateStr(uploadingTime, SystemConstants.FULL_DATE_FORMAT));
             onlinePlatformSyncCacheDao.insert(syncCache);
         } else {
-            syncCache.setData(DateUtil.getDateStr(uploadingTime, DateUtil.FULL_DATE_FORMAT));
+            syncCache.setData(DateUtil.getDateStr(uploadingTime, SystemConstants.FULL_DATE_FORMAT));
             onlinePlatformSyncCacheDao.updateById(syncCache);
         }
     }
