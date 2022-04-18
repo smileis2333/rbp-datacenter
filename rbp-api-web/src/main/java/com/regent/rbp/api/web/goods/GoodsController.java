@@ -1,5 +1,6 @@
 package com.regent.rbp.api.web.goods;
 
+import cn.hutool.core.collection.CollUtil;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.goods.GoodsQueryParam;
@@ -14,8 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
 
 /**
  * @author xuxing
@@ -36,7 +35,10 @@ public class GoodsController {
     }
 
     @PostMapping("/save")
-    public DataResponse save(@RequestBody @Valid GoodsSaveParam param) {
+    public DataResponse save(@RequestBody GoodsSaveParam param) {
+        if (CollUtil.isNotEmpty(param.getBarcodeData())){
+            param.getBarcodeData().forEach(e->e.setGoodsType(param.getType()));
+        }
         DataResponse result = goodsService.save(param);
         return result;
     }

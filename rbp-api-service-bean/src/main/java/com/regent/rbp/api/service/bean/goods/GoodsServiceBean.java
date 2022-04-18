@@ -31,7 +31,9 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.Valid;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -42,6 +44,7 @@ import java.util.stream.Collectors;
  * @author xuxing
  */
 @Service
+@Validated
 public class GoodsServiceBean implements GoodsService {
 
     @Autowired
@@ -611,7 +614,7 @@ public class GoodsServiceBean implements GoodsService {
 
     @Override
     @Transactional
-    public synchronized DataResponse save(GoodsSaveParam param) {
+    public synchronized DataResponse save(@Valid GoodsSaveParam param) {
         boolean createFlag = true;
         GoodsSaveContext context = new GoodsSaveContext(param);
         //判断是新增还是更新
