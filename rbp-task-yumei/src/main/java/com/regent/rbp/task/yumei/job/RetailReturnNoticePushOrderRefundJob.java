@@ -5,17 +5,16 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.regent.rbp.api.core.channel.Channel;
+import com.regent.rbp.api.core.retail.RetailOrderBill;
 import com.regent.rbp.api.core.retail.RetailReturnNoticeBill;
 import com.regent.rbp.api.core.retail.RetailReturnNoticeBillGoods;
+import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillDao;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillGoodsDao;
 import com.regent.rbp.api.dto.retail.OrderBusinessPersonDto;
 import com.regent.rbp.api.service.base.OnlinePlatformService;
 import com.regent.rbp.api.service.constants.SystemConstants;
-import com.regent.rbp.common.model.basic.dto.IdNameCodeDto;
 import com.regent.rbp.common.service.basic.DbService;
-import com.regent.rbp.infrastructure.enums.LanguageTableEnum;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.AppendSqlUtil;
 import com.regent.rbp.infrastructure.util.StreamUtil;
@@ -31,6 +30,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +47,9 @@ public class RetailReturnNoticePushOrderRefundJob {
 
     @Autowired
     private RetailReturnNoticeBillGoodsDao retailReturnNoticeBillGoodsDao;
+
+    @Autowired
+    private RetailOrderBillDao retailOrderBillDao;
 
     @Autowired
     private OnlinePlatformService onlinePlatformService;
@@ -95,14 +98,20 @@ public class RetailReturnNoticePushOrderRefundJob {
                 return;
             }
             Map<Long, List<RetailReturnNoticeBillGoods>> billGoodsMap = billGoodsList.stream().collect(Collectors.groupingBy(v -> v.getBillId()));
-            // 渠道名称
-            Map<Long, IdNameCodeDto> channelMap = dbService.selectIdNameCodeMapByLanguage(new QueryWrapper<Channel>().in("id", StreamUtil.toSet(billList, v -> v.getSaleChannelId())), Channel.class, LanguageTableEnum.CHANNEL);
+            // 全渠道订单
+            List<RetailOrderBill> orderBillList = retailOrderBillDao.selectBatchIds(StreamUtil.toSet(billList, v -> v.getRetailOrderBillId()));
+            Map<Long, RetailOrderBill> orderBillMap = orderBillList.stream().collect(Collectors.toMap(v -> v.getId(), Function.identity()));
             // 循环调用玉美退货接口
             List<RetailReturnNoticeBill> updateList = new ArrayList<>();
             for (RetailReturnNoticeBill bill : billList) {
                 List<RetailReturnNoticeBillGoods> goodsList = billGoodsMap.get(bill.getId());
                 if (CollUtil.isEmpty(goodsList)) {
                     XxlJobHelper.handleFail(String.format("全渠道退货通知单:%s,货品数为0，跳过当前单据", bill.getBillNo()));
+                    continue;
+                }
+                RetailOrderBill orderBill = orderBillMap.get(bill.getRetailOrderBillId());
+                if (null == orderBill) {
+                    XxlJobHelper.handleFail(String.format("全渠道退货通知单引用的全渠道订单:%s,不存在，跳过当前单据", orderBill.getBillNo()));
                     continue;
                 }
                 OrderBusinessPersonDto person = saleOrderService.getOrderBusinessPersonDto(bill.getRetailOrderBillId());
@@ -124,7 +133,7 @@ public class RetailReturnNoticePushOrderRefundJob {
                 });
                 try {
                     // 订单退货退款接口
-                    Boolean success = saleOrderService.orderRefund(person.getChannelNo(), 3, bill.getBillNo(), StrUtil.EMPTY, goodsDataList);
+                    Boolean success = saleOrderService.orderRefund(person.getChannelNo(), 3, orderBill.getManualId(), StrUtil.EMPTY, goodsDataList);
                     if (!success) {
                         XxlJobHelper.handleFail(String.format("全渠道退货通知单:%s,推送玉美退货退款接口失败", bill.getBillNo()));
                     } else {
