@@ -72,13 +72,13 @@ public class RetailOrderInnoServiceImpl implements RetailOrderInnoService {
             // 有条码
             // 判断货品明细状态
             YumeiOrderGoods orderBill = order.getOrderItems().stream().filter(f -> f.getSkuCode().equals(barcode)
-                    && (f.getItemStatus().equals(1) || f.getItemStatus().equals(2))).findAny().orElse(null);
+                    && (f.getItemStatus().equals(20) || f.getItemStatus().equals(30))).findAny().orElse(null);
             if (null == orderBill) {
                 // 未找到条码信息
                 this.failure(response, "barcodeNotExist");
                 return response;
             }
-            if (orderBill.getItemStatus().equals(1) || orderBill.getItemStatus().equals(2)) {
+            if (orderBill.getItemStatus().equals(20) || orderBill.getItemStatus().equals(30)) {
                 // 退款货品
                 List<YumeiOrderItems> items = new ArrayList<>();
                 YumeiOrderItems orderItem = new YumeiOrderItems();
@@ -103,7 +103,7 @@ public class RetailOrderInnoServiceImpl implements RetailOrderInnoService {
             // 无条码
             AtomicReference<Boolean> orderStatus = new AtomicReference<>(false);
             order.getOrderItems().stream().forEach(item -> {
-                if (item.getItemStatus().equals(1) || item.getItemStatus().equals(2)) {
+                if (item.getItemStatus().equals(20) || item.getItemStatus().equals(30)) {
                     orderStatus.set(true);
                 }
             });

@@ -1,12 +1,9 @@
 package com.regent.rbp.task.yumei.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * @author chenchungui
@@ -28,7 +25,7 @@ public class YumeiOrderGoods {
     @ApiModelProperty(notes = "单价")
     private BigDecimal unitPrice;
 
-    @ApiModelProperty(notes = "订单子项状态（1：待支付、2：待发货、3：待收货、4：已取消、5：确认收货、6：已退款、7：申请售后、8：平台介入）")
+    @ApiModelProperty(notes = "订单子项状态（10 已取消,20 待付款,30 待发货,40 待收货,50 部分退款,60 已退款,70 部分收货,90 已完成）")
     private Integer itemStatus;
 
     /*@ApiModelProperty(notes = "物流单号")
