@@ -7,10 +7,12 @@ import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.inno.model.param.RetailReturnNoticeParam;
 import com.regent.rbp.task.inno.service.RetailReturnNoticeService;
+import com.regent.rbp.task.yumei.job.RetailReturnNoticePushOrderRefundJob;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -30,6 +32,12 @@ public class RetailReturnNoticeJob {
     @Autowired
     OnlinePlatformService onlinePlatformService;
 
+    @Autowired
+    private RetailReturnNoticePushOrderRefundJob retailReturnNoticePushOrderRefundJob;
+
+    @Value("${yumei.tradeCreate:false}")
+    private boolean tradeCreate;
+
     /**
      * 拉取全渠道退货通知单列表
      * 入参格式：{ "onlinePlatformCode": "INNO", "orderSn": "", "returnSn": "THD000532110141327194170111" }
@@ -48,17 +56,29 @@ public class RetailReturnNoticeJob {
             RetailReturnNoticeParam retailReturnNoticeParam = JSON.parseObject(param, RetailReturnNoticeParam.class);
             OnlinePlatform onlinePlatform = onlinePlatformService.getOnlinePlatform(retailReturnNoticeParam.getOnlinePlatformCode());
 
-            if(onlinePlatform == null) {
+            if (onlinePlatform == null) {
                 XxlJobHelper.log(ERROR_ONLINE_PLATFORM_CODE_NOT_EXIST);
                 XxlJobHelper.handleFail(ERROR_ONLINE_PLATFORM_CODE_NOT_EXIST);
                 return;
             }
             retailReturnNoticeService.downloadRetailReturnNoticeList(retailReturnNoticeParam);
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             String message = ex.getMessage();
             XxlJobHelper.log(message);
             XxlJobHelper.handleFail(message);
             return;
+        } finally {
+            if (tradeCreate) {
+                this.pushYumeiOrderRefund();
+            }
+        }
+    }
+
+    private void pushYumeiOrderRefund() {
+        try {
+            retailReturnNoticePushOrderRefundJob.RetailReturnNoticePushOrderRefundHandler();
+        } catch (Exception e) {
+            XxlJobHelper.handleFail(String.format("全渠道退货通知单推送玉美订单退货退款接口失败，详情：%s", e.getMessage()));
         }
     }
 
