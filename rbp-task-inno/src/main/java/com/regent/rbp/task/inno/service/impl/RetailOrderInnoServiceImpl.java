@@ -8,6 +8,8 @@ import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
 import com.regent.rbp.api.dao.retail.RetailOrderBillGoodsDao;
 import com.regent.rbp.api.dto.retail.OrderBusinessPersonDto;
+import com.regent.rbp.infrastructure.constants.ResponseCode;
+import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import com.regent.rbp.task.inno.service.RetailOrderInnoService;
@@ -45,7 +47,10 @@ public class RetailOrderInnoServiceImpl implements RetailOrderInnoService {
         Map<String, String> response = new HashMap<>();
         Boolean success = null;
         RetailOrderBill retailOrderBill = retailOrderBillDao.selectOne(new LambdaQueryWrapper<RetailOrderBill>().eq(RetailOrderBill::getManualId, eorderid));
-        OrderBusinessPersonDto person = retailOrderBillDao.getOrderBusinessPersonDto(retailOrderBill.getId());
+        OrderBusinessPersonDto person = saleOrderService.getOrderBusinessPersonDto(retailOrderBill.getId());
+        if (null == person) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "订单" + retailOrderBill.getBillNo() + "没有分销员或会员没有归属渠道");
+        }
 
         // 查询玉美订单
         YumeiOrderQueryReq yumeiOrderQueryReq = new YumeiOrderQueryReq();

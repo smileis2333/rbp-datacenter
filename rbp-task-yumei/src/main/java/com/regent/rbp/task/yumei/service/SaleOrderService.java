@@ -1,5 +1,6 @@
 package com.regent.rbp.task.yumei.service;
 
+import com.regent.rbp.api.dto.retail.OrderBusinessPersonDto;
 import com.regent.rbp.task.yumei.model.YumeiOrder;
 import com.regent.rbp.task.yumei.model.YumeiOrderQueryPageResp;
 import com.regent.rbp.task.yumei.model.YumeiOrderQueryReq;
@@ -78,4 +79,12 @@ public interface SaleOrderService {
      * @param outOrderNo
      */
     Boolean orderCancel(String storeNo, Integer orderSource, String outOrderNo);
+
+    /**
+     * 根据全渠道订单的分销员和会员获取所属门店编号
+     *
+     * @param retailOrderBillId 全渠道订单id
+     * @return
+     */
+    OrderBusinessPersonDto getOrderBusinessPersonDto(Long retailOrderBillId);
 }
