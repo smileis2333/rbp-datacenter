@@ -10,6 +10,7 @@ import com.regent.rbp.api.core.retail.RetailReturnNoticeBill;
 import com.regent.rbp.api.core.retail.RetailReturnNoticeBillGoods;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillDao;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillGoodsDao;
+import com.regent.rbp.api.dto.retail.OrderBusinessPersonDto;
 import com.regent.rbp.api.service.base.OnlinePlatformService;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.common.model.basic.dto.IdNameCodeDto;
@@ -17,7 +18,6 @@ import com.regent.rbp.common.service.basic.DbService;
 import com.regent.rbp.infrastructure.enums.LanguageTableEnum;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.AppendSqlUtil;
-import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.StreamUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.yumei.model.YumeiOrderItems;
@@ -27,7 +27,6 @@ import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -106,9 +105,9 @@ public class RetailReturnNoticePushOrderRefundJob {
                     XxlJobHelper.handleFail(String.format("全渠道退货通知单:%s,货品数为0，跳过当前单据", bill.getBillNo()));
                     continue;
                 }
-                String channelCode = OptionalUtil.ofNullable(channelMap.get(bill.getSaleChannelId()), IdNameCodeDto::getCode);
-                if (StringUtils.isEmpty(channelCode)) {
-                    XxlJobHelper.handleFail(String.format("全渠道退货通知单:%s,渠道编号不存在，跳过当前单据", bill.getBillNo()));
+                OrderBusinessPersonDto person = saleOrderService.getOrderBusinessPersonDto(bill.getRetailOrderBillId());
+                if (null == person) {
+                    XxlJobHelper.handleFail(String.format("全渠道退货通知单:%s,没有分销员或会员没有归属渠道，跳过当前单据", bill.getBillNo()));
                     continue;
                 }
                 List<YumeiOrderItems> goodsDataList = new ArrayList<>();
@@ -125,7 +124,7 @@ public class RetailReturnNoticePushOrderRefundJob {
                 });
                 try {
                     // 订单退货退款接口
-                    Boolean success = saleOrderService.orderRefund(channelCode, 3, bill.getBillNo(), StrUtil.EMPTY, goodsDataList);
+                    Boolean success = saleOrderService.orderRefund(person.getChannelNo(), 3, bill.getBillNo(), StrUtil.EMPTY, goodsDataList);
                     if (!success) {
                         XxlJobHelper.handleFail(String.format("全渠道退货通知单:%s,推送玉美退货退款接口失败", bill.getBillNo()));
                     } else {
