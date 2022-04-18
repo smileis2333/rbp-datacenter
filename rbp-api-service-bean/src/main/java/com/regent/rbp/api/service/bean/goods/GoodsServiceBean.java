@@ -732,7 +732,20 @@ public class GoodsServiceBean implements GoodsService {
      */
     private void saveGoodsTagPrice(boolean createFlag, List<GoodsTagPrice> goodsTagPriceList) {
         for (GoodsTagPrice goodsTagPrice : goodsTagPriceList) {
-            goodsTagPriceDao.insert(goodsTagPrice);
+            if(createFlag) {
+                goodsTagPriceDao.insert(goodsTagPrice);
+            } else {
+                //更新操作，先判断吊牌价类型是否存在，存在直接更新价格，否则插入
+                GoodsTagPrice item = goodsTagPriceDao.selectOne(new QueryWrapper<GoodsTagPrice>()
+                        .eq("goods_id", goodsTagPrice.getGoodsId())
+                        .eq("price_type_id", goodsTagPrice.getPriceTypeId()));
+                if(item == null) {
+                    goodsTagPriceDao.insert(goodsTagPrice);
+                } else {
+                    item.setTagPrice(goodsTagPrice.getTagPrice());
+                    goodsTagPriceDao.updateById(item);
+                }
+            }
         }
     }
 
@@ -955,9 +968,18 @@ public class GoodsServiceBean implements GoodsService {
 
         if (param.getPriceData() != null && CollUtil.isNotEmpty(param.getPriceData().getTagPrice())) {
             ArrayList<GoodsTagPrice> goodsTagPrices = new ArrayList<>();
+            //获取吊牌价类型编号列表
             List<String> tagPriceCodes = CollUtil.map(param.getPriceData().getTagPrice(), GoodsTagPriceDto::getCode, true);
-            Map<String, TagPriceType> tagPriceTypeMap = tagPriceCodes.isEmpty() ? Collections.emptyMap() : tagPriceTypeDao.selectList(new QueryWrapper<TagPriceType>().in("code", tagPriceCodes)).stream().collect(Collectors.toMap(TagPriceType::getCode, Function.identity()));
-            Set<Long> existTagPrices = goodsTagPriceDao.selectList(Wrappers.lambdaQuery(GoodsTagPrice.class).eq(GoodsTagPrice::getGoodsId, goods.getId())).stream().map(GoodsTagPrice::getPriceTypeId).collect(Collectors.toSet());
+            //获取吊牌价类型的字典Map
+            Map<String, TagPriceType> tagPriceTypeMap = tagPriceCodes.isEmpty() ? Collections.emptyMap() :
+                    tagPriceTypeDao.selectList(new QueryWrapper<TagPriceType>().in("code", tagPriceCodes))
+                            .stream().collect(Collectors.toMap(TagPriceType::getCode, Function.identity()));
+            //获取当前货号的已有的吊牌价列表
+            List<GoodsTagPrice> listGoodsTagPrice = goodsTagPriceDao.selectList(Wrappers.lambdaQuery(GoodsTagPrice.class)
+                    .eq(GoodsTagPrice::getGoodsId, goods.getId()));
+            //获取当前货号的吊牌价的字典MAP
+            Map<Long, GoodsTagPrice> goodsTagPriceMap = listGoodsTagPrice.isEmpty() ? Collections.emptyMap() :
+                    listGoodsTagPrice.stream().collect(Collectors.toMap(GoodsTagPrice::getPriceTypeId, Function.identity()));
             for (int i = 0; i < tagPriceCodes.size(); i++) {
                 String e = tagPriceCodes.get(i);
                 TagPriceType tagPriceType = null;
@@ -969,8 +991,11 @@ public class GoodsServiceBean implements GoodsService {
                     goodsTagPrice.setPriceTypeId(tagPriceType.getId());
                     goodsTagPrice.setTagPrice(param.getPriceData().getTagPrice().get(i).getValue());
                     goodsTagPrice.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
-                    if (!existTagPrices.contains(tagPriceType.getId()))
-                        goodsTagPrices.add(goodsTagPrice);
+                    //货品的吊牌价已经存在,则取原ID
+                    if (goodsTagPriceMap.containsKey(tagPriceType.getId())) {
+                        goodsTagPrice.setId(goodsTagPriceMap.get(tagPriceType.getId()).getId());
+                    }
+                    goodsTagPrices.add(goodsTagPrice);
                 }
             }
 
