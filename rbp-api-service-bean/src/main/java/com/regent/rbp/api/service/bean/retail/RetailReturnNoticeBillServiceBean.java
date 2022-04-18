@@ -153,40 +153,47 @@ public class RetailReturnNoticeBillServiceBean extends ServiceImpl<RetailReturnN
 
                 List<RetailOrderBillGoods> orderDetailList = retailOrderBillGoodsDao.selectList(new QueryWrapper<RetailOrderBillGoods>().eq("bill_id", bill.getRetailOrderBillId()));
 
-                RetailReturnNoticeBillGoods detail = RetailReturnNoticeBillGoods.build();
-                detail.setBillId(bill.getId());
+                // 一行一件
+                BigDecimal quantity = data.getQuantity();
+                while (quantity.compareTo(BigDecimal.ZERO) == 1) {
+                    RetailReturnNoticeBillGoods detail = RetailReturnNoticeBillGoods.build();
+                    detail.setBillId(bill.getId());
 
-                if (StringUtils.isNotBlank(data.getBarcode())) {
-                    Barcode barcode = barcodeDao.selectOne(new QueryWrapper<Barcode>().eq("barcode", data.getBarcode()));
-                    if (barcode == null) {
-                        errorMsgList.add(String.format("条码(barcode)： %s 不存在", data.getBarcode()));
-                        continue;
+                    if (StringUtils.isNotBlank(data.getBarcode())) {
+                        Barcode barcode = barcodeDao.selectOne(new QueryWrapper<Barcode>().eq("barcode", data.getBarcode()));
+                        if (barcode == null) {
+                            errorMsgList.add(String.format("条码(barcode)： %s 不存在", data.getBarcode()));
+                            continue;
+                        }
+                        // 验证当前款是否已经退货
+                        List<RetailOrderBillGoods> orderList = orderDetailList.stream().filter(f -> f.getBarcode().equals(data.getBarcode()) &&
+                                f.getBalancePrice().compareTo(data.getBalancePrice()) == 0 && f.getReturnStatus().equals(0)).collect(Collectors.toList());
+                        if (orderList == null || orderList.size() == 0) {
+                            errorMsgList.add(String.format("条码(barcode)： %s 不存在或已退货", data.getBarcode()));
+                            continue;
+                        }
+
+                        RetailOrderBillGoods orderBillGoods = orderList.get(0);
+                        detail.setRetailOrderBillGoodsId(orderBillGoods.getId());
+                        orderDetailList.remove(orderBillGoods);
+
+                        detail.setBarcode(barcode.getBarcode());
+                        detail.setGoodsId(barcode.getGoodsId());
+                        detail.setColorId(barcode.getColorId());
+                        detail.setLongId(barcode.getLongId());
+                        detail.setSizeId(barcode.getSizeId());
+                        detail.setTagPrice(data.getTagPrice());
+                        detail.setBalancePrice(data.getBalancePrice());
+                        detail.setDiscount(data.getDiscount());
+                        detail.setQuantity(BigDecimal.ONE);
+                    } else {
+                        // 暂时为空 先不处理货品写入
                     }
-                    // 验证当前款是否已经退货
-                    List<RetailOrderBillGoods> orderList = orderDetailList.stream().filter(f -> f.getBarcode().equals(data.getBarcode()) &&
-                            f.getBalancePrice().compareTo(data.getBalancePrice()) == 0 && f.getReturnStatus().equals(0)).collect(Collectors.toList());
-                    if (orderList == null || orderList.size() == 0) {
-                        errorMsgList.add(String.format("条码(barcode)： %s 不存在或已退货", data.getBarcode()));
-                        continue;
-                    }
 
-                    RetailOrderBillGoods orderBillGoods = orderList.get(0);
-                    detail.setRetailOrderBillGoodsId(orderBillGoods.getId());
-                    orderDetailList.remove(orderBillGoods);
-
-                    detail.setBarcode(barcode.getBarcode());
-                    detail.setGoodsId(barcode.getGoodsId());
-                    detail.setColorId(barcode.getColorId());
-                    detail.setLongId(barcode.getLongId());
-                    detail.setSizeId(barcode.getSizeId());
-                    detail.setTagPrice(data.getTagPrice());
-                    detail.setBalancePrice(data.getBalancePrice());
-                    detail.setDiscount(data.getDiscount());
-                    detail.setQuantity(data.getQuantity());
-                } else {
-                    // 暂时为空 先不处理货品写入
+                    goodsList.add(detail);
+                    quantity = quantity.subtract(BigDecimal.ONE);
                 }
-                goodsList.add(detail);
+
             }
             context.setBillGoodsList(goodsList);
         }
@@ -220,19 +227,25 @@ public class RetailReturnNoticeBillServiceBean extends ServiceImpl<RetailReturnN
         param.getGoodsDetailData().forEach(item -> {
             Barcode barcode = barcodeMap.get(item.getBarcode());
             if (null != barcode) {
-                RetailReturnNoticeBillGoods goods = RetailReturnNoticeBillGoods.build();
-                goods.setGoodsId(barcode.getGoodsId());
-                goods.setLongId(barcode.getLongId());
-                goods.setColorId(barcode.getColorId());
-                goods.setSizeId(barcode.getSizeId());
-                goods.setBarcode(item.getBarcode());
-                goods.setDiscount(item.getDiscount());
-                goods.setBalancePrice(item.getBalancePrice());
-                goods.setQuantity(item.getQuantity());
-                // TODO 渠道货品吊牌价
-                goods.setTagPrice(BigDecimal.ZERO);
-                goods.setBillId(bill.getId());
-                billGoodsList.add(goods);
+                // 一行一件
+                BigDecimal quantity = item.getQuantity();
+                while (quantity.compareTo(BigDecimal.ZERO) == 1) {
+                    RetailReturnNoticeBillGoods goods = RetailReturnNoticeBillGoods.build();
+                    goods.setGoodsId(barcode.getGoodsId());
+                    goods.setLongId(barcode.getLongId());
+                    goods.setColorId(barcode.getColorId());
+                    goods.setSizeId(barcode.getSizeId());
+                    goods.setBarcode(item.getBarcode());
+                    goods.setDiscount(item.getDiscount());
+                    goods.setBalancePrice(item.getBalancePrice());
+                    goods.setQuantity(BigDecimal.ONE);
+                    // TODO 渠道货品吊牌价
+                    goods.setTagPrice(BigDecimal.ZERO);
+                    goods.setBillId(bill.getId());
+                    billGoodsList.add(goods);
+
+                    quantity = quantity.subtract(BigDecimal.ONE);
+                }
             }
         });
         context.setBillGoodsList(billGoodsList);

@@ -62,7 +62,7 @@ public class RetailOrderInnoServiceImpl implements RetailOrderInnoService {
 
         YumeiOrderQueryPageResp page = saleOrderService.orderQuery(yumeiOrderQueryReq);
         if (page.getTotal() == 0) {
-            // 找不到订单允许取消
+            // 找不到订单不允许取消
             this.failure(response, "onlineOrderCodeNotExist");
             return response;
         }
@@ -124,7 +124,12 @@ public class RetailOrderInnoServiceImpl implements RetailOrderInnoService {
         }
         // 更新 订单状态
         if (response.get("Flag").equals("1")) {
-            this.updOrderByStatus(retailOrderBill.getId(), barcode);
+            try {
+                this.updOrderByStatus(retailOrderBill.getId(), barcode);
+            } catch (Exception ex) {
+
+            }
+
         }
         return response;
     }

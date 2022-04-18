@@ -130,7 +130,8 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
         // 按单号下载不更新中间表日期
         if (isDate) {
             // 记录接口的最大拉取时间
-            onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatform.getId(), key, DateUtils.parseDate(dto.getEndTime()));
+            Date date = DateUtil.getDate(dto.getEndTime(), DateUtil.FULL_DATE_FORMAT);
+            onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatform.getId(), key, date);
         }
     }
 
