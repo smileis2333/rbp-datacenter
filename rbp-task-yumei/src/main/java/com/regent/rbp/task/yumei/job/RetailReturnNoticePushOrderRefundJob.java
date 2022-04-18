@@ -1,6 +1,7 @@
 package com.regent.rbp.task.yumei.job;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -120,16 +122,23 @@ public class RetailReturnNoticePushOrderRefundJob {
                     continue;
                 }
                 List<YumeiOrderItems> goodsDataList = new ArrayList<>();
+                Map<String, YumeiOrderItems> goodsMap = new HashMap<>();
                 goodsList.forEach(item -> {
-                    YumeiOrderItems orderItems = new YumeiOrderItems();
-                    goodsDataList.add(orderItems);
+                    YumeiOrderItems orderItems = goodsMap.get(item.getBarcode());
+                    if (orderItems == null) {
+                        orderItems = new YumeiOrderItems();
+                        goodsDataList.add(orderItems);
 
-                    orderItems.setSkuCode(item.getBarcode());
-                    orderItems.setOutRefundNo(bill.getOnlineReturnNoticeCode());
-                    orderItems.setRefundAmount(item.getBalancePrice());
-                    orderItems.setRefundType(1);
-                    orderItems.setSkuQty(item.getQuantity());
-                    orderItems.setRefundRemark(bill.getNotes());
+                        orderItems.setSkuCode(item.getBarcode());
+                        orderItems.setOutRefundNo(bill.getOnlineReturnNoticeCode());
+                        orderItems.setRefundAmount(item.getBalancePrice());
+                        orderItems.setRefundType(1);
+                        orderItems.setSkuQty(item.getQuantity());
+                        orderItems.setRefundRemark(bill.getNotes());
+                        goodsMap.put(item.getBarcode(), orderItems);
+                    } else {
+                        orderItems.setSkuQty(NumberUtil.add(orderItems.getSkuQty(), item.getQuantity()));
+                    }
                 });
                 try {
                     // 订单退货退款接口

@@ -1,17 +1,12 @@
 package com.regent.rbp.task.inno.service.impl;
 
-import cn.hutool.core.date.DateTime;
 import cn.hutool.http.HttpUtil;
-import com.alibaba.excel.util.DateUtils;
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
-import com.regent.rbp.api.core.onlinePlatform.OnlinePlatformSyncCache;
 import com.regent.rbp.api.core.retail.RetailOrderBill;
 import com.regent.rbp.api.core.retail.RetailReturnNoticeBill;
-import com.regent.rbp.api.core.retail.RetailReturnNoticeBillGoods;
 import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillDao;
@@ -27,11 +22,9 @@ import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.api.service.retail.RetailReturnNoticeBillService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.util.DateUtil;
-import com.regent.rbp.task.inno.config.InnoConfig;
 import com.regent.rbp.task.inno.model.dto.RetailReturnNoticeDto;
 import com.regent.rbp.task.inno.model.dto.RetailReturnNoticeListDetailDto;
 import com.regent.rbp.task.inno.model.dto.RetailReturnNoticeListDto;
-import com.regent.rbp.task.inno.model.dto.SaveMemberDto;
 import com.regent.rbp.task.inno.model.param.RetailReturnNoticeParam;
 import com.regent.rbp.task.inno.model.req.RetailReturnNoticeReqDto;
 import com.regent.rbp.task.inno.model.resp.RetailReturnNoticeRespDto;
@@ -130,7 +123,7 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
         // 按单号下载不更新中间表日期
         if (isDate) {
             // 记录接口的最大拉取时间
-            Date date = DateUtil.getDate(dto.getEndTime(), DateUtil.FULL_DATE_FORMAT);
+            Date date = DateUtil.getDate(dto.getEndTime(), SystemConstants.FULL_DATE_FORMAT);
             onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatform.getId(), key, date);
         }
     }
