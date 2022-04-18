@@ -93,6 +93,14 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         }
 
         for (RetailOrderBill retailOrderBill : retailOrderBillList) {
+            // 调用成功不再重复调用
+            List<RetailOrderPushLog> retailOrderPushLogList = retailOrderPushLogDao.selectList(new LambdaQueryWrapper<RetailOrderPushLog>()
+                    .eq(RetailOrderPushLog::getBillNo, retailOrderBill.getManualId())
+                    .eq(RetailOrderPushLog::getSucess, 1)
+                    .eq(RetailOrderPushLog::getUrl, url + YumeiApiUrl.SALE_ORDER_PUSH));
+            if (CollUtil.isNotEmpty(retailOrderPushLogList)) {
+                continue;
+            }
             OrderBusinessPersonDto orderBusinessPersonDto = this.getOrderBusinessPersonDto(retailOrderBill.getId());
             if (null == orderBusinessPersonDto) {
                 throw new BusinessException(ResponseCode.PARAMS_ERROR, "订单" + retailOrderBill.getBillNo() + "没有分销员或会员没有归属渠道");
@@ -144,6 +152,15 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         }
 
         for (RetailOrderBill retailOrderBill : retailOrderBillList) {
+            // 调用成功不再重复调用
+            List<RetailOrderPushLog> retailOrderPushLogList = retailOrderPushLogDao.selectList(new LambdaQueryWrapper<RetailOrderPushLog>()
+                    .eq(RetailOrderPushLog::getBillNo, retailOrderBill.getManualId())
+                    .eq(RetailOrderPushLog::getSucess, 1)
+                    .eq(RetailOrderPushLog::getUrl, url + YumeiApiUrl.SALE_ORDER_CONFIRM_RECEIPT));
+            if (CollUtil.isNotEmpty(retailOrderPushLogList)) {
+                continue;
+            }
+
             OrderBusinessPersonDto orderBusinessPersonDto = this.getOrderBusinessPersonDto(retailOrderBill.getId());
             if (null == orderBusinessPersonDto) {
                 throw new BusinessException(ResponseCode.PARAMS_ERROR, "订单" + retailOrderBill.getBillNo() + "没有分销员或会员没有归属渠道");
