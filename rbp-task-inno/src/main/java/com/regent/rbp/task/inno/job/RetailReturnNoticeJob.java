@@ -66,7 +66,7 @@ public class RetailReturnNoticeJob {
             String message = ex.getMessage();
             XxlJobHelper.log(message);
             XxlJobHelper.handleFail(message);
-            return;
+            ex.printStackTrace();
         } finally {
             if (tradeCreate) {
                 this.pushYumeiOrderRefund();
@@ -79,6 +79,7 @@ public class RetailReturnNoticeJob {
             retailReturnNoticePushOrderRefundJob.RetailReturnNoticePushOrderRefundHandler();
         } catch (Exception e) {
             XxlJobHelper.handleFail(String.format("全渠道退货通知单推送玉美订单退货退款接口失败，详情：%s", e.getMessage()));
+            e.printStackTrace();
         }
     }
 
