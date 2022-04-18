@@ -93,11 +93,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         }
 
         for (RetailOrderBill retailOrderBill : retailOrderBillList) {
-            OrderBusinessPersonDto orderBusinessPersonDto = retailOrderBillDao.getOrderBusinessPersonDto(retailOrderBill.getId());
-            if (null == orderBusinessPersonDto) {
-                // 没有分销员，取会员所属店铺
-                orderBusinessPersonDto = retailOrderBillDao.getMemberCardChannel(retailOrderBill.getId());
-            }
+            OrderBusinessPersonDto orderBusinessPersonDto = this.getOrderBusinessPersonDto(retailOrderBill.getId());
             if (null == orderBusinessPersonDto) {
                 throw new BusinessException(ResponseCode.PARAMS_ERROR, "订单" + retailOrderBill.getBillNo() + "没有分销员或会员没有归属渠道");
             }
@@ -148,11 +144,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         }
 
         for (RetailOrderBill retailOrderBill : retailOrderBillList) {
-            OrderBusinessPersonDto orderBusinessPersonDto = retailOrderBillDao.getOrderBusinessPersonDto(retailOrderBill.getId());
-            if (null == orderBusinessPersonDto) {
-                // 没有分销员，取会员所属店铺
-                orderBusinessPersonDto = retailOrderBillDao.getMemberCardChannel(retailOrderBill.getId());
-            }
+            OrderBusinessPersonDto orderBusinessPersonDto = this.getOrderBusinessPersonDto(retailOrderBill.getId());
             if (null == orderBusinessPersonDto) {
                 throw new BusinessException(ResponseCode.PARAMS_ERROR, "订单" + retailOrderBill.getBillNo() + "没有分销员或会员没有归属渠道");
             }
@@ -393,4 +385,17 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         return success;
     }
 
+    @Override
+    public OrderBusinessPersonDto getOrderBusinessPersonDto(Long retailOrderBillId) {
+        if (null == retailOrderBillId) {
+            return null;
+        }
+        // 取分销员所属店铺
+        OrderBusinessPersonDto orderBusinessPersonDto = retailOrderBillDao.getOrderBusinessPersonDto(retailOrderBillId);
+        if (null == orderBusinessPersonDto) {
+            // 没有分销员，取会员所属店铺
+            orderBusinessPersonDto = retailOrderBillDao.getMemberCardChannel(retailOrderBillId);
+        }
+        return orderBusinessPersonDto;
+    }
 }
