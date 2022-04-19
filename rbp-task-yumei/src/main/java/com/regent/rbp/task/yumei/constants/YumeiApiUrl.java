@@ -29,4 +29,9 @@ public class YumeiApiUrl {
      * 订单取消
      */
     public static final String SALE_ORDER_CANCEL = "/api/trade/orderCancel";
+
+    /**
+     * 销售订单_退货物流上传
+     */
+    public static final String SALE_ORDER_PUSH_REFUND = "/api/trade/pushRefund";
 }

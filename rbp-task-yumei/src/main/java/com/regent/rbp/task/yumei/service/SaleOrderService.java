@@ -2,9 +2,10 @@ package com.regent.rbp.task.yumei.service;
 
 import com.regent.rbp.api.dto.retail.OrderBusinessPersonDto;
 import com.regent.rbp.task.yumei.model.YumeiOrder;
+import com.regent.rbp.task.yumei.model.YumeiOrderItems;
 import com.regent.rbp.task.yumei.model.YumeiOrderQueryPageResp;
 import com.regent.rbp.task.yumei.model.YumeiOrderQueryReq;
-import com.regent.rbp.task.yumei.model.YumeiOrderItems;
+import com.regent.rbp.task.yumei.model.YumeiRefundItems;
 
 import java.util.List;
 
@@ -88,4 +89,15 @@ public interface SaleOrderService {
      * @return
      */
     OrderBusinessPersonDto getOrderBusinessPersonDto(Long retailOrderBillId);
+
+    /**
+     * 推送订单退货物流接口
+     *
+     * @param storeNo
+     * @param orderSource
+     * @param outOrderNo
+     * @param orderItems
+     * @return 错误信息
+     */
+    String pushRefundLogistics(String storeNo, String orderSource, String outOrderNo, List<YumeiRefundItems> orderItems);
 }

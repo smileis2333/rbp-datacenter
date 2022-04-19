@@ -25,6 +25,7 @@ import com.regent.rbp.task.yumei.model.YumeiOrder;
 import com.regent.rbp.task.yumei.model.YumeiOrderItems;
 import com.regent.rbp.task.yumei.model.YumeiOrderQueryPageResp;
 import com.regent.rbp.task.yumei.model.YumeiOrderQueryReq;
+import com.regent.rbp.task.yumei.model.YumeiRefundItems;
 import com.regent.rbp.task.yumei.service.SaleOrderService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -432,5 +433,55 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             orderBusinessPersonDto = retailOrderBillDao.getMemberCardChannel(retailOrderBillId);
         }
         return orderBusinessPersonDto;
+    }
+
+    @Override
+    public String pushRefundLogistics(String storeNo, String orderSource, String outOrderNo, List<YumeiRefundItems> orderItems) {
+        String errorMsg = null;
+        if (CollUtil.isEmpty(orderItems)) {
+            return errorMsg;
+        }
+        HashMap<String, Object> body = new HashMap<>();
+        try {
+            body.put("storeNo", storeNo);
+            body.put("orderSource", orderSource);
+            body.put("outOrderNo", outOrderNo);
+            body.put("orderItems", orderItems);
+            String jsonBody = objectMapper.writeValueAsString(body);
+            log.info("请求url：" + url + YumeiApiUrl.SALE_ORDER_PUSH_REFUND);
+            log.info("请求参数：" + jsonBody);
+            String returnJson = HttpUtil.createRequest(Method.POST, url + YumeiApiUrl.SALE_ORDER_PUSH_REFUND)
+                    .body(jsonBody)
+                    .header(Header.CONTENT_TYPE, "application/json")
+                    .header("X-AUTH-TOKEN", credential.getAccessToken())
+                    .execute()
+                    .body();
+            log.info("请求结果：" + returnJson);
+
+            RetailOrderPushLog retailOrderPushLog = new RetailOrderPushLog();
+            retailOrderPushLog.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+            retailOrderPushLog.setBillNo(outOrderNo);
+            retailOrderPushLog.setUrl(url + YumeiApiUrl.SALE_ORDER_PUSH_REFUND);
+            retailOrderPushLog.setRequestParam(jsonBody);
+            retailOrderPushLog.setResult(returnJson);
+            retailOrderPushLog.preInsert();
+            Map<String, Object> returnData = (Map<String, Object>) objectMapper.readValue(returnJson, Map.class);
+            if (!(Boolean)returnData.getOrDefault("success", false)) {
+                retailOrderPushLog.setSucess(0);
+                log.error("调用玉美销售订单_退货物流上传接口失败" + outOrderNo);
+                errorMsg = (String)returnData.get("msg");
+            } else {
+                retailOrderPushLog.setSucess(1);
+                log.info("调用玉美销售订单_退货物流上传接口成功" + outOrderNo);
+            }
+            retailOrderPushLogDao.insert(retailOrderPushLog);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "paramError");
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "returnDataError");
+        }
+        return errorMsg;
     }
 }
