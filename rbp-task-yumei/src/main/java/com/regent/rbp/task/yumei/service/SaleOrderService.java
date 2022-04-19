@@ -60,8 +60,9 @@ public interface SaleOrderService {
      * 确认收货
      * @param storeNo 门店编号
      * @param outOrderNo 订单编号
+     * @param confirmTime 收货时间
      */
-    String orderReceipt(String storeNo, Integer orderSource, String outOrderNo);
+    String orderReceipt(String storeNo, Integer orderSource, String outOrderNo, String confirmTime);
 
 
     /**

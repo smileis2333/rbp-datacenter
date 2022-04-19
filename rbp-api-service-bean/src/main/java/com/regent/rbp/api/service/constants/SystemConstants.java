@@ -33,6 +33,8 @@ public class SystemConstants {
 
     public static final String DOWNLOAD_ONLINE_ORDER_STATUS_LIST_JOB = "inno.downloadOnlineOrderStatusListJobHandler";
 
+    public static final String DOWNLOAD_ONLINE_ORDER_RECEIVED_LIST_JOB = "inno.downloadOnlineOrderReceivedListJobHandler";
+
     public static final String ONLINE_SYNC_GOODS_STOCK_FULL_JOB = "inno.onlineSyncGoodsStockFullJobHandler";
 
     public static final String ONLINE_SYNC_GOODS_STOCK_JOB = "inno.onlineSyncGoodsStockJobHandler";

@@ -150,6 +150,9 @@ public class RetailOrderBill {
     @TableField(exist = false)
     private Map<String, Object> customFieldMap;
 
+    @ApiModelProperty(notes = "收货时间")
+    private String receivedTime;
+
     public static RetailOrderBill build() {
         Long userId = ThreadLocalGroup.getUserId();
         RetailOrderBill item = new RetailOrderBill();

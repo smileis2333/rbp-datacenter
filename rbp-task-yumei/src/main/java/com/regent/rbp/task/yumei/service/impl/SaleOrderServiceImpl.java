@@ -168,7 +168,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
 
             // 订单来源（1：美人计会员商城、2：酒会员商城、3：丽晶
             Integer orderSource = 3;
-            String errorMsg = this.orderReceipt(orderBusinessPersonDto.getChannelNo(), orderSource, retailOrderBill.getManualId());
+            String errorMsg = this.orderReceipt(orderBusinessPersonDto.getChannelNo(), orderSource, retailOrderBill.getManualId(), retailOrderBill.getReceivedTime());
             if (StrUtil.isNotEmpty(errorMsg)) {
                 errorMsgList.add("订单 " + retailOrderBill.getManualId() + " 确认收货状态推送失败：" + errorMsg);
             }
@@ -277,7 +277,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     }
 
     @Override
-    public String orderReceipt(String storeNo, Integer orderSource, String outOrderNo) {
+    public String orderReceipt(String storeNo, Integer orderSource, String outOrderNo, String confirmTime) {
         String errorMsg = null;
         if (StrUtil.isEmpty(outOrderNo)) {
             return errorMsg;
@@ -287,6 +287,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             body.put("storeNo", storeNo);
             body.put("orderSource", orderSource);
             body.put("outOrderNo", outOrderNo);
+            body.put("confirmTime", confirmTime);
             String jsonBody = objectMapper.writeValueAsString(body);
             log.info("请求url：" + url + YumeiApiUrl.SALE_ORDER_CONFIRM_RECEIPT);
             log.info("请求参数：" + jsonBody);

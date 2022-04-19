@@ -1,5 +1,7 @@
 package com.regent.rbp.task.inno.job;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -25,14 +27,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author liuzhicheng
- * @createTime 2022-04-15
+ * @createTime 2022-04-19
  * @Description
  */
 @Component
-public class RetailOrderStatusJob {
+public class RetailOrderReceivedJob {
 
     private static final String ERROR_PARAM_NOT_EMPTY = "[inno拉取订单列表]:拉取订单列表参数不能为空";
     private static final String ERROR_ONLINE_PLATFORM_CODE_NOT_EXIST = "[inno拉取订单列表]:电商平台编号不存在";
@@ -51,7 +54,16 @@ public class RetailOrderStatusJob {
     @Autowired
     private SaleOrderService saleOrderService;
 
-    @XxlJob(SystemConstants.DOWNLOAD_ONLINE_ORDER_STATUS_LIST_JOB)
+    /**
+     * 拉取已收货订单列表
+     * 调用频率：60分钟1次
+     * 入参格式：{ "onlinePlatformCode": "INNO",
+     * "beginTime": "2021-01-01 00:00:01",
+     * "endTime": "2021-01-02 00:00:01"}
+     *
+     * @return
+     */
+    @XxlJob(SystemConstants.DOWNLOAD_ONLINE_ORDER_RECEIVED_LIST_JOB)
     public void downloadOnlineOrderStatusListJobHandler() {
         ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
         try {
@@ -73,7 +85,7 @@ public class RetailOrderStatusJob {
             }
             // 获取任务执行缓存
             OnlinePlatformSyncCache syncCache = onlinePlatformSyncCacheDao.selectOne(new LambdaQueryWrapper<OnlinePlatformSyncCache>()
-                    .eq(OnlinePlatformSyncCache::getOnlinePlatformId, onlinePlatform.getId()).eq(OnlinePlatformSyncCache::getSyncKey, SystemConstants.DOWNLOAD_ONLINE_ORDER_STATUS_LIST_JOB));
+                    .eq(OnlinePlatformSyncCache::getOnlinePlatformId, onlinePlatform.getId()).eq(OnlinePlatformSyncCache::getSyncKey, SystemConstants.DOWNLOAD_ONLINE_ORDER_RECEIVED_LIST_JOB));
 
             if (null == orderParam.getBeginTime() && null == syncCache) {
                 orderParam.setBeginTime(DateUtil.getNowDateShort());
@@ -82,7 +94,7 @@ public class RetailOrderStatusJob {
             orderParam.setEndTime(OptionalUtil.ofNullable(orderParam, v -> v.getEndTime() == null ? new Date() : v.getEndTime()));
             // 不存在则创建
             if (null == syncCache) {
-                syncCache = OnlinePlatformSyncCache.build(onlinePlatform.getId(), SystemConstants.DOWNLOAD_ONLINE_ORDER_LIST_JOB, DateUtil.getStartDateTimeStr(orderParam.getEndTime()));
+                syncCache = OnlinePlatformSyncCache.build(onlinePlatform.getId(), SystemConstants.DOWNLOAD_ONLINE_ORDER_RECEIVED_LIST_JOB, DateUtil.getStartDateTimeStr(orderParam.getEndTime()));
                 onlinePlatformSyncCacheDao.insert(syncCache);
             }
             // 开始时间不存在则读取缓存
@@ -92,7 +104,12 @@ public class RetailOrderStatusJob {
                 orderParam.setBeginTime(new Date(cacheTime.getTime() - SystemConstants.DEFAULT_TEN_MINUTES));
             }
             //下载线上订单列表
-            retailOrderService.downloadOnlineOrderStatusList(orderParam, onlinePlatform);
+            List<String> orderSnList = retailOrderService.downloadOnlineOrderReceivedList(orderParam, onlinePlatform);
+
+            // 确认收货状态推送到玉美
+            if (orderReceipt) {
+                this.pushOrderReceiveStatusToYuMei(orderSnList);
+            }
 
         } catch (BusinessException e) {
             e.printStackTrace();
@@ -102,6 +119,16 @@ public class RetailOrderStatusJob {
             e.printStackTrace();
             XxlJobHelper.log(e.getMessage());
             XxlJobHelper.handleFail(e.getMessage());
+        }
+    }
+
+    private void pushOrderReceiveStatusToYuMei(List<String> orderSnList) {
+        if (CollUtil.isNotEmpty(orderSnList)) {
+            String errorMsg = saleOrderService.pushOrderReceiveStatusToYuMei(orderSnList);
+            if (StrUtil.isNotEmpty(errorMsg)) {
+                XxlJobHelper.log(errorMsg);
+                XxlJobHelper.handleFail(errorMsg);
+            }
         }
     }
 }
