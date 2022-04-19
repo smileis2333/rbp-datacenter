@@ -31,7 +31,8 @@ public class OnlinePlatformSyncCacheServiceBean extends ServiceImpl<OnlinePlatfo
         OnlinePlatformSyncCache syncCache = onlinePlatformSyncCacheDao.selectOne(new LambdaQueryWrapper<OnlinePlatformSyncCache>()
                 .eq(OnlinePlatformSyncCache::getOnlinePlatformId, onlinePlatformId).eq(OnlinePlatformSyncCache::getSyncKey, key));
         if (syncCache == null) {
-            return DateUtil.getDate("2020-01-01", DateUtil.SHORT_DATE_FORMAT);
+            // DateUtil.getDate("2020-01-01", DateUtil.SHORT_DATE_FORMAT);
+            return DateUtil.getStartDateTime(new Date());
         }
 
         Date cacheTime = DateUtil.getDate(syncCache.getData(), SystemConstants.FULL_DATE_FORMAT);

@@ -12,6 +12,12 @@ import lombok.Data;
 @Data
 public class RetailReturnNoticeDto {
 
+    public RetailReturnNoticeDto(){}
+
+    public RetailReturnNoticeDto(String returnSn) {
+        this.returnSn = returnSn;
+    }
+
     @ApiModelProperty(notes = "开始时间（时间标准化：2021-01-01 00:00:01）")
     private String beginTime;
 

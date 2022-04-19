@@ -81,5 +81,7 @@ public class SystemConstants {
 
     public static final String RETAIL_RETURN_NOTICE_PUSH_ORDER_REFUND_JOB = "yumei.retailReturnNoticePushOrderRefund";
 
+    public static final String POST_RETURN_ORDER_SHIPPING_NO = "inno.ReturnOrderShippingNo";
+
 
 }

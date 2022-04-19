@@ -21,4 +21,5 @@ public class RetailReturnNoticeParam {
     @ApiModelProperty(notes = "退货单号")
     private String returnSn;
 
+
 }

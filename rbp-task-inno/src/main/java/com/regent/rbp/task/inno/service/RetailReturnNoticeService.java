@@ -1,6 +1,7 @@
 package com.regent.rbp.task.inno.service;
 
 import com.regent.rbp.task.inno.model.param.RetailReturnNoticeParam;
+import com.regent.rbp.task.yumei.model.YumeiRefund;
 
 /**
  * @program: rbp-datacenter
@@ -11,4 +12,9 @@ import com.regent.rbp.task.inno.model.param.RetailReturnNoticeParam;
 public interface RetailReturnNoticeService {
 
     void downloadRetailReturnNoticeList(RetailReturnNoticeParam param) throws Exception;
+
+    void returnOrderShippingNo(RetailReturnNoticeParam param) throws Exception;
+
+    YumeiRefund getYumeiRefund(String orderSn);
+
 }

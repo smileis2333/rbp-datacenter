@@ -2,33 +2,52 @@ package com.regent.rbp.task.inno.service.impl;
 
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.regent.rbp.api.core.channel.Channel;
+import com.regent.rbp.api.core.eum.OnlinePlatformTypeEnum;
 import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
+import com.regent.rbp.api.core.retail.LogisticsCompany;
+import com.regent.rbp.api.core.retail.LogisticsCompanyPlatformMapping;
 import com.regent.rbp.api.core.retail.RetailOrderBill;
+import com.regent.rbp.api.core.retail.RetailReceiveBackBill;
 import com.regent.rbp.api.core.retail.RetailReturnNoticeBill;
+import com.regent.rbp.api.core.retail.RetailReturnNoticeBillGoods;
 import com.regent.rbp.api.dao.channel.ChannelDao;
+import com.regent.rbp.api.dao.retail.LogisticsCompanyDao;
 import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillDao;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillGoodsDao;
 import com.regent.rbp.api.dao.retail.RetailReturnNoticeBillOperatorLogDao;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
+import com.regent.rbp.api.dto.retail.OrderBusinessPersonDto;
 import com.regent.rbp.api.dto.retail.RetailReturnNoticeBillGoodsDetailData;
 import com.regent.rbp.api.dto.retail.RetailReturnNoticeBillSaveParam;
 import com.regent.rbp.api.service.base.OnlinePlatformService;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncCacheService;
 import com.regent.rbp.api.service.base.OnlinePlatformSyncErrorService;
 import com.regent.rbp.api.service.constants.SystemConstants;
+import com.regent.rbp.api.service.retail.LogisticsCompanyPlatformMappingService;
 import com.regent.rbp.api.service.retail.RetailReturnNoticeBillService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.util.DateUtil;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
+import com.regent.rbp.task.inno.model.dto.RetailOrderSearchDto;
 import com.regent.rbp.task.inno.model.dto.RetailReturnNoticeDto;
 import com.regent.rbp.task.inno.model.dto.RetailReturnNoticeListDetailDto;
 import com.regent.rbp.task.inno.model.dto.RetailReturnNoticeListDto;
+import com.regent.rbp.task.inno.model.dto.UpdateReturnOrderStatusDto;
 import com.regent.rbp.task.inno.model.param.RetailReturnNoticeParam;
 import com.regent.rbp.task.inno.model.req.RetailReturnNoticeReqDto;
+import com.regent.rbp.task.inno.model.resp.InnoDataRespDto;
+import com.regent.rbp.task.inno.model.resp.InnoLogisticsDto;
 import com.regent.rbp.task.inno.model.resp.RetailReturnNoticeRespDto;
+import com.regent.rbp.task.inno.model.resp.ReturnOrderShippingNoRespDto;
+import com.regent.rbp.task.inno.model.resp.UpdateReturnOrderStatusRespDto;
 import com.regent.rbp.task.inno.service.RetailReturnNoticeService;
+import com.regent.rbp.task.yumei.model.YumeiRefund;
+import com.regent.rbp.task.yumei.model.YumeiRefundItems;
+import com.regent.rbp.task.yumei.service.SaleOrderService;
 import com.xxl.job.core.context.XxlJobHelper;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +57,10 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @program: rbp-datacenter
@@ -51,6 +72,7 @@ import java.util.Map;
 public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService {
 
     private static final String API_URL_APPRETURNORDER = "api/ReturnOrder/Get_AppReturnOrder";
+    private static final String API_URL_RETURNORDERSHIPPINGNO = "api/ReturnOrder/Get_ReturnOrderShippingNo";
 
     @Autowired
     OnlinePlatformService onlinePlatformService;
@@ -60,6 +82,10 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
     RetailReturnNoticeBillService retailReturnNoticeBillService;
     @Autowired
     OnlinePlatformSyncErrorService onlinePlatformSyncErrorService;
+    @Autowired
+    private LogisticsCompanyPlatformMappingService logisticsCompanyPlatformMappingService;
+    @Autowired
+    private SaleOrderService saleOrderService;
 
     @Autowired
     RetailReturnNoticeBillDao retailReturnNoticeBillDao;
@@ -71,6 +97,8 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
     ChannelDao channelDao;
     @Autowired
     RetailOrderBillDao retailOrderBillDao;
+    @Autowired
+    private LogisticsCompanyDao logisticsCompanyDao;
 
 
     @Override
@@ -230,5 +258,151 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
             XxlJobHelper.log(String.format("全渠道退货通知单：%s，已经存在", notice.getReturn_sn()));
         }
     }
+
+    @Override
+    public void returnOrderShippingNo(RetailReturnNoticeParam param) throws Exception {
+        String key = SystemConstants.POST_RETURN_ORDER_SHIPPING_NO;
+        OnlinePlatform onlinePlatform = onlinePlatformService.getOnlinePlatform(param.getOnlinePlatformCode());
+        Long onlinePlatformId = onlinePlatform.getId();
+        Date endTime = new Date();
+        Map<String, Long> map = onlinePlatformSyncErrorService.getErrorBillId(key);
+        if (map.size() > 0) {
+            for (String returnSn : map.keySet()) {
+                RetailReturnNoticeDto retailReturnNoticeDto = new RetailReturnNoticeDto();
+                retailReturnNoticeDto.setReturnSn(returnSn);
+                retailReturnNoticeDto.setPageIndex(1);
+                this.pushReturnOrderShippingNo(onlinePlatform, retailReturnNoticeDto, map);
+            }
+
+        }
+        try {
+            Date uploadingDate = onlinePlatformSyncCacheService.getOnlinePlatformSyncCacheByDate(onlinePlatformId, key);
+
+            RetailReturnNoticeDto searchDto = new RetailReturnNoticeDto();
+            searchDto.setBeginTime(DateUtil.getFullDateStr(uploadingDate));
+            searchDto.setEndTime(DateUtil.getFullDateStr(endTime));
+            searchDto.setPageIndex(1);
+            this.pushReturnOrderShippingNo(onlinePlatform, searchDto, map);
+
+            onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatform.getId(), key, endTime);
+        } catch (Exception e) {
+            XxlJobHelper.handleFail(e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    private void pushReturnOrderShippingNo(OnlinePlatform onlinePlatform, RetailReturnNoticeDto dto, Map<String, Long> map) throws Exception {
+        RetailReturnNoticeReqDto reqDto = new RetailReturnNoticeReqDto();
+        reqDto.setApp_key(onlinePlatform.getAppKey());
+        reqDto.setApp_secrept(onlinePlatform.getAppSecret());
+        reqDto.setData(dto);
+
+        String api_url = String.format("%s%s", onlinePlatform.getExternalApplicationApiUrl(), API_URL_RETURNORDERSHIPPINGNO);
+
+        String result = HttpUtil.post(api_url, JSON.toJSONString(reqDto));
+        XxlJobHelper.log(String.format("请求Url：%s", api_url));
+        XxlJobHelper.log(String.format("请求Json：%s", JSON.toJSONString(reqDto)));
+        XxlJobHelper.log(String.format("返回Json：%s", result));
+
+        ReturnOrderShippingNoRespDto respDto = JSON.parseObject(result, ReturnOrderShippingNoRespDto.class);
+        if (respDto.getCode().equals("-1")) {
+            throw new Exception(respDto.getMsg());
+        }
+
+        if (respDto.getData().size() > 0) {
+            for (InnoLogisticsDto logistics : respDto.getData()) {
+                try {
+                    this.updateRetailReturnNoticeBill(onlinePlatform.getId(), logistics, map);
+                } catch (Exception ex) {
+                    XxlJobHelper.log(String.format("错误信息：%s", ex.getMessage()));
+                    ex.printStackTrace();
+                    throw ex;
+                }
+            }
+            for (int i = 2; i <= reqDto.getData().getPageIndex(); i++) {
+                dto.setPageIndex(i);
+                this.pushReturnOrderShippingNo(onlinePlatform, dto, map);
+            }
+        }
+    }
+
+    private void updateRetailReturnNoticeBill(Long onlinePlatformId, InnoLogisticsDto logistics, Map<String, Long> map) {
+        String returnSn = logistics.getReturn_sn();
+        if (map != null && map.containsKey(returnSn)) {
+            Long errorId = map.get(returnSn);
+            if (this.updateLogistics(logistics)) {
+                onlinePlatformSyncErrorService.succeed(errorId);
+                this.yumeiNoticeIds(returnSn);
+            } else {
+                onlinePlatformSyncErrorService.failure(errorId);
+            }
+        } else {
+            if (this.updateLogistics(logistics)) {
+                this.yumeiNoticeIds(returnSn);
+            } else {
+                onlinePlatformSyncErrorService.saveOnlinePlatformSyncError(onlinePlatformId, SystemConstants.DOWNLOAD_ONLINE_ORDER_LIST_JOB, logistics.getReturn_sn());
+            }
+        }
+
+
+    }
+
+    private Boolean updateLogistics(InnoLogisticsDto logistics) {
+        Boolean isType = false;
+        RetailReturnNoticeBill noticeBill = retailReturnNoticeBillDao.selectOne(new LambdaQueryWrapper<RetailReturnNoticeBill>()
+                .eq(RetailReturnNoticeBill::getStatus, 1).eq(RetailReturnNoticeBill::getManualId, logistics.getReturn_sn()));
+        if (noticeBill == null) {
+            XxlJobHelper.log(String.format("错误信息：%s %s", logistics.getReturn_sn(), "当前通知单不存在或未审核"));
+        } else {
+            // 物流公司
+            LogisticsCompany company = logisticsCompanyPlatformMappingService.getLogisticsCompanyCodeByName(logistics.getShipping_name(), OnlinePlatformTypeEnum.INNO.getId());
+            noticeBill.preUpdate();
+            noticeBill.setLogisticsCompanyId(company.getId());
+            noticeBill.setLogisticsBillCode(logistics.getShipping_no());
+            // 修改 Nebule 物流信息
+            retailReturnNoticeBillDao.updateById(noticeBill);
+            isType = true;
+        }
+        return isType;
+    }
+
+    private void yumeiNoticeIds(String orderSn) {
+        Object orderNoList = ThreadLocalGroup.get("yumei_logistics_list");
+        Set<String> orderNoList2 = (Set<String>) orderNoList;
+        if (null == orderNoList2) {
+            orderNoList2 = new HashSet<String>();
+        }
+        orderNoList2.add(orderSn);
+        ThreadLocalGroup.set("yumei_logistics_list", orderNoList2);
+    }
+
+    @Override
+    public YumeiRefund getYumeiRefund(String orderSn) {
+        YumeiRefund refund = new YumeiRefund();
+        List<YumeiRefundItems> data = new ArrayList<>();
+        refund.setData(data);
+
+        RetailReturnNoticeBill noticeBill = retailReturnNoticeBillDao.selectOne(new LambdaQueryWrapper<RetailReturnNoticeBill>().eq(RetailReturnNoticeBill::getManualId, orderSn));
+        RetailOrderBill orderBill = retailOrderBillDao.selectOne(new LambdaQueryWrapper<RetailOrderBill>().eq(RetailOrderBill::getId, noticeBill.getRetailOrderBillId()));
+        List<RetailReturnNoticeBillGoods> goodsList = retailReturnNoticeBillGoodsDao.selectList(new LambdaQueryWrapper<RetailReturnNoticeBillGoods>().eq(RetailReturnNoticeBillGoods::getBillId, noticeBill));
+
+        LogisticsCompanyPlatformMapping company = logisticsCompanyPlatformMappingService.getOnlinePlatformLogisticsCodeById(noticeBill.getLogisticsCompanyId(), OnlinePlatformTypeEnum.WDT.getId());
+        OrderBusinessPersonDto personDto = saleOrderService.getOrderBusinessPersonDto(noticeBill.getRetailOrderBillId());
+
+        refund.setStoreNo(personDto.getChannelNo());
+        refund.setOutOrderNo(orderBill.getManualId());
+
+        for (RetailReturnNoticeBillGoods goods : goodsList) {
+            YumeiRefundItems items = new YumeiRefundItems();
+            items.setSkuCode(goods.getBarcode());
+            items.setLogisticsNo(noticeBill.getLogisticsBillCode());
+            items.setLogisticsName(company.getOnlinePlatformLogisticsName());
+            data.add(items);
+        }
+        return refund;
+    }
+
+
 
 }
