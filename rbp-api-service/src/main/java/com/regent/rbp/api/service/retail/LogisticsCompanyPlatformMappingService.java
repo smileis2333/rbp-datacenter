@@ -28,4 +28,13 @@ public interface LogisticsCompanyPlatformMappingService extends IService<Logisti
      * @return
      */
     LogisticsCompanyPlatformMapping getOnlinePlatformLogisticsCode(String logisticsCompanyCode, Integer onlinePlatformTypeId);
+
+    /**
+     * 根据平台物流名称获取系统对应的物流公司
+     *
+     * @param onlinePlatformLogisticsName 平台物流名称
+     * @param onlinePlatformTypeId 平台id
+     * @return
+     */
+    LogisticsCompany getLogisticsCompanyCodeByName(String onlinePlatformLogisticsName, Integer onlinePlatformTypeId);
 }

@@ -5,7 +5,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.netflix.discovery.converters.Auto;
 import com.regent.rbp.api.core.retail.LogisticsCompany;
 import com.regent.rbp.api.core.retail.LogisticsCompanyPlatformMapping;
 import com.regent.rbp.api.dao.retail.LogisticsCompanyDao;
@@ -63,5 +62,22 @@ public class LogisticsCompanyPlatformMappingServiceBean extends ServiceImpl<Logi
         }
 
         return logisticsCompanyPlatformMapping;
+    }
+
+    @Override
+    public LogisticsCompany getLogisticsCompanyCodeByName(String onlinePlatformLogisticsName, Integer onlinePlatformTypeId) {
+        LogisticsCompany logisticsCompany = null;
+        if (StrUtil.isEmpty(onlinePlatformLogisticsName) || ObjectUtil.isEmpty(onlinePlatformTypeId)) {
+            return logisticsCompany;
+        }
+
+        List<LogisticsCompanyPlatformMapping> logisticsCompanyPlatformMappingList = logisticsCompanyPlatformMappingDao
+                .selectList(new LambdaQueryWrapper<LogisticsCompanyPlatformMapping>()
+                        .eq(LogisticsCompanyPlatformMapping::getOnlinePlatformLogisticsName, onlinePlatformLogisticsName)
+                        .eq(LogisticsCompanyPlatformMapping::getOnlinePlatformTypeId, onlinePlatformTypeId));
+        if (CollUtil.isNotEmpty(logisticsCompanyPlatformMappingList)) {
+            logisticsCompany = logisticsCompanyDao.selectById(logisticsCompanyPlatformMappingList.get(0).getLogisticsCompanyId());
+        }
+        return logisticsCompany;
     }
 }

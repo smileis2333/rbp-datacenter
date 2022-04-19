@@ -31,6 +31,9 @@ public class LogisticsCompanyPlatformMapping {
     @ApiModelProperty(notes = "平台物流编号")
     private String onlinePlatformLogisticsCode;
 
+    @ApiModelProperty(notes = "平台物流名称")
+    private String onlinePlatformLogisticsName;
+
     @ApiModelProperty(notes = "创建人")
     private Long createdBy;
 
