@@ -30,6 +30,15 @@ public interface LogisticsCompanyPlatformMappingService extends IService<Logisti
     LogisticsCompanyPlatformMapping getOnlinePlatformLogisticsCode(String logisticsCompanyCode, Integer onlinePlatformTypeId);
 
     /**
+     * 根据物流公司id获取平台物流编号
+     *
+     * @param logisticsCompanyId 物流公司id
+     * @param onlinePlatformTypeId 平台id
+     * @return
+     */
+    LogisticsCompanyPlatformMapping getOnlinePlatformLogisticsCodeById(Long logisticsCompanyId, Integer onlinePlatformTypeId);
+
+    /**
      * 根据平台物流名称获取系统对应的物流公司
      *
      * @param onlinePlatformLogisticsName 平台物流名称

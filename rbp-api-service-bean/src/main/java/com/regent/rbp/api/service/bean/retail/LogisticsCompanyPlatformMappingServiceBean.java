@@ -65,6 +65,23 @@ public class LogisticsCompanyPlatformMappingServiceBean extends ServiceImpl<Logi
     }
 
     @Override
+    public LogisticsCompanyPlatformMapping getOnlinePlatformLogisticsCodeById(Long logisticsCompanyId, Integer onlinePlatformTypeId) {
+        LogisticsCompanyPlatformMapping logisticsCompanyPlatformMapping = null;
+        if (ObjectUtil.isEmpty(logisticsCompanyId) || ObjectUtil.isEmpty(onlinePlatformTypeId)) {
+            return logisticsCompanyPlatformMapping;
+        }
+
+        LogisticsCompany logisticsCompany = logisticsCompanyDao.selectById(logisticsCompanyId);
+        if (null != logisticsCompany) {
+            logisticsCompanyPlatformMapping = logisticsCompanyPlatformMappingDao.selectOne(new LambdaQueryWrapper<LogisticsCompanyPlatformMapping>()
+                    .eq(LogisticsCompanyPlatformMapping::getLogisticsCompanyId, logisticsCompany.getId())
+                    .eq(LogisticsCompanyPlatformMapping::getOnlinePlatformTypeId, onlinePlatformTypeId));
+        }
+
+        return logisticsCompanyPlatformMapping;
+    }
+
+    @Override
     public LogisticsCompany getLogisticsCompanyCodeByName(String onlinePlatformLogisticsName, Integer onlinePlatformTypeId) {
         LogisticsCompany logisticsCompany = null;
         if (StrUtil.isEmpty(onlinePlatformLogisticsName) || ObjectUtil.isEmpty(onlinePlatformTypeId)) {
