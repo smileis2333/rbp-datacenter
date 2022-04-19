@@ -14,7 +14,7 @@ import java.util.List;
 @Data
 public class ReturnOrderShippingNoRespDto extends BaseResponseDto {
 
-    @ApiModelProperty(notes = "请求返回")
-    private List<InnoLogisticsDto> data;
+    @ApiModelProperty(notes = "结果")
+    private ReturnOrderShippingNoPageDto data;
 
 }

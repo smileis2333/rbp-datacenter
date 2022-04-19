@@ -310,8 +310,8 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
             throw new Exception(respDto.getMsg());
         }
 
-        if (respDto.getData().size() > 0) {
-            for (InnoLogisticsDto logistics : respDto.getData()) {
+        if (respDto.getData().getTotalPages() > 0) {
+            for (InnoLogisticsDto logistics : respDto.getData().getData()) {
                 try {
                     this.updateRetailReturnNoticeBill(onlinePlatform.getId(), logistics, map);
                 } catch (Exception ex) {
@@ -385,7 +385,7 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
 
         RetailReturnNoticeBill noticeBill = retailReturnNoticeBillDao.selectOne(new LambdaQueryWrapper<RetailReturnNoticeBill>().eq(RetailReturnNoticeBill::getManualId, orderSn));
         RetailOrderBill orderBill = retailOrderBillDao.selectOne(new LambdaQueryWrapper<RetailOrderBill>().eq(RetailOrderBill::getId, noticeBill.getRetailOrderBillId()));
-        List<RetailReturnNoticeBillGoods> goodsList = retailReturnNoticeBillGoodsDao.selectList(new LambdaQueryWrapper<RetailReturnNoticeBillGoods>().eq(RetailReturnNoticeBillGoods::getBillId, noticeBill));
+        List<RetailReturnNoticeBillGoods> goodsList = retailReturnNoticeBillGoodsDao.selectList(new LambdaQueryWrapper<RetailReturnNoticeBillGoods>().eq(RetailReturnNoticeBillGoods::getBillId, noticeBill.getId()));
 
         LogisticsCompanyPlatformMapping company = logisticsCompanyPlatformMappingService.getOnlinePlatformLogisticsCodeById(noticeBill.getLogisticsCompanyId(), OnlinePlatformTypeEnum.WDT.getId());
         OrderBusinessPersonDto personDto = saleOrderService.getOrderBusinessPersonDto(noticeBill.getRetailOrderBillId());
