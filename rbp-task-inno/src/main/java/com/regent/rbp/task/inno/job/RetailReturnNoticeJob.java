@@ -135,7 +135,7 @@ public class RetailReturnNoticeJob {
         if (CollUtil.isNotEmpty(orderSnList2)) {
             for (String orderSn : orderSnList2) {
                 YumeiRefund refund = retailReturnNoticeService.getYumeiRefund(orderSn);
-                String errorMsg = saleOrderService.pushRefundLogistics(refund.setStoreNo(), "3", refund.getOutOrderNo(), refund.getData());
+                String errorMsg = saleOrderService.pushRefundLogistics(refund.getStoreNo(), "3", refund.getOutOrderNo(), refund.getData());
                 if (StrUtil.isNotEmpty(errorMsg)) {
                     XxlJobHelper.log(errorMsg);
                     XxlJobHelper.handleFail(errorMsg);
