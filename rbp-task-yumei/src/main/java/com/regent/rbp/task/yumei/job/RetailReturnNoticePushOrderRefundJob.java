@@ -132,7 +132,7 @@ public class RetailReturnNoticePushOrderRefundJob {
                         orderItems.setSkuCode(item.getBarcode());
                         orderItems.setOutRefundNo(bill.getOnlineReturnNoticeCode());
                         orderItems.setRefundAmount(item.getBalancePrice());
-                        orderItems.setRefundType(1);
+                        orderItems.setRefundType(2);
                         orderItems.setSkuQty(item.getQuantity());
                         orderItems.setRefundRemark(bill.getNotes());
                         goodsMap.put(item.getBarcode(), orderItems);
