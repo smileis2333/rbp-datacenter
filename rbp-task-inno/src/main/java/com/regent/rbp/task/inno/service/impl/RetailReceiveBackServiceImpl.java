@@ -1,5 +1,6 @@
 package com.regent.rbp.task.inno.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -26,8 +27,10 @@ import com.xxl.job.core.context.XxlJobHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -121,6 +124,9 @@ public class RetailReceiveBackServiceImpl implements RetailReceiveBackService {
      */
     private List<UpdateReturnOrderStatusDto> packaging(Long onlinePlatformId ,List<RetailReceiveBackBill> retailReceiveBackBillList) {
         List<UpdateReturnOrderStatusDto> dtoList = new ArrayList<>();
+        if (CollUtil.isEmpty(retailReceiveBackBillList)) {
+            return dtoList;
+        }
         // 全渠道收退货单Id
         List<Long> retailReturnNoticeBillIds = retailReceiveBackBillList.stream().map(RetailReceiveBackBill::getRetailReturnNoticeBillId).distinct().collect(Collectors.toList());
         // 全渠道退货通知

@@ -100,6 +100,10 @@ public class RetailReceiveBackBillServiceBean extends ServiceImpl<RetailReceiveB
     @Transactional
     @Override
     public ModelDataResponse<String> save(RetailReceiveBackBillSaveParam param) {
+        if (null == param) {
+            return ModelDataResponse.errorParameter("参数不能为空");
+        }
+        log.info(param.toString());
         RetailReceiveBackBillSaveContext context = new RetailReceiveBackBillSaveContext();
         // 参数验证
         String msg = this.convertSaveContext(context, param);
@@ -133,6 +137,9 @@ public class RetailReceiveBackBillServiceBean extends ServiceImpl<RetailReceiveB
         if (ObjectUtil.isEmpty(param.getBillDate())) {
             messageList.add(getNotNullMessage("buildDate"));
         }
+        if (ObjectUtil.isEmpty(param.getStatus())) {
+            messageList.add(getNotNullMessage("status"));
+        }
         if (StrUtil.isEmpty(param.getManualId())) {
             messageList.add(getNotNullMessage("manualNo"));
         } else {
@@ -157,7 +164,10 @@ public class RetailReceiveBackBillServiceBean extends ServiceImpl<RetailReceiveB
         bill.setBillDate(param.getBillDate());
         bill.setManualId(param.getManualId());
         bill.setStatus(param.getStatus());
-
+        if (null != bill.getStatus() && 1 == bill.getStatus()) {
+            bill.setCheckBy(bill.getCreatedBy());
+            bill.setCheckTime(bill.getCreatedTime());
+        }
         // 自定义字段
         if (CollUtil.isNotEmpty(param.getCustomizeData())) {
             Map<String, Object> customFieldMap = new HashMap<>();
