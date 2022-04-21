@@ -110,14 +110,14 @@ public class StockJob {
         try {
             response = stockAPI.searchAvailable(request, new Pager(1000, 0, true)); // 一页最多1000
             XxlJobHelper.log(objectMapper.writeValueAsString(response));
-        }catch (Exception e){
+        } catch (Exception e) {
             XxlJobHelper.handleFail("调用旺店通失败");
             e.printStackTrace();
-            throw new BusinessException(ResponseCode.INTERNAL_ERROR,e.getMessage());
+            throw new BusinessException(ResponseCode.INTERNAL_ERROR, e.getMessage());
         }
 
         int total = response.getTotalCount();
-        Set<String> failMsgs = new HashSet<>();
+        List<String> failMsgs = new ArrayList<>();
         processStockWritting(response, failMsgs, originalChannels, summaryChannelId);
 
         if (total > 1000) {
@@ -131,11 +131,14 @@ public class StockJob {
         }
 
         if (CollUtil.isNotEmpty(failMsgs)) {
-            XxlJobHelper.handleFail(failMsgs.stream().collect(Collectors.joining(",")));
+            for (String failMsg : failMsgs) {
+                XxlJobHelper.log(failMsg);
+            }
+            XxlJobHelper.handleFail();
         }
     }
 
-    private void processStockWritting(UsableStockResponse response, Set<String> failMsgs, Set<String> passChannels, Long summaryChannelId) {
+    private void processStockWritting(UsableStockResponse response, List<String> failMsgs, Set<String> passChannels, Long summaryChannelId) {
         if (CollUtil.isEmpty(response.getStocks())) {
             return;
         }
@@ -161,13 +164,17 @@ public class StockJob {
 
                 Set<UsableStockDetail> usableStockDetails = new HashSet<>();
                 Set<StockDetail> stockDetails = new HashSet<>();
-                for (UsableStockResponse.UsableStock stockSearchDto : stockSearchDtos) {
+                Set<String> errorBarcode = new HashSet<>();
+                Set<String> successBarcode = new HashSet<>();
+                for (UsableStockResponse.UsableStock stockSearchDto : stocks) {
                     // 商家编码对应丽晶条形码
                     String barcode = stockSearchDto.getSpecNo();
                     Barcode goodsData = barcodeMap.get(barcode);
                     if (goodsData == null) {
-                        throw new RuntimeException(String.format("条形码对应失败: %s", barcode));
+                        errorBarcode.add(barcode);
+                        continue;
                     }
+                    successBarcode.add(barcode);
                     UsableStockDetail usableStockDetail = new UsableStockDetail();
                     usableStockDetail.setChannelId(channelId);
                     usableStockDetail.setGoodsId(goodsData.getGoodsId());
@@ -193,14 +200,20 @@ public class StockJob {
                     stockDetails.add(stockDetail);
 
                 }
+                if (CollUtil.isNotEmpty(errorBarcode)) {
+                    String errors = errorBarcode.stream().collect(Collectors.joining(","));
+                    String success = successBarcode.stream().collect(Collectors.joining(","));
+                    throw new RuntimeException(String.format("\r\n不存在: %s; \r\n 存在: %s ",errors,success));
+                }
+
                 stockService.settingStock(usableStockDetails, stockDetails);
                 XxlJobHelper.log(String.format("渠道id: %s", channelId));
                 for (UsableStockResponse.UsableStock e : stockSearchDtos) {
                     XxlJobHelper.log(String.format("条形码:%s，库存:%s", e.getSpecNo(), e.getNum()));
                 }
             } catch (Exception ex) {
-                failMsgs.add(ex.getMessage());
                 failMsgs.add(String.format("渠道编号: %s录入库存失败", channelCode));
+                failMsgs.add(ex.getMessage());
             }
         });
     }
