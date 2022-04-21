@@ -135,7 +135,14 @@ public class TaskCareServiceImpl implements TaskCareService {
         // 创建会员列表中间表
         String tableName = systemCommonService.getGenerateTempTableName("taskcaremember");
         sb.setLength(0);
-        sb.append(" CREATE TABLE ").append(tableName).append(" ");
+        sb.append(" CREATE TABLE IF NOT EXISTS ").append(tableName).append("( \n");
+        sb.append(" `channel_id` BIGINT(20) ,\n");
+        sb.append(" `member_id` BIGINT(20) \n");
+        sb.append(" ) COMMENT = '会员列表中间表'\n");
+        dbDao.create(sb.toString());
+        // 插入
+        sb.setLength(0);
+        sb.append(" INSERT INTO ").append(tableName).append("(channel_id, member_id) \n");
         sb.append(" select distinct b.channel_id, c.id member_id \n");
         sb.append(" from rbp_user a \n");
         sb.append(" inner join rbp_task_care_channel_list b on a.channel_id = b.channel_id \n");
@@ -157,7 +164,7 @@ public class TaskCareServiceImpl implements TaskCareService {
         sb.append(" and b.status = 0 and b.task_id = ").append(taskCare.getId());
         sb.append(" and b.begin_date = '").append(DateUtil.formatDateTime(timeReq.getStartTime())).append("' \n");
 
-        dbDao.create(sb.toString());
+        dbDao.insert(sb.toString());
 
         // 开启事务
         TransactionStatus transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
@@ -215,7 +222,13 @@ public class TaskCareServiceImpl implements TaskCareService {
         // 创建渠道列表中间表
         String tableName = systemCommonService.getGenerateTempTableName("taskcarechannel");
         StringBuilder sb = new StringBuilder();
-        sb.append(" CREATE TABLE ").append(tableName).append(" ");
+        sb.setLength(0);
+        sb.append(" CREATE TABLE IF NOT EXISTS ").append(tableName).append("( \n");
+        sb.append(" `id` BIGINT(20) \n");
+        sb.append(" ) COMMENT = '渠道列表中间表'\n");
+        dbDao.create(sb.toString());
+        sb.setLength(0);
+        sb.append(" INSERT INTO ").append(tableName).append("(id) \n");
         sb.append(this.getTaskChannelSql(taskCare.getId()));
         dbDao.create(sb.toString());
         // 开启事务
