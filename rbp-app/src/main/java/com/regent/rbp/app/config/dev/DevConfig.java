@@ -10,7 +10,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchAutoConfiguration;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jms.activemq.ActiveMQAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
@@ -39,7 +38,6 @@ import org.springframework.context.annotation.Profile;
 @Import(cn.hutool.extra.spring.SpringUtil.class)
 @Configuration
 @EnableAutoConfiguration(exclude = {
-        JacksonAutoConfiguration.class,
         DataSourceAutoConfiguration.class,
         SecurityAutoConfiguration.class,
         JvmMetricsAutoConfiguration.class,

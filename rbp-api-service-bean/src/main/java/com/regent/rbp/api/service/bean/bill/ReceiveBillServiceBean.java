@@ -10,23 +10,47 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.regent.rbp.api.core.base.*;
+import com.regent.rbp.api.core.base.Barcode;
+import com.regent.rbp.api.core.base.BusinessType;
+import com.regent.rbp.api.core.base.Color;
+import com.regent.rbp.api.core.base.CurrencyType;
+import com.regent.rbp.api.core.base.LongInfo;
+import com.regent.rbp.api.core.base.PriceType;
+import com.regent.rbp.api.core.base.SizeDetail;
 import com.regent.rbp.api.core.channel.Channel;
+import com.regent.rbp.api.core.channel.ChannelSettingValue;
 import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.api.core.noticeBill.NoticeBill;
 import com.regent.rbp.api.core.noticeBill.NoticeBillGoods;
 import com.regent.rbp.api.core.noticeBill.NoticeBillSize;
-import com.regent.rbp.api.core.receiveBill.*;
+import com.regent.rbp.api.core.receiveBill.ReceiveBill;
+import com.regent.rbp.api.core.receiveBill.ReceiveBillDifference;
+import com.regent.rbp.api.core.receiveBill.ReceiveBillGoods;
+import com.regent.rbp.api.core.receiveBill.ReceiveBillRealGoods;
+import com.regent.rbp.api.core.receiveBill.ReceiveBillRealSize;
+import com.regent.rbp.api.core.receiveBill.ReceiveBillSize;
+import com.regent.rbp.api.core.receiveBill.StockBalanceBill;
 import com.regent.rbp.api.core.sendBill.SendBill;
 import com.regent.rbp.api.core.sendBill.SendBillGoods;
 import com.regent.rbp.api.core.sendBill.SendBillSize;
-import com.regent.rbp.api.dao.base.*;
+import com.regent.rbp.api.dao.base.BarcodeDao;
+import com.regent.rbp.api.dao.base.BaseDbDao;
+import com.regent.rbp.api.dao.base.ColorDao;
+import com.regent.rbp.api.dao.base.LongDao;
+import com.regent.rbp.api.dao.base.SizeDetailDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
+import com.regent.rbp.api.dao.channel.ChannelSettingValueDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.noticeBill.NoticeBillDao;
 import com.regent.rbp.api.dao.noticeBill.NoticeBillGoodsDao;
 import com.regent.rbp.api.dao.noticeBill.NoticeBillSizeDao;
-import com.regent.rbp.api.dao.receiveBill.*;
+import com.regent.rbp.api.dao.receiveBill.ReceiveBillDao;
+import com.regent.rbp.api.dao.receiveBill.ReceiveBillDifferenceDao;
+import com.regent.rbp.api.dao.receiveBill.ReceiveBillGoodsDao;
+import com.regent.rbp.api.dao.receiveBill.ReceiveBillRealGoodsDao;
+import com.regent.rbp.api.dao.receiveBill.ReceiveBillRealSizeDao;
+import com.regent.rbp.api.dao.receiveBill.ReceiveBillSizeDao;
+import com.regent.rbp.api.dao.receiveBill.StockBalanceBillDao;
 import com.regent.rbp.api.dao.sendBill.SendBillDao;
 import com.regent.rbp.api.dao.sendBill.SendBillGoodsDao;
 import com.regent.rbp.api.dao.sendBill.SendBillSizeDao;
@@ -49,19 +73,40 @@ import com.regent.rbp.api.service.receive.context.ReceiveBillSaveContext;
 import com.regent.rbp.common.constants.InformationConstants;
 import com.regent.rbp.common.model.basic.dto.IdNameCodeDto;
 import com.regent.rbp.common.model.basic.dto.IdNameDto;
+import com.regent.rbp.common.model.stock.entity.ForwayStockDetail;
+import com.regent.rbp.common.model.stock.entity.StockDetail;
+import com.regent.rbp.common.model.stock.entity.UsableStockDetail;
 import com.regent.rbp.common.service.basic.DbService;
 import com.regent.rbp.common.service.basic.SystemCommonService;
+import com.regent.rbp.common.service.stock.ForwayStockDetailService;
+import com.regent.rbp.common.service.stock.StockDetailService;
+import com.regent.rbp.common.service.stock.UsableStockDetailService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.enums.ChannelSettingEnum;
 import com.regent.rbp.infrastructure.enums.CheckEnum;
 import com.regent.rbp.infrastructure.enums.LanguageTableEnum;
-import com.regent.rbp.infrastructure.util.*;
+import com.regent.rbp.infrastructure.enums.StatusEnum;
+import com.regent.rbp.infrastructure.util.AppendSqlUtil;
+import com.regent.rbp.infrastructure.util.LanguageUtil;
+import com.regent.rbp.infrastructure.util.OptionalUtil;
+import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
+import com.regent.rbp.infrastructure.util.StreamUtil;
+import com.regent.rbp.infrastructure.util.StringUtil;
+import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -122,6 +167,14 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
     private NoticeBillGoodsDao noticeBillGoodsDao;
     @Autowired
     private NoticeBillSizeDao noticeBillSizeDao;
+    @Autowired
+    private ChannelSettingValueDao channelSettingValueDao;
+    @Autowired
+    private StockDetailService stockDetailService;
+    @Autowired
+    private UsableStockDetailService usableStockDetailService;
+    @Autowired
+    private ForwayStockDetailService forwayStockDetailService;
 
     @Override
     public PageDataResponse<ReceiveBillQueryResult> query(ReceiveBillQueryParam param) {
@@ -369,7 +422,67 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
         handleReceiveBillDiff(context.getBill().getId());
         baseDbService.saveOrUpdateCustomFieldData(param.getModuleId(), TableConstants.RECEIVE_BILL, context.getBill().getId(), context.getBillCustomizeDataDtos());
         baseDbService.batchSaveOrUpdateCustomFieldData(param.getModuleId(), TableConstants.RECEIVE_BILL_REAL_GOODS, context.getReceiveGoodsCustomizeData());
+        if (param.getStatus()== StatusEnum.CHECK.getStatus().intValue()){
+            checkModifyStock(context.getBill().getId());
+        }
+
         return DataResponse.success();
+    }
+
+    public boolean isAllowNegativeInventory(Long channelId) {
+        String keyCode = ChannelSettingEnum.ALLOW_NEGATIVE_INVENTORY.getCode(); //允许负库存
+        boolean value = Boolean.parseBoolean(ChannelSettingEnum.ALLOW_NEGATIVE_INVENTORY.getDefaultValue());
+        ChannelSettingValue  channelSettingValue = channelSettingValueDao.selectOne(new QueryWrapper<com.regent.rbp.api.core.channel.ChannelSettingValue>().eq("key_code", keyCode).eq("channel_id", channelId));
+        if (null != channelSettingValue) {
+            value = Boolean.parseBoolean(channelSettingValue.getValue());
+        }
+        return value;
+    }
+
+    private void checkModifyStock(Long billId) {
+        //发货方
+        ReceiveBill receiveBill = receiveBillDao.selectById(billId);
+        //收货方
+        Long toChannelId = receiveBillDao.selectById(billId).getToChannelId();
+        List<ReceiveBillRealSize> billRealSizeList = receiveBillRealSizeDao.selectList(new QueryWrapper<ReceiveBillRealSize>().eq("bill_id", billId));
+        //是否允许负库存
+        boolean isMustPositive = !isAllowNegativeInventory(toChannelId);
+        Set<StockDetail> stockDetailSet = new HashSet<>();
+        Set<UsableStockDetail> usableStockDetailSet = new HashSet<>();
+        Set<ForwayStockDetail> forwayStockDetailSet = new HashSet<>();
+
+        for (ReceiveBillRealSize billRealSize : billRealSizeList) {
+            //1.增加收方实际库存
+            StockDetail stockDetail = new StockDetail();
+            BeanUtil.copyProperties(billRealSize, stockDetail);
+            stockDetail.setChannelId(toChannelId);
+            stockDetail.setReduceQuantity(billRealSize.getQuantity());
+            stockDetailSet.add(stockDetail);
+
+            //2.增加收方可用库存
+            UsableStockDetail usableStockDetail = new UsableStockDetail();
+            BeanUtil.copyProperties(billRealSize, usableStockDetail);
+            usableStockDetail.setChannelId(toChannelId);
+            usableStockDetail.setReduceQuantity(billRealSize.getQuantity());
+            usableStockDetailSet.add(usableStockDetail);
+        }
+        stockDetailService.writeStockDetail(stockDetailSet, isMustPositive);
+        usableStockDetailService.writeUsableStockDetail(usableStockDetailSet, isMustPositive);
+
+        // 不引用单据，不需要操作在途库存
+        if (null != receiveBill.getSendId()) {
+            /*在途应该拿原单进行加减在途库存*/
+            List<ReceiveBillSize> billSizeList = receiveBillSizeDao.selectList(new QueryWrapper<ReceiveBillSize>().eq("bill_id", billId));
+            for (ReceiveBillSize billSize : billSizeList) {
+                //3.减少收方在途库存
+                ForwayStockDetail forwayStockDetail = new ForwayStockDetail();
+                BeanUtil.copyProperties(billSize, forwayStockDetail);
+                forwayStockDetail.setChannelId(toChannelId);
+                forwayStockDetail.setReduceQuantity(billSize.getQuantity().negate());
+                forwayStockDetailSet.add(forwayStockDetail);
+            }
+            forwayStockDetailService.writeForwayStockDetail(forwayStockDetailSet, isMustPositive);
+        }
     }
 
     private void convertSaveContext(ReceiveBillSaveContext context, ReceiveBillSaveParam param, List<String> messageList) {
