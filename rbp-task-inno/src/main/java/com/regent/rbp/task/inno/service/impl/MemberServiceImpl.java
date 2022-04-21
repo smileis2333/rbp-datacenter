@@ -5,7 +5,6 @@ import com.alibaba.excel.util.DateUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.regent.rbp.api.core.base.Sex;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.integral.MemberIntegral;
 import com.regent.rbp.api.core.member.MemberCard;
@@ -44,7 +43,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -292,7 +296,7 @@ public class MemberServiceImpl implements MemberService {
             for (MemberPageDto pageDto : respDto.getData().getData()) {
                 this.saveMember(onlinePlatform.getId(), pageDto, map);
             }
-            for (int i = 2; i <= reqDto.getData().getPageIndex(); i++) {
+            for (int i = 2; i <= respDto.getData().getTotalPages(); i++) {
                 dto.setPageIndex(i);
                 this.pullMember(onlinePlatform, dto, map);
             }

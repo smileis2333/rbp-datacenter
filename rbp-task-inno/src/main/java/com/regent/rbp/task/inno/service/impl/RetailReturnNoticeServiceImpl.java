@@ -10,7 +10,6 @@ import com.regent.rbp.api.core.onlinePlatform.OnlinePlatform;
 import com.regent.rbp.api.core.retail.LogisticsCompany;
 import com.regent.rbp.api.core.retail.LogisticsCompanyPlatformMapping;
 import com.regent.rbp.api.core.retail.RetailOrderBill;
-import com.regent.rbp.api.core.retail.RetailReceiveBackBill;
 import com.regent.rbp.api.core.retail.RetailReturnNoticeBill;
 import com.regent.rbp.api.core.retail.RetailReturnNoticeBillGoods;
 import com.regent.rbp.api.dao.channel.ChannelDao;
@@ -32,18 +31,14 @@ import com.regent.rbp.api.service.retail.RetailReturnNoticeBillService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
-import com.regent.rbp.task.inno.model.dto.RetailOrderSearchDto;
 import com.regent.rbp.task.inno.model.dto.RetailReturnNoticeDto;
 import com.regent.rbp.task.inno.model.dto.RetailReturnNoticeListDetailDto;
 import com.regent.rbp.task.inno.model.dto.RetailReturnNoticeListDto;
-import com.regent.rbp.task.inno.model.dto.UpdateReturnOrderStatusDto;
 import com.regent.rbp.task.inno.model.param.RetailReturnNoticeParam;
 import com.regent.rbp.task.inno.model.req.RetailReturnNoticeReqDto;
-import com.regent.rbp.task.inno.model.resp.InnoDataRespDto;
 import com.regent.rbp.task.inno.model.resp.InnoLogisticsDto;
 import com.regent.rbp.task.inno.model.resp.RetailReturnNoticeRespDto;
 import com.regent.rbp.task.inno.model.resp.ReturnOrderShippingNoRespDto;
-import com.regent.rbp.task.inno.model.resp.UpdateReturnOrderStatusRespDto;
 import com.regent.rbp.task.inno.service.RetailReturnNoticeService;
 import com.regent.rbp.task.yumei.model.YumeiRefund;
 import com.regent.rbp.task.yumei.model.YumeiRefundItems;
@@ -187,7 +182,7 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
             for (RetailReturnNoticeListDto notice : respDto.getData().getData()) {
                 this.saveRetailReturnNotice(onlinePlatform.getId(), notice, channelCode, toChannelCode, map);
             }
-            for (int i = 2; i <= reqDto.getData().getPageIndex(); i++) {
+            for (int i = 2; i <= respDto.getData().getTotalPages(); i++) {
                 dto.setPageIndex(i);
                 this.pullRetailReturnNotice(onlinePlatform, dto, channelCode, toChannelCode, map);
             }
@@ -320,7 +315,7 @@ public class RetailReturnNoticeServiceImpl implements RetailReturnNoticeService 
                     throw ex;
                 }
             }
-            for (int i = 2; i <= reqDto.getData().getPageIndex(); i++) {
+            for (int i = 2; i <= respDto.getData().getTotalPages(); i++) {
                 dto.setPageIndex(i);
                 this.pushReturnOrderShippingNo(onlinePlatform, dto, map);
             }

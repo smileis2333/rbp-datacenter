@@ -204,7 +204,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
                     throw ex;
                 }
             }
-            for (int i = 2; i <= reqDto.getData().getPageIndex(); i++) {
+            for (int i = 2; i <= Integer.valueOf(respDto.getData().getTotalPages() == null ? "0" : respDto.getData().getTotalPages()); i++) {
                 retailOrderSearch.setPageIndex(i);
                 this.pullRetailOrderReceiveList(channelCode, onlinePlatformCode, onlinePlatform, retailOrderSearch, orderSnList);
             }
@@ -239,7 +239,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
                     throw ex;
                 }
             }
-            for (int i = 2; i <= reqDto.getData().getPageIndex(); i++) {
+            for (int i = 2; i <= Integer.valueOf(respDto.getData().getTotalPages() == null ? "0" : respDto.getData().getTotalPages()); i++) {
                 retailOrderSearch.setPageIndex(i);
                 this.pullRetailOrderStatusList(channelCode, onlinePlatformCode, onlinePlatform, retailOrderSearch);
             }
@@ -274,7 +274,7 @@ public class RetailOrderServiceImpl implements RetailOrderService {
                     throw ex;
                 }
             }
-            for (int i = 2; i <= reqDto.getData().getPageIndex(); i++) {
+            for (int i = 2; i <= Integer.valueOf(respDto.getData().getTotalPages() == null ? "0" : respDto.getData().getTotalPages()); i++) {
                 retailOrderSearch.setPageIndex(i);
                 this.pullRetailOrderBill(channelCode, onlinePlatformCode, onlinePlatform, retailOrderSearch, map);
             }
