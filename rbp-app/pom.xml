@@ -191,9 +191,13 @@
 			</resource>
 			<resource>
 				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
 				<includes>
 					<include>**/*</include>
 				</includes>
+				<excludes>
+					<exclude>dev/*</exclude>
+				</excludes>
 			</resource>
 		</resources>
 	</build>
