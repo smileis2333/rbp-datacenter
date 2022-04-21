@@ -364,14 +364,19 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             body.put("outOrderNo", query.getOutOrderNo());
             body.put("pageNum", Optional.ofNullable(query.getPageNum()).orElse(1));
             body.put("pageSize", Optional.ofNullable(query.getPageSize()).orElse(10));
+
+            String jsonBody = objectMapper.writeValueAsString(body);
+            log.info("请求url：" + url + YumeiApiUrl.SALE_ORDER_QUERY);
+            log.info("请求参数：" + jsonBody);
             // 查询
             String returnJson = HttpUtil.createRequest(Method.POST, url + YumeiApiUrl.SALE_ORDER_QUERY)
-                    .body(objectMapper.writeValueAsString(body))
+                    .body(jsonBody)
                     .header(Header.CONTENT_TYPE, "application/json")
                     .header("X-AUTH-TOKEN", credential.getAccessToken())
                     .execute()
                     .body();
             Map<String, Object> resultMap = objectMapper.readValue(returnJson, Map.class);
+            log.info("请求结果：" + returnJson);
             if (null == resultMap || null == resultMap.get("code")) {
                 throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExist", new Object[]{"返回结果"});
             }
@@ -399,17 +404,33 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             body.put("outOrderNo", outOrderNo);
 
             String jsonBody = objectMapper.writeValueAsString(body);
+            log.info("请求url：" + url + YumeiApiUrl.SALE_ORDER_CANCEL);
+            log.info("请求参数：" + jsonBody);
             String returnJson = HttpUtil.createRequest(Method.POST, url + YumeiApiUrl.SALE_ORDER_CANCEL)
                     .body(jsonBody)
                     .header(Header.CONTENT_TYPE, "application/json")
                     .header("X-AUTH-TOKEN",credential.getAccessToken())
                     .execute()
                     .body();
-            Map<String,Object> returnData = (Map<String,Object>)objectMapper.readValue(returnJson, Map.class);
-            if (returnData.get("success").equals("false")) {
+            log.info("请求结果：" + returnJson);
+
+            RetailOrderPushLog retailOrderPushLog = new RetailOrderPushLog();
+            retailOrderPushLog.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
+            retailOrderPushLog.setBillNo(outOrderNo);
+            retailOrderPushLog.setUrl(url + YumeiApiUrl.SALE_ORDER_CANCEL);
+            retailOrderPushLog.setRequestParam(jsonBody);
+            retailOrderPushLog.setResult(returnJson);
+            retailOrderPushLog.preInsert();
+            Map<String, Object> returnData = (Map<String, Object>) objectMapper.readValue(returnJson, Map.class);
+            if (!(Boolean)returnData.getOrDefault("success", false)) {
+                retailOrderPushLog.setSucess(0);
+                log.error("调用玉美销售订单_取消接口失败" + outOrderNo);
                 success = false;
-                throw new Exception(returnData.get("msg").toString());
+            } else {
+                retailOrderPushLog.setSucess(1);
+                log.info("调用玉美销售订单_取消接口成功" + outOrderNo);
             }
+            retailOrderPushLogDao.insert(retailOrderPushLog);
 
         } catch (JsonProcessingException e) {
             e.printStackTrace();
