@@ -123,8 +123,8 @@ public class StockJob {
         if (total > 1000) {
             for (int i = 1; i < (total / 1000) + 1; i++) {
                 StockSearchRequest leftRequest = new StockSearchRequest();
-                request.setStartTime(currentDay);
-                request.setEndTime(tomorrowDay);
+                leftRequest.setStartTime(currentDay);
+                leftRequest.setEndTime(tomorrowDay);
                 UsableStockResponse leftResponse = stockAPI.searchAvailable(leftRequest, new Pager(1000, i, false));
                 processStockWritting(leftResponse, failMsgs, originalChannels, summaryChannelId);
             }
