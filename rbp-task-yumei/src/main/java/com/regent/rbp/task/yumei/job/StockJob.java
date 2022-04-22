@@ -165,7 +165,6 @@ public class StockJob {
                 Set<UsableStockDetail> usableStockDetails = new HashSet<>();
                 Set<StockDetail> stockDetails = new HashSet<>();
                 Set<String> errorBarcode = new HashSet<>();
-                Set<String> successBarcode = new HashSet<>();
                 for (UsableStockResponse.UsableStock stockSearchDto : stocks) {
                     // 商家编码对应丽晶条形码
                     String barcode = stockSearchDto.getSpecNo();
@@ -174,7 +173,6 @@ public class StockJob {
                         errorBarcode.add(barcode);
                         continue;
                     }
-                    successBarcode.add(barcode);
                     UsableStockDetail usableStockDetail = new UsableStockDetail();
                     usableStockDetail.setChannelId(channelId);
                     usableStockDetail.setGoodsId(goodsData.getGoodsId());
@@ -200,17 +198,19 @@ public class StockJob {
                     stockDetails.add(stockDetail);
 
                 }
-                if (CollUtil.isNotEmpty(errorBarcode)) {
-                    String errors = errorBarcode.stream().collect(Collectors.joining(","));
-                    String success = successBarcode.stream().collect(Collectors.joining(","));
-                    throw new RuntimeException(String.format("\r\n不存在: %s; \r\n 存在: %s ",errors,success));
-                }
 
                 stockService.settingStock(usableStockDetails, stockDetails);
-                XxlJobHelper.log(String.format("渠道id: %s", channelId));
-                for (UsableStockResponse.UsableStock e : stockSearchDtos) {
+                XxlJobHelper.log("库存录入成功");
+                XxlJobHelper.log(String.format("渠道编号: %s", channelCode));
+                for (UsableStockResponse.UsableStock e : stocks) {
                     XxlJobHelper.log(String.format("条形码:%s，库存:%s", e.getSpecNo(), e.getNum()));
                 }
+
+                if (CollUtil.isNotEmpty(errorBarcode)) {
+                    String errors = errorBarcode.stream().collect(Collectors.joining(","));
+                    throw new RuntimeException(String.format("\r\n条码对应失败: %s; ",errors));
+                }
+
             } catch (Exception ex) {
                 failMsgs.add(String.format("渠道编号: %s录入库存失败", channelCode));
                 failMsgs.add(ex.getMessage());
