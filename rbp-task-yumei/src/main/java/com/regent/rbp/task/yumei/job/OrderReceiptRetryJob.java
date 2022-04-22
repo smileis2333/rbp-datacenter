@@ -57,7 +57,7 @@ public class OrderReceiptRetryJob {
                 // 一天内，重试次数不超过3次
                 StringBuilder sb = new StringBuilder();
                 sb.append(" select bill_no from rbp_retail_order_push_log a \n");
-                sb.append(" where sucess = 0 and created_time > sysdate() - 1 \n");
+                sb.append(" where sucess = 0 and created_time > DATE_SUB(curdate(), INTERVAL 1 DAY) \n");
                 sb.append(" and a.url = '").append(url + YumeiApiUrl.SALE_ORDER_CONFIRM_RECEIPT).append("' \n");
                 sb.append(" and not exists (select 1 from rbp_retail_order_push_log b where b.sucess = 1 and a.bill_no = b.bill_no)\n");
                 sb.append(" group by bill_no having count(*) < 3");
