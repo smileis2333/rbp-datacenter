@@ -68,6 +68,11 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
     @Override
     public void salePlanBillAutoComplete(BillParam billParam) {
         Date date = salePlanBillDao.queryMinDate();
+        if (date == null)
+        {
+            XxlJobHelper.log(String.format("本次完结 销售计划有 0 单"));
+            return;
+        }
         List<WeekDate> weekDateList = DateUtil.doDateType(date.getTime(), new Date().getTime());
         for (WeekDate weekDate : weekDateList) {
             // 查询未完结的计划单
@@ -116,6 +121,11 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
     @Override
     public void noticeBillAutoComplete(BillParam billParam) {
         Date date = noticeBillDao.queryMinDate();
+        if (date == null)
+        {
+            XxlJobHelper.log(String.format("本次完结 指令单有 0 单"));
+            return;
+        }
         List<WeekDate> weekDateList = DateUtil.doDateType(date.getTime(), new Date().getTime());
         for (WeekDate weekDate : weekDateList) {
             // 查询未完结的指令单
@@ -165,6 +175,11 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
     @Override
     public void purchaseBillAutoComplete(BillParam billParam) {
         Date date = purchaseBillDao.queryMinDate();
+        if (date == null)
+        {
+            XxlJobHelper.log(String.format("本次完结 采购单 0 单"));
+            return;
+        }
         List<WeekDate> weekDateList = DateUtil.doDateType(date.getTime(), new Date().getTime());
         for (WeekDate weekDate : weekDateList) {
             // 查询未完结的采购单
