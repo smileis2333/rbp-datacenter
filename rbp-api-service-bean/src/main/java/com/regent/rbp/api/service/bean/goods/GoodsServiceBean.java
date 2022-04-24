@@ -27,6 +27,7 @@ import com.regent.rbp.common.constants.InformationConstants;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
  *
  * @author xuxing
  */
+@Slf4j
 @Service
 @Validated
 public class GoodsServiceBean implements GoodsService {
@@ -616,6 +618,7 @@ public class GoodsServiceBean implements GoodsService {
     @Transactional
     public synchronized DataResponse save(@Valid GoodsSaveParam param) {
         boolean createFlag = true;
+        log.info("请求参数:" + param.toString());
         GoodsSaveContext context = new GoodsSaveContext(param);
         //判断是新增还是更新
         Goods item = goodsDao.selectOne(new QueryWrapper<Goods>().eq("code", param.getGoodsCode()));
