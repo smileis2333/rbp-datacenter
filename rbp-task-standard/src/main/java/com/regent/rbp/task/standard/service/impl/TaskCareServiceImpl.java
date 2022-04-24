@@ -127,7 +127,7 @@ public class TaskCareServiceImpl implements TaskCareService {
         // 会员分群表名列表
         sb.setLength(0);
         sb.append(" select distinct table_name from information_schema.tables \n");
-        sb.append(" where table_schema= 'rbp' and table_name in ( \n");
+        sb.append(" where table_schema = database() and table_name in ( \n");
         sb.append(" select concat('rbp_member_grouping_member_', member_grouping_id) from rbp_task_member_grouping \n");
         sb.append(" where task_id = ").append(taskCare.getId()).append(")");
         List<String> memberGroupTableNameList = baseDbDao.getStringListDataBySql(sb.toString());
