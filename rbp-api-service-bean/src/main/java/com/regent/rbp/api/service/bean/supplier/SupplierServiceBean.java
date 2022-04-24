@@ -27,6 +27,7 @@ import com.regent.rbp.api.service.supplier.context.SupplierSaveContext;
 import com.regent.rbp.common.constants.InformationConstants;
 import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class SupplierServiceBean implements SupplierService {
     @Autowired
@@ -177,6 +179,7 @@ public class SupplierServiceBean implements SupplierService {
     @Override
     @Transactional
     public DataResponse save(SupplierSaveParam param) {
+        log.info("请求参数:" + param.toString());
         Supplier supplier = supplierDao.selectOne(new QueryWrapper<Supplier>().eq("code", param.getSupplierCode()));
         SupplierSaveContext context = supplier != null ? new SupplierSaveContext(param, supplier.getId()) : new SupplierSaveContext(param);
         convertSaveContext(context);

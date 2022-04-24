@@ -27,6 +27,7 @@ import com.regent.rbp.infrastructure.enums.ChannelSettingEnum;
 import com.regent.rbp.infrastructure.util.DateUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
  * @author: HaiFeng
  * @create: 2021-09-11 13:37
  */
+@Slf4j
 @Service
 public class ChannelServiceBean implements ChannelService {
 
@@ -513,6 +515,7 @@ public class ChannelServiceBean implements ChannelService {
     @Transactional
     public synchronized DataResponse save(ChannelSaveParam param) {
         boolean createFlag = true;
+        log.info("请求参数:" + param.toString());
         ChannelSaveContext context = new ChannelSaveContext(param);
         //判断是新增还是更新
         Channel item = channelDao.selectOne(new QueryWrapper<Channel>().eq("code", param.getChannelCode()));
