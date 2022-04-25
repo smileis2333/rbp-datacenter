@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = { })
 public @interface SupplierCodeCheck {
-    String message() default "(${validatedValue})不存在";
+    String message() default "(${validatedValue})不存在或未审核";
 
     Class<?>[] groups() default {};
 
