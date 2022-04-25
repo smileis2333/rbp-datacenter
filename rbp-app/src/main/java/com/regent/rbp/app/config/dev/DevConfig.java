@@ -34,7 +34,7 @@ import org.springframework.context.annotation.Profile;
  * @date : 2022/04/01
  * @description
  */
-@Profile("dev")
+@Profile("speedDev")
 @Import(cn.hutool.extra.spring.SpringUtil.class)
 @Configuration
 @EnableAutoConfiguration(exclude = {

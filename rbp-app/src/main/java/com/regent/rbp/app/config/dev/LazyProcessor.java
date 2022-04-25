@@ -16,7 +16,7 @@ import static org.springframework.beans.factory.config.BeanDefinition.ROLE_APPLI
  * @date : 2022/04/12
  * @description
  */
-@Profile("dev")
+@Profile("speedDev")
 @Component
 public class LazyProcessor implements BeanFactoryPostProcessor {
 
