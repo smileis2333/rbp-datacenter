@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.stock.StockAdjustBillDao">
+    <select id="searchPageData" resultType="com.regent.rbp.api.dto.stock.StockAdjustBillQueryResult">
+        select
+            rsab.id,
+            rsab.module_id ,
+            rsab.bill_no ,
+            rsab.bill_date ,
+            rbt.name businessType,
+            rsab.manual_id ,
+            rc.code channelCode,
+            rsab.notes ,
+            rsab.status ,
+            rsab.created_time ,
+            rsab.updated_time ,
+            rsab.check_time
+        from
+            rbp_stock_adjust_bill rsab
+            left join rbp_business_type rbt on
+            rbt.id = rsab.business_type_id
+            left join rbp_channel rc on
+            rc.id = rsab.channel_id
+        <where>
+            <if test="@cn.hutool.core.util.StrUtil@isNotBlank(query.moduleId)">
+                and rsab.module_id = #{query.moduleId}
+            </if>
+            <if test="@cn.hutool.core.util.StrUtil@isNotBlank(query.billNo)">
+                and rsab.bill_no = #{query.billNo}
+            </if>
+            <if test="query.billDate!=null">
+                and rsab.bill_date = #{query.billDate}
+            </if>
+            <if test="@cn.hutool.core.util.StrUtil@isNotBlank(query.manualId)">
+                and rsab.manual_id = #{query.manualId}
+            </if>
+            <if test="@cn.hutool.core.util.StrUtil@isNotBlank(query.notes)">
+                and rsab.notes like  concat('%', #{query.notes}, '%')
+            </if>
+            <if test="query.status!=null">
+                and rsab.status = #{query.status}
+            </if>
+            <if test="@cn.hutool.core.util.StrUtil@isNotBlank(query.businessType)">
+                and rbt.name = #{query.businessType}
+            </if>
+            <if test="@cn.hutool.core.util.StrUtil@isNotBlank(query.channelCode)">
+                and rc.code = #{query.channelCode}
+            </if>
+        </where>
+    </select>
+</mapper>

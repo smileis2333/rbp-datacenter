@@ -15,17 +15,7 @@ import java.util.List;
  * @description
  */
 @Data
-public class BillGoodsDetailData implements GoodsDetailIdentifier {
-    @ApiModelProperty("条形码")
-    private String barcode;
-    @ApiModelProperty("货品")
-    private String goodsCode;
-    @ApiModelProperty("颜色编码")
-    private String colorCode;
-    @ApiModelProperty("内长")
-    private String longName;
-    @ApiModelProperty("尺码")
-    private String size;
+public class BillGoodsDetailData extends GoodsDetailData implements GoodsDetailIdentifier {
     @NotNull
     @ApiModelProperty("数量")
     private BigDecimal quantity;

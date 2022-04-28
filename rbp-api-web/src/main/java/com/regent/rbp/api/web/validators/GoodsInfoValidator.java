@@ -13,7 +13,7 @@ import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.base.ColorDao;
 import com.regent.rbp.api.dao.base.LongDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
-import com.regent.rbp.api.dto.base.BillGoodsDetailData;
+import com.regent.rbp.api.dto.base.GoodsDetailData;
 import com.regent.rbp.api.dto.validate.GoodsInfo;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ import static java.util.stream.Collectors.toMap;
  * @description
  */
 @Component
-public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<? extends BillGoodsDetailData>> {
+public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<? extends GoodsDetailData>> {
     @Autowired
     private GoodsDao goodsDao;
     @Autowired
@@ -46,7 +46,7 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
     private BaseDbDao baseDbDao;
 
     @Override
-    public boolean isValid(List<? extends BillGoodsDetailData> goodsInfos, ConstraintValidatorContext constraintValidatorContext) {
+    public boolean isValid(List<? extends GoodsDetailData> goodsInfos, ConstraintValidatorContext constraintValidatorContext) {
         if (CollUtil.isEmpty(goodsInfos)) {
             return true;
         }
@@ -67,7 +67,7 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
                 barcodeCodeIdMap = barcodeDao.selectList(Wrappers.lambdaQuery(Barcode.class).in(Barcode::getBarcode, barcodes)).stream().collect(toMap(Barcode::getBarcode, Barcode::getId));
             }
             for (int i = 0; i < goodsInfos.size(); i++) {
-                BillGoodsDetailData item = goodsInfos.get(i);
+                GoodsDetailData item = goodsInfos.get(i);
                 if (StrUtil.isNotEmpty(item.getBarcode()) && !barcodeCodeIdMap.containsKey(item.getBarcode())) {
                     pass = false;
                     context.addMessageParameter("validatedValue", item.getBarcode());
@@ -75,7 +75,7 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
                 }
             }
         } else if (mode == AcceptMode.DETAIL_INFO) {
-            List<String> goodsCodes = CollUtil.distinct(CollUtil.map(goodsInfos, BillGoodsDetailData::getGoodsCode, true));
+            List<String> goodsCodes = CollUtil.distinct(CollUtil.map(goodsInfos, GoodsDetailData::getGoodsCode, true));
             Map<String, Long> goodsCodeIdMap = null;
             Map<String, Goods> goodsCodeGoodsMap = null;
             if (CollUtil.isNotEmpty(goodsCodes)) {
@@ -85,7 +85,7 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
             }
 
             for (int i = 0; i < goodsInfos.size(); i++) {
-                BillGoodsDetailData item = goodsInfos.get(i);
+                GoodsDetailData item = goodsInfos.get(i);
                 if (StrUtil.isNotEmpty(item.getGoodsCode()) && !goodsCodeIdMap.containsKey(item.getGoodsCode())) {
                     pass = false;
                     context.addExpressionVariable("validatedValue", item.getGoodsCode());
@@ -107,8 +107,8 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
             }
 
             if (goodsType == GoodsType.NORMAL) {
-                List<String> colorCodes = CollUtil.distinct(CollUtil.map(goodsInfos, BillGoodsDetailData::getColorCode, true));
-                List<String> longNames = CollUtil.distinct(CollUtil.map(goodsInfos, BillGoodsDetailData::getLongName, true));
+                List<String> colorCodes = CollUtil.distinct(CollUtil.map(goodsInfos, GoodsDetailData::getColorCode, true));
+                List<String> longNames = CollUtil.distinct(CollUtil.map(goodsInfos, GoodsDetailData::getLongName, true));
                 Map<String, Long> colorCodeIdMap = null;
                 Map<String, Long> longNameIdMap = null;
                 if (CollUtil.isNotEmpty(colorCodes)) {
@@ -120,7 +120,7 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
                 }
                 // require not blank param
                 for (int i = 0; i < goodsInfos.size(); i++) {
-                    BillGoodsDetailData item = goodsInfos.get(i);
+                    GoodsDetailData item = goodsInfos.get(i);
                     if (StrUtil.isBlank(item.getColorCode())) {
                         pass = false;
                         context.buildConstraintViolationWithTemplate("{javax.validation.constraints.NotBlank.message}").addPropertyNode("colorCode").inIterable().atIndex(i).addConstraintViolation();
@@ -137,7 +137,7 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
 
                 // check for exist
                 for (int i = 0; i < goodsInfos.size(); i++) {
-                    BillGoodsDetailData item = goodsInfos.get(i);
+                    GoodsDetailData item = goodsInfos.get(i);
                     if (StrUtil.isNotEmpty(item.getColorCode()) && !colorCodeIdMap.containsKey(item.getColorCode())) {
                         pass = false;
                         context.addMessageParameter("validatedValue", item.getColorCode());
@@ -158,7 +158,7 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
                     // for align then query size map
                     List<Long> goodsIds = new ArrayList<>();
                     List<String> sizeNames = new ArrayList<>();
-                    for (BillGoodsDetailData item : goodsInfos) {
+                    for (GoodsDetailData item : goodsInfos) {
                         if (StrUtil.isNotEmpty(item.getSize())) {
                             sizeNames.add(item.getSize());
                             goodsIds.add(goodsCodeIdMap.get(item.getGoodsCode()));
@@ -167,7 +167,7 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
                     Map<Long, Map<String, Long>> sizeDetailMap = baseDbDao.getSizeNameList(goodsIds, sizeNames).stream().collect(Collectors.groupingBy(SizeDetail::getGoodsId, Collectors.collectingAndThen(toMap(SizeDetail::getName, SizeDetail::getId), Collections::unmodifiableMap)));
                     for (int i = 0; i < goodsInfos.size(); i++) {
                         Long goodsId = null;
-                        BillGoodsDetailData item = goodsInfos.get(i);
+                        GoodsDetailData item = goodsInfos.get(i);
                         goodsId = goodsCodeIdMap.get(item.getGoodsCode());
                         if (!sizeDetailMap.containsKey(goodsId) || !sizeDetailMap.get(goodsId).containsKey(item.getSize())) {
                             pass = false;
@@ -185,13 +185,13 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
     /**
      * 确认物料类型并处理相关信息
      */
-    private GoodsType getGoodsType(List<? extends BillGoodsDetailData> goodsInfos, Map<String, Goods> goodsCodeGoodsMap, HibernateConstraintValidatorContext context) {
+    private GoodsType getGoodsType(List<? extends GoodsDetailData> goodsInfos, Map<String, Goods> goodsCodeGoodsMap, HibernateConstraintValidatorContext context) {
         String firstGoodsCode = goodsInfos.get(0).getGoodsCode();
         GoodsType expectGoodsType = goodsCodeGoodsMap.get(firstGoodsCode).getType() == 1 ? GoodsType.NORMAL : GoodsType.SINGLE_MATERIAL;
 
         boolean expectGoodsTypeCheck = true;
         for (int i = 1; i < goodsInfos.size(); i++) {
-            BillGoodsDetailData item = goodsInfos.get(i);
+            GoodsDetailData item = goodsInfos.get(i);
             Goods goods = goodsCodeGoodsMap.get(item.getGoodsCode());
             if ((expectGoodsType == GoodsType.NORMAL && goods.getType() == 2) ||
                     expectGoodsType == GoodsType.SINGLE_MATERIAL && goods.getType() == 1) {
@@ -211,8 +211,8 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
     /**
      * 获取输入模式和相关信息
      */
-    private AcceptMode getAcceptMode(List<? extends BillGoodsDetailData> goodsInfos, HibernateConstraintValidatorContext context) {
-        BillGoodsDetailData firstItem = goodsInfos.get(0);
+    private AcceptMode getAcceptMode(List<? extends GoodsDetailData> goodsInfos, HibernateConstraintValidatorContext context) {
+        GoodsDetailData firstItem = goodsInfos.get(0);
         if (StrUtil.isAllBlank(firstItem.getGoodsCode(), firstItem.getBarcode()) || StrUtil.isAllNotBlank(firstItem.getGoodsCode(), firstItem.getBarcode())) {
             context.buildConstraintViolationWithTemplate("{regent.barcodeOrGoodsCode.onlyAllowOne}，模式由第一个指定，如goodsDetailData[0].barcode/goodsCode='abc'").addConstraintViolation();
             return null;
@@ -223,7 +223,7 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
         boolean modeCheck = true;
 
         for (int i = 0; i < goodsInfos.size(); i++) {
-            BillGoodsDetailData item = goodsInfos.get(i);
+            GoodsDetailData item = goodsInfos.get(i);
             if (expectMode == AcceptMode.DETAIL_INFO) {
                 if (StrUtil.isNotBlank(item.getBarcode())) {
                     modeCheck = false;

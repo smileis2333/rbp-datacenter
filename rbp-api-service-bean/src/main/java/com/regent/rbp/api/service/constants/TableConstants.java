@@ -53,4 +53,9 @@ public class TableConstants {
     public static final String LABEL = "rbp_label";
 
     public static final String SALES_SEND_BILL = "rbp_sales_send_bill";
+
+    public static final String STOCK_ADJUST_BILL = "rbp_stock_adjust_bill";
+
+    public static final String STOCK_ADJUST_BILL_GOODS = "rbp_stock_adjust_bill_goods";
+
 }

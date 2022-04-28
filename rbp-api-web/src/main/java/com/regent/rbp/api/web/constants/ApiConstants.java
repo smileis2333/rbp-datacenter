@@ -77,4 +77,6 @@ public class ApiConstants {
     public static final String API_PURCHASE_RETURN_BILL = "api/purchaseReturnBill";
 
     public static final String API_LABEL = "api/label";
+
+    public static final String API_STOCK_ADJUST = "api/stockAdjustBill";
 }
