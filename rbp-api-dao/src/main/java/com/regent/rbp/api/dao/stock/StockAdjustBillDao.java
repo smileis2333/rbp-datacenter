@@ -2,9 +2,7 @@ package com.regent.rbp.api.dao.stock;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.stock.StockAdjustBill;
-import com.regent.rbp.api.dto.base.BaseData;
 import com.regent.rbp.api.dto.stock.StockAdjustBillQueryParam;
 import com.regent.rbp.api.dto.stock.StockAdjustBillQueryResult;
 import org.apache.ibatis.annotations.Param;
@@ -15,5 +13,5 @@ import org.apache.ibatis.annotations.Param;
  * @description
  */
 public interface StockAdjustBillDao extends BaseMapper<StockAdjustBill> {
-    IPage<StockAdjustBillQueryResult> searchPageData(Page<BaseData> pageModel, @Param("query") StockAdjustBillQueryParam param);
+    IPage<StockAdjustBillQueryResult> searchPageData(IPage<?> page, @Param("query") StockAdjustBillQueryParam param);
 }

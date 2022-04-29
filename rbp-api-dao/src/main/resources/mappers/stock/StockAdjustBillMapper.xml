@@ -39,14 +39,41 @@
             <if test="@cn.hutool.core.util.StrUtil@isNotBlank(query.notes)">
                 and rsab.notes like  concat('%', #{query.notes}, '%')
             </if>
-            <if test="query.status!=null">
-                and rsab.status = #{query.status}
+            <if test="@cn.hutool.core.collection.CollUtil@isNotEmpty(query.status)">
+                and rsab.status in
+                <foreach item="sta" collection="query.status" separator="," open="(" close=")">
+                    #{sta}
+                </foreach>
             </if>
-            <if test="@cn.hutool.core.util.StrUtil@isNotBlank(query.businessType)">
-                and rbt.name = #{query.businessType}
+            <if test="@cn.hutool.core.collection.CollUtil@isNotEmpty(query.businessType)">
+                and rbt.name in
+                <foreach item="bus" collection="query.businessType" separator="," open="(" close=")">
+                    #{bus}
+                </foreach>
             </if>
-            <if test="@cn.hutool.core.util.StrUtil@isNotBlank(query.channelCode)">
-                and rc.code = #{query.channelCode}
+            <if test="@cn.hutool.core.collection.CollUtil@isNotEmpty(query.channelCode)">
+                and rc.code in
+                <foreach item="cc" collection="query.channelCode" separator="," open="(" close=")">
+                    #{cc}
+                </foreach>
+            </if>
+            <if test="query.createdDateStart != null ">
+                and rsab.created_time <![CDATA[>=]]> #{query.createdDateStart}
+            </if>
+            <if test="query.createdDateEnd != null ">
+                and rsab.created_time <![CDATA[<=]]> #{query.createdDateEnd}
+            </if>
+            <if test="query.checkDateStart != null ">
+                and rsab.check_time <![CDATA[>=]]> #{query.checkDateStart}
+            </if>
+            <if test="query.checkDateEnd != null ">
+                and rsab.check_time <![CDATA[<=]]> #{query.checkDateEnd}
+            </if>
+            <if test="query.updatedDateStart != null ">
+                and rsab.updated_time <![CDATA[>=]]> #{query.updatedDateStart}
+            </if>
+            <if test="query.updatedDateEnd != null ">
+                and rsab.updated_time <![CDATA[<=]]> #{query.updatedDateEnd}
             </if>
         </where>
     </select>

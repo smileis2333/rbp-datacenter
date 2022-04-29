@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusPropertiesCustomizer;
 import com.baomidou.mybatisplus.autoconfigure.SpringBootVFS;
 import com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator;
+import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import org.apache.ibatis.io.VFS;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +34,7 @@ public class MybatisPlusConfig2 {
     public ConfigurationCustomizer mbconfig() {
         return (properties) -> {
             properties.setCallSettersOnNulls(true);
+            properties.setCacheEnabled(false);
         };
     }
 
@@ -88,5 +90,12 @@ public class MybatisPlusConfig2 {
             e.printStackTrace();
         }
         return typeAliasesPackage;
+    }
+
+    @Bean
+    public PaginationInterceptor paginationInterceptor(){
+        PaginationInterceptor paginationInterceptor = new PaginationInterceptor();
+        paginationInterceptor.setDialectType("mysql");
+        return paginationInterceptor;
     }
 }

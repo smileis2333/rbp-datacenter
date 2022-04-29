@@ -24,7 +24,6 @@ import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.stock.StockAdjustBillDao;
 import com.regent.rbp.api.dao.stock.StockAdjustBillGoodsDao;
 import com.regent.rbp.api.dao.stock.StockAdjustBillSizeDao;
-import com.regent.rbp.api.dto.base.BaseData;
 import com.regent.rbp.api.dto.base.CustomizeColumnDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.base.GoodsDetailData;
@@ -98,7 +97,7 @@ public class StockAdjustBillServiceBean implements StockAdjustBillService {
 
     @Override
     public PageDataResponse<StockAdjustBillQueryResult> query(StockAdjustBillQueryParam param) {
-        Page<BaseData> pageModel = new Page<>(param.getPageNo(), param.getPageSize());
+        Page pageModel = new Page<>(param.getPageNo(), param.getPageSize());
         IPage<StockAdjustBillQueryResult> pages = stockAdjustBillDao.searchPageData(pageModel, param);
         PageDataResponse<StockAdjustBillQueryResult> ans = new PageDataResponse<>();
         List<StockAdjustBillQueryResult> data = pages.getRecords();

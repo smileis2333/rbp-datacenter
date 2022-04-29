@@ -18,9 +18,9 @@ public class StockAdjustBillQueryParam extends DefaultParam {
     private String billNo;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date billDate;
-    private String businessType;
+    private List<String> businessType;
     private String manualId;
-    private String channelCode;
+    private List<String> channelCode;
     private String notes;
     private List<Integer> status;
     @JsonFormat(pattern = "yyyy-MM-dd")
