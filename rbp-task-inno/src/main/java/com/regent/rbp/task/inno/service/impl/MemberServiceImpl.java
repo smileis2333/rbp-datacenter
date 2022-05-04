@@ -407,9 +407,10 @@ public class MemberServiceImpl implements MemberService {
         if (StringUtils.isEmpty(dto.getVIP())) {
             errorMsgList.add("Vip卡号(VIP)不能为空！");
         }
-        if(StringUtil.isEmpty(dto.getMobileTel())) {
-            errorMsgList.add("手机(MobileTel) 会员手机号为空,已跳过！");
-        }
+        //INNO开卡时，没有手机号，第二次客户授权获取手机号后，才能以更新接口推送手机号过来。
+//        if(StringUtil.isEmpty(dto.getMobileTel())) {
+//            errorMsgList.add("手机(MobileTel) 会员手机号为空,已跳过！");
+//        }
 
         if (createFlag) {
             if (memberCardService.checkExistMemberCard(dto.getVIP())) {
