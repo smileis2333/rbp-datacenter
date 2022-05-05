@@ -9,6 +9,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.Barcode;
 import com.regent.rbp.api.core.base.BusinessType;
@@ -426,7 +427,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             checkModifyStock(context.getBill().getId());
         }
 
-        return DataResponse.success();
+        return ModelDataResponse.Success(context.getBill().getBillNo());
     }
 
     public boolean isAllowNegativeInventory(Long channelId) {
@@ -595,6 +596,9 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             messageList.add(getNotExistMessage("sendNoNotExist"));
             return;
         } else {
+            if (!receiveBillDao.selectObjs(Wrappers.lambdaQuery(ReceiveBill.class).eq(ReceiveBill::getSendId,sendBill.getId())).isEmpty()) {
+                messageList.add(LanguageUtil.getMessage(LanguageUtil.ZH, "sendNoAlreadyOccupy", null));
+            }
             context.getBill().setSendId(sendBill.getId());
             if (context.getBaseBusinessTypeId() == RECEIVE_RETURN_GOODS) {
                 Long sendBillBaseBusinessTypeId = baseDbDao.getLongDataBySql(String.format("select base_business_type_id from rbp_business_type where id = '%s'", sendBill.getBusinessTypeId()));
@@ -605,7 +609,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             if (sendBill.getStatus() != 1) {
                 messageList.add(getNotExistMessage("sendNoPathNotCheck"));
             }
-            if (sendBill.getChannelId().longValue() != context.getBill().getChannelId() | sendBill.getToChannelId().longValue() != context.getBill().getToChannelId()) {
+            if (!(sendBill.getChannelId().longValue() == context.getBill().getToChannelId() && sendBill.getToChannelId().longValue() == context.getBill().getChannelId())) {
                 messageList.add(getNotExistMessage("sendNoPathNotMatch"));
             }
             if (!messageList.isEmpty()) {

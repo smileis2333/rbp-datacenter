@@ -6,6 +6,7 @@ import com.regent.rbp.api.dto.base.BillGoodsDetailData;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
 import java.util.Date;
 
 /**
@@ -17,6 +18,7 @@ import java.util.Date;
 public class SendBillGoodsDetailData extends BillGoodsDetailData {
 
     @ApiModelProperty(notes = "价格类型名称")
+    @NotBlank
     private String priceType;
 
     @ApiModelProperty(notes = "指令单号")
