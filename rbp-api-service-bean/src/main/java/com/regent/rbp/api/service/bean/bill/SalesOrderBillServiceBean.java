@@ -509,6 +509,11 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
             }
         }
 
+        // 业务类型
+        if (StringUtil.isNotEmpty(param.getBusinessType())) {
+            salesOrderBill.setBusinessType(baseDbDao.getLongDataBySql(String.format("select id from rbp_business_type where name = '%s'", param.getBusinessType())));
+        }
+
         if (StrUtil.isNotBlank(param.getOriginBillNo())) {
             SalesOrderBill sale = salesOrderBillDao.selectOne(new LambdaQueryWrapper<SalesOrderBill>().eq(SalesOrderBill::getBillNo, param.getOriginBillNo()));
             salesOrderBill.setOriginBillId(sale.getId());

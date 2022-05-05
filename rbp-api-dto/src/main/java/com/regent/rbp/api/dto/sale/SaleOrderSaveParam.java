@@ -34,6 +34,10 @@ public class SaleOrderSaveParam {
     private Date billDate;
 
     @NotBlank
+    @BusinessTypeCheck
+    private String businessType;
+
+    @NotBlank
     @ChannelCodeCheck
     private String saleChannelCode;
 

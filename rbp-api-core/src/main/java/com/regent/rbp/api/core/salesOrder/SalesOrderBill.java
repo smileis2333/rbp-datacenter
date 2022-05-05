@@ -139,4 +139,6 @@ public class SalesOrderBill {
     @ApiModelProperty(notes = "收货标记")
     private Integer receiveGoodsFlag;
 
+    private Long businessType;
+
 }
