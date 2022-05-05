@@ -84,7 +84,6 @@ import com.regent.rbp.common.service.stock.StockDetailService;
 import com.regent.rbp.common.service.stock.UsableStockDetailService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.enums.ChannelSettingEnum;
-import com.regent.rbp.infrastructure.enums.CheckEnum;
 import com.regent.rbp.infrastructure.enums.LanguageTableEnum;
 import com.regent.rbp.infrastructure.enums.StatusEnum;
 import com.regent.rbp.infrastructure.util.AppendSqlUtil;
@@ -500,7 +499,6 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
         bill.setManualId(param.getManualId());
         bill.setNotes(param.getNotes());
         bill.setBillNo(systemCommonService.getBillNo(param.getModuleId()));
-        bill.setStatus(CheckEnum.NOCHECK.getStatus());
         bill.setProcessStatus(0);
         // 业务类型
         if (StringUtil.isNotEmpty(param.getBusinessType())) {
