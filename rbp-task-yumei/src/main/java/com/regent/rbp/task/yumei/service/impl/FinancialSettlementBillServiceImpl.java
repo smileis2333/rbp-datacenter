@@ -6,12 +6,14 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.regent.rbp.api.core.base.Barcode;
 import com.regent.rbp.api.core.base.Color;
 import com.regent.rbp.api.core.base.CurrencyType;
 import com.regent.rbp.api.core.base.LongInfo;
 import com.regent.rbp.api.core.base.SizeDetail;
 import com.regent.rbp.api.core.fundAccount.FundAccount;
 import com.regent.rbp.api.core.goods.Goods;
+import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.base.ColorDao;
 import com.regent.rbp.api.dao.base.LongDao;
 import com.regent.rbp.api.dao.base.SizeDetailDao;
@@ -24,6 +26,7 @@ import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.LanguageUtil;
 import com.regent.rbp.infrastructure.util.NumberUtil;
+import com.regent.rbp.infrastructure.util.OptionalUtil;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StreamUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
@@ -43,6 +46,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -80,6 +84,9 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
 
     @Autowired
     private SizeDetailDao sizeDetailDao;
+
+    @Autowired
+    private BarcodeDao barcodeDao;
 
     @Override
     public ModelDataResponse<String> save(YumeiFinancialSettlementBillSaveParam param) {
@@ -137,6 +144,7 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
         Long id = SnowFlakeUtil.getDefaultSnowFlakeId();
         bill.setId(id);
         bill.preInsert();
+        //TODO 修改
         String subModuleId = "801001";
         bill.setModuleId(subModuleId);
         bill.setBillNo(systemCommonService.getBillNo(bill.getModuleId()));
@@ -148,7 +156,7 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
         if (StrUtil.isEmpty(param.getFundAccount())) {
             messageList.add(getNotNullMessage("fundAccount"));
         }
-        FundAccount fundAccount = fundAccountDao.selectOne(new LambdaQueryWrapper<FundAccount>().eq(FundAccount::getName, param.getFundAccount()));
+        FundAccount fundAccount = fundAccountDao.selectOne(new LambdaQueryWrapper<FundAccount>().eq(FundAccount::getCode, param.getFundAccount()));
         if (null == fundAccount) {
             messageList.add(getNotExistMessage("fundAccount"));
         } else {
@@ -157,7 +165,9 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
         // 币种
         if (StrUtil.isNotEmpty(param.getCurrencyType())) {
             CurrencyType currencyType = currencyTypeDao.selectOne(new LambdaQueryWrapper<CurrencyType>().eq(CurrencyType::getName, param.getCurrencyType()));
-            bill.setCurrencyTypeId(currencyType.getId());
+            if (null != currencyType) {
+                bill.setCurrencyTypeId(currencyType.getId());
+            }
         }
 
         // 货品明细
@@ -169,11 +179,18 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
         Map<String, Long> colorMap = colorDao.selectList(new QueryWrapper<Color>().in("code", StreamUtil.toSet(param.getGoodsDetailData(), YumeiFinancialSettlementBillGoodsParam::getColorCode))).stream().collect(Collectors.toMap(Color::getCode, Color::getId));
         Map<String, Long> longMap = longDao.selectList(new QueryWrapper<LongInfo>().in("name", StreamUtil.toSet(param.getGoodsDetailData(), YumeiFinancialSettlementBillGoodsParam::getLongName))).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
         Map<String, Long> sizeMap = sizeDetailDao.selectList(new QueryWrapper<SizeDetail>().in("name", StreamUtil.toSet(param.getGoodsDetailData(), YumeiFinancialSettlementBillGoodsParam::getSize))).stream().collect(Collectors.toMap(SizeDetail::getName, SizeDetail::getId));
+        Map<String, Barcode> barcodeMap = barcodeDao.selectList(new LambdaQueryWrapper<Barcode>().in(Barcode::getBarcode, StreamUtil.toSet(param.getGoodsDetailData(), YumeiFinancialSettlementBillGoodsParam::getBarcode))).stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
         for (YumeiFinancialSettlementBillGoodsParam goods : param.getGoodsDetailData()) {
-            Long goodsId = goodsMap.get(goods.getGoodsCode());
-            Long colorId = colorMap.get(goods.getColorCode());
-            Long longId = longMap.get(goods.getLongName());
-            Long sizeId = sizeMap.get(goods.getSize());
+            if (BigDecimal.ZERO.compareTo(goods.getQuantity()) >= 0) {
+                messageList.add(StrUtil.join(StrUtil.DASHED, goods.getBarcode(), goods.getGoodsCode(),
+                        goods.getColorCode(), goods.getLongName(), goods.getSize()) + "货品数量不能小于等于0");
+                continue;
+            }
+            Barcode barcode = barcodeMap.get(goods.getBarcode());
+            Long goodsId = OptionalUtil.ofNullable(barcode, Barcode::getGoodsId, goodsMap.get(goods.getGoodsCode()));
+            Long colorId = OptionalUtil.ofNullable(barcode, Barcode::getColorId, colorMap.get(goods.getColorCode()));
+            Long longId = OptionalUtil.ofNullable(barcode, Barcode::getLongId, longMap.get(goods.getLongName()));
+            Long sizeId = OptionalUtil.ofNullable(barcode, Barcode::getSizeId, sizeMap.get(goods.getSize()));
 
             YumeiFinancialSettlementBillGoods entity = new YumeiFinancialSettlementBillGoods();
             entity.setId(SnowFlakeUtil.getDefaultSnowFlakeId());
