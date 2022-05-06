@@ -27,7 +27,7 @@ public class StockAdjustBill extends BillMasterData {
     @ApiModelProperty(notes = "渠道编码")
     private Long channelId;
 
-    @ApiModelProperty(notes = "完结状态")
+    @ApiModelProperty(notes = "状态")
     private Integer finishFlag;
 
     @ApiModelProperty(notes = "处理状态 (0.未分析;1.分析中;2.已分析;")

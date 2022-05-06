@@ -61,8 +61,8 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
         }
 
         if (mode == AcceptMode.BARCODE) {
-            Set<String> barcodes = new HashSet<>();
-            Map<String, Long> barcodeCodeIdMap = null;
+            Set<String> barcodes = goodsInfos.stream().map(GoodsDetailData::getBarcode).collect(Collectors.toSet());
+            Map<String, Long> barcodeCodeIdMap = Collections.emptyMap();
             if (CollUtil.isNotEmpty(barcodes)) {
                 barcodeCodeIdMap = barcodeDao.selectList(Wrappers.lambdaQuery(Barcode.class).in(Barcode::getBarcode, barcodes)).stream().collect(toMap(Barcode::getBarcode, Barcode::getId));
             }
@@ -70,14 +70,14 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
                 GoodsDetailData item = goodsInfos.get(i);
                 if (StrUtil.isNotEmpty(item.getBarcode()) && !barcodeCodeIdMap.containsKey(item.getBarcode())) {
                     pass = false;
-                    context.addMessageParameter("validatedValue", item.getBarcode());
+                    context.addExpressionVariable("validatedValue", item.getBarcode());
                     context.buildConstraintViolationWithTemplate("{regent.validation.constraints.mapNotFound}").addPropertyNode("barcode").inIterable().atIndex(i).addConstraintViolation();
                 }
             }
         } else if (mode == AcceptMode.DETAIL_INFO) {
             List<String> goodsCodes = CollUtil.distinct(CollUtil.map(goodsInfos, GoodsDetailData::getGoodsCode, true));
-            Map<String, Long> goodsCodeIdMap = null;
-            Map<String, Goods> goodsCodeGoodsMap = null;
+            Map<String, Long> goodsCodeIdMap = Collections.emptyMap();
+            Map<String, Goods> goodsCodeGoodsMap = Collections.emptyMap();
             if (CollUtil.isNotEmpty(goodsCodes)) {
                 List<Goods> goods = goodsDao.selectList(Wrappers.lambdaQuery(Goods.class).in(Goods::getCode, goodsCodes));
                 goodsCodeIdMap = goods.stream().collect(toMap(Goods::getCode, Goods::getId));
@@ -109,8 +109,8 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
             if (goodsType == GoodsType.NORMAL) {
                 List<String> colorCodes = CollUtil.distinct(CollUtil.map(goodsInfos, GoodsDetailData::getColorCode, true));
                 List<String> longNames = CollUtil.distinct(CollUtil.map(goodsInfos, GoodsDetailData::getLongName, true));
-                Map<String, Long> colorCodeIdMap = null;
-                Map<String, Long> longNameIdMap = null;
+                Map<String, Long> colorCodeIdMap = Collections.emptyMap();
+                Map<String, Long> longNameIdMap = Collections.emptyMap();
                 if (CollUtil.isNotEmpty(colorCodes)) {
                     List<Color> colors = colorDao.selectList(Wrappers.lambdaQuery(Color.class).in(Color::getCode, colorCodes));
                     colorCodeIdMap = colors.stream().collect(toMap(Color::getCode, Color::getId));

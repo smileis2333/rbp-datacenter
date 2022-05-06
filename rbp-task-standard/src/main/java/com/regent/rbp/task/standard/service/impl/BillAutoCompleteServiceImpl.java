@@ -107,7 +107,7 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
                         }
                     }
                 }
-                if (endState == 0) {
+                if (endState == 0 && sendBillGoodsList.size() > 0) {
                     bill.setFinishFlag(1);
                     bill.setUpdatedTime(new Date());
                     salePlanBillDao.updateById(bill);
@@ -161,7 +161,7 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
                         }
                     }
                 }
-                if (endState == 0) {
+                if (endState == 0 && sendBillGoodsList.size() > 0) {
                     bill.setFinishFlag(1);
                     bill.setUpdatedTime(new Date());
                     noticeBillDao.updateById(bill);
@@ -219,7 +219,7 @@ public class BillAutoCompleteServiceImpl implements BillAutoCompleteService {
                         }
                     }
                 }
-                if (endState == 0) {
+                if (endState == 0 && purchaseReceiveBillId.size() > 0) {
                     bill.setFinishFlag(1);
                     bill.setUpdatedTime(new Date());
                     purchaseBillDao.updateById(bill);
