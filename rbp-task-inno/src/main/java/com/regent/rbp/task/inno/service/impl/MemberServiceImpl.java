@@ -100,6 +100,10 @@ public class MemberServiceImpl implements MemberService {
         if (map.size() > 0) {
             List<Long> memberIds = map.values().stream().collect(Collectors.toList());
             List<MemberCard> memberList = memberCardDao.selectList(new LambdaQueryWrapper<MemberCard>().in(MemberCard::getId, memberIds));
+            if (memberList.size() == 0) {
+                XxlJobHelper.log("无需要推送的会员");
+                return;
+            }
             memberMap = memberList.stream().collect(Collectors.toMap(v -> v.getCode(), v -> v.getId(), (x1, x2) -> x1));
             Map<Integer, List<InnoMemberDto>> listMap = this.packaging(memberList);
             for (Map.Entry<Integer, List<InnoMemberDto>> entry : listMap.entrySet()) {
@@ -124,6 +128,10 @@ public class MemberServiceImpl implements MemberService {
         }
 
         List<MemberCard> memberCardList = memberCardDao.selectList(queryWrapper);
+        if (memberCardList.size() == 0) {
+            XxlJobHelper.log("无需要推送的会员");
+            return;
+        }
         memberMap = memberCardList.stream().collect(Collectors.toMap(v -> v.getCode(), v -> v.getId(), (x1, x2) -> x1));
         Map<Integer, List<InnoMemberDto>> memberCardMap = this.packaging(memberCardList);
         for (Map.Entry<Integer, List<InnoMemberDto>> entry : memberCardMap.entrySet()) {
