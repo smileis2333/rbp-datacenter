@@ -35,5 +35,18 @@ public class SwaggerConfigDataCenter {
         String basePackage = "com.regent.rbp.task.inno";
         return Swagger2Configuration.docket(moduleCode, moduleName, basePackage);
     }
+
+    /**
+     * 注册玉美接口
+     *
+     * @return
+     */
+    @Bean
+    public Docket datacenterYumeiApi() {
+        String moduleCode = "dateCenterYumei";
+        String moduleName = "数据中台玉美接口";
+        String basePackage = "com.regent.rbp.task.yumei";
+        return Swagger2Configuration.docket(moduleCode, moduleName, basePackage);
+    }
 }
 
