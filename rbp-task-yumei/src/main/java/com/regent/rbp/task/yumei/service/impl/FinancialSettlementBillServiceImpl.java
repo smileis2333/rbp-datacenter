@@ -144,8 +144,7 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
         Long id = SnowFlakeUtil.getDefaultSnowFlakeId();
         bill.setId(id);
         bill.preInsert();
-        //TODO 修改
-        String subModuleId = "801001";
+        String subModuleId = "805001";
         bill.setModuleId(subModuleId);
         bill.setBillNo(systemCommonService.getBillNo(bill.getModuleId()));
         bill.setBillDate(param.getBillDate());
