@@ -19,7 +19,7 @@ import javax.validation.Valid;
  * @description
  */
 @RestController
-@RequestMapping("api/receipt/yumei")
+@RequestMapping("api/yumei/receipt")
 @Api(tags = "收款单")
 public class YumeiReceiptBillController {
     @Autowired
