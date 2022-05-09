@@ -1,4 +1,4 @@
-package com.regent.rbp.task.yumei.Controller;
+package com.regent.rbp.task.yumei.controller;
 
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.task.yumei.model.YumeiReceiptBillSaveParam;
