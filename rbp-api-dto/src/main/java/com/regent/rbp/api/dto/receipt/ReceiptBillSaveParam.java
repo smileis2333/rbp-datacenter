@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.validate.ChannelCodeCheck;
 import com.regent.rbp.api.dto.validate.Code;
+import com.regent.rbp.api.dto.validate.ConflictManualIdCheck;
 import com.regent.rbp.api.dto.validate.DiscreteRange;
 import com.regent.rbp.api.dto.validate.group.Standard;
 import io.swagger.annotations.ApiModelProperty;
@@ -27,6 +28,7 @@ public class ReceiptBillSaveParam {
     private String moduleId;
 
     @NotBlank
+    @ConflictManualIdCheck(targetTable = "rbp_receipt")
     private String manualId;
 
     @NotNull
