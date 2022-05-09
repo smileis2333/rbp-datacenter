@@ -200,18 +200,19 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
             entity.setColorId(colorId);
             entity.setLongId(longId);
             entity.setSizeId(sizeId);
-            entity.setTagPrice(goods.getTagPrice());
-            entity.setBalancePrice(goods.getBalancePrice());
+            entity.setTagPrice(goods.getTagPrice() == null ? BigDecimal.ZERO : goods.getTagPrice());
+            entity.setBalancePrice(goods.getBalancePrice() == null ? BigDecimal.ZERO : goods.getBalancePrice());
             entity.setQuantity(goods.getQuantity());
-            entity.setDiscount(goods.getDiscount());
+            entity.setDiscount(goods.getDiscount() == null ? BigDecimal.ZERO : goods.getDiscount());
             entity.setRemark(goods.getRemark());
             entity.setCurrencyPrice(goods.getCurrencyPrice());
             entity.setExchangeRate(goods.getExchangeRate());
+            entity.setAmount(goods.getAmount() == null ? BigDecimal.ZERO : goods.getAmount());
 
             billGoodsList.add(entity);
-            sumSkuQuantity = NumberUtil.add(sumSkuQuantity, goods.getQuantity());
-            sumTagAmount = NumberUtil.add(sumTagAmount, NumberUtil.mul(goods.getTagPrice(), goods.getQuantity()));
-            sumAmount = NumberUtil.add(sumAmount, NumberUtil.mul(goods.getTagPrice(), goods.getBalancePrice()));
+            sumSkuQuantity = NumberUtil.add(sumSkuQuantity, entity.getQuantity());
+            sumTagAmount = NumberUtil.add(sumTagAmount, NumberUtil.mul(entity.getTagPrice(), entity.getQuantity()));
+            sumAmount = NumberUtil.add(sumAmount, entity.getAmount());
         }
         bill.setSumSkuQuantity(sumSkuQuantity);
         bill.setSumTagAmount(sumTagAmount);

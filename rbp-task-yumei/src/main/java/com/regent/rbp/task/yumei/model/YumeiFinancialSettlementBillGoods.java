@@ -33,6 +33,9 @@ public class YumeiFinancialSettlementBillGoods {
     @ApiModelProperty(notes = "结算价")
     private BigDecimal balancePrice;
 
+    @ApiModelProperty(notes = "金额")
+    private BigDecimal amount;
+
     @ApiModelProperty(notes = "数量")
     private BigDecimal quantity;
 

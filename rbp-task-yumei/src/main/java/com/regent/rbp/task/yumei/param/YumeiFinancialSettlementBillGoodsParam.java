@@ -49,4 +49,7 @@ public class YumeiFinancialSettlementBillGoodsParam extends GoodsDetailData {
 
     @ApiModelProperty(notes = "汇率")
     private BigDecimal exchangeRate;
+
+    @ApiModelProperty(notes = "金额")
+    private BigDecimal amount;
 }

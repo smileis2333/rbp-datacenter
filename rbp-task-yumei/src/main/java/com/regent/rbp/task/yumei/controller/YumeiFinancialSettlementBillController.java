@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
  * @Description
  */
 @RestController
-@RequestMapping("api/financialSettlementBill")
+@RequestMapping("api/yumei/financialSettlementBill")
 @Api(tags = "结算单")
-public class FinancialSettlementBillController {
+public class YumeiFinancialSettlementBillController {
 
     @Autowired
     private FinancialSettlementBillService financialSettlementBillService;
