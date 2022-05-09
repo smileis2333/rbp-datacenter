@@ -1,6 +1,9 @@
 package com.regent.rbp.api.web.bill;
 
 import com.regent.rbp.api.dto.core.DataResponse;
+import com.regent.rbp.api.dto.core.PageDataResponse;
+import com.regent.rbp.api.dto.receipt.ReceiptBillQueryParam;
+import com.regent.rbp.api.dto.receipt.ReceiptBillQueryResult;
 import com.regent.rbp.api.dto.receipt.ReceiptBillSaveParam;
 import com.regent.rbp.api.dto.validate.group.Standard;
 import com.regent.rbp.api.service.receipt.ReceiptBillService;
@@ -33,5 +36,11 @@ public class ReceiptBillController {
     public DataResponse save(@RequestBody @Validated(Standard.class) ReceiptBillSaveParam param) {
         DataResponse result = receiptBillService.save(param);
         return result;
+    }
+
+    @ApiOperation(value = "查询")
+    @PostMapping("query")
+    public PageDataResponse<ReceiptBillQueryResult> query(@RequestBody ReceiptBillQueryParam param) {
+        return receiptBillService.query(param);
     }
 }
