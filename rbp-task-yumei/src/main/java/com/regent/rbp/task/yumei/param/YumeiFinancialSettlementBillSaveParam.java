@@ -39,6 +39,10 @@ public class YumeiFinancialSettlementBillSaveParam {
     @ApiModelProperty(notes = "单据状态;1.已审核")
     private Integer status;
 
+    @NotEmpty
+    @ApiModelProperty(notes = "线上单号")
+    private String onlineOrderCode;
+
     @ApiModelProperty(notes = "备注")
     private String notes;
 

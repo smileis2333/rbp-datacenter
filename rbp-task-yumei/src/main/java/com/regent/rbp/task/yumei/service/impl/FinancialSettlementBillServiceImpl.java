@@ -152,6 +152,7 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
         bill.setManualId(param.getManualId());
         bill.setStatus(param.getStatus());
         bill.setNotes(param.getNotes());
+        bill.setOnlineOrderCode(param.getOnlineOrderCode());
         // 资金号
         if (StrUtil.isEmpty(param.getFundAccount())) {
             messageList.add(getNotNullMessage("fundAccount"));

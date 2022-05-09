@@ -53,6 +53,9 @@ public class YumeiFinancialSettlementBill {
     @ApiModelProperty(notes = "备注")
     private String notes;
 
+    @ApiModelProperty(notes = "线上单号")
+    private String onlineOrderCode;
+
     @ApiModelProperty(notes = "货品总件数")
     private BigDecimal sumSkuQuantity;
 
