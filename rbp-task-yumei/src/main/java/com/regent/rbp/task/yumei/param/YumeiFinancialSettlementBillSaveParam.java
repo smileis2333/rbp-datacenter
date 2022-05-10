@@ -29,8 +29,12 @@ public class YumeiFinancialSettlementBillSaveParam {
     private Date billDate;
 
     @NotEmpty
-    @ApiModelProperty(notes = "资金号")
+    @ApiModelProperty(notes = "收款资金号")
     private String fundAccount;
+
+    @NotEmpty
+    @ApiModelProperty(notes = "结算资金号")
+    private String parentFundAccount;
 
     @ApiModelProperty(notes = "币种名称")
     private String currencyType;

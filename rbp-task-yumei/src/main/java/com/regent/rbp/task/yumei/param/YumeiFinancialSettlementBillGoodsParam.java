@@ -4,6 +4,7 @@ import com.regent.rbp.api.dto.base.GoodsDetailData;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -29,6 +30,7 @@ public class YumeiFinancialSettlementBillGoodsParam extends GoodsDetailData {
     @ApiModelProperty(notes = "尺码")
     private String size;
 
+    @NotNull
     @ApiModelProperty(notes = "数量")
     private BigDecimal quantity;
 
@@ -41,6 +43,7 @@ public class YumeiFinancialSettlementBillGoodsParam extends GoodsDetailData {
     @ApiModelProperty(notes = "折扣")
     private BigDecimal discount;
 
+    @NotNull
     @ApiModelProperty(notes = "结算价")
     private BigDecimal balancePrice;
 
@@ -50,6 +53,7 @@ public class YumeiFinancialSettlementBillGoodsParam extends GoodsDetailData {
     @ApiModelProperty(notes = "汇率")
     private BigDecimal exchangeRate;
 
+    @NotNull
     @ApiModelProperty(notes = "金额")
     private BigDecimal amount;
 }

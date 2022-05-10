@@ -152,15 +152,19 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
         bill.setStatus(param.getStatus());
         bill.setNotes(param.getNotes());
         bill.setOnlineOrderCode(param.getOnlineOrderCode());
-        // 资金号
-        if (StrUtil.isEmpty(param.getFundAccount())) {
-            messageList.add(getNotNullMessage("fundAccount"));
-        }
+        // 收款资金号
         FundAccount fundAccount = fundAccountDao.selectOne(new LambdaQueryWrapper<FundAccount>().eq(FundAccount::getCode, param.getFundAccount()));
         if (null == fundAccount) {
             messageList.add(getNotExistMessage("fundAccount"));
         } else {
             bill.setFundAccountId(fundAccount.getId());
+        }
+        // 结算资金号
+        FundAccount parentFundAccount = fundAccountDao.selectOne(new LambdaQueryWrapper<FundAccount>().eq(FundAccount::getCode, param.getParentFundAccount()));
+        if (null == parentFundAccount) {
+            messageList.add(getNotExistMessage("parentFundAccount"));
+        } else {
+            bill.setParentfundAccountId(parentFundAccount.getId());
         }
         // 币种
         if (StrUtil.isNotEmpty(param.getCurrencyType())) {
@@ -202,11 +206,16 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
             entity.setTagPrice(goods.getTagPrice() == null ? BigDecimal.ZERO : goods.getTagPrice());
             entity.setBalancePrice(goods.getBalancePrice() == null ? BigDecimal.ZERO : goods.getBalancePrice());
             entity.setQuantity(goods.getQuantity());
-            entity.setDiscount(goods.getDiscount() == null ? BigDecimal.ZERO : goods.getDiscount());
+            entity.setAmount(goods.getAmount() == null ? BigDecimal.ZERO : goods.getAmount());
+            if (BigDecimal.ZERO.compareTo(entity.getTagPrice()) != 0) {
+                entity.setDiscount(NumberUtil.div(entity.getBalancePrice(), entity.getTagPrice(), 4));
+            } else {
+                entity.setDiscount(BigDecimal.ZERO);
+            }
+
             entity.setRemark(goods.getRemark());
             entity.setCurrencyPrice(goods.getCurrencyPrice());
             entity.setExchangeRate(goods.getExchangeRate());
-            entity.setAmount(goods.getAmount() == null ? BigDecimal.ZERO : goods.getAmount());
 
             billGoodsList.add(entity);
             sumSkuQuantity = NumberUtil.add(sumSkuQuantity, entity.getQuantity());

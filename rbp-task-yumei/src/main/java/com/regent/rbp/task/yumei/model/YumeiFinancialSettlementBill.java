@@ -40,6 +40,9 @@ public class YumeiFinancialSettlementBill {
     @ApiModelProperty(notes = "资金号编码")
     private Long fundAccountId;
 
+    @ApiModelProperty(notes = "结算资金号编码")
+    private Long parentfundAccountId;
+
     @ApiModelProperty(notes = "单据状态 (0.未审核,1.已审核,2.反审核,3.已作废,4.已验货,5.已发货,6.已超时)")
     private Integer status;
 
