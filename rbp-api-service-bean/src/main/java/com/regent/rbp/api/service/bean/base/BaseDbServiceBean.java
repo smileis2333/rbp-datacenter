@@ -3,9 +3,10 @@ package com.regent.rbp.api.service.bean.base;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.api.core.goods.GoodsTagPrice;
+import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.base.CustomizeColumnDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
@@ -30,7 +31,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -51,6 +61,8 @@ public class BaseDbServiceBean implements BaseDbService {
     private GoodsDao goodsDao;
     @Autowired
     private GoodsTagPriceDao goodsTagPriceDao;
+    @Autowired
+    private BarcodeDao barcodeDao;
 
     /**
      * 新增/更新自定义字段
@@ -163,7 +175,7 @@ public class BaseDbServiceBean implements BaseDbService {
                     value = columnDto.getColumnValueList().stream().filter(f -> finalValue.equals(f.getValue())).findFirst().get().getId();
                 }
                 return value;
-            }).map(ObjectUtil::toString).map(s->"null".equals(s)?s:String.format("'%s'",s)).collect(Collectors.joining(",","(",")"));
+            }).map(ObjectUtil::toString).map(s -> "null".equals(s) ? s : String.format("'%s'", s)).collect(Collectors.joining(",", "(", ")"));
             pairs.add(pair);
         });
         sb.append(pairs.stream().collect(Collectors.joining(",")));
@@ -177,16 +189,16 @@ public class BaseDbServiceBean implements BaseDbService {
 
     private Set<String> getFields(String tableName, List<Map<String, Object>> customFieldMapList, Map<String, CustomizeColumnDto> columnDtoMap, Map<String, CustomizeColumnDto> columnNameDtoMap) {
         Set<String> fields = new HashSet<>();
-        Map<String,String>nameToCode = new HashMap<>();
+        Map<String, String> nameToCode = new HashMap<>();
         customFieldMapList.forEach(item -> {
-            fields.addAll(item.keySet().stream().map(k->{
-                if (columnDtoMap.containsKey(k)){
+            fields.addAll(item.keySet().stream().map(k -> {
+                if (columnDtoMap.containsKey(k)) {
                     return k;
-                }else if (columnNameDtoMap.containsKey(k)){
+                } else if (columnNameDtoMap.containsKey(k)) {
                     CustomizeColumnDto nameDto = columnNameDtoMap.get(k);
-                    nameToCode.put(nameDto.getName(),nameDto.getCode());
+                    nameToCode.put(nameDto.getName(), nameDto.getCode());
                     return nameDto.getCode();
-                }else if ("id".equals(k)){
+                } else if ("id".equals(k)) {
                     return k;
                 }
                 return null;
@@ -198,11 +210,11 @@ public class BaseDbServiceBean implements BaseDbService {
         });
 
         for (Map<String, Object> item : customFieldMapList) {
-            nameToCode.forEach((n,c)->{
+            nameToCode.forEach((n, c) -> {
                 if (item.containsKey(n)) {
                     Object v = item.get(n);
                     item.remove(n);
-                    item.put(c,v);
+                    item.put(c, v);
                 }
             });
         }
@@ -437,10 +449,15 @@ public class BaseDbServiceBean implements BaseDbService {
         if (CollUtil.isEmpty(goodsIds)) {
             return resultList;
         }
+        Long priceId = null;
+        priceId = baseDbDao.getLongDataBySql("select id from rbp_tag_price_type where purchase_default = 1 limit 1");
+        if (priceId == null) {
+            priceId = baseDbDao.getLongDataBySql("select id from rbp_tag_price_type rtpt order by CAST(code AS UNSIGNED) asc limit 1");
+        }
+
         List<Goods> goodsList = goodsDao.selectBatchIds(goodsIds);
         // 吊牌价
-        List<GoodsTagPrice> tagPriceList = goodsTagPriceDao.selectList(new QueryWrapper<GoodsTagPrice>().select("goods_id,tag_price,price_type_id").in("goods_id", goodsIds)
-                .orderByDesc("goods_id,price_type_id").groupBy("goods_id"));
+        List<GoodsTagPrice> tagPriceList = goodsTagPriceDao.selectList(Wrappers.lambdaQuery(GoodsTagPrice.class).in(GoodsTagPrice::getGoodsId,goodsIds).eq(GoodsTagPrice::getPriceTypeId,priceId));
         Map<Long, BigDecimal> goodsTagPriceMap = CollUtil.isEmpty(tagPriceList) ? new HashMap<>() : tagPriceList.stream().collect(Collectors.toMap(GoodsTagPrice::getGoodsId, GoodsTagPrice::getTagPrice, (x1, x2) -> x1));
         for (Goods goods : goodsList) {
             BaseGoodsPriceDto discountDto = new BaseGoodsPriceDto(goods.getId(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
