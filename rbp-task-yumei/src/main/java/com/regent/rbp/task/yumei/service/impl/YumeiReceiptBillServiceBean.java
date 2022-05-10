@@ -17,9 +17,11 @@ import com.regent.rbp.api.dao.base.ColorDao;
 import com.regent.rbp.api.dao.base.LongDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.receipt.ReceiptDao;
+import com.regent.rbp.api.dto.base.BaseGoodsPriceDto;
 import com.regent.rbp.api.dto.base.GoodsDetailData;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
+import com.regent.rbp.api.service.base.BaseDbService;
 import com.regent.rbp.api.service.bean.bill.ReceiptBillServiceBean;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.task.yumei.dao.YumeiReceiptBillGoodsDao;
@@ -64,6 +66,8 @@ public class YumeiReceiptBillServiceBean extends ReceiptBillServiceBean implemen
     private GoodsDao goodsDao;
     @Autowired
     private ReceiptDao receiptDao;
+    @Autowired
+    private BaseDbService baseDbService;
 
     @Override
     @Transactional
@@ -88,6 +92,12 @@ public class YumeiReceiptBillServiceBean extends ReceiptBillServiceBean implemen
         Map<String, Barcode> barcodeMap = barcodes.isEmpty() ? Collections.emptyMap() : barcodeDao.selectList(new QueryWrapper<Barcode>().in("barcode", barcodes)).stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
         Map<String, Long> goodsCodeIdMap = goodsIdsList.isEmpty() ? Collections.emptyMap() : goodsList.stream().collect(Collectors.toMap(Goods::getCode, Goods::getId));
         Map<String, Goods> goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getCode, Function.identity()));
+        Map<Long, BaseGoodsPriceDto> priceMap = null;
+        if (CollUtil.isNotEmpty(barcodeMap)){
+            priceMap = baseDbService.getBaseGoodsPriceMapByGoodsIds(barcodeMap.values().stream().map(Barcode::getGoodsId).collect(Collectors.toList()));
+        }else if (CollUtil.isNotEmpty(goodsList)){
+            priceMap = baseDbService.getBaseGoodsPriceMapByGoodsIds(goodsIdsList);
+        }
         Integer type = null;
         if (StrUtil.isNotBlank(goodsDetailData.get(0).getGoodsCode())) {
             type = goodsMap.get(goodsDetailData.get(0).getGoodsCode()).getType();
@@ -118,6 +128,11 @@ public class YumeiReceiptBillServiceBean extends ReceiptBillServiceBean implemen
                     billSize.setLongId(barcode.getLongId());
                     billSize.setSizeId(barcode.getSizeId());
                     billSize.setQuantity(e.getQuantity());
+                    BaseGoodsPriceDto price = priceMap.get(barcode.getGoodsId());
+                    if (price!=null) {
+                        e.setTagPrice(price.getTagPrice());
+                        e.setDiscount(e.getBalancePrice().divide(e.getTagPrice()));
+                    }
                 }
             } else {
                 billSize.setGoodsId(goodsCodeIdMap.get(e.getGoodsCode()));
@@ -125,6 +140,11 @@ public class YumeiReceiptBillServiceBean extends ReceiptBillServiceBean implemen
                 billSize.setLongId(longMap.getOrDefault(e.getLongName(), 1200000000000003L));
                 billSize.setSizeId(sizeMap.getOrDefault(billSize.getGoodsId() + StrUtil.UNDERLINE + e.getSize(), 1200000000000005L));
                 billSize.setQuantity(e.getQuantity());
+                BaseGoodsPriceDto price = priceMap.get(billSize.getGoodsId());
+                if (price!=null) {
+                    e.setTagPrice(price.getTagPrice());
+                    e.setDiscount(e.getBalancePrice().divide(e.getTagPrice()));
+                }
             }
 
             YumeiReceiptBillGoods billGoods = BeanUtil.copyProperties(e, YumeiReceiptBillGoods.class);
