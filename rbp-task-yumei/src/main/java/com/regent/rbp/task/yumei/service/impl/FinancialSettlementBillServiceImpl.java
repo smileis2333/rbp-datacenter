@@ -130,7 +130,7 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
             messageList.add(getNotNullMessage("status"));
         }
         if (StrUtil.isEmpty(param.getManualId())) {
-            messageList.add(getNotNullMessage("manualNo"));
+            messageList.add(getNotNullMessage("manualId"));
         } else {
             Integer count = financialSettlementBillDao.selectCount(new LambdaQueryWrapper<YumeiFinancialSettlementBill>().eq(YumeiFinancialSettlementBill::getManualId, param.getManualId()));
             if (count != null && count > 0) {
