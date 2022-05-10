@@ -169,7 +169,7 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
         if (null == parentFundAccount) {
             messageList.add(getNotExistMessage("parentFundAccount"));
         } else {
-            bill.setParentfundAccountId(parentFundAccount.getId());
+            bill.setParentFundAccountId(parentFundAccount.getId());
         }
         // 币种
         if (StrUtil.isNotEmpty(param.getCurrencyType())) {
