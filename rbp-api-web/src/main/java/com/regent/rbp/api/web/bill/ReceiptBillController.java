@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.groups.Default;
+
 /**
  * @author huangjie
  * @date : 2022/05/06
@@ -33,7 +35,7 @@ public class ReceiptBillController {
 
     @ApiOperation(value = "新增")
     @PostMapping
-    public DataResponse save(@RequestBody @Validated(Standard.class) ReceiptBillSaveParam param) {
+    public DataResponse save(@RequestBody @Validated({Standard.class, Default.class}) ReceiptBillSaveParam param) {
         DataResponse result = receiptBillService.save(param);
         return result;
     }

@@ -28,6 +28,7 @@ public class YumeiReceiptBillController {
     @ApiOperation(value = "新增")
     @PostMapping
     public DataResponse save(@RequestBody @Valid YumeiReceiptBillSaveParam param) {
+        param.setCurrencyType("CNY-人民币"); //todo 后续可能从配置文件取值
         DataResponse result = receiptBillService.customSave(param);
         return result;
     }
