@@ -20,7 +20,9 @@ import com.regent.rbp.api.dao.base.SizeDetailDao;
 import com.regent.rbp.api.dao.fundAccount.FundAccountDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.salePlan.CurrencyTypeDao;
+import com.regent.rbp.api.dto.base.BaseGoodsPriceDto;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
+import com.regent.rbp.api.service.base.BaseDbService;
 import com.regent.rbp.common.service.basic.SystemCommonService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
@@ -87,6 +89,9 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
 
     @Autowired
     private BarcodeDao barcodeDao;
+
+    @Autowired
+    private BaseDbService baseDbService;
 
     @Override
     public ModelDataResponse<String> save(YumeiFinancialSettlementBillSaveParam param) {
@@ -184,6 +189,12 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
         Map<String, Long> longMap = longDao.selectList(new QueryWrapper<LongInfo>().in("name", StreamUtil.toSet(param.getGoodsDetailData(), YumeiFinancialSettlementBillGoodsParam::getLongName))).stream().collect(Collectors.toMap(LongInfo::getName, LongInfo::getId));
         Map<String, Long> sizeMap = sizeDetailDao.selectList(new QueryWrapper<SizeDetail>().in("name", StreamUtil.toSet(param.getGoodsDetailData(), YumeiFinancialSettlementBillGoodsParam::getSize))).stream().collect(Collectors.toMap(SizeDetail::getName, SizeDetail::getId));
         Map<String, Barcode> barcodeMap = barcodeDao.selectList(new LambdaQueryWrapper<Barcode>().in(Barcode::getBarcode, StreamUtil.toSet(param.getGoodsDetailData(), YumeiFinancialSettlementBillGoodsParam::getBarcode))).stream().collect(Collectors.toMap(Barcode::getBarcode, Function.identity()));
+        List<Long> goodsIdList = barcodeMap.values().stream().map(Barcode::getGoodsId).distinct().collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(goodsMap)) {
+            goodsIdList.addAll(goodsMap.values());
+        }
+        Map<Long, BaseGoodsPriceDto> dpPriceMap = baseDbService.getBaseGoodsPriceMapByGoodsIds(goodsIdList);
+
         for (YumeiFinancialSettlementBillGoodsParam goods : param.getGoodsDetailData()) {
             if (BigDecimal.ZERO.compareTo(goods.getQuantity()) >= 0) {
                 messageList.add(StrUtil.join(StrUtil.DASHED, goods.getBarcode(), goods.getGoodsCode(),
@@ -203,7 +214,7 @@ public class FinancialSettlementBillServiceImpl extends ServiceImpl<FinancialSet
             entity.setColorId(colorId);
             entity.setLongId(longId);
             entity.setSizeId(sizeId);
-            entity.setTagPrice(goods.getTagPrice() == null ? BigDecimal.ZERO : goods.getTagPrice());
+            entity.setTagPrice(OptionalUtil.ofNullable(dpPriceMap.get(goodsId), BaseGoodsPriceDto::getTagPrice, BigDecimal.ZERO));
             entity.setBalancePrice(goods.getBalancePrice() == null ? BigDecimal.ZERO : goods.getBalancePrice());
             entity.setQuantity(goods.getQuantity());
             entity.setAmount(goods.getAmount() == null ? BigDecimal.ZERO : goods.getAmount());
