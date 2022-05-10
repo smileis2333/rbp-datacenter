@@ -22,10 +22,12 @@ public class YumeiReceiptBillGoodsDetailData extends GoodsDetailData {
     @ApiModelProperty("吊牌价")
     private BigDecimal tagPrice;
     @ApiModelProperty("结算价")
+    @NotNull
     private BigDecimal balancePrice;
     @ApiModelProperty("备注")
     private String remark;
     @ApiModelProperty("金额")
+    @NotNull
     private BigDecimal amount;
 
 }

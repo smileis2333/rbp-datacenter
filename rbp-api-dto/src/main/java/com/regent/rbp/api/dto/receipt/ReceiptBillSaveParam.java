@@ -18,6 +18,11 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * 该处使用了分组
+ * Default 是强制约束
+ * Standard 是标准接口的约束
+ * 因为该结构在存在定制接口，对部分约束需要放开(既扩展接口当前只处理强制约束)
+ * todo 后续定制接口的校验可能通过配置文件来进行约束的控制
  * @author huangjie
  * @date : 2022/05/06
  * @description
@@ -50,6 +55,7 @@ public class ReceiptBillSaveParam {
     private String receiptType;
 
     @ApiModelProperty(notes = "币种名称")
+    @NotBlank(groups = Standard.class)
     private String currencyType;
 
     @ApiModelProperty(notes = "汇率")
