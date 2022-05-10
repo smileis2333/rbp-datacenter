@@ -9,20 +9,25 @@ import com.regent.rbp.api.core.base.Barcode;
 import com.regent.rbp.api.core.base.Color;
 import com.regent.rbp.api.core.base.LongInfo;
 import com.regent.rbp.api.core.base.SizeDetail;
+import com.regent.rbp.api.core.fundAccount.FundAccount;
 import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.api.core.receipt.Receipt;
 import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.base.ColorDao;
 import com.regent.rbp.api.dao.base.LongDao;
+import com.regent.rbp.api.dao.fundAccount.FundAccountDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.receipt.ReceiptDao;
 import com.regent.rbp.api.dto.base.BaseGoodsPriceDto;
+import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.base.GoodsDetailData;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.service.base.BaseDbService;
 import com.regent.rbp.api.service.bean.bill.ReceiptBillServiceBean;
+import com.regent.rbp.infrastructure.constants.ResponseCode;
+import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.task.yumei.dao.YumeiReceiptBillGoodsDao;
 import com.regent.rbp.task.yumei.dao.YumeiReceiptBillSizeDao;
@@ -68,10 +73,23 @@ public class YumeiReceiptBillServiceBean extends ReceiptBillServiceBean implemen
     private ReceiptDao receiptDao;
     @Autowired
     private BaseDbService baseDbService;
+    @Autowired
+    private FundAccountDao fundAccountDao;
 
+    public final static String FUND_ACCOUNT_CODE = "f_parent_fund_account_code";
     @Override
     @Transactional
     public DataResponse customSave(YumeiReceiptBillSaveParam param) {
+        List<CustomizeDataDto> customizeData = param.getCustomizeData();
+        if(CollUtil.isNotEmpty(customizeData)){
+            customizeData.stream().filter(e->e.getCode().equals(FUND_ACCOUNT_CODE)).findFirst().ifPresent(data ->{
+                FundAccount fundAccount = fundAccountDao.selectOne(Wrappers.lambdaQuery(FundAccount.class).eq(FundAccount::getCode, data.getValue()));
+                if (fundAccount==null){
+                    throw new BusinessException(ResponseCode.PARAMS_ERROR, "上级资金号不存在");
+                }
+            });
+        }
+
         param.setCurrencyAmount(BigDecimal.ZERO);
         ModelDataResponse<String> save = (ModelDataResponse) super.save(param);
 
