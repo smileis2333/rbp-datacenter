@@ -129,7 +129,14 @@ public class AutoMemberGroupingJob {
             Integer num = baseDbDao.getIntegerDataBySql(String.format("select count(1) from %s", tableName));
             XxlJobHelper.log(String.format("会员群编码[%s]批量插入会员群数：%s", id, num));
             sql.setLength(0);
-            sql.append(String.format("update rbp_member_grouping set last_refresh_time=now(),task_number=(task_number+1),people_number=%s where id=%s", num, id));
+            // 分群任务数
+            Integer taskNum = baseDbDao.getIntegerDataBySql(String.format("select count(1) from rbp_task_member_grouping where member_grouping_id = %s", id));
+            // 人群标签数
+            sql.setLength(0);
+            Integer labelNum = baseDbDao.getIntegerDataBySql(String.format("select count(1) from rbp_member_grouping_data_label where member_grouping_id = %s", id));
+
+            sql.setLength(0);
+            sql.append(String.format("update rbp_member_grouping set last_refresh_time=now(),task_number=%s,people_number=%s,data_label_number=%s where id=%s", taskNum, num, labelNum, id));
             baseDbDao.updateSql(sql.toString());
         } catch (Exception e) {
             XxlJobHelper.handleFail(String.format("会员分群关系表：%s", e.getMessage()));
