@@ -1,6 +1,5 @@
 package com.regent.rbp.app.config.dev;
 
-import com.gitee.starblues.factory.process.pipe.extract.ExtractFactory;
 import de.codecentric.boot.admin.client.config.SpringBootAdminClientAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.JvmMetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.LogbackMetricsAutoConfiguration;
@@ -24,7 +23,6 @@ import org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.sleuth.annotation.SleuthAnnotationAutoConfiguration;
 import org.springframework.cloud.sleuth.zipkin2.ZipkinAutoConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
@@ -65,8 +63,5 @@ import org.springframework.context.annotation.Profile;
         SleuthAnnotationAutoConfiguration.class
 })
 public class DevConfig {
-    @Bean
-    public ExtractFactory extractFactory(){
-        return ExtractFactory.getInstant();
-    }
+
 }
