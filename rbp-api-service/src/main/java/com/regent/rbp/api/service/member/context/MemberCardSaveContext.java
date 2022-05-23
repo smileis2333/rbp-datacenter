@@ -64,6 +64,7 @@ public class MemberCardSaveContext {
         this.memberCard.setBirthdayDate(DateUtil.getDate(param.getBirthday(), DateUtil.SHORT_DATE_FORMAT));
         this.memberCard.setOriginType(param.getOriginType());
         this.memberCard.setOrigin(param.getOrigin());
+        this.memberCard.setUpdatedOrigin(param.getUpdatedOrigin());
     }
 
 }

@@ -122,7 +122,7 @@ public class MemberServiceImpl implements MemberService {
 
         QueryWrapper<MemberCard> queryWrapper = new QueryWrapper<MemberCard>();
         // 排除 （更新来源 0.RBP,1.INNO） 为 inno 的会员信息
-        queryWrapper.ne("updated_origin", 1);
+        queryWrapper.ne("ifnull(updated_origin, 0)", 1);
         if (uploadingDate != null) {
             queryWrapper.ge("updated_time", uploadingDate);
         }
@@ -483,6 +483,7 @@ public class MemberServiceImpl implements MemberService {
         saveParam.setSex(dto.getSex() == "男" ? 0 : 1);
         saveParam.setOriginType(1);
         saveParam.setOrigin(2);
+        saveParam.setUpdatedOrigin(1);
         saveParam.setBeginDate(dto.getBegainDate());
         saveParam.setEndDate(dto.getExpireDate());
         saveParam.setRepairChannelCode(dto.getCustomer_ID());

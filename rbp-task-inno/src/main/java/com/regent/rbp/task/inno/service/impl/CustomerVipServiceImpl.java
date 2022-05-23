@@ -41,6 +41,7 @@ public class CustomerVipServiceImpl implements CustomerVipService {
         memberCardSaveParam.setOriginType(1);
         //来源origin 1.pos,2.英朗,3.微盟,4.有赞5.yike
         memberCardSaveParam.setOrigin(2);
+        memberCardSaveParam.setUpdatedOrigin(1);
         memberCardSaveParam.setBeginDate(param.getBegainDate());
         memberCardSaveParam.setEndDate(param.getExpireDate());
         memberCardSaveParam.setBirthday(param.getBirthDate());
