@@ -15,16 +15,14 @@
     </select>
 
     <insert id="insertMap">
-        INSERT INTO `${tableName}` (
-        <foreach collection="map.entrySet()" index="key" item="value">
+        INSERT INTO `${tableName}`
+        <foreach collection="map.entrySet()" index="key" item="value" open="(" close=")" separator=",">
             `${key}`
         </foreach>
-        )
-        VALUES(
-        <foreach collection="map.entrySet()" index="key" item="value">
+        VALUES
+        <foreach collection="map.entrySet()" index="key" item="value" open="(" close=")" separator=",">
             #{value}
         </foreach>
-        )
     </insert>
 
     <update id="updateMapById">
