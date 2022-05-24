@@ -710,7 +710,6 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         billSize.setBillId(salesOrderBill.getId());
         billSize.setGoodsId(barcode.getGoodsId());
         billSize.setColorId(barcode.getColorId());
-        billSize.setLabelId(barcode.getLongId());
         billSize.setSizeId(barcode.getSizeId());
         if (barcode.getId() != null) {
             billSize.setBarcodeId(barcode.getId());
