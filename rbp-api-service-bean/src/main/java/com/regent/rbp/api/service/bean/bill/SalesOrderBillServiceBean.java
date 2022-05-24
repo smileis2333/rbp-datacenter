@@ -719,6 +719,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         billSize.setCreatedTime(salesOrderBill.getCreatedTime());
         billSize.setUpdatedBy(salesOrderBill.getUpdatedBy());
         billSize.setUpdatedTime(salesOrderBill.getUpdatedTime());
+        billSize.setLongId(barcode.getLongId());
         return billSize;
     }
 
