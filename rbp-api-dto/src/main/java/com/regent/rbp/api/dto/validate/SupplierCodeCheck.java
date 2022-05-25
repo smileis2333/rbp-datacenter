@@ -22,4 +22,6 @@ public @interface SupplierCodeCheck {
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
+
+    boolean requireFundAccount() default false;
 }

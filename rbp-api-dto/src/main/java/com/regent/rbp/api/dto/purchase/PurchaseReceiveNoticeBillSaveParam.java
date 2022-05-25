@@ -34,7 +34,7 @@ public class PurchaseReceiveNoticeBillSaveParam {
     private String businessType;
 
     @NotBlank
-    @SupplierCodeCheck
+    @SupplierCodeCheck(requireFundAccount = true)
     private String supplierCode;
 
     @NotBlank
