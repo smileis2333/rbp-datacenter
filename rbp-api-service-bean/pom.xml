@@ -37,6 +37,12 @@
 			<groupId>com.regent.rbp.common</groupId>
 			<artifactId>rbp-common-core</artifactId>
 			<version>0.0.0.8</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.regent.rbp.information.dao</groupId>
+					<artifactId>rbp-information-dao</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>

@@ -81,6 +81,10 @@
 					<groupId>com.alibaba</groupId>
 					<artifactId>fastjson</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>com.regent.rbp.information.dao</groupId>
+					<artifactId>rbp-information-dao</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
