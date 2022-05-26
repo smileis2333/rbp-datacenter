@@ -5,7 +5,6 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -28,13 +27,9 @@ public class YumeiPurchaseReceiveBillOrder {
     @NotBlank
     private String deliveryOrderNo;
 
-    @Length(max = 16)
-    @NotBlank
-    private String bizOrderType;
+    private final String bizOrderType = "PURCHASE_ORDER";
 
-    @Length(max = 16)
-    @NotBlank
-    private String busType;
+    private final String busType = "STORE_STOCKIN";
 
     @Length(max = 32)
     @NotBlank
@@ -44,31 +39,33 @@ public class YumeiPurchaseReceiveBillOrder {
     @NotBlank
     private String basicOffshopName;
 
-    @NotNull
-    private Integer goodsKinds;
+
+    public Integer getGoodsKinds() {
+        return Math.toIntExact(orderDetails.stream().map(YumeiPurchaseReceiveBillOrderItem::getGoodsNo).distinct().count());
+    }
 
     @Length(max = 40)
     private String batchNo;
 
-    @NotNull
-    @Digits(integer = 20, fraction = 0)
-    private BigDecimal planInQty;
+    public BigDecimal getPlanInQty() {
+        return orderDetails.stream().map(YumeiPurchaseReceiveBillOrderItem::getPoInQty).reduce(BigDecimal.ZERO,BigDecimal::add);
+    }
 
-    @NotNull
-    @Digits(integer = 20, fraction = 0)
-    private String actualInQty;
+    public BigDecimal getActualInQty() {
+        return orderDetails.stream().map(YumeiPurchaseReceiveBillOrderItem::getActualPoInQty).reduce(BigDecimal.ZERO,BigDecimal::add);
+    }
+
+    public BigDecimal getTotalPurchaseAmount() {
+        return orderDetails.stream().map(YumeiPurchaseReceiveBillOrderItem::getPurchaseAmount).reduce(BigDecimal.ZERO,BigDecimal::add);
+    }
+
+    public BigDecimal getTotalTaxIncludedPurchaseAmount() {
+        return orderDetails.stream().map(YumeiPurchaseReceiveBillOrderItem::getTaxPurchaseAmount).reduce(BigDecimal.ZERO,BigDecimal::add);
+    }
 
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date poInTime;
-
-    @NotNull
-    @Digits(integer = 20, fraction = 0)
-    private BigDecimal totalPurchaseAmount;
-
-    @NotNull
-    @Digits(integer = 20, fraction = 0)
-    private BigDecimal totalTaxIncludedPurchaseAmount;
 
     @NotEmpty
     @Valid

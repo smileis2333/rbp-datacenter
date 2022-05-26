@@ -1,6 +1,7 @@
 package com.regent.rbp.api.dto.receive;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import lombok.Data;
 
@@ -22,6 +23,8 @@ public class ReceiveBillQueryResult {
     private String manualId;
     private String channelCode;
     private String toChannelCode;
+    @JsonIgnore
+    private String channelName;
     private String currencyType;
     private String notes;
     private String sendNo;

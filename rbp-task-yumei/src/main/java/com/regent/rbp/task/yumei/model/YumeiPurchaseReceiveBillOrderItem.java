@@ -43,11 +43,11 @@ public class YumeiPurchaseReceiveBillOrderItem {
     @Digits(integer=15, fraction=2)
     private BigDecimal excludingTaxPurchaseUnitPrice;
 
-    @NotNull
-    @Digits(integer=15, fraction=2)
-    private BigDecimal taxPurchaseAmount;
+    public BigDecimal getTaxPurchaseAmount() {
+        return actualPoInQty.multiply(taxIncludedPurchaseUnitPrice);
+    }
 
-    @NotNull
-    @Digits(integer=15, fraction=2)
-    private BigDecimal purchaseAmount;
+    public BigDecimal getPurchaseAmount() {
+        return actualPoInQty.multiply(excludingTaxPurchaseUnitPrice);
+    }
 }

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * @date : 2022/05/04
  * @description
  */
-@FeignClient(value = "yumeiTokenResource", url = "${yumei.url}", configuration = RawDecoderConfig.class)
+@FeignClient(value = "yumeiTokenResource", url = "${yumei.url:undefined}", configuration = RawDecoderConfig.class)
 public interface TokenResource {
     @RequestMapping(method = RequestMethod.POST, value = "/auth/accessToken")
     YumeiRes<YumeiToken> getYumeiToken(@RequestBody FetchTokenParam param);

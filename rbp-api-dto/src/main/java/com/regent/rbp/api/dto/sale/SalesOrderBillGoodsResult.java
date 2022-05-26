@@ -1,6 +1,7 @@
 package com.regent.rbp.api.dto.sale;
 
 import cn.hutool.core.collection.CollUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.regent.rbp.api.dto.base.BillGoodsDetailData;
 import com.regent.rbp.api.dto.validate.DiscreteRange;
 import io.swagger.annotations.ApiModelProperty;
@@ -19,6 +20,9 @@ import java.util.List;
  */
 @Data
 public class SalesOrderBillGoodsResult extends BillGoodsDetailData {
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private String goodsName;
 
     @ApiModelProperty(notes = "状态")
     private Integer status;

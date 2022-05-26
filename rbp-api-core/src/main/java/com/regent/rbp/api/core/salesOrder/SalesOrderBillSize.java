@@ -1,5 +1,6 @@
 package com.regent.rbp.api.core.salesOrder;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -63,4 +64,7 @@ public class SalesOrderBillSize {
 
     @ApiModelProperty(notes = "更新时间")
     private Date updatedTime;
+
+    @TableField(exist = false)
+    private String goodsName;
 }

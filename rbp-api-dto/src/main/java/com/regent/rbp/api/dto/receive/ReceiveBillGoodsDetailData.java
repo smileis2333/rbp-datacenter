@@ -2,11 +2,11 @@ package com.regent.rbp.api.dto.receive;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.regent.rbp.api.dto.base.BillGoodsDetailData;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import java.math.BigDecimal;
 
 /**
  * @author huangjie
@@ -26,4 +26,8 @@ public class ReceiveBillGoodsDetailData extends BillGoodsDetailData {
     @ApiModelProperty(hidden = true)
     @JsonIgnore
     private Long columnId;
+
+    @JsonIgnore
+    private BigDecimal planQuantity;
+
 }

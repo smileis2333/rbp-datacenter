@@ -307,6 +307,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         List<Long> goodsIds = salesOrderBillSizeList.stream().map(SalesOrderBillSize::getGoodsId).distinct().collect(Collectors.toList());
         List<Goods> goodsList = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getId, goodsIds));
         Map<Long, String> goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getId, Goods::getCode));
+        Map<Long, String> goodsNameMap = goodsList.stream().collect(Collectors.toMap(Goods::getId, Goods::getName));
 
         // 颜色
         List<Long> colorIds = salesOrderBillSizeList.stream().map(SalesOrderBillSize::getColorId).distinct().collect(Collectors.toList());
@@ -376,8 +377,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
             }
             // 创建日期
             if (bill.getCreatedTime() != null) {
-                String date = DateUtil.getDateStr(bill.getCreatedTime(), DateUtil.FULL_DATE_FORMAT);
-                queryResult.setCreatedTime(date);
+                queryResult.setCreatedTime(bill.getCreatedTime());
             }
             // 更新日期
             if (bill.getUpdatedTime() != null) {
@@ -418,6 +418,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                         // 货号
                         if (billSize.getGoodsId() != null && goodsMap.containsKey(billSize.getGoodsId())) {
                             goodsQueryResult.setGoodsCode(goodsMap.get(billSize.getGoodsId()));
+                            goodsQueryResult.setGoodsName(goodsNameMap.get(billSize.getGoodsId()));
                         }
                         // 颜色
                         if (billSize.getColorId() != null && colorMap.containsKey(billSize.getColorId())) {

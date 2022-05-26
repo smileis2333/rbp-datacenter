@@ -38,13 +38,11 @@ public class ReceiveBill extends BillMasterData {
 //    @ApiModelProperty(notes = "收货渠道编号")
     private Long toChannelId;
 //
-//    @ApiModelProperty(notes = "收货渠道名称")
-//    @TableField(exist = false)
-//    private String toChannelName;
-//
-//    @ApiModelProperty(notes = "收货渠道编号")
-//    @TableField(exist = false)
-//    private String toChannelCode;
+    @TableField(exist = false)
+    private String toChannelName;
+
+    @TableField(exist = false)
+    private String toChannelCode;
 //
 //    @ApiModelProperty(notes = "币种")
     private Long currencyTypeId;

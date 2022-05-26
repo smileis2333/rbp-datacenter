@@ -7,20 +7,33 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.regent.rbp.api.core.base.Barcode;
 import com.regent.rbp.api.core.retail.RetailOrderBill;
 import com.regent.rbp.api.core.retail.RetailOrderPushLog;
+import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
 import com.regent.rbp.api.dao.retail.RetailOrderPushLogDao;
+import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.retail.OrderBusinessPersonDto;
 import com.regent.rbp.api.dto.retail.RetailOrderInfoDto;
 import com.regent.rbp.api.dto.retail.RetalOrderGoodsInfoDto;
+import com.regent.rbp.api.dto.sale.SaleOrderQueryParam;
+import com.regent.rbp.api.dto.sale.SalesOrderBillGoodsResult;
+import com.regent.rbp.api.dto.sale.SalesOrderBillQueryResult;
+import com.regent.rbp.api.service.goods.GoodsService;
+import com.regent.rbp.api.service.sale.SalesOrderBillService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
+import com.regent.rbp.task.yumei.config.yumei.api.SaleOrderResource;
 import com.regent.rbp.task.yumei.constants.YumeiApiUrl;
 import com.regent.rbp.task.yumei.model.YumeiCredential;
+import com.regent.rbp.task.yumei.model.YumeiOfflineSaleOrder;
+import com.regent.rbp.task.yumei.model.YumeiOfflineSaleOrderItem;
+import com.regent.rbp.task.yumei.model.YumeiOfflineSaleOrderPayload;
 import com.regent.rbp.task.yumei.model.YumeiOrder;
 import com.regent.rbp.task.yumei.model.YumeiOrderItems;
 import com.regent.rbp.task.yumei.model.YumeiOrderQueryPageResp;
@@ -40,11 +53,13 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -70,6 +85,15 @@ public class SaleOrderServiceImpl implements SaleOrderService {
 
     @Autowired
     private RetailOrderPushLogDao retailOrderPushLogDao;
+
+    @Autowired
+    private SaleOrderResource saleOrderResource;
+    @Autowired
+    private SalesOrderBillService salesOrderBillService;
+    @Autowired
+    private GoodsService goodsService;
+    @Autowired
+    private BarcodeDao barcodeDao;
 
     @Override
     public void confirmReceive(String storeNo, String orderSource, String outOrderNo) {
@@ -208,10 +232,10 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             retailOrderPushLog.setResult(returnJson);
             retailOrderPushLog.preInsert();
             Map<String, Object> returnData = (Map<String, Object>) objectMapper.readValue(returnJson, Map.class);
-            if (!(Boolean)returnData.getOrDefault("success", false)) {
+            if (!(Boolean) returnData.getOrDefault("success", false)) {
                 retailOrderPushLog.setSucess(0);
                 log.error("调用玉美订单推送接口失败" + billNo);
-                errorMsg = (String)returnData.get("msg");
+                errorMsg = (String) returnData.get("msg");
             } else {
                 retailOrderPushLog.setSucess(1);
                 log.info("调用玉美订单推送接口成功" + billNo);
@@ -243,7 +267,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             String returnJson = HttpUtil.createRequest(Method.POST, url + YumeiApiUrl.SALE_ORDER_REFUND)
                     .body(jsonBody)
                     .header(Header.CONTENT_TYPE, "application/json")
-                    .header("X-AUTH-TOKEN",credential.getAccessToken())
+                    .header("X-AUTH-TOKEN", credential.getAccessToken())
                     .execute()
                     .body();
             log.info("请求结果：" + returnJson);
@@ -256,7 +280,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             retailOrderPushLog.setResult(returnJson);
             retailOrderPushLog.preInsert();
             Map<String, Object> returnData = (Map<String, Object>) objectMapper.readValue(returnJson, Map.class);
-            if (!(Boolean)returnData.getOrDefault("success", false)) {
+            if (!(Boolean) returnData.getOrDefault("success", false)) {
                 retailOrderPushLog.setSucess(0);
                 log.error("调用玉美订单退货接口失败" + outOrderNo);
                 success = false;
@@ -295,7 +319,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             String returnJson = HttpUtil.createRequest(Method.POST, url + YumeiApiUrl.SALE_ORDER_CONFIRM_RECEIPT)
                     .body(jsonBody)
                     .header(Header.CONTENT_TYPE, "application/json")
-                    .header("X-AUTH-TOKEN",credential.getAccessToken())
+                    .header("X-AUTH-TOKEN", credential.getAccessToken())
                     .execute()
                     .body();
             log.info("请求结果：" + returnJson);
@@ -308,17 +332,17 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             retailOrderPushLog.setResult(returnJson);
             retailOrderPushLog.preInsert();
             Map<String, Object> returnData = (Map<String, Object>) objectMapper.readValue(returnJson, Map.class);
-            if (!(Boolean)returnData.getOrDefault("success", false)) {
+            if (!(Boolean) returnData.getOrDefault("success", false)) {
                 retailOrderPushLog.setSucess(0);
                 log.error("调用玉美订单推送接口失败" + outOrderNo);
-                errorMsg = (String)returnData.get("msg");
+                errorMsg = (String) returnData.get("msg");
             } else {
                 retailOrderPushLog.setSucess(1);
                 log.info("调用玉美订单推送接口成功" + outOrderNo);
             }
             retailOrderPushLogDao.insert(retailOrderPushLog);
 
-        }  catch (JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "paramError");
         } catch (IOException e) {
@@ -383,7 +407,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             if (!resultMap.get("code").equals("00000")) {
                 throw new BusinessException(ResponseCode.PARAMS_ERROR, "paramVerifyError", new Object[]{String.format("requestId:%s, msg:%s", resultMap.get("requestId"), resultMap.get("msg"))});
             }
-            LinkedHashMap<String, Object> data =  (LinkedHashMap<String, Object>)resultMap.get("data");
+            LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>) resultMap.get("data");
             resp = objectMapper.readValue(JSONObject.toJSONString(data), YumeiOrderQueryPageResp.class);
         } catch (BusinessException e) {
             throw e;
@@ -409,7 +433,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             String returnJson = HttpUtil.createRequest(Method.POST, url + YumeiApiUrl.SALE_ORDER_CANCEL)
                     .body(jsonBody)
                     .header(Header.CONTENT_TYPE, "application/json")
-                    .header("X-AUTH-TOKEN",credential.getAccessToken())
+                    .header("X-AUTH-TOKEN", credential.getAccessToken())
                     .execute()
                     .body();
             log.info("请求结果：" + returnJson);
@@ -422,7 +446,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             retailOrderPushLog.setResult(returnJson);
             retailOrderPushLog.preInsert();
             Map<String, Object> returnData = (Map<String, Object>) objectMapper.readValue(returnJson, Map.class);
-            if (!(Boolean)returnData.getOrDefault("success", false)) {
+            if (!(Boolean) returnData.getOrDefault("success", false)) {
                 retailOrderPushLog.setSucess(0);
                 log.error("调用玉美销售订单_取消接口失败" + outOrderNo);
                 success = false;
@@ -487,10 +511,10 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             retailOrderPushLog.setResult(returnJson);
             retailOrderPushLog.preInsert();
             Map<String, Object> returnData = (Map<String, Object>) objectMapper.readValue(returnJson, Map.class);
-            if (!(Boolean)returnData.getOrDefault("success", false)) {
+            if (!(Boolean) returnData.getOrDefault("success", false)) {
                 retailOrderPushLog.setSucess(0);
                 log.error("调用玉美销售订单_退货物流上传接口失败" + outOrderNo);
-                errorMsg = (String)returnData.get("msg");
+                errorMsg = (String) returnData.get("msg");
             } else {
                 retailOrderPushLog.setSucess(1);
                 log.info("调用玉美销售订单_退货物流上传接口成功" + outOrderNo);
@@ -504,5 +528,46 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "returnDataError");
         }
         return errorMsg;
+    }
+
+    @Override
+    @Transactional
+    public void createOfflineSaleOrder(String billNo) {
+        SaleOrderQueryParam param = new SaleOrderQueryParam();
+        param.setBillNo(billNo);
+        PageDataResponse<SalesOrderBillQueryResult> query = salesOrderBillService.query(param);
+        if (CollUtil.isNotEmpty(query.getData())) {
+            SalesOrderBillQueryResult bill = query.getData().get(0);
+
+            YumeiOfflineSaleOrderPayload payload = new YumeiOfflineSaleOrderPayload();
+            payload.setStoreNo(bill.getChannelCode());
+            ArrayList<YumeiOfflineSaleOrder> orders = new ArrayList<>();
+            YumeiOfflineSaleOrder order = new YumeiOfflineSaleOrder();
+            order.setOutTradeNo(bill.getBillNo());
+            order.setUserRemark(bill.getNotes());
+            order.setPayTime(bill.getCreatedTime());
+
+            ArrayList<YumeiOfflineSaleOrderItem> orderItems = new ArrayList<>();
+
+            List<Long> goodsId = CollUtil.distinct(CollUtil.map(bill.getGoodsDetailData(), SalesOrderBillGoodsResult::getGoodsId, true));
+            Map<Long, Map<Long, Barcode>> barcodeMap = barcodeDao.selectList(Wrappers.lambdaQuery(Barcode.class).in(Barcode::getGoodsId, goodsId)).stream().collect(Collectors.groupingBy(Barcode::getGoodsId, Collectors.collectingAndThen(Collectors.toMap(Barcode::getId, Function.identity()), Collections::unmodifiableMap)));
+
+            bill.getGoodsDetailData().forEach(gd -> {
+                YumeiOfflineSaleOrderItem orderItem = new YumeiOfflineSaleOrderItem();
+                orderItem.setGoodsName(gd.getGoodsName());
+                Map<Long, Barcode> barcodeCandidate = barcodeMap.get(gd.getGoodsId());
+                if (gd.getBarcodeId()!=null){
+                    orderItem.setSkuCode(barcodeCandidate.get(gd.getBarcodeId()).getBarcode());
+                }else {
+                    orderItem.setSkuCode(barcodeCandidate.values().stream().findFirst().get().getBarcode());
+                }
+                orderItem.setSkuQty(gd.getQuantity());
+                orderItem.setUnitPrice(gd.getBalancePrice());
+                orderItems.add(orderItem);
+            });
+            order.setOrderItems(orderItems);
+            payload.setOrders(orders);
+            saleOrderResource.createOfflineSaleOrder(payload);
+        }
     }
 }

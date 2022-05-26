@@ -210,24 +210,27 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
         // 币种类型
         Map<Object, IdNameDto> currencyTypeMap = dbService.selectIdNameMapByLanguage(new QueryWrapper<CurrencyType>().in("id", StreamUtil.toSet(list, ReceiveBill::getCurrencyTypeId)), CurrencyType.class, LanguageTableEnum.BUSINESS_TYPE);
         // 货品尺码明细
-        List<ReceiveBillRealSize> receiveBillSizes = receiveBillRealSizeDao.selectList(new LambdaQueryWrapper<ReceiveBillRealSize>().in(ReceiveBillRealSize::getBillId, billIdList));
+        List<ReceiveBillRealSize> receiveRealBillSizes = receiveBillRealSizeDao.selectList(new LambdaQueryWrapper<ReceiveBillRealSize>().in(ReceiveBillRealSize::getBillId, billIdList));
+        List<ReceiveBillSize> receiveBillSizes = receiveBillSizeDao.selectList(new LambdaQueryWrapper<ReceiveBillSize>().in(ReceiveBillSize::getBillId, billIdList));
         List<ReceiveBillRealGoods> receiveBillRealGoods = receiveBillRealGoodsDao.selectList(new LambdaQueryWrapper<ReceiveBillRealGoods>().in(ReceiveBillRealGoods::getBillId, billIdList));
         // 价格类型
         Map<Object, IdNameDto> priceTypeMap = dbService.selectIdNameMapByLanguage(new QueryWrapper<PriceType>().in("id", StreamUtil.toSet(receiveBillRealGoods, ReceiveBillRealGoods::getPriceTypeId)), PriceType.class, LanguageTableEnum.PRICETYPE);
         // 根据单据分组
-        Map<Long, List<ReceiveBillRealSize>> billSizeMap = receiveBillSizes.stream().collect(Collectors.groupingBy(ReceiveBillRealSize::getBillId));
+        Map<Long, List<ReceiveBillRealSize>> realBillSizeMap = receiveRealBillSizes.stream().collect(Collectors.groupingBy(ReceiveBillRealSize::getBillId));
+        Map<String, ReceiveBillSize> billSizeKeyMap = receiveBillSizes.stream().collect(Collectors.toMap(ReceiveBillSize::getUniqueKey, Function.identity()));
         Map<Long, List<ReceiveBillRealGoods>> billGoodsMap = receiveBillRealGoods.stream().collect(Collectors.groupingBy(ReceiveBillRealGoods::getBillId));
         // 货品
         List<Goods> goodsList = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getId, StreamUtil.toSet(receiveBillRealGoods, ReceiveBillRealGoods::getGoodsId)));
         Map<Long, String> goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getId, Goods::getCode));
+        Map<Long, String> goodsNameMap = goodsList.stream().collect(Collectors.toMap(Goods::getId, Goods::getName));
         // 颜色
-        List<Color> colorList = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getId, StreamUtil.toSet(receiveBillSizes, ReceiveBillRealSize::getColorId)));
+        List<Color> colorList = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getId, StreamUtil.toSet(receiveRealBillSizes, ReceiveBillRealSize::getColorId)));
         Map<Long, String> colorMap = colorList.stream().collect(Collectors.toMap(Color::getId, Color::getCode));
         // 内长
-        List<LongInfo> longList = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getId, StreamUtil.toSet(receiveBillSizes, ReceiveBillRealSize::getLongId)));
+        List<LongInfo> longList = longDao.selectList(new LambdaQueryWrapper<LongInfo>().in(LongInfo::getId, StreamUtil.toSet(receiveRealBillSizes, ReceiveBillRealSize::getLongId)));
         Map<Long, String> longMap = longList.stream().collect(Collectors.toMap(LongInfo::getId, LongInfo::getName));
         // 尺码
-        List<SizeDetail> sizeList = sizeDetailDao.selectList(new LambdaQueryWrapper<SizeDetail>().in(SizeDetail::getId, StreamUtil.toSet(receiveBillSizes, ReceiveBillRealSize::getSizeId)));
+        List<SizeDetail> sizeList = sizeDetailDao.selectList(new LambdaQueryWrapper<SizeDetail>().in(SizeDetail::getId, StreamUtil.toSet(receiveRealBillSizes, ReceiveBillRealSize::getSizeId)));
         Map<Long, String> sizeMap = sizeList.stream().collect(Collectors.toMap(SizeDetail::getId, SizeDetail::getName));
         // 条码,默认取第一个
         List<Barcode> barcodes = barcodeDao.selectList(new QueryWrapper<Barcode>()
@@ -265,6 +268,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             queryResult.setManualId(bill.getManualId());
             queryResult.setBillNo(bill.getBillNo());
             queryResult.setChannelCode(OptionalUtil.ofNullable(channelMap.get(bill.getChannelId()), IdNameCodeDto::getCode));
+            queryResult.setChannelName(OptionalUtil.ofNullable(channelMap.get(bill.getChannelId()), IdNameCodeDto::getName));
             queryResult.setToChannelCode(OptionalUtil.ofNullable(channelMap.get(bill.getToChannelId()), IdNameCodeDto::getCode));
             queryResult.setBusinessType(OptionalUtil.ofNullable(businessTypeMap.get(bill.getBusinessTypeId()), IdNameDto::getName));
             queryResult.setCurrencyType(OptionalUtil.ofNullable(currencyTypeMap.get(bill.getCurrencyTypeId()), IdNameDto::getName));
@@ -287,7 +291,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             List<ReceiveBillRealGoods> billGoodsList = billGoodsMap.get(bill.getId());
             Map<Long, ReceiveBillRealGoods> currentGoodsMap = billGoodsList.stream().collect(Collectors.toMap(ReceiveBillRealGoods::getId, Function.identity()));
             // 尺码明细
-            List<ReceiveBillRealSize> billSizeList = billSizeMap.get(bill.getId());
+            List<ReceiveBillRealSize> billSizeList = realBillSizeMap.get(bill.getId());
             for (ReceiveBillRealSize size : billSizeList) {
                 ReceiveBillRealGoods billGoods = currentGoodsMap.get(size.getBillGoodsId());
                 ReceiveBillGoodsDetailData detailData = new ReceiveBillGoodsDetailData();
@@ -305,10 +309,12 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
                 detailData.setRemark(billGoods.getRemark());
                 detailData.setBarcode(barcodeMap.get(size.getSingleCode()));
                 detailData.setGoodsCode(goodsMap.get(size.getGoodsId()));
+                detailData.setGoodsName(goodsNameMap.get(size.getGoodsId()));
                 detailData.setColorCode(colorMap.get(size.getColorId()));
                 detailData.setLongName(longMap.get(size.getLongId()));
                 detailData.setSize(sizeMap.get(size.getSizeId()));
                 detailData.setQuantity(size.getQuantity());
+                detailData.setPlanQuantity(billSizeKeyMap.get(size.getUniqueKey()).getQuantity());
             }
 
         }

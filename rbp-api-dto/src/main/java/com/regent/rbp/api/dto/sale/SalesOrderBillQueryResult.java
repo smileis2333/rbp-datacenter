@@ -1,9 +1,11 @@
 package com.regent.rbp.api.dto.sale;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -49,7 +51,8 @@ public class SalesOrderBillQueryResult {
     private Integer billType;
 
     @ApiModelProperty(notes = "创建时间")
-    private String createdTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createdTime;
 
     @ApiModelProperty(notes = "更新时间")
     private String updatedTime;

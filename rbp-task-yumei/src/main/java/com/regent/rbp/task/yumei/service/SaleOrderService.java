@@ -100,4 +100,10 @@ public interface SaleOrderService {
      * @return 错误信息
      */
     String pushRefundLogistics(String storeNo, String orderSource, String outOrderNo, List<YumeiRefundItems> orderItems);
+
+    /**
+     * 根据销售单从数据库查询后推送给玉美
+     * @param billNo 销售单号
+     */
+    void createOfflineSaleOrder(String billNo);
 }
