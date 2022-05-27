@@ -39,7 +39,7 @@ public class SalePushJob {
      * 推送销售单到玉美
      * 请求Json：{ "billNo": "123,456" }
      */
-    @XxlJob(SystemConstants.ORDER_PUSH_RETRY_JOB)
+    @XxlJob(SystemConstants.CREATE_OFFLINE_SALE_ORDER)
     public void orderPushRetryHandler() {
         ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
         try {

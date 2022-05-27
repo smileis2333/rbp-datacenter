@@ -35,7 +35,6 @@ public class BillGoodsDetailData extends GoodsDetailData implements GoodsDetailI
     @ApiModelProperty("货品自定义字段")
     private List<CustomizeDataDto> goodsCustomizeData;
 
-    @Deprecated
     @ApiModelProperty(hidden = true)
     private Long goodsId;
 }

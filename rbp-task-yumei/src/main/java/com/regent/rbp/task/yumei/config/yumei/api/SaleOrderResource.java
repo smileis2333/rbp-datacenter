@@ -1,7 +1,7 @@
 package com.regent.rbp.task.yumei.config.yumei.api;
 
 import com.regent.rbp.task.yumei.config.yumei.YumeiResouceClientConfiguration;
-import com.regent.rbp.task.yumei.model.YumeiCreateSaleOrderDto;
+import com.regent.rbp.task.yumei.model.YumeiCreateOrderDto;
 import com.regent.rbp.task.yumei.model.YumeiOfflineSaleOrderPayload;
 import com.regent.rbp.task.yumei.model.YumeiOrderQueryPageResp;
 import com.regent.rbp.task.yumei.model.YumeiOrderQueryReq;
@@ -24,5 +24,5 @@ public interface SaleOrderResource {
     YumeiOrderQueryPageResp orderQuery(@RequestBody YumeiOrderQueryReq param);
 
     @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/tradeCreate")
-    YumeiCreateSaleOrderDto createOfflineSaleOrder(@RequestBody @Valid YumeiOfflineSaleOrderPayload payload);
+    YumeiCreateOrderDto createOfflineSaleOrder(@RequestBody @Valid YumeiOfflineSaleOrderPayload payload);
 }

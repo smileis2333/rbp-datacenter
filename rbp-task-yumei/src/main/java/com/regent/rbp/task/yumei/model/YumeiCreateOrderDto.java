@@ -10,7 +10,7 @@ import lombok.Data;
  * @create: 2022/5/27 13:17
  */
 @Data
-public class YumeiCreateSaleOrderDto {
+public class YumeiCreateOrderDto {
 
     @ApiModelProperty(notes = "")
     private String code;

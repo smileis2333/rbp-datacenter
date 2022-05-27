@@ -33,7 +33,7 @@ import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import com.regent.rbp.task.yumei.config.yumei.api.SaleOrderResource;
 import com.regent.rbp.task.yumei.constants.YumeiApiUrl;
-import com.regent.rbp.task.yumei.model.YumeiCreateSaleOrderDto;
+import com.regent.rbp.task.yumei.model.YumeiCreateOrderDto;
 import com.regent.rbp.task.yumei.model.YumeiCredential;
 import com.regent.rbp.task.yumei.model.YumeiOfflineSaleOrder;
 import com.regent.rbp.task.yumei.model.YumeiOfflineSaleOrderItem;
@@ -577,7 +577,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                 order.setOrderItems(orderItems);
                 payload.setOrders(orders);
                 String jsonBody = objectMapper.writeValueAsString(payload);
-                YumeiCreateSaleOrderDto dto = saleOrderResource.createOfflineSaleOrder(payload);
+                YumeiCreateOrderDto dto = saleOrderResource.createOfflineSaleOrder(payload);
 
                 if (dto.getCode().equals("00000")) {
                     String returnJson = objectMapper.writeValueAsString(dto);

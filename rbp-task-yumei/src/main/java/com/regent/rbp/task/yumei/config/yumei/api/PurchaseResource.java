@@ -1,6 +1,7 @@
 package com.regent.rbp.task.yumei.config.yumei.api;
 
 import com.regent.rbp.task.yumei.config.yumei.YumeiResouceClientConfiguration;
+import com.regent.rbp.task.yumei.model.YumeiCreateOrderDto;
 import com.regent.rbp.task.yumei.model.YumeiOrderQueryPageResp;
 import com.regent.rbp.task.yumei.model.YumeiOrderQueryReq;
 import com.regent.rbp.task.yumei.model.YumeiPurchaseReceiveOrderPayload;
@@ -27,5 +28,5 @@ public interface PurchaseResource {
      * @return
      */
     @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/purchaseStockinOrderCreate")
-    void createPurchaseReceive(@RequestBody @Valid YumeiPurchaseReceiveOrderPayload payload);
+    YumeiCreateOrderDto createPurchaseReceive(@RequestBody @Valid YumeiPurchaseReceiveOrderPayload payload);
 }

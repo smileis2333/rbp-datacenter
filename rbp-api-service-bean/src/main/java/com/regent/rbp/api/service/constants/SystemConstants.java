@@ -83,5 +83,7 @@ public class SystemConstants {
 
     public static final String POST_RETURN_ORDER_SHIPPING_NO = "inno.ReturnOrderShippingNo";
 
+    public static final String CREATE_OFFLINE_SALE_ORDER = "yumei.createOfflineSaleOrder";
+
 
 }
