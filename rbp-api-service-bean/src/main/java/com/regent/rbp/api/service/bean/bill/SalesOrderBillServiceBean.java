@@ -351,6 +351,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
 
         for (SalesOrderBill bill : list) {
             SalesOrderBillQueryResult queryResult = new SalesOrderBillQueryResult();
+            queryResult.setId(bill.getId());
             queryResult.setManualId(bill.getManualId());
             queryResult.setBillNo(bill.getBillNo());
             queryResult.setStatus(bill.getStatus());

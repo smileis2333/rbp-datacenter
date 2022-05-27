@@ -17,6 +17,9 @@ import java.util.List;
 @Data
 public class SalesOrderBillQueryResult {
 
+    @ApiModelProperty(notes = "销售单Id")
+    private Long id;
+
     @ApiModelProperty(notes = "外部单号（RBP手工单号），唯一。")
     private String manualId;
 

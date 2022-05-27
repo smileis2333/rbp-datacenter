@@ -1,6 +1,7 @@
 package com.regent.rbp.task.yumei.config.yumei.api;
 
 import com.regent.rbp.task.yumei.config.yumei.YumeiResouceClientConfiguration;
+import com.regent.rbp.task.yumei.model.YumeiCreateSaleOrderDto;
 import com.regent.rbp.task.yumei.model.YumeiOfflineSaleOrderPayload;
 import com.regent.rbp.task.yumei.model.YumeiOrderQueryPageResp;
 import com.regent.rbp.task.yumei.model.YumeiOrderQueryReq;
@@ -18,8 +19,10 @@ import javax.validation.Valid;
  */
 @FeignClient(value = "saleOrderResource", url = "${yumei.url:undefined}",configuration = YumeiResouceClientConfiguration.class)
 public interface SaleOrderResource {
+
     @RequestMapping(method = RequestMethod.POST, value = "/api/trade/orderQuery")
     YumeiOrderQueryPageResp orderQuery(@RequestBody YumeiOrderQueryReq param);
+
     @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/tradeCreate")
-    void createOfflineSaleOrder(@RequestBody @Valid YumeiOfflineSaleOrderPayload payload);
+    YumeiCreateSaleOrderDto createOfflineSaleOrder(@RequestBody @Valid YumeiOfflineSaleOrderPayload payload);
 }

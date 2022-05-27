@@ -104,6 +104,7 @@ public interface SaleOrderService {
     /**
      * 根据销售单从数据库查询后推送给玉美
      * @param billNo 销售单号
+     * @return
      */
-    void createOfflineSaleOrder(String billNo);
+    String createOfflineSaleOrder(String billNo);
 }

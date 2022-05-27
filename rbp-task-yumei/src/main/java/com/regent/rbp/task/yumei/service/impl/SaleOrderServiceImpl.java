@@ -13,9 +13,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.regent.rbp.api.core.base.Barcode;
 import com.regent.rbp.api.core.retail.RetailOrderBill;
 import com.regent.rbp.api.core.retail.RetailOrderPushLog;
+import com.regent.rbp.api.core.salesOrder.SalesOrderBillPushLog;
 import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
 import com.regent.rbp.api.dao.retail.RetailOrderPushLogDao;
+import com.regent.rbp.api.dao.salesOrder.SalesOrderBillPushLogDao;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.retail.OrderBusinessPersonDto;
 import com.regent.rbp.api.dto.retail.RetailOrderInfoDto;
@@ -28,8 +30,10 @@ import com.regent.rbp.api.service.sale.SalesOrderBillService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
+import com.regent.rbp.infrastructure.util.StringUtil;
 import com.regent.rbp.task.yumei.config.yumei.api.SaleOrderResource;
 import com.regent.rbp.task.yumei.constants.YumeiApiUrl;
+import com.regent.rbp.task.yumei.model.YumeiCreateSaleOrderDto;
 import com.regent.rbp.task.yumei.model.YumeiCredential;
 import com.regent.rbp.task.yumei.model.YumeiOfflineSaleOrder;
 import com.regent.rbp.task.yumei.model.YumeiOfflineSaleOrderItem;
@@ -94,6 +98,8 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     private GoodsService goodsService;
     @Autowired
     private BarcodeDao barcodeDao;
+    @Autowired
+    private SalesOrderBillPushLogDao salesOrderBillPushLogDao;
 
     @Override
     public void confirmReceive(String storeNo, String orderSource, String outOrderNo) {
@@ -532,42 +538,63 @@ public class SaleOrderServiceImpl implements SaleOrderService {
 
     @Override
     @Transactional
-    public void createOfflineSaleOrder(String billNo) {
+    public String createOfflineSaleOrder(String billNo) {
+        String strMsg = StringUtil.EMPTY;
         SaleOrderQueryParam param = new SaleOrderQueryParam();
         param.setBillNo(billNo);
-        PageDataResponse<SalesOrderBillQueryResult> query = salesOrderBillService.query(param);
-        if (CollUtil.isNotEmpty(query.getData())) {
-            SalesOrderBillQueryResult bill = query.getData().get(0);
+        try {
+            PageDataResponse<SalesOrderBillQueryResult> query = salesOrderBillService.query(param);
+            if (CollUtil.isNotEmpty(query.getData())) {
+                SalesOrderBillQueryResult bill = query.getData().get(0);
 
-            YumeiOfflineSaleOrderPayload payload = new YumeiOfflineSaleOrderPayload();
-            payload.setStoreNo(bill.getChannelCode());
-            ArrayList<YumeiOfflineSaleOrder> orders = new ArrayList<>();
-            YumeiOfflineSaleOrder order = new YumeiOfflineSaleOrder();
-            order.setOutTradeNo(bill.getBillNo());
-            order.setUserRemark(bill.getNotes());
-            order.setPayTime(bill.getCreatedTime());
+                YumeiOfflineSaleOrderPayload payload = new YumeiOfflineSaleOrderPayload();
+                payload.setStoreNo(bill.getChannelCode());
+                ArrayList<YumeiOfflineSaleOrder> orders = new ArrayList<>();
+                YumeiOfflineSaleOrder order = new YumeiOfflineSaleOrder();
+                order.setOutTradeNo(bill.getBillNo());
+                order.setUserRemark(bill.getNotes());
+                order.setPayTime(bill.getCreatedTime());
 
-            ArrayList<YumeiOfflineSaleOrderItem> orderItems = new ArrayList<>();
+                ArrayList<YumeiOfflineSaleOrderItem> orderItems = new ArrayList<>();
 
-            List<Long> goodsId = CollUtil.distinct(CollUtil.map(bill.getGoodsDetailData(), SalesOrderBillGoodsResult::getGoodsId, true));
-            Map<Long, Map<Long, Barcode>> barcodeMap = barcodeDao.selectList(Wrappers.lambdaQuery(Barcode.class).in(Barcode::getGoodsId, goodsId)).stream().collect(Collectors.groupingBy(Barcode::getGoodsId, Collectors.collectingAndThen(Collectors.toMap(Barcode::getId, Function.identity()), Collections::unmodifiableMap)));
+                List<Long> goodsId = CollUtil.distinct(CollUtil.map(bill.getGoodsDetailData(), SalesOrderBillGoodsResult::getGoodsId, true));
+                Map<Long, Map<Long, Barcode>> barcodeMap = barcodeDao.selectList(Wrappers.lambdaQuery(Barcode.class).in(Barcode::getGoodsId, goodsId)).stream().collect(Collectors.groupingBy(Barcode::getGoodsId, Collectors.collectingAndThen(Collectors.toMap(Barcode::getId, Function.identity()), Collections::unmodifiableMap)));
 
-            bill.getGoodsDetailData().forEach(gd -> {
-                YumeiOfflineSaleOrderItem orderItem = new YumeiOfflineSaleOrderItem();
-                orderItem.setGoodsName(gd.getGoodsName());
-                Map<Long, Barcode> barcodeCandidate = barcodeMap.get(gd.getGoodsId());
-                if (gd.getBarcodeId()!=null){
-                    orderItem.setSkuCode(barcodeCandidate.get(gd.getBarcodeId()).getBarcode());
-                }else {
-                    orderItem.setSkuCode(barcodeCandidate.values().stream().findFirst().get().getBarcode());
+                bill.getGoodsDetailData().forEach(gd -> {
+                    YumeiOfflineSaleOrderItem orderItem = new YumeiOfflineSaleOrderItem();
+                    orderItem.setGoodsName(gd.getGoodsName());
+                    Map<Long, Barcode> barcodeCandidate = barcodeMap.get(gd.getGoodsId());
+                    if (gd.getBarcodeId() != null) {
+                        orderItem.setSkuCode(barcodeCandidate.get(gd.getBarcodeId()).getBarcode());
+                    } else {
+                        orderItem.setSkuCode(barcodeCandidate.values().stream().findFirst().get().getBarcode());
+                    }
+                    orderItem.setSkuQty(gd.getQuantity());
+                    orderItem.setUnitPrice(gd.getBalancePrice());
+                    orderItem.setOutRefundNo(bill.getOriginBillNo());
+                    orderItems.add(orderItem);
+                });
+                order.setOrderItems(orderItems);
+                payload.setOrders(orders);
+                String jsonBody = objectMapper.writeValueAsString(payload);
+                YumeiCreateSaleOrderDto dto = saleOrderResource.createOfflineSaleOrder(payload);
+
+                if (dto.getCode().equals("00000")) {
+                    String returnJson = objectMapper.writeValueAsString(dto);
+                    // 写入成功记录
+                    SalesOrderBillPushLog log = new SalesOrderBillPushLog(bill.getId(), bill.getBillNo(), "", jsonBody, returnJson, 1);
+                    salesOrderBillPushLogDao.insert(log);
+                } else {
+                    strMsg = dto.getSubMsg();
                 }
-                orderItem.setSkuQty(gd.getQuantity());
-                orderItem.setUnitPrice(gd.getBalancePrice());
-                orderItems.add(orderItem);
-            });
-            order.setOrderItems(orderItems);
-            payload.setOrders(orders);
-            saleOrderResource.createOfflineSaleOrder(payload);
+            }
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "paramError");
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "returnDataError");
         }
+        return strMsg;
     }
 }

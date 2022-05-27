@@ -34,4 +34,10 @@ public class YumeiOfflineSaleOrderItem {
     @Length(max = 255)
     private String buyerRemark;
 
+    @Length(max = 20)
+    private String outRefundNo;
+
+    @Length(max = 255)
+    private String refundRemark;
+
 }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.regent.rbp.api.dao.salesOrder.SalesOrderBillDao">
+
+    <select id="getNotPushSale" resultType="java.lang.String">
+        select bill_no
+        from rbp_sales_order_bill a
+        where status = 1
+        and not exists (select 1 from rbp_sales_order_bill_push_log where id = a.id)
+    </select>
+
+</mapper>
