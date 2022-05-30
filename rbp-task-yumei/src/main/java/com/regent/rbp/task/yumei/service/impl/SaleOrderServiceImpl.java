@@ -542,58 +542,52 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         String strMsg = StringUtil.EMPTY;
         SaleOrderQueryParam param = new SaleOrderQueryParam();
         param.setBillNo(billNo);
-        try {
-            PageDataResponse<SalesOrderBillQueryResult> query = salesOrderBillService.query(param);
-            if (CollUtil.isNotEmpty(query.getData())) {
-                SalesOrderBillQueryResult bill = query.getData().get(0);
+        PageDataResponse<SalesOrderBillQueryResult> query = salesOrderBillService.query(param);
+        if (CollUtil.isNotEmpty(query.getData())) {
+            SalesOrderBillQueryResult bill = query.getData().get(0);
 
-                YumeiOfflineSaleOrderPayload payload = new YumeiOfflineSaleOrderPayload();
-                payload.setStoreNo(bill.getChannelCode());
-                ArrayList<YumeiOfflineSaleOrder> orders = new ArrayList<>();
-                YumeiOfflineSaleOrder order = new YumeiOfflineSaleOrder();
-                order.setOutTradeNo(bill.getBillNo());
-                order.setUserRemark(bill.getNotes());
-                order.setPayTime(bill.getCreatedTime());
+            YumeiOfflineSaleOrderPayload payload = new YumeiOfflineSaleOrderPayload();
+            payload.setStoreNo(bill.getChannelCode());
+            ArrayList<YumeiOfflineSaleOrder> orders = new ArrayList<>();
+            YumeiOfflineSaleOrder order = new YumeiOfflineSaleOrder();
+            order.setOutTradeNo(bill.getBillNo());
+            order.setUserRemark(bill.getNotes());
+            order.setPayTime(bill.getCreatedTime());
 
-                ArrayList<YumeiOfflineSaleOrderItem> orderItems = new ArrayList<>();
+            ArrayList<YumeiOfflineSaleOrderItem> orderItems = new ArrayList<>();
 
-                List<Long> goodsId = CollUtil.distinct(CollUtil.map(bill.getGoodsDetailData(), SalesOrderBillGoodsResult::getGoodsId, true));
-                Map<Long, Map<Long, Barcode>> barcodeMap = barcodeDao.selectList(Wrappers.lambdaQuery(Barcode.class).in(Barcode::getGoodsId, goodsId)).stream().collect(Collectors.groupingBy(Barcode::getGoodsId, Collectors.collectingAndThen(Collectors.toMap(Barcode::getId, Function.identity()), Collections::unmodifiableMap)));
+            List<Long> goodsId = CollUtil.distinct(CollUtil.map(bill.getGoodsDetailData(), SalesOrderBillGoodsResult::getGoodsId, true));
+            Map<Long, Map<Long, Barcode>> barcodeMap = barcodeDao.selectList(Wrappers.lambdaQuery(Barcode.class).in(Barcode::getGoodsId, goodsId)).stream().collect(Collectors.groupingBy(Barcode::getGoodsId, Collectors.collectingAndThen(Collectors.toMap(Barcode::getId, Function.identity()), Collections::unmodifiableMap)));
 
-                bill.getGoodsDetailData().forEach(gd -> {
-                    YumeiOfflineSaleOrderItem orderItem = new YumeiOfflineSaleOrderItem();
-                    orderItem.setGoodsName(gd.getGoodsName());
-                    Map<Long, Barcode> barcodeCandidate = barcodeMap.get(gd.getGoodsId());
-                    if (gd.getBarcodeId() != null) {
-                        orderItem.setSkuCode(barcodeCandidate.get(gd.getBarcodeId()).getBarcode());
-                    } else {
-                        orderItem.setSkuCode(barcodeCandidate.values().stream().findFirst().get().getBarcode());
-                    }
-                    orderItem.setSkuQty(gd.getQuantity());
-                    orderItem.setUnitPrice(gd.getBalancePrice());
-                    orderItem.setOutRefundNo(bill.getOriginBillNo());
-                    orderItems.add(orderItem);
-                });
-                order.setOrderItems(orderItems);
-                payload.setOrders(orders);
-                String jsonBody = objectMapper.writeValueAsString(payload);
-                YumeiCreateOrderDto dto = saleOrderResource.createOfflineSaleOrder(payload);
-
-                if (dto.getCode().equals("00000")) {
-                    String returnJson = objectMapper.writeValueAsString(dto);
-                    // 写入成功记录
-                    SalesOrderBillPushLog log = new SalesOrderBillPushLog(bill.getId(), bill.getBillNo(), "", jsonBody, returnJson, 1);
-                    salesOrderBillPushLogDao.insert(log);
+            bill.getGoodsDetailData().forEach(gd -> {
+                YumeiOfflineSaleOrderItem orderItem = new YumeiOfflineSaleOrderItem();
+                orderItem.setGoodsName(gd.getGoodsName());
+                Map<Long, Barcode> barcodeCandidate = barcodeMap.get(gd.getGoodsId());
+                if (gd.getBarcodeId() != null) {
+                    orderItem.setSkuCode(barcodeCandidate.get(gd.getBarcodeId()).getBarcode());
                 } else {
-                    strMsg = dto.getSubMsg();
+                    orderItem.setSkuCode(barcodeCandidate.values().stream().findFirst().get().getBarcode());
                 }
+                orderItem.setSkuQty(gd.getQuantity());
+                orderItem.setUnitPrice(gd.getBalancePrice());
+                orderItem.setOutRefundNo(bill.getOriginBillNo());
+                orderItems.add(orderItem);
+            });
+            order.setOrderItems(orderItems);
+            orders.add(order);
+            payload.setOrders(orders);
+            //String jsonBody = objectMapper.writeValueAsString(payload);
+            YumeiCreateOrderDto dto = saleOrderResource.createOfflineSaleOrder(payload);
+
+            String aaa = "";
+            if (dto.getCode().equals("00000")) {
+                //String returnJson = objectMapper.writeValueAsString(dto);
+                // 写入成功记录
+                SalesOrderBillPushLog log = new SalesOrderBillPushLog(bill.getId(), bill.getBillNo(), "", "", "", 1);
+                salesOrderBillPushLogDao.insert(log);
+            } else {
+                strMsg = dto.getSubMsg();
             }
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "paramError");
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "returnDataError");
         }
         return strMsg;
     }

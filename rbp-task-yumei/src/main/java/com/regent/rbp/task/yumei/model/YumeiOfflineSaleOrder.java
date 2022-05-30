@@ -5,6 +5,7 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -60,7 +61,14 @@ public class YumeiOfflineSaleOrder {
     @Length(max = 255)
     private String userRemark;
 
+    @Digits(integer=15, fraction=2)
     private BigDecimal freightAmount;
+
+    @Digits(integer=15, fraction=2)
+    private BigDecimal actualTotalAmount;
+
+    @Digits(integer=15, fraction=2)
+    private BigDecimal goodsQty;
 
 
     public BigDecimal getActualTotalAmount() {

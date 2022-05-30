@@ -418,19 +418,23 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                         }
                         // 货号
                         if (billSize.getGoodsId() != null && goodsMap.containsKey(billSize.getGoodsId())) {
+                            goodsQueryResult.setGoodsId(billSize.getGoodsId());
                             goodsQueryResult.setGoodsCode(goodsMap.get(billSize.getGoodsId()));
                             goodsQueryResult.setGoodsName(goodsNameMap.get(billSize.getGoodsId()));
                         }
                         // 颜色
                         if (billSize.getColorId() != null && colorMap.containsKey(billSize.getColorId())) {
+                            goodsQueryResult.setColorId(billSize.getColorId());
                             goodsQueryResult.setColorCode(colorMap.get(billSize.getColorId()));
                         }
                         // 内长
                         if (billSize.getLongId() != null && longMap.containsKey(billSize.getLabelId())) {
+                            goodsQueryResult.setLongId(billSize.getLabelId());
                             goodsQueryResult.setLongName(longMap.get(billSize.getLongId()));
                         }
                         // 尺码
                         if (billSize.getSizeId() != null && sizeMap.containsKey(billSize.getSizeId())) {
+                            goodsQueryResult.setSizeId(billSize.getSizeId());
                             goodsQueryResult.setSize(sizeMap.get(billSize.getSizeId()));
                         }
                         goodsQueryResultList.add(goodsQueryResult);
