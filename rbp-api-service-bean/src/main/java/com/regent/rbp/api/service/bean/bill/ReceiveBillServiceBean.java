@@ -315,6 +315,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
                 detailData.setSize(sizeMap.get(size.getSizeId()));
                 detailData.setQuantity(size.getQuantity());
                 detailData.setPlanQuantity(billSizeKeyMap.get(size.getUniqueKey()).getQuantity());
+                detailData.setGoodsId(size.getGoodsId());
             }
 
         }

@@ -24,10 +24,8 @@ import java.util.Map;
  */
 @Slf4j
 @Component
-public class SalePushJob {
+public class OfflineSaleOrderPushJob {
 
-    @Autowired
-    private SalesOrderBillDao salesOrderBillDao;
     @Autowired
     private SaleOrderService saleOrderService;
     @Autowired

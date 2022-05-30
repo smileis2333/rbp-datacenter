@@ -7,6 +7,6 @@ package com.regent.rbp.task.yumei.service;
  */
 public interface YumeiPurchaseService {
 
-    String createPurchaseReceive(String billNo);
+    void createPurchaseReceive(String billNo);
 
 }

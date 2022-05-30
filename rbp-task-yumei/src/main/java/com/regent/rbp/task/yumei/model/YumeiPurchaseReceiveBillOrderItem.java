@@ -3,7 +3,6 @@ package com.regent.rbp.task.yumei.model;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
-import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -28,19 +27,19 @@ public class YumeiPurchaseReceiveBillOrderItem {
     private String skuCode;
 
     @NotNull
-    @Digits(integer=15, fraction=2)
+//    @Digits(integer=15, fraction=2)
     private BigDecimal poInQty;
 
     @NotNull
-    @Digits(integer=15, fraction=2)
+//    @Digits(integer=15, fraction=2)
     private BigDecimal actualPoInQty;
 
     @NotNull
-    @Digits(integer=15, fraction=2)
+//    @Digits(integer=15, fraction=2)
     private BigDecimal taxIncludedPurchaseUnitPrice;
 
     @NotNull
-    @Digits(integer=15, fraction=2)
+//    @Digits(integer=15, fraction=2)
     private BigDecimal excludingTaxPurchaseUnitPrice;
 
     public BigDecimal getTaxPurchaseAmount() {

@@ -534,6 +534,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     }
 
     @Override
+    @Transactional
     public void createOfflineSaleOrder(String billNo) {
         SaleOrderQueryParam param = new SaleOrderQueryParam();
         param.setBillNo(billNo);
