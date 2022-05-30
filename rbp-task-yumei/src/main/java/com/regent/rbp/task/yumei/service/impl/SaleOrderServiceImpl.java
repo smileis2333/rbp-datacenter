@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.regent.rbp.api.core.base.Barcode;
 import com.regent.rbp.api.core.retail.RetailOrderBill;
 import com.regent.rbp.api.core.retail.RetailOrderPushLog;
-import com.regent.rbp.api.core.salesOrder.SalesOrderBillPushLog;
 import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.retail.RetailOrderBillDao;
 import com.regent.rbp.api.dao.retail.RetailOrderPushLogDao;
@@ -30,10 +29,8 @@ import com.regent.rbp.api.service.sale.SalesOrderBillService;
 import com.regent.rbp.infrastructure.constants.ResponseCode;
 import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.infrastructure.util.SnowFlakeUtil;
-import com.regent.rbp.infrastructure.util.StringUtil;
 import com.regent.rbp.task.yumei.config.yumei.api.SaleOrderResource;
 import com.regent.rbp.task.yumei.constants.YumeiApiUrl;
-import com.regent.rbp.task.yumei.model.YumeiCreateOrderDto;
 import com.regent.rbp.task.yumei.model.YumeiCredential;
 import com.regent.rbp.task.yumei.model.YumeiOfflineSaleOrder;
 import com.regent.rbp.task.yumei.model.YumeiOfflineSaleOrderItem;
@@ -537,9 +534,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     }
 
     @Override
-    @Transactional
-    public String createOfflineSaleOrder(String billNo) {
-        String strMsg = StringUtil.EMPTY;
+    public void createOfflineSaleOrder(String billNo) {
         SaleOrderQueryParam param = new SaleOrderQueryParam();
         param.setBillNo(billNo);
         PageDataResponse<SalesOrderBillQueryResult> query = salesOrderBillService.query(param);
@@ -560,35 +555,23 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             Map<Long, Map<Long, Barcode>> barcodeMap = barcodeDao.selectList(Wrappers.lambdaQuery(Barcode.class).in(Barcode::getGoodsId, goodsId)).stream().collect(Collectors.groupingBy(Barcode::getGoodsId, Collectors.collectingAndThen(Collectors.toMap(Barcode::getId, Function.identity()), Collections::unmodifiableMap)));
 
             bill.getGoodsDetailData().forEach(gd -> {
-                YumeiOfflineSaleOrderItem orderItem = new YumeiOfflineSaleOrderItem();
-                orderItem.setGoodsName(gd.getGoodsName());
+                YumeiOfflineSaleOrderItem goodsDetail = new YumeiOfflineSaleOrderItem();
+                goodsDetail.setGoodsName(gd.getGoodsName());
                 Map<Long, Barcode> barcodeCandidate = barcodeMap.get(gd.getGoodsId());
                 if (gd.getBarcodeId() != null) {
-                    orderItem.setSkuCode(barcodeCandidate.get(gd.getBarcodeId()).getBarcode());
+                    goodsDetail.setSkuCode(barcodeCandidate.get(gd.getBarcodeId()).getBarcode());
                 } else {
-                    orderItem.setSkuCode(barcodeCandidate.values().stream().findFirst().get().getBarcode());
+                    goodsDetail.setSkuCode(barcodeCandidate.values().stream().findFirst().get().getBarcode());
                 }
-                orderItem.setSkuQty(gd.getQuantity());
-                orderItem.setUnitPrice(gd.getBalancePrice());
-                orderItem.setOutRefundNo(bill.getOriginBillNo());
-                orderItems.add(orderItem);
+                goodsDetail.setSkuQty(gd.getQuantity());
+                goodsDetail.setUnitPrice(gd.getBalancePrice());
+                goodsDetail.setOutRefundNo(bill.getOriginBillNo());
+                orderItems.add(goodsDetail);
             });
             order.setOrderItems(orderItems);
             orders.add(order);
             payload.setOrders(orders);
-            //String jsonBody = objectMapper.writeValueAsString(payload);
-            YumeiCreateOrderDto dto = saleOrderResource.createOfflineSaleOrder(payload);
-
-            String aaa = "";
-            if (dto.getCode().equals("00000")) {
-                //String returnJson = objectMapper.writeValueAsString(dto);
-                // 写入成功记录
-                SalesOrderBillPushLog log = new SalesOrderBillPushLog(bill.getId(), bill.getBillNo(), "", "", "", 1);
-                salesOrderBillPushLogDao.insert(log);
-            } else {
-                strMsg = dto.getSubMsg();
-            }
+            saleOrderResource.createOfflineSaleOrder(payload);
         }
-        return strMsg;
     }
 }

@@ -25,33 +25,26 @@ public class YumeiOfflineSaleOrder {
     private String outTradeNo;
 
     @Length(max = 40)
-    @NotBlank
     private String buyerNick;
 
     @Length(max = 50)
     private String guideNo;
 
-    @NotBlank
     @Length(max = 40)
     private String receiver;
 
-    @NotBlank
     @Length(max = 20)
     private String provinceName;
 
-    @NotBlank
     @Length(max = 20)
     private String cityName;
 
-    @NotBlank
     @Length(max = 20)
     private String areaName;
 
-    @NotBlank
     @Length(max = 255)
     private String addrDetail;
 
-    @NotBlank
     @Length(max = 255)
     private String mobile;
 
@@ -63,13 +56,6 @@ public class YumeiOfflineSaleOrder {
 
     @Digits(integer=15, fraction=2)
     private BigDecimal freightAmount;
-
-    @Digits(integer=15, fraction=2)
-    private BigDecimal actualTotalAmount;
-
-    @Digits(integer=15, fraction=2)
-    private BigDecimal goodsQty;
-
 
     public BigDecimal getActualTotalAmount() {
         return orderItems.stream().map(e->e.getUnitPrice().multiply(e.getSkuQty())).reduce(BigDecimal.ZERO,BigDecimal::add);

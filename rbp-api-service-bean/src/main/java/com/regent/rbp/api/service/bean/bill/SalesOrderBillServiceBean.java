@@ -290,6 +290,9 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
      * @return
      */
     private List<SalesOrderBillQueryResult> convertQueryResult(List<SalesOrderBill> list) {
+        if (CollUtil.isEmpty(list)){
+            return Collections.emptyList();
+        }
         List<SalesOrderBillQueryResult> queryResults = new ArrayList<>(list.size());
 
         List<Long> saleIds = list.stream().map(SalesOrderBill::getId).distinct().collect(Collectors.toList());
@@ -411,6 +414,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                         goodsQueryResult.setTagDiscount(billGoods.getTagDiscount());
                         goodsQueryResult.setRetailDiscount(billGoods.getRetailDiscount());
                         goodsQueryResult.setBalanceDiscount(billGoods.getBalanceDiscount());
+                        goodsQueryResult.setBalancePrice(billGoods.getBalancePrice());
 
                         // 条码
                         if (billSize.getBarcodeId() != null && barcodeMap.containsKey(billSize.getBarcodeId())) {

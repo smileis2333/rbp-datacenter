@@ -1,12 +1,9 @@
 package com.regent.rbp.task.yumei.job;
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSON;
-import com.regent.rbp.api.core.retail.RetailOrderPushLog;
-import com.regent.rbp.api.core.salesOrder.SalesOrderBillPushLog;
+import cn.hutool.core.date.DateUtil;
 import com.regent.rbp.api.dao.salesOrder.SalesOrderBillDao;
 import com.regent.rbp.api.service.constants.SystemConstants;
+import com.regent.rbp.common.dao.DbDao;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
 import com.regent.rbp.task.yumei.service.SaleOrderService;
 import com.xxl.job.core.context.XxlJobHelper;
@@ -15,9 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @program: rbp-datacenter
@@ -33,7 +30,8 @@ public class SalePushJob {
     private SalesOrderBillDao salesOrderBillDao;
     @Autowired
     private SaleOrderService saleOrderService;
-
+    @Autowired
+    private DbDao dbDao;
 
     /**
      * 推送销售单到玉美
@@ -42,34 +40,44 @@ public class SalePushJob {
     @XxlJob(SystemConstants.CREATE_OFFLINE_SALE_ORDER)
     public void orderPushRetryHandler() {
         ThreadLocalGroup.setUserId(SystemConstants.ADMIN_CODE);
-        try {
-            List<String> saleList = new ArrayList<>();
-            // 读取参数(单号)
-            String param = XxlJobHelper.getJobParam();
-            XxlJobHelper.log(param);
-            SalesOrderBillPushLog salePushLog = JSON.parseObject(param, SalesOrderBillPushLog.class);
-            if (null != salePushLog && StrUtil.isNotEmpty(salePushLog.getBillNo())) {
-                saleList.addAll(Arrays.asList(salePushLog.getBillNo().split(StrUtil.COMMA)));
-            } else {
-                saleList = salesOrderBillDao.getNotPushSale();
+
+        Integer offset = 0;
+        Integer size = 100;
+
+        while (true) {
+            // 未推送且货品明细都已设置条形码
+            String querySql = String.format("select id,bill_no from rbp_sales_order_bill rsob where not exists (select * from yumei_push_log ypl where ypl.bill_id = rsob.id and ypl.target_table = 'rbp_sales_order_bill')" +
+                    "and not exists (select * from rbp_sales_order_bill_size rsobs left join rbp_barcode rb  on rsobs.goods_id  = rb.goods_id where rsobs.bill_id  = rsob.id and rb.goods_id is null)" +
+                    "and (select count(*) from rbp_sales_order_bill_size rsobs2 where rsobs2.bill_id = rsob.id) >0" +
+                    " order by rsob.created_time asc limit %s,%s", offset, size);
+            List<Map<String, Object>> params = dbDao.selectList(querySql);
+            for (Map<String, Object> param : params) {
+                String billNo = (String) param.get("bill_no");
+                Long billId = ((Long) param.get("id"));
+                Date startTime = new Date();
+                try {
+                    saleOrderService.createOfflineSaleOrder(billNo);
+                    Date endTime = new Date();
+                    String insertStatement = String.format("" +
+                            "insert\n" +
+                            "\tinto\n" +
+                            "\tyumei_push_log(\n" +
+                            "\tbill_id,\n" +
+                            "\tbill_no,\n" +
+                            "\ttarget_table,\n" +
+                            "\tpush_start_time,\n" +
+                            "\tpush_end_time)\n" +
+                            "values(%s,'%s','%s','%s','%s')", billId, billNo, "rbp_sales_order_bill", DateUtil.format(startTime, "yyyy-MM-dd"), DateUtil.format(endTime, "yyyy-MM-dd"));
+                    dbDao.insert(insertStatement);
+                } catch (Exception e) {
+                    XxlJobHelper.log(String.format("billId: %s, billNo: %s push yumei fail, please see `rbp_third_party_invoke_log` table", billId, billNo));
+                }
+                if (param.size()==size){
+                    offset += size;
+                }else{
+                    break;
+                }
             }
-
-            if (CollUtil.isNotEmpty(saleList)) {
-                saleList.stream().forEach(item -> {
-                    String errorMsg = saleOrderService.createOfflineSaleOrder(item);
-                    if (StrUtil.isNotEmpty(errorMsg)) {
-                        XxlJobHelper.log(errorMsg);
-                        XxlJobHelper.handleFail(errorMsg);
-                    }
-                });
-
-            }
-
-
-        } catch (Exception e) {
-            String message = e.getMessage();
-            XxlJobHelper.log(message);
-            XxlJobHelper.handleFail(message);
         }
     }
 

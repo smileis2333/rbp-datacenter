@@ -106,5 +106,5 @@ public interface SaleOrderService {
      * @param billNo 销售单号
      * @return
      */
-    String createOfflineSaleOrder(String billNo);
+    void createOfflineSaleOrder(String billNo);
 }
