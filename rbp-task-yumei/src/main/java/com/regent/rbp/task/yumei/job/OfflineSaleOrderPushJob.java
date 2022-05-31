@@ -44,10 +44,9 @@ public class OfflineSaleOrderPushJob {
 
         while (true) {
             // 未推送且货品明细都已设置条形码
-            String querySql = String.format("select id,bill_no from rbp_sales_order_bill rsob where not exists (select * from yumei_push_log ypl where ypl.bill_id = rsob.id and ypl.target_table = 'rbp_sales_order_bill')" +
-                    "and not exists (select * from rbp_sales_order_bill_size rsobs left join rbp_barcode rb  on rsobs.goods_id  = rb.goods_id where rsobs.bill_id  = rsob.id and rb.goods_id is null)" +
+            String querySql = String.format("select id,bill_no from rbp_sales_order_bill rsob where status = 1 and not exists (select * from yumei_push_log ypl where ypl.bill_id = rsob.id and ypl.target_table = 'rbp_sales_order_bill')" +
                     "and (select count(*) from rbp_sales_order_bill_size rsobs2 where rsobs2.bill_id = rsob.id) >0" +
-                    " order by rsob.created_time asc limit %s,%s", offset, size);
+                    " order by rsob.check_time desc limit %s,%s", offset, size);
             List<Map<String, Object>> params = dbDao.selectList(querySql);
             for (Map<String, Object> param : params) {
                 String billNo = (String) param.get("bill_no");
@@ -70,11 +69,11 @@ public class OfflineSaleOrderPushJob {
                 } catch (Exception e) {
                     XxlJobHelper.log(String.format("billId: %s, billNo: %s push yumei fail, please see `rbp_third_party_invoke_log` table", billId, billNo));
                 }
-                if (param.size()==size){
-                    offset += size;
-                }else{
-                    break;
-                }
+            }
+            if (params.size()==size){
+                offset += size;
+            }else{
+                break;
             }
         }
     }

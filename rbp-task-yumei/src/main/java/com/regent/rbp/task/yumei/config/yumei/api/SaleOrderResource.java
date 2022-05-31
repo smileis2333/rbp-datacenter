@@ -25,5 +25,5 @@ public interface SaleOrderResource {
     YumeiOrderQueryPageResp orderQuery(@RequestBody YumeiOrderQueryReq param);
 
     @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/tradeCreate")
-    void createOfflineSaleOrder(@RequestBody @Valid YumeiOfflineSaleOrderPayload payload);
+    Void createOfflineSaleOrder(@RequestBody @Valid YumeiOfflineSaleOrderPayload payload);
 }

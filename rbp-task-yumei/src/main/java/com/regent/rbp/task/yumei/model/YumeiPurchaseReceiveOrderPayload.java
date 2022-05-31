@@ -1,5 +1,6 @@
 package com.regent.rbp.task.yumei.model;
 
+import cn.hutool.core.lang.UUID;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
@@ -21,9 +22,7 @@ public class YumeiPurchaseReceiveOrderPayload {
 
     private final Integer orderSource = 4;
 
-    @NotBlank
-    @Length(max = 60)
-    private String requestId;
+    private final String requestId = UUID.fastUUID().toString();
 
     @NotEmpty
     @Valid

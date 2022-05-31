@@ -29,5 +29,5 @@ public interface PurchaseResource {
      * @return
      */
     @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/purchaseStockinOrderCreate")
-    void createPurchaseReceive(@RequestBody @Valid YumeiPurchaseReceiveOrderPayload payload);
+    Void createPurchaseReceive(@RequestBody @Valid YumeiPurchaseReceiveOrderPayload payload);
 }

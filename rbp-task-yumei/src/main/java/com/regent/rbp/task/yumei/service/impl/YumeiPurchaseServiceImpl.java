@@ -45,7 +45,6 @@ public class YumeiPurchaseServiceImpl implements YumeiPurchaseService {
 
 
     @Override
-    @Transactional
     public void createPurchaseReceive(String billNo) {
         ReceiveBillQueryParam param = new ReceiveBillQueryParam();
         param.setBillNo(billNo);
@@ -54,17 +53,14 @@ public class YumeiPurchaseServiceImpl implements YumeiPurchaseService {
 
             ReceiveBillQueryResult bill = query.getData().get(0);
             YumeiPurchaseReceiveOrderPayload payload = new YumeiPurchaseReceiveOrderPayload();
-            payload.setStoreNo(billNo);
-            payload.setRequestId(UUID.fastUUID().toString());
-            List<Long> goodsId = CollUtil.distinct(CollUtil.map(bill.getGoodsDetailData(), ReceiveBillGoodsDetailData::getGoodsId, true));
-            Map<Long, Map<Long, Barcode>> barcodeMap = barcodeDao.selectList(Wrappers.lambdaQuery(Barcode.class).in(Barcode::getGoodsId, goodsId)).stream().collect(Collectors.groupingBy(Barcode::getGoodsId, Collectors.collectingAndThen(Collectors.toMap(Barcode::getId, Function.identity()), Collections::unmodifiableMap)));
+            payload.setStoreNo(bill.getToChannelCode());
             ArrayList<YumeiPurchaseReceiveBillOrder> orders = new ArrayList<>();
             YumeiPurchaseReceiveBillOrder order = new YumeiPurchaseReceiveBillOrder();
             order.setOutOrderNo(billNo);
 
             order.setDeliveryOrderNo(bill.getSendNo());
-            order.setBasicOffshopCode(bill.getChannelCode());
-            order.setBasicOffshopName(bill.getChannelName());
+            order.setBasicOffshopCode(bill.getToChannelCode());
+            order.setBasicOffshopName(bill.getToChannelName());
             order.setPoInTime(bill.getCreatedTime());
             List<YumeiPurchaseReceiveBillOrderItem> orderItems = new ArrayList<>();
 
@@ -72,8 +68,7 @@ public class YumeiPurchaseServiceImpl implements YumeiPurchaseService {
                 YumeiPurchaseReceiveBillOrderItem orderItem = new YumeiPurchaseReceiveBillOrderItem();
                 orderItem.setGoodsName(gd.getGoodsName());
                 orderItem.setGoodsNo(gd.getGoodsCode());
-                Map<Long, Barcode> barcodes = barcodeMap.get(gd.getGoodsId());
-                orderItem.setSkuCode(barcodes.values().stream().findFirst().get().getBarcode());
+                orderItem.setSkuCode(gd.getBarcode());
                 orderItem.setPoInQty(gd.getPlanQuantity());
                 orderItem.setActualPoInQty(gd.getQuantity());
                 orderItem.setTaxIncludedPurchaseUnitPrice(gd.getBalancePrice());

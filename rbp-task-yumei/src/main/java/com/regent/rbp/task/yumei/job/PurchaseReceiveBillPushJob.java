@@ -43,10 +43,11 @@ public class PurchaseReceiveBillPushJob {
 
         while (true) {
             // 未推送且货品明细都已设置条形码
-            String querySql = String.format("select id,bill_no from rbp_receive_bill rrb where not exists (select * from yumei_push_log ypl where ypl.bill_id = rrb.id and ypl.target_table = 'rbp_receive_bill')" +
+            String querySql = String.format("select id,bill_no from rbp_receive_bill rrb where module_id  = '701014'  and business_type_id  = 1120000000000031 and status = 1 " +
+                    "and not exists (select * from yumei_push_log ypl where ypl.bill_id = rrb.id and ypl.target_table = 'rbp_receive_bill')" +
                     "and not exists (select * from rbp_receive_bill_size rrbs left join rbp_barcode rb  on rrbs.goods_id  = rb.goods_id where rrbs.bill_id  = rrb.id and rb.goods_id is null)" +
                     "and (select count(*) from rbp_receive_bill_size rrbs2 where rrbs2.bill_id = rrb.id) >0" +
-                    " order by rrb.created_time asc limit %s,%s", offset, size);
+                    " order by rrb.check_time desc limit %s,%s", offset, size);
             List<Map<String, Object>> params = dbDao.selectList(querySql);
             for (Map<String, Object> param : params) {
                 String billNo = (String) param.get("bill_no");
@@ -69,11 +70,11 @@ public class PurchaseReceiveBillPushJob {
                 } catch (Exception e) {
                     XxlJobHelper.log(String.format("billId: %s, billNo: %s push yumei fail, please see `rbp_third_party_invoke_log` table", billId, billNo));
                 }
-                if (param.size()==size){
-                    offset += size;
-                }else{
-                    break;
-                }
+            }
+            if (params.size()==size){
+                offset += size;
+            }else{
+                break;
             }
         }
     }

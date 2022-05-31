@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.regent.rbp.api.core.base.Barcode;
 import com.regent.rbp.api.core.base.Color;
@@ -25,13 +26,7 @@ import com.regent.rbp.api.core.salesOrder.SalesOrderBillGoods;
 import com.regent.rbp.api.core.salesOrder.SalesOrderBillPayment;
 import com.regent.rbp.api.core.salesOrder.SalesOrderBillSize;
 import com.regent.rbp.api.core.user.UserProfile;
-import com.regent.rbp.api.dao.base.BarcodeDao;
-import com.regent.rbp.api.dao.base.BaseDbDao;
-import com.regent.rbp.api.dao.base.ColorDao;
-import com.regent.rbp.api.dao.base.LongDao;
-import com.regent.rbp.api.dao.base.PosClassDao;
-import com.regent.rbp.api.dao.base.RetailPayTypeDao;
-import com.regent.rbp.api.dao.base.SizeClassDao;
+import com.regent.rbp.api.dao.base.*;
 import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.member.MemberCardDao;
@@ -120,6 +115,8 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
     private UserProfileDao userProfileDao;
     @Autowired
     BaseDbDao baseDbDao;
+    @Autowired
+    SizeDetailDao sizeDetailDao;
 
     @Override
     public PageDataResponse<SalesOrderBillQueryResult> query(SaleOrderQueryParam param) {
@@ -315,7 +312,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         // 颜色
         List<Long> colorIds = salesOrderBillSizeList.stream().map(SalesOrderBillSize::getColorId).distinct().collect(Collectors.toList());
         List<Color> colorList = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getId, colorIds));
-        Map<Long, String> colorMap = colorList.stream().collect(Collectors.toMap(Color::getId, Color::getName));
+        Map<Long, String> colorMap = colorList.stream().collect(Collectors.toMap(Color::getId, Color::getCode));
 
         // 内长
         List<Long> longIds = salesOrderBillSizeList.stream().map(SalesOrderBillSize::getLongId).distinct().collect(Collectors.toList());
@@ -324,8 +321,8 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
 
         // 尺码
         List<Long> sizeIds = salesOrderBillSizeList.stream().map(SalesOrderBillSize::getSizeId).distinct().collect(Collectors.toList());
-        List<SizeClass> sizeList = sizeClassDao.selectList(new LambdaQueryWrapper<SizeClass>().in(SizeClass::getId, sizeIds));
-        Map<Long, String> sizeMap = sizeList.stream().collect(Collectors.toMap(SizeClass::getId, SizeClass::getName));
+        List<SizeDetail> sizeList = sizeDetailDao.selectList(Wrappers.lambdaQuery(SizeDetail.class).in(SizeDetail::getId, sizeIds));
+        Map<Long, String> sizeMap = sizeList.stream().collect(Collectors.toMap(SizeDetail::getId, SizeDetail::getName));
 
         // 条码
         List<Long> barcodeIds = salesOrderBillSizeList.stream().map(SalesOrderBillSize::getBarcodeId).distinct().collect(Collectors.toList());
@@ -419,6 +416,7 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                         // 条码
                         if (billSize.getBarcodeId() != null && barcodeMap.containsKey(billSize.getBarcodeId())) {
                             goodsQueryResult.setBarcode(barcodeMap.get(billSize.getBarcodeId()));
+                            goodsQueryResult.setBarcodeId(billSize.getBarcodeId());
                         }
                         // 货号
                         if (billSize.getGoodsId() != null && goodsMap.containsKey(billSize.getGoodsId())) {

@@ -534,7 +534,6 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     }
 
     @Override
-    @Transactional
     public void createOfflineSaleOrder(String billNo) {
         SaleOrderQueryParam param = new SaleOrderQueryParam();
         param.setBillNo(billNo);
@@ -562,7 +561,9 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                 if (gd.getBarcodeId() != null) {
                     goodsDetail.setSkuCode(barcodeCandidate.get(gd.getBarcodeId()).getBarcode());
                 } else {
-                    goodsDetail.setSkuCode(barcodeCandidate.values().stream().findFirst().get().getBarcode());
+                    Map<String, List<Barcode>> skuMap = barcodeCandidate.values().stream().collect(Collectors.groupingBy(e -> String.format("%s%s%s%s", e.getGoodsId(), e.getColorId(), e.getLongId(), e.getSizeId()), Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList)));
+                    String key = String.format("%s%s%s%s", gd.getGoodsId(), gd.getColorId(), gd.getLongId(), gd.getSizeId());
+                    goodsDetail.setSkuCode(skuMap.get(key).get(0).getBarcode());
                 }
                 goodsDetail.setSkuQty(gd.getQuantity());
                 goodsDetail.setUnitPrice(gd.getBalancePrice());

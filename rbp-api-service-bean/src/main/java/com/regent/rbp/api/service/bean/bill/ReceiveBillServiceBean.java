@@ -270,6 +270,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             queryResult.setChannelCode(OptionalUtil.ofNullable(channelMap.get(bill.getChannelId()), IdNameCodeDto::getCode));
             queryResult.setChannelName(OptionalUtil.ofNullable(channelMap.get(bill.getChannelId()), IdNameCodeDto::getName));
             queryResult.setToChannelCode(OptionalUtil.ofNullable(channelMap.get(bill.getToChannelId()), IdNameCodeDto::getCode));
+            queryResult.setToChannelName(OptionalUtil.ofNullable(channelMap.get(bill.getToChannelId()), IdNameCodeDto::getName));
             queryResult.setBusinessType(OptionalUtil.ofNullable(businessTypeMap.get(bill.getBusinessTypeId()), IdNameDto::getName));
             queryResult.setCurrencyType(OptionalUtil.ofNullable(currencyTypeMap.get(bill.getCurrencyTypeId()), IdNameDto::getName));
             queryResult.setStatus(bill.getStatus());

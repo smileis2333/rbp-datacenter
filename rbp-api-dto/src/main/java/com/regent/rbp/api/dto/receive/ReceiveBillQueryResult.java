@@ -3,6 +3,7 @@ package com.regent.rbp.api.dto.receive;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -23,6 +24,9 @@ public class ReceiveBillQueryResult {
     private String manualId;
     private String channelCode;
     private String toChannelCode;
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private String toChannelName;
     @JsonIgnore
     private String channelName;
     private String currencyType;
