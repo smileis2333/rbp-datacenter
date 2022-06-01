@@ -65,6 +65,7 @@ public class PurchaseReceiveBillPushJob {
                         "\tpush_end_time)\n" +
                         "values(%s,'%s','%s','%s','%s')", billId, billNo, "rbp_receive_bill", DateUtil.format(startTime, "yyyy-MM-dd"), DateUtil.format(endTime, "yyyy-MM-dd"));
                 dbDao.insert(insertStatement);
+                XxlJobHelper.log(String.format("billId: %s, billNo: %s push yumei success", billId, billNo));
             } catch (FeignException e) {
                 XxlJobHelper.log(String.format("billId: %s, billNo: %s push yumei fail, please see `rbp_third_party_invoke_log` table", billId, billNo));
             } catch (Exception e) {
