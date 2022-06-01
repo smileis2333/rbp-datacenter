@@ -494,6 +494,8 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
         List<SalesOrderBillGoods> salesOrderBillGoodsList = context.getSalesOrderBillGoodsList();
         List<SalesOrderBillSize> salesOrderBillSizeList = context.getSalesOrderBillSizeList();
         List<SalesOrderBillPayment> salesOrderBillPaymentList = context.getSalesOrderBillPaymentList();
+        // 销售单未设置默认时间
+        salesOrderBill.setCreatedTime(new Date());
 
         Channel saleChannel = channelDao.selectOne(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getSaleChannelCode()));
         salesOrderBill.setSaleChannelId(saleChannel.getId());

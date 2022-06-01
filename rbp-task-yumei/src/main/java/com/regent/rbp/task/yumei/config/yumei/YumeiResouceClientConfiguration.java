@@ -11,6 +11,7 @@ import feign.Response;
 import feign.Util;
 import feign.codec.DecodeException;
 import feign.codec.Decoder;
+import feign.codec.ErrorDecoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,6 +59,11 @@ public class YumeiResouceClientConfiguration {
     public YumeiTokenManager yumeiTokenManager() {
         YumeiTokenManager yumeiTokenManager = new YumeiTokenManager(yumeiConfig, tokenResource);
         return yumeiTokenManager;
+    }
+
+    @Bean
+    public ErrorDecoder errorDecoder() {
+        return new YumeiErrorDecoder(mapper, baseDbDao);
     }
 
 }

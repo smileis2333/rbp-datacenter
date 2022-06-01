@@ -1,6 +1,7 @@
 package com.regent.rbp.task.yumei.config.yumei;
 
 import feign.codec.Decoder;
+import feign.codec.ErrorDecoder;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
@@ -22,5 +23,10 @@ public class RawDecoderConfig {
     @Bean
     public Decoder rawDecoder() {
         return new ResponseEntityDecoder(new SpringDecoder(this.messageConverters));
+    }
+
+    @Bean
+    public ErrorDecoder rawErrorDecoder() {
+        return new ErrorDecoder.Default();
     }
 }

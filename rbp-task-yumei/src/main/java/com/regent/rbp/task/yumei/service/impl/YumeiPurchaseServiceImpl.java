@@ -5,7 +5,9 @@ import cn.hutool.core.lang.UUID;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.regent.rbp.api.core.base.Barcode;
+import com.regent.rbp.api.core.sendBill.SendBill;
 import com.regent.rbp.api.dao.base.BarcodeDao;
+import com.regent.rbp.api.dao.sendBill.SendBillDao;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.receive.ReceiveBillGoodsDetailData;
 import com.regent.rbp.api.dto.receive.ReceiveBillQueryParam;
@@ -42,6 +44,8 @@ public class YumeiPurchaseServiceImpl implements YumeiPurchaseService {
     private BarcodeDao barcodeDao;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private SendBillDao sendBillDao;
 
 
     @Override
@@ -58,7 +62,8 @@ public class YumeiPurchaseServiceImpl implements YumeiPurchaseService {
             YumeiPurchaseReceiveBillOrder order = new YumeiPurchaseReceiveBillOrder();
             order.setOutOrderNo(billNo);
 
-            order.setDeliveryOrderNo(bill.getSendNo());
+            SendBill sendBill = sendBillDao.selectOne(Wrappers.lambdaQuery(SendBill.class).eq(SendBill::getBillNo, bill.getSendNo()));
+            order.setDeliveryOrderNo(sendBill.getManualId());
             order.setBasicOffshopCode(bill.getToChannelCode());
             order.setBasicOffshopName(bill.getToChannelName());
             order.setPoInTime(bill.getCreatedTime());
