@@ -1,6 +1,6 @@
 package com.regent.rbp.api.dto.sale;
 
-import com.regent.rbp.api.dto.validate.FromTo;
+import com.regent.rbp.api.dto.validate.Dictionary;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -13,11 +13,11 @@ import java.math.BigDecimal;
  * @author: HaiFeng
  * @create: 2021-11-09 16:24
  */
-@FromTo(fromField = "retailPayTypeCode", toField = "retailPayTypeId")
 @Data
 public class SalesOrderBillPaymentResult {
 
     @NotNull
+    @Dictionary(targetTable = "rbp_retail_pay_type", targetField = "code")
     private String retailPayTypeCode;
 
     @NotNull
