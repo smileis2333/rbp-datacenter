@@ -1,6 +1,7 @@
 package com.regent.rbp.api.dto.send;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -32,8 +33,16 @@ public class SendBillQueryResult {
     @ApiModelProperty(notes = "发货渠道编号")
     private String channelCode;
 
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private String channelName;
+
     @ApiModelProperty(notes = "收货渠道编号")
     private String toChannelCode;
+
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private String toChannelName;
 
     @ApiModelProperty(notes = "业务类型名称")
     private String businessType;
@@ -59,6 +68,14 @@ public class SendBillQueryResult {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date checkTime;
 
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private String checkByName;
+
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private String createdByName;
+
     @ApiModelProperty(notes = "自定义字段")
     private List<CustomizeDataDto> customizeData;
 
@@ -66,6 +83,10 @@ public class SendBillQueryResult {
 
     @ApiModelProperty(notes = "物流公司编号")
     private String logisticsCompanyCode;
+
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private String logisticsCompanyName;
 
     @ApiModelProperty(notes = "物流单号")
     private String logisticsBillCode;

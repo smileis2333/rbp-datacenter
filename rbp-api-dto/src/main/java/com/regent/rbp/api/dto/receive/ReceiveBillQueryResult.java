@@ -40,6 +40,10 @@ public class ReceiveBillQueryResult {
     private Date updatedTime;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date checkTime;
+
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private String checkByName;
     private List<CustomizeDataDto> customizeData;
     private List<ReceiveBillGoodsDetailData> goodsDetailData;
 

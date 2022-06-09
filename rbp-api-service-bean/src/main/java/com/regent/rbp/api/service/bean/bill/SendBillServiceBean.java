@@ -37,6 +37,7 @@ import com.regent.rbp.api.dao.sendBill.SendBillDao;
 import com.regent.rbp.api.dao.sendBill.SendBillGoodsDao;
 import com.regent.rbp.api.dao.sendBill.SendBillLogisticsDao;
 import com.regent.rbp.api.dao.sendBill.SendBillSizeDao;
+import com.regent.rbp.api.dao.warehouse.user.UserProfileDao;
 import com.regent.rbp.api.dto.base.CustomizeColumnDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
@@ -137,6 +138,8 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
     private ForwayStockDetailService forwayStockDetailService;
     @Autowired
     private StockDetailService stockDetailService;
+    @Autowired
+    private UserProfileDao userProfileDao;
 
     /**
      * 分页查询
@@ -622,6 +625,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         // 货品
         List<Goods> goodsList = goodsDao.selectList(new LambdaQueryWrapper<Goods>().in(Goods::getId, StreamUtil.toSet(sendBillGoodsList, SendBillGoods::getGoodsId)));
         Map<Long, String> goodsMap = goodsList.stream().collect(Collectors.toMap(Goods::getId, Goods::getCode));
+        Map<Long, String> goodsNameMap = goodsList.stream().collect(Collectors.toMap(Goods::getId, Goods::getName));
         // 颜色
         List<Color> colorList = colorDao.selectList(new LambdaQueryWrapper<Color>().in(Color::getId, StreamUtil.toSet(sendBillSizeList, SendBillSize::getColorId)));
         Map<Long, String> colorMap = colorList.stream().collect(Collectors.toMap(Color::getId, Color::getCode));
@@ -648,13 +652,15 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         // 物流公司
         Map<Long, SendBillLogistics> logisticsMap = new HashMap<>();
         Map<Long, String> logisticsCompanyMap = new HashMap<>();
+        Map<Long, String> logisticsCompanyNameMap = new HashMap<>();
         List<SendBillLogistics> logisticsList = sendBillLogisticsDao.selectBatchIds(billIdList);
         if (CollUtil.isNotEmpty(logisticsList)) {
             logisticsMap = logisticsList.stream().collect(Collectors.toMap(SendBillLogistics::getBillId, Function.identity()));
             List<Object> ids = logisticsList.stream().map(SendBillLogistics::getLogisticsCompanyId).distinct().collect(Collectors.toList());
             if (CollUtil.isNotEmpty(ids)) {
-                List<Map<Object, Object>> mapList = baseDbDao.getListMap(String.format("select id,code from rbp_logistics_company where status=100 and id in %s", AppendSqlUtil.getInSql(ids)));
+                List<Map<Object, Object>> mapList = baseDbDao.getListMap(String.format("select id,code,name from rbp_logistics_company where status=100 and id in %s", AppendSqlUtil.getInSql(ids)));
                 mapList.forEach(item -> logisticsCompanyMap.put((Long) item.get("id"), (String) item.get("code")));
+                mapList.forEach(item -> logisticsCompanyNameMap.put((Long) item.get("id"), (String) item.get("name")));
             }
         }
         // 模块自定义字段定义
@@ -672,7 +678,9 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
             queryResult.setManualId(bill.getManualId());
             queryResult.setBillNo(bill.getBillNo());
             queryResult.setChannelCode(OptionalUtil.ofNullable(channelMap.get(bill.getChannelId()), IdNameCodeDto::getCode));
+            queryResult.setChannelName(OptionalUtil.ofNullable(channelMap.get(bill.getChannelId()), IdNameCodeDto::getName));
             queryResult.setToChannelCode(OptionalUtil.ofNullable(channelMap.get(bill.getToChannelId()), IdNameCodeDto::getCode));
+            queryResult.setToChannelName(OptionalUtil.ofNullable(channelMap.get(bill.getToChannelId()), IdNameCodeDto::getName));
             queryResult.setBusinessType(OptionalUtil.ofNullable(businessTypeMap.get(bill.getBusinessTypeId()), IdNameDto::getName));
             queryResult.setCurrencyType(OptionalUtil.ofNullable(currencyTypeMap.get(bill.getCurrencyTypeId()), IdNameDto::getName));
             queryResult.setStatus(bill.getStatus());
@@ -681,6 +689,12 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
             queryResult.setCheckTime(bill.getCheckTime());
             queryResult.setCreatedTime(bill.getCreatedTime());
             queryResult.setUpdatedTime(bill.getUpdatedTime());
+            if (bill.getCreatedBy()!=null){
+                queryResult.setCreatedByName(userProfileDao.selectById(bill.getCreatedBy()).getName());
+            }
+            if (bill.getCheckBy()!=null){
+                queryResult.setCheckByName(userProfileDao.selectById(bill.getCheckBy()).getName());
+            }
             // 模块自定义字段定义
             List<CustomizeColumnDto> moduleColumnDtoList = moduleCustomizeMap.get(bill.getModuleId());
             // 过滤未启用的自定义字段，格式化单选类型字段
@@ -689,6 +703,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
             SendBillLogistics logistics = logisticsMap.get(bill.getId());
             if (null != logistics) {
                 queryResult.setLogisticsCompanyCode(logisticsCompanyMap.get(logistics.getLogisticsCompanyId()));
+                queryResult.setLogisticsCompanyName(logisticsCompanyNameMap.get(logistics.getLogisticsCompanyId()));
                 queryResult.setLogisticsBillCode(logistics.getLogisticsBillCode());
                 queryResult.setNation(logistics.getNation());
                 queryResult.setProvince(logistics.getProvince());
@@ -726,6 +741,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
                 detailData.setRemark(billGoods.getRemark());
                 detailData.setBarcode(barcodeMap.get(size.getSingleCode()));
                 detailData.setGoodsCode(goodsMap.get(size.getGoodsId()));
+                detailData.setGoodsName(goodsNameMap.get(size.getGoodsId()));
                 detailData.setColorCode(colorMap.get(size.getColorId()));
                 detailData.setLongName(longMap.get(size.getLongId()));
                 detailData.setSize(sizeMap.get(size.getSizeId()));
