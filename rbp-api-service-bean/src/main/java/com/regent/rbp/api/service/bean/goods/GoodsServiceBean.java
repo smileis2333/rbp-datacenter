@@ -34,7 +34,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.Valid;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -616,7 +615,7 @@ public class GoodsServiceBean implements GoodsService {
 
     @Override
     @Transactional
-    public synchronized DataResponse save(@Valid GoodsSaveParam param) {
+    public synchronized DataResponse save(GoodsSaveParam param) {
         boolean createFlag = true;
         log.info("请求参数:" + param.toString());
         GoodsSaveContext context = new GoodsSaveContext(param);

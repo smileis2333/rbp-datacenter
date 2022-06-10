@@ -6,8 +6,6 @@ import com.regent.rbp.api.dto.goods.GoodsQueryParam;
 import com.regent.rbp.api.dto.goods.GoodsQueryResult;
 import com.regent.rbp.api.dto.goods.GoodsSaveParam;
 
-import javax.validation.Valid;
-
 /**
  * @author xuxing
  */
@@ -15,6 +13,6 @@ public interface GoodsService {
 
     PageDataResponse<GoodsQueryResult> query(GoodsQueryParam param);
 
-    DataResponse save(@Valid GoodsSaveParam param);
+    DataResponse save(GoodsSaveParam param);
 
 }

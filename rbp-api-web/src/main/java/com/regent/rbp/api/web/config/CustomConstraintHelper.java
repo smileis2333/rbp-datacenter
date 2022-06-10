@@ -62,7 +62,7 @@ public class CustomConstraintHelper extends ConstraintHelper {
             putConstraint(tmpConstraints, DiscreteRange.class, DiscreteRangeValidator.class);
             putConstraint(tmpConstraints, Code.class, CodeValidator.class);
             putConstraint(tmpConstraints, UniqueFields.class, UniqueFieldsValidator.class);
-            putConstraint(tmpConstraints, Dictionary.class, DictionaryValidator.class);
+            putConstraints(tmpConstraints, Dictionary.class, DictionaryValidator.class,DictionaryValidatorForCollection.class);
             putConstraint(tmpConstraints, GoodsInfo.class, GoodsInfoValidator.class);
             /**
              * 设置回field

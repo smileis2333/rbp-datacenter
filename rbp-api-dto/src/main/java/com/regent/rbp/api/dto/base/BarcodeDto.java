@@ -48,16 +48,16 @@ public class BarcodeDto {
 
     @AssertTrue(message = "type=1,必填；type=2,非必填")
     private boolean isSize() {
-        return (goodsType != null) && ((goodsType == 2) || (goodsType == 1 && StrUtil.isNotEmpty(size)));
+        return (goodsType == null) || ((goodsType == 2) || (goodsType == 1 && StrUtil.isNotEmpty(size)));
     }
 
     @AssertTrue(message = "type=1,必填；type=2,非必填")
     private boolean isColorCode() {
-        return (goodsType != null) && ((goodsType == 2) || (goodsType == 1 && StrUtil.isNotBlank(colorCode)));
+        return (goodsType == null) || ((goodsType == 2) || (goodsType == 1 && StrUtil.isNotBlank(colorCode)));
     }
 
     @AssertTrue(message = "type=1,必填；type=2,非必填")
     private boolean isLongName() {
-        return (goodsType != null) && ((goodsType == 2) || (goodsType == 1 && StrUtil.isNotBlank(longName)));
+        return (goodsType == null) || ((goodsType == 2) || (goodsType == 1 && StrUtil.isNotBlank(longName)));
     }
 }

@@ -31,6 +31,10 @@ public @interface Dictionary {
 
     String targetField();
 
+    /**
+     * 单个校验才允许指定
+     * @return
+     */
     String operator() default Operator.EQUAL;
 }
 

@@ -3,6 +3,7 @@ package com.regent.rbp.api.dto.goods;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.regent.rbp.api.dto.base.BarcodeDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.validate.BillStatus;
@@ -25,6 +26,7 @@ import static com.regent.rbp.infrastructure.util.DateUtil.SHORT_DATE_FORMAT;
 /**
  * @author xuxing
  */
+@JsonDeserialize(converter = GoodsFieldLinker.class)
 @Data
 public class GoodsSaveParam {
     @NotBlank
@@ -118,12 +120,14 @@ public class GoodsSaveParam {
             "注：只追加，不替换。\n" +
             "type=1,colorList必填；\n" +
             "type=2,colorList留空")
+    @Dictionary(targetTable = "rbp_color",targetField = "code")
     private Set<String> colorList;
 
     @ApiModelProperty("货品的内长列表。\n" +
             "注：只追加，不替换。\n" +
             "type=1,longList必填；\n" +
             "type=2,longList留空")
+    @Dictionary(targetTable = "rbp_long",targetField = "name")
     private Set<String> longList;
 
     @Valid
@@ -147,16 +151,16 @@ public class GoodsSaveParam {
 
     @AssertTrue(message = "type=1,sizeClassName必填; type=2, sizeClassName非必填")
     private boolean isSizeClassName() {
-        return (type != null) && ((type == 2) || (type == 1 && StrUtil.isNotEmpty(sizeClassName)));
+        return (type == null) || ((type == 2) || (type == 1 && StrUtil.isNotEmpty(sizeClassName)));
     }
 
     @AssertTrue(message = "type=1,colorList必填; type=2,colorList留空")
     private boolean isColorList() {
-        return (type != null) && ((type == 2 && CollUtil.isEmpty(colorList)) || (type == 1 && CollUtil.isNotEmpty(colorList)));
+        return (type == null) || ((type == 2 && CollUtil.isEmpty(colorList)) || (type == 1 && CollUtil.isNotEmpty(colorList)));
     }
 
     @AssertTrue(message = "type=1,longList必填; type=2,longList留空")
     private boolean isLongList() {
-        return (type != null) && ((type == 2 && CollUtil.isEmpty(longList)) || (type == 1 && CollUtil.isNotEmpty(longList)));
+        return (type == null) || ((type == 2 && CollUtil.isEmpty(longList)) || (type == 1 && CollUtil.isNotEmpty(longList)));
     }
 }
