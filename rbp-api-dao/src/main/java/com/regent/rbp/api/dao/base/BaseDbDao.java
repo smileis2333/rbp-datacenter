@@ -3,6 +3,7 @@ package com.regent.rbp.api.dao.base;
 import cn.hutool.core.collection.CollUtil;
 import com.regent.rbp.api.core.base.ModuleBusinessType;
 import com.regent.rbp.api.core.base.SizeDetail;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.ibatis.annotations.CacheNamespace;
 import org.apache.ibatis.annotations.Param;
 
@@ -54,6 +55,8 @@ public interface BaseDbDao {
     Integer isExistColumnName(@Param("tableName") String tableName, @Param("columnName") String columnName);
 
     Integer isExistTable(@Param("tableName") String tableName);
+
+    Boolean isExist(@Param("checkSql") String checkSql);
 
     /**
      * 获取第一个已启用模块业务类型
