@@ -615,7 +615,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             if (sendBill.getStatus() != 1) {
                 messageList.add(getNotExistMessage("sendNoPathNotCheck"));
             }
-            if (!(sendBill.getChannelId().longValue() == context.getBill().getToChannelId() && sendBill.getToChannelId().longValue() == context.getBill().getChannelId())) {
+            if (!(sendBill.getChannelId().equals(context.getBill().getChannelId()) || sendBill.getToChannelId().equals(context.getBill().getToChannelId()))) {
                 messageList.add(getNotExistMessage("sendNoPathNotMatch"));
             }
             if (!messageList.isEmpty()) {
