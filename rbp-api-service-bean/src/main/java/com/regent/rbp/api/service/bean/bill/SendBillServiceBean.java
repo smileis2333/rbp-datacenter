@@ -677,6 +677,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
             queryResult.setModuleId(bill.getModuleId());
             queryResult.setManualId(bill.getManualId());
             queryResult.setBillNo(bill.getBillNo());
+            queryResult.setBillId(bill.getId());
             queryResult.setChannelCode(OptionalUtil.ofNullable(channelMap.get(bill.getChannelId()), IdNameCodeDto::getCode));
             queryResult.setChannelName(OptionalUtil.ofNullable(channelMap.get(bill.getChannelId()), IdNameCodeDto::getName));
             queryResult.setToChannelCode(OptionalUtil.ofNullable(channelMap.get(bill.getToChannelId()), IdNameCodeDto::getCode));

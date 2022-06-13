@@ -18,6 +18,10 @@ import java.util.List;
 @Data
 public class SendBillQueryResult {
 
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private Long billId;
+
     @ApiModelProperty(notes = "单号")
     private String billNo;
 

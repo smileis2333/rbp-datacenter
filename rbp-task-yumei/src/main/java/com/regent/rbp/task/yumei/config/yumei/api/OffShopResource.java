@@ -23,9 +23,19 @@ public interface OffShopResource {
     @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/returnOrderCreate")
     Void returnOrderCreate(@RequestBody @Valid YumeiReturnOrderCreatePayload payload);
 
+    /**
+     * 退仓订单_取消
+     * @param payload
+     * @return
+     */
     @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/returnOrderValidated")
     Void returnOrderValidated(@RequestBody @Valid YumeiReturnOrderValidatedPayload payload);
 
+    /**
+     * 调拨出入库单
+     * @param payload
+     * @return
+     */
     @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/transferOrderCreate")
     Void transferOrderCreate(@RequestBody @Valid YumeiTransferOrderCreatePayload payload);
 }

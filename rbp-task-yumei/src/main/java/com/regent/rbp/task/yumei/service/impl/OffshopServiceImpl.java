@@ -1,18 +1,23 @@
 package com.regent.rbp.task.yumei.service.impl;
 
 
+import cn.hutool.core.date.DateUtil;
+import com.regent.rbp.api.core.eum.OnlinePlatformTypeEnum;
+import com.regent.rbp.api.core.retail.LogisticsCompanyPlatformMapping;
 import com.regent.rbp.api.dao.warehouse.user.UserProfileDao;
 import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.receive.ReceiveBillQueryParam;
 import com.regent.rbp.api.dto.receive.ReceiveBillQueryResult;
 import com.regent.rbp.api.dto.send.SendBillQueryParam;
 import com.regent.rbp.api.dto.send.SendBillQueryResult;
+import com.regent.rbp.api.service.constants.TableConstants;
 import com.regent.rbp.api.service.receive.ReceiveBillService;
+import com.regent.rbp.api.service.retail.LogisticsCompanyPlatformMappingService;
 import com.regent.rbp.api.service.send.SendBillService;
+import com.regent.rbp.common.dao.DbDao;
 import com.regent.rbp.task.yumei.config.yumei.api.OffShopResource;
 import com.regent.rbp.task.yumei.model.*;
 import com.regent.rbp.task.yumei.service.OffshopService;
-import io.swagger.annotations.ApiModelProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,10 +32,14 @@ public class OffshopServiceImpl implements OffshopService {
     private SendBillService sendBillService;
     @Autowired
     private OffShopResource offShopResource;
-    @ApiModelProperty
+    @Autowired
     private ReceiveBillService receiveBillService;
     @Autowired
     private UserProfileDao userProfileDao;
+    @Autowired
+    private LogisticsCompanyPlatformMappingService logisticsCompanyPlatformMappingService;
+    @Autowired
+    private DbDao dbDao;
 
     @Override
     public void createReturnOrder(String billNo,AuditData auditData) {
@@ -52,7 +61,8 @@ public class OffshopServiceImpl implements OffshopService {
             order.setApplyUser(bill.getCreatedByName());
             order.setReviewUser(userProfileDao.selectById(auditData.getCheckBy()).getName());
             order.setLogistics(bill.getLogisticsCompanyName());
-            order.setLogisticsCode(bill.getLogisticsCompanyCode());
+            LogisticsCompanyPlatformMapping logisticCompany = logisticsCompanyPlatformMappingService.getOnlinePlatformLogisticsCode(bill.getLogisticsCompanyCode(), OnlinePlatformTypeEnum.INNO.getId());
+            order.setLogisticsCode(logisticCompany.getOnlinePlatformLogisticsCode());
             order.setLogisticsNo(bill.getLogisticsBillCode());
             order.setCreateTime(new Date());
 
@@ -68,7 +78,20 @@ public class OffshopServiceImpl implements OffshopService {
             order.setOrderDetails(orderItems);
             orders.add(order);
             payload.setOrders(orders);
+            Date startTime = new Date();
             offShopResource.returnOrderCreate(payload);
+            Date endTime = new Date();
+            String insertStatement = String.format("" +
+                    "insert\n" +
+                    "\tinto\n" +
+                    "\tyumei_push_log(\n" +
+                    "\tbill_id,\n" +
+                    "\tbill_no,\n" +
+                    "\ttarget_table,\n" +
+                    "\tpush_start_time,\n" +
+                    "\tpush_end_time)\n" +
+                    "values(%s,'%s','%s','%s','%s')", bill.getBillId(), billNo, TableConstants.SEND_BILL, DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"), DateUtil.format(endTime, "yyyy-MM-dd HH:mm:ss"));
+            dbDao.insert(insertStatement);
         }
     }
 
