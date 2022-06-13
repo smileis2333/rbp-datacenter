@@ -34,7 +34,7 @@ public class DictionaryValidator implements ConstraintValidator<Dictionary, Stri
         if (StrUtil.isBlank(value)){
             return true;
         }
-        Long id = baseDbDao.getLongDataBySql(String.format("select id from %s where %s = '%s'", targetTable, targetField, value));
+        Long id = baseDbDao.getLongDataBySql(String.format("select id from %s where binary %s = '%s'", targetTable, targetField, value));
         return id!=null;
     }
 }
