@@ -63,7 +63,7 @@ public class PurchaseReceiveBillPushJob {
                         "\ttarget_table,\n" +
                         "\tpush_start_time,\n" +
                         "\tpush_end_time)\n" +
-                        "values(%s,'%s','%s','%s','%s')", billId, billNo, "rbp_receive_bill", DateUtil.format(startTime, "yyyy-MM-dd"), DateUtil.format(endTime, "yyyy-MM-dd"));
+                        "values(%s,'%s','%s','%s','%s')", billId, billNo, "rbp_receive_bill", DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"), DateUtil.format(endTime, "yyyy-MM-dd HH:mm:ss"));
                 dbDao.insert(insertStatement);
                 XxlJobHelper.log(String.format("billId: %s, billNo: %s push yumei success", billId, billNo));
             } catch (FeignException e) {

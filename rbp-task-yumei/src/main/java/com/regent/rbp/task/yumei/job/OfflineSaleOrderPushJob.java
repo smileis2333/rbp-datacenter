@@ -1,7 +1,6 @@
 package com.regent.rbp.task.yumei.job;
 
 import cn.hutool.core.date.DateUtil;
-import com.regent.rbp.api.dao.salesOrder.SalesOrderBillDao;
 import com.regent.rbp.api.service.constants.SystemConstants;
 import com.regent.rbp.common.dao.DbDao;
 import com.regent.rbp.infrastructure.util.ThreadLocalGroup;
@@ -61,7 +60,7 @@ public class OfflineSaleOrderPushJob {
                         "\ttarget_table,\n" +
                         "\tpush_start_time,\n" +
                         "\tpush_end_time)\n" +
-                        "values(%s,'%s','%s','%s','%s')", billId, billNo, "rbp_sales_order_bill", DateUtil.format(startTime, "yyyy-MM-dd"), DateUtil.format(endTime, "yyyy-MM-dd"));
+                        "values(%s,'%s','%s','%s','%s')", billId, billNo, "rbp_sales_order_bill", DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"), DateUtil.format(endTime, "yyyy-MM-dd HH:mm:ss"));
                 dbDao.insert(insertStatement);
                 XxlJobHelper.log(String.format("billId: %s, billNo: %s push yumei success", billId, billNo));
             } catch (FeignException e) {
