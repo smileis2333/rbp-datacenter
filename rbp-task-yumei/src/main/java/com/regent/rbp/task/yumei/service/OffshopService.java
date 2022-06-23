@@ -29,4 +29,10 @@ public interface OffshopService {
      * @param billNo
      */
     void checkChannelTuneIn(String billNo);
+
+    /**
+     * 审核库存调整单
+     * @param billNo
+     */
+    void checkStockAdjust(String billNo);
 }

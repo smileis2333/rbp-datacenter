@@ -538,42 +538,44 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         SaleOrderQueryParam param = new SaleOrderQueryParam();
         param.setBillNo(billNo);
         PageDataResponse<SalesOrderBillQueryResult> query = salesOrderBillService.query(param);
-        if (CollUtil.isNotEmpty(query.getData())) {
-            SalesOrderBillQueryResult bill = query.getData().get(0);
-
-            YumeiOfflineSaleOrderPayload payload = new YumeiOfflineSaleOrderPayload();
-            payload.setStoreNo(bill.getChannelCode());
-            ArrayList<YumeiOfflineSaleOrder> orders = new ArrayList<>();
-            YumeiOfflineSaleOrder order = new YumeiOfflineSaleOrder();
-            order.setOutTradeNo(bill.getBillNo());
-            order.setUserRemark(bill.getNotes());
-            order.setPayTime(bill.getCreatedTime());
-
-            ArrayList<YumeiOfflineSaleOrderItem> orderItems = new ArrayList<>();
-
-            List<Long> goodsId = CollUtil.distinct(CollUtil.map(bill.getGoodsDetailData(), SalesOrderBillGoodsResult::getGoodsId, true));
-            Map<Long, Map<Long, Barcode>> barcodeMap = barcodeDao.selectList(Wrappers.lambdaQuery(Barcode.class).in(Barcode::getGoodsId, goodsId)).stream().collect(Collectors.groupingBy(Barcode::getGoodsId, Collectors.collectingAndThen(Collectors.toMap(Barcode::getId, Function.identity()), Collections::unmodifiableMap)));
-
-            bill.getGoodsDetailData().forEach(gd -> {
-                YumeiOfflineSaleOrderItem goodsDetail = new YumeiOfflineSaleOrderItem();
-                goodsDetail.setGoodsName(gd.getGoodsName());
-                Map<Long, Barcode> barcodeCandidate = barcodeMap.get(gd.getGoodsId());
-                if (gd.getBarcodeId() != null) {
-                    goodsDetail.setSkuCode(barcodeCandidate.get(gd.getBarcodeId()).getBarcode());
-                } else {
-                    Map<String, List<Barcode>> skuMap = barcodeCandidate.values().stream().collect(Collectors.groupingBy(e -> String.format("%s%s%s%s", e.getGoodsId(), e.getColorId(), e.getLongId(), e.getSizeId()), Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList)));
-                    String key = String.format("%s%s%s%s", gd.getGoodsId(), gd.getColorId(), gd.getLongId(), gd.getSizeId());
-                    goodsDetail.setSkuCode(skuMap.get(key).get(0).getBarcode());
-                }
-                goodsDetail.setSkuQty(gd.getQuantity());
-                goodsDetail.setUnitPrice(gd.getBalancePrice());
-                goodsDetail.setOutRefundNo(bill.getOriginBillNo());
-                orderItems.add(goodsDetail);
-            });
-            order.setOrderItems(orderItems);
-            orders.add(order);
-            payload.setOrders(orders);
-            saleOrderResource.createOfflineSaleOrder(payload);
+        if (CollUtil.isEmpty(query.getData())) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, String.format("billNo: %s 不存在", billNo));
         }
+
+        SalesOrderBillQueryResult bill = query.getData().get(0);
+
+        YumeiOfflineSaleOrderPayload payload = new YumeiOfflineSaleOrderPayload();
+        payload.setStoreNo(bill.getChannelCode());
+        ArrayList<YumeiOfflineSaleOrder> orders = new ArrayList<>();
+        YumeiOfflineSaleOrder order = new YumeiOfflineSaleOrder();
+        order.setOutTradeNo(bill.getBillNo());
+        order.setUserRemark(bill.getNotes());
+        order.setPayTime(bill.getCreatedTime());
+
+        ArrayList<YumeiOfflineSaleOrderItem> orderItems = new ArrayList<>();
+
+        List<Long> goodsId = CollUtil.distinct(CollUtil.map(bill.getGoodsDetailData(), SalesOrderBillGoodsResult::getGoodsId, true));
+        Map<Long, Map<Long, Barcode>> barcodeMap = barcodeDao.selectList(Wrappers.lambdaQuery(Barcode.class).in(Barcode::getGoodsId, goodsId)).stream().collect(Collectors.groupingBy(Barcode::getGoodsId, Collectors.collectingAndThen(Collectors.toMap(Barcode::getId, Function.identity()), Collections::unmodifiableMap)));
+
+        bill.getGoodsDetailData().forEach(gd -> {
+            YumeiOfflineSaleOrderItem goodsDetail = new YumeiOfflineSaleOrderItem();
+            goodsDetail.setGoodsName(gd.getGoodsName());
+            Map<Long, Barcode> barcodeCandidate = barcodeMap.get(gd.getGoodsId());
+            if (gd.getBarcodeId() != null) {
+                goodsDetail.setSkuCode(barcodeCandidate.get(gd.getBarcodeId()).getBarcode());
+            } else {
+                Map<String, List<Barcode>> skuMap = barcodeCandidate.values().stream().collect(Collectors.groupingBy(e -> String.format("%s%s%s%s", e.getGoodsId(), e.getColorId(), e.getLongId(), e.getSizeId()), Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList)));
+                String key = String.format("%s%s%s%s", gd.getGoodsId(), gd.getColorId(), gd.getLongId(), gd.getSizeId());
+                goodsDetail.setSkuCode(skuMap.get(key).get(0).getBarcode());
+            }
+            goodsDetail.setSkuQty(gd.getQuantity());
+            goodsDetail.setUnitPrice(gd.getBalancePrice());
+            goodsDetail.setOutRefundNo(bill.getOriginBillNo());
+            orderItems.add(goodsDetail);
+        });
+        order.setOrderItems(orderItems);
+        orders.add(order);
+        payload.setOrders(orders);
+        saleOrderResource.createOfflineSaleOrder(payload);
     }
 }

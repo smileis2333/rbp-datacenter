@@ -1,18 +1,17 @@
 package com.regent.rbp.task.yumei.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.lang.UUID;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.regent.rbp.api.core.base.Barcode;
 import com.regent.rbp.api.core.sendBill.SendBill;
 import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.sendBill.SendBillDao;
 import com.regent.rbp.api.dto.core.PageDataResponse;
-import com.regent.rbp.api.dto.receive.ReceiveBillGoodsDetailData;
 import com.regent.rbp.api.dto.receive.ReceiveBillQueryParam;
 import com.regent.rbp.api.dto.receive.ReceiveBillQueryResult;
 import com.regent.rbp.api.service.receive.ReceiveBillService;
+import com.regent.rbp.infrastructure.constants.ResponseCode;
+import com.regent.rbp.infrastructure.exception.BusinessException;
 import com.regent.rbp.task.yumei.config.yumei.api.PurchaseResource;
 import com.regent.rbp.task.yumei.model.YumeiPurchaseReceiveBillOrder;
 import com.regent.rbp.task.yumei.model.YumeiPurchaseReceiveBillOrderItem;
@@ -20,14 +19,9 @@ import com.regent.rbp.task.yumei.model.YumeiPurchaseReceiveOrderPayload;
 import com.regent.rbp.task.yumei.service.YumeiPurchaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author huangjie
@@ -53,37 +47,38 @@ public class YumeiPurchaseServiceImpl implements YumeiPurchaseService {
         ReceiveBillQueryParam param = new ReceiveBillQueryParam();
         param.setBillNo(billNo);
         PageDataResponse<ReceiveBillQueryResult> query = receiveBillService.query(param);
-        if (CollUtil.isNotEmpty(query.getData())) {
-
-            ReceiveBillQueryResult bill = query.getData().get(0);
-            YumeiPurchaseReceiveOrderPayload payload = new YumeiPurchaseReceiveOrderPayload();
-            payload.setStoreNo(bill.getToChannelCode());
-            ArrayList<YumeiPurchaseReceiveBillOrder> orders = new ArrayList<>();
-            YumeiPurchaseReceiveBillOrder order = new YumeiPurchaseReceiveBillOrder();
-            order.setOutOrderNo(billNo);
-
-            SendBill sendBill = sendBillDao.selectOne(Wrappers.lambdaQuery(SendBill.class).eq(SendBill::getBillNo, bill.getSendNo()));
-            order.setDeliveryOrderNo(sendBill.getManualId());
-            order.setBasicOffshopCode(bill.getToChannelCode());
-            order.setBasicOffshopName(bill.getToChannelName());
-            order.setPoInTime(bill.getCreatedTime());
-            List<YumeiPurchaseReceiveBillOrderItem> orderItems = new ArrayList<>();
-
-            bill.getGoodsDetailData().forEach(gd -> {
-                YumeiPurchaseReceiveBillOrderItem orderItem = new YumeiPurchaseReceiveBillOrderItem();
-                orderItem.setGoodsName(gd.getGoodsName());
-                orderItem.setGoodsNo(gd.getGoodsCode());
-                orderItem.setSkuCode(gd.getBarcode());
-                orderItem.setPoInQty(gd.getPlanQuantity());
-                orderItem.setActualPoInQty(gd.getQuantity());
-                orderItem.setTaxIncludedPurchaseUnitPrice(gd.getBalancePrice());
-                orderItem.setExcludingTaxPurchaseUnitPrice(gd.getBalancePrice());
-                orderItems.add(orderItem);
-            });
-            order.setOrderDetails(orderItems);
-            orders.add(order);
-            payload.setOrders(orders);
-            purchaseResource.createPurchaseReceive(payload);
+        if (CollUtil.isEmpty(query.getData())) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, String.format("billNo: %s 不存在", billNo));
         }
+
+        ReceiveBillQueryResult bill = query.getData().get(0);
+        YumeiPurchaseReceiveOrderPayload payload = new YumeiPurchaseReceiveOrderPayload();
+        payload.setStoreNo(bill.getToChannelCode());
+        ArrayList<YumeiPurchaseReceiveBillOrder> orders = new ArrayList<>();
+        YumeiPurchaseReceiveBillOrder order = new YumeiPurchaseReceiveBillOrder();
+        order.setOutOrderNo(billNo);
+
+        SendBill sendBill = sendBillDao.selectOne(Wrappers.lambdaQuery(SendBill.class).eq(SendBill::getBillNo, bill.getSendNo()));
+        order.setDeliveryOrderNo(sendBill.getManualId());
+        order.setBasicOffshopCode(bill.getToChannelCode());
+        order.setBasicOffshopName(bill.getToChannelName());
+        order.setPoInTime(bill.getCreatedTime());
+        List<YumeiPurchaseReceiveBillOrderItem> orderItems = new ArrayList<>();
+
+        bill.getGoodsDetailData().forEach(gd -> {
+            YumeiPurchaseReceiveBillOrderItem orderItem = new YumeiPurchaseReceiveBillOrderItem();
+            orderItem.setGoodsName(gd.getGoodsName());
+            orderItem.setGoodsNo(gd.getGoodsCode());
+            orderItem.setSkuCode(gd.getBarcode());
+            orderItem.setPoInQty(gd.getPlanQuantity());
+            orderItem.setActualPoInQty(gd.getQuantity());
+            orderItem.setTaxIncludedPurchaseUnitPrice(gd.getBalancePrice());
+            orderItem.setExcludingTaxPurchaseUnitPrice(gd.getBalancePrice());
+            orderItems.add(orderItem);
+        });
+        order.setOrderDetails(orderItems);
+        orders.add(order);
+        payload.setOrders(orders);
+        purchaseResource.createPurchaseReceive(payload);
     }
 }

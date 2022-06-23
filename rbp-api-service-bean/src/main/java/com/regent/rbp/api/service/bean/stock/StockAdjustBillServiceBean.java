@@ -112,10 +112,20 @@ public class StockAdjustBillServiceBean implements StockAdjustBillService {
         Map<Long, String> longIdNameMap = systemDictionaryService.getLongMapFromIds(CollUtil.distinct(CollUtil.map(billSizes, StockAdjustBillSize::getLongId, true)), LongInfo::getId, LongInfo::getName);
         Map<Long, String> colorIdCodeMap = systemDictionaryService.getColorMapFromIds(CollUtil.distinct(CollUtil.map(billSizes, StockAdjustBillSize::getColorId, true)), Color::getId, Color::getCode);
         Map<Long, String> sizeIdNameMap = systemDictionaryService.getSizeDetailMapFromIds(CollUtil.distinct(CollUtil.map(billSizes, StockAdjustBillSize::getSizeId, true)), SizeDetail::getId, SizeDetail::getName);
-        Map<Long, String> goodsIdCodeMap = goodsDao.selectBatchIds(CollUtil.distinct(CollUtil.map(billGoods, StockAdjustBillGoods::getGoodsId, true))).stream().collect(Collectors.toMap(Goods::getId, Goods::getCode));
+        List<Goods> goods = goodsDao.selectBatchIds(CollUtil.distinct(CollUtil.map(billGoods, StockAdjustBillGoods::getGoodsId, true)));
+        Map<Long, String> goodsIdCodeMap = goods.stream().collect(Collectors.toMap(Goods::getId, Goods::getCode));
+        Map<Long, String> goodsNameMap = goods.stream().collect(Collectors.toMap(Goods::getId, Goods::getName));
         Map<Long, List<CustomizeDataDto>> billCustomMap = baseDbService.getCustomizeColumnMap(TableConstants.STOCK_ADJUST_BILL, billIds);
         Map<Long, List<CustomizeDataDto>> goodsCustomMap = baseDbService.getCustomizeColumnMap(TableConstants.STOCK_ADJUST_BILL_GOODS, CollUtil.map(billGoods, StockAdjustBillGoods::getId, true));
         Map<String, List<CustomizeColumnDto>> moduleCustomizeMap = baseDbService.getModuleCustomizeColumnListMap(CollUtil.map(data, StockAdjustBillQueryResult::getModuleId, true));
+        // 条码,默认取第一个
+        List<Barcode> barcodes = barcodeDao.selectList(new QueryWrapper<Barcode>()
+                .in(CollUtil.isNotEmpty(goods), "goods_id", goodsIdCodeMap.keySet())
+                .in(CollUtil.isNotEmpty(colorIdCodeMap), "color_id",colorIdCodeMap.keySet())
+                .in(CollUtil.isNotEmpty(longIdNameMap.keySet()), "long_id",longIdNameMap.keySet())
+                .in(CollUtil.isNotEmpty(sizeIdNameMap.keySet()), "size_id", sizeIdNameMap.keySet())
+                .orderByDesc("barcode").groupBy("goods_id,color_id,long_id,size_id"));
+        Map<String, String> barcodeMap = barcodes.stream().collect(Collectors.toMap(Barcode::getSingleCode, Barcode::getBarcode));
         for (StockAdjustBillQueryResult bill : data) {
             // 模块自定义字段定义
             List<CustomizeColumnDto> moduleColumnDtoList = moduleCustomizeMap.get(bill.getModuleId());
@@ -141,6 +151,9 @@ public class StockAdjustBillServiceBean implements StockAdjustBillService {
                 detailData.setColorCode(colorIdCodeMap.get(size.getColorId()));
                 detailData.setSize(sizeIdNameMap.get(size.getSizeId()));
                 detailData.setGoodsCode(goodsIdCodeMap.get(size.getGoodsId()));
+                detailData.setGoodsName(goodsNameMap.get(size.getGoodsId()));
+                detailData.setBarcode(barcodeMap.get(size.getSingleCode()));
+                goodsQueryResultList.add(detailData);
             }
 
         }

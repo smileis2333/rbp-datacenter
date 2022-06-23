@@ -1,6 +1,7 @@
 package com.regent.rbp.task.yumei.config.yumei.api;
 
 import com.regent.rbp.task.yumei.config.yumei.YumeiResouceClientConfiguration;
+import com.regent.rbp.task.yumei.model.CreateOtherStockPayload;
 import com.regent.rbp.task.yumei.model.YumeiReturnOrderCreatePayload;
 import com.regent.rbp.task.yumei.model.YumeiReturnOrderValidatedPayload;
 import com.regent.rbp.task.yumei.model.YumeiTransferOrderCreatePayload;
@@ -38,4 +39,12 @@ public interface OffShopResource {
      */
     @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/transferOrderCreate")
     Void transferOrderCreate(@RequestBody @Valid YumeiTransferOrderCreatePayload payload);
+
+    /**
+     * 线下门店其他出入库单创建(推送)接口
+     * @param payload
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/createOtherStock")
+    Void createOtherStock(@RequestBody @Valid CreateOtherStockPayload payload);
 }
