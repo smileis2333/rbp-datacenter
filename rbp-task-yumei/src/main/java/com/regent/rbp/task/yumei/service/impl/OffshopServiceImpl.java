@@ -242,7 +242,7 @@ public class OffshopServiceImpl implements OffshopService {
         CreateOtherStockOrder order = new CreateOtherStockOrder();
 
         payload.setStoreNo(bill.getChannelCode());
-        payload.setReason("丽晶推送"); //todo 待确定
+        payload.setReason(bill.getBusinessType());
 
         order.setOutOrderNo(billNo);
 
