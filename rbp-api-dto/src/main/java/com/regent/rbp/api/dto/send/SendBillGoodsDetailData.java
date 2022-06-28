@@ -3,6 +3,7 @@ package com.regent.rbp.api.dto.send;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.regent.rbp.api.dto.base.BillGoodsDetailData;
+import com.regent.rbp.api.dto.validate.BillNo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -39,5 +40,8 @@ public class SendBillGoodsDetailData extends BillGoodsDetailData {
     @ApiModelProperty(notes = "销售计划ID", hidden = true)
     @JsonIgnore
     private Long salePlanId;
+
+    @BillNo(targetTable = "rbp_sale_plan_bill")
+    private String salePlanNo;
 
 }

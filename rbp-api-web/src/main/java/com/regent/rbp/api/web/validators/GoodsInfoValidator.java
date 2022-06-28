@@ -140,12 +140,12 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
                     GoodsDetailData item = goodsInfos.get(i);
                     if (StrUtil.isNotEmpty(item.getColorCode()) && !colorCodeIdMap.containsKey(item.getColorCode())) {
                         pass = false;
-                        context.addMessageParameter("validatedValue", item.getColorCode());
+                        context.addExpressionVariable("validatedValue", item.getColorCode());
                         context.buildConstraintViolationWithTemplate("{regent.validation.constraints.mapNotFound}").addPropertyNode("colorCode").inIterable().atIndex(i).addConstraintViolation();
                     }
                     if (StrUtil.isNotEmpty(item.getLongName()) && !longNameIdMap.containsKey(item.getLongName())) {
                         pass = false;
-                        context.addMessageParameter("validatedValue", item.getLongName());
+                        context.addExpressionVariable("validatedValue", item.getLongName());
                         context.buildConstraintViolationWithTemplate("{regent.validation.constraints.mapNotFound}").addPropertyNode("longName").inIterable().atIndex(i).addConstraintViolation();
                     }
                 }
@@ -171,7 +171,7 @@ public class GoodsInfoValidator implements ConstraintValidator<GoodsInfo, List<?
                         goodsId = goodsCodeIdMap.get(item.getGoodsCode());
                         if (!sizeDetailMap.containsKey(goodsId) || !sizeDetailMap.get(goodsId).containsKey(item.getSize())) {
                             pass = false;
-                            context.addMessageParameter("validatedValue", item.getSize());
+                            context.addExpressionVariable("validatedValue", item.getSize());
                             context.buildConstraintViolationWithTemplate("{regent.validation.constraints.mapNotFound}").addPropertyNode("size").inIterable().atIndex(i).addConstraintViolation();
                         }
                     }

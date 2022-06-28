@@ -85,6 +85,6 @@ public class NoticeBillGoods {
     public String getSameGoodsDiffPriceKey() {
         DecimalFormat decimalFormat = new DecimalFormat("0.0000#");
         String balancePriceStr = decimalFormat.format(Optional.ofNullable(this.getBalancePrice()).orElse(BigDecimal.ZERO));
-        return String.format("%s_%s_%s", this.getBillId(), this.getGoodsId(), balancePriceStr);
+        return String.format("%s_%s", this.getGoodsId(), balancePriceStr);
     }
 }

@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.regent.rbp.api.core.base.Barcode;
@@ -19,6 +20,8 @@ import com.regent.rbp.api.core.goods.Goods;
 import com.regent.rbp.api.core.noticeBill.NoticeBill;
 import com.regent.rbp.api.core.noticeBill.NoticeBillGoods;
 import com.regent.rbp.api.core.noticeBill.NoticeBillSize;
+import com.regent.rbp.api.core.salePlan.SalePlanBill;
+import com.regent.rbp.api.core.salePlan.SalePlanBillGoodsFinal;
 import com.regent.rbp.api.core.sendBill.SendBill;
 import com.regent.rbp.api.core.sendBill.SendBillGoods;
 import com.regent.rbp.api.core.sendBill.SendBillLogistics;
@@ -33,6 +36,8 @@ import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.noticeBill.NoticeBillDao;
 import com.regent.rbp.api.dao.noticeBill.NoticeBillGoodsDao;
 import com.regent.rbp.api.dao.noticeBill.NoticeBillSizeDao;
+import com.regent.rbp.api.dao.salePlan.SalePlanBillDao;
+import com.regent.rbp.api.dao.salePlan.SalePlanBillGoodsFinalDao;
 import com.regent.rbp.api.dao.sendBill.SendBillDao;
 import com.regent.rbp.api.dao.sendBill.SendBillGoodsDao;
 import com.regent.rbp.api.dao.sendBill.SendBillLogisticsDao;
@@ -43,6 +48,7 @@ import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
 import com.regent.rbp.api.dto.core.PageDataResponse;
+import com.regent.rbp.api.dto.purchase.GoodsDetailIdentifier;
 import com.regent.rbp.api.dto.send.SendBillGoodsDetailData;
 import com.regent.rbp.api.dto.send.SendBillQueryParam;
 import com.regent.rbp.api.dto.send.SendBillQueryResult;
@@ -83,7 +89,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -140,6 +155,10 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
     private StockDetailService stockDetailService;
     @Autowired
     private UserProfileDao userProfileDao;
+    @Autowired
+    private SalePlanBillDao salePlanBillDao;
+    @Autowired
+    private SalePlanBillGoodsFinalDao salePlanBillGoodsFinalDao;
 
     /**
      * 分页查询
@@ -315,10 +334,6 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
         if (StringUtil.isNotEmpty(param.getLogisticsCompanyCode())) {
             logistics.setLogisticsCompanyId(baseDbDao.getLongDataBySql(String.format("select id from rbp_logistics_company where status = 100 and code = '%s'", param.getLogisticsCompanyCode())));
         }
-        // 订单主体校验
-        if (null == bill.getBusinessTypeId()) {
-            messageList.add(getNotNullMessage("businessTypeId"));
-        }
 
         if (CollUtil.isNotEmpty(messageList)) {
             return;
@@ -361,9 +376,19 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
             sizeMap = type == 2 ? Collections.emptyMap() : sizeClassList.stream().collect(Collectors.toMap(v -> v.getGoodsId() + StrUtil.UNDERLINE + v.getName(), SizeDetail::getId, (x1, x2) -> x1));
         }
         // 查询指令单货品、尺码数
-        Map<String, NoticeBillGoods> noticeGoodsMap = new HashMap<>();
+        Map<Long, Map<String,NoticeBillGoods>> noticeGoodsMap = Collections.emptyMap();
         Set<String> noticeNoSet = param.getGoodsDetailData().stream().filter(f -> StringUtil.isNotEmpty(f.getNoticeNo())).map(v -> v.getNoticeNo()).collect(Collectors.toSet());
         Map<String, NoticeBill> noticeNoMap = new HashMap<>();
+
+        Map<String, Long> salePlanBillNoIdMap = Collections.emptyMap();
+        Map<Long, Map<String, SalePlanBillGoodsFinal>> salePlanBillGoodsFinalsMap = Collections.emptyMap();
+        List<String> salePlanBillNos = CollUtil.distinct(CollUtil.map(param.getGoodsDetailData(), SendBillGoodsDetailData::getSalePlanNo, true));
+        if (CollUtil.isNotEmpty(salePlanBillNos)) {
+            salePlanBillNoIdMap = salePlanBillDao.selectList(Wrappers.lambdaQuery(SalePlanBill.class).in(SalePlanBill::getBillNo, salePlanBillNos)).stream().collect(Collectors.toMap(SalePlanBill::getBillNo, SalePlanBill::getId));
+            List<SalePlanBillGoodsFinal> salePlanBillGoodsFinals = salePlanBillGoodsFinalDao.selectList(Wrappers.lambdaQuery(SalePlanBillGoodsFinal.class).in(SalePlanBillGoodsFinal::getBillId, salePlanBillNoIdMap.values()));
+            salePlanBillGoodsFinalsMap = salePlanBillGoodsFinals.stream().collect(Collectors.groupingBy(SalePlanBillGoodsFinal::getBillId, Collectors.collectingAndThen(Collectors.toMap(SalePlanBillGoodsFinal::getSameGoodsDiffPriceKey, Function.identity()), Collections::unmodifiableMap)));
+        }
+
         if (CollUtil.isNotEmpty(noticeNoSet)) {
             List<NoticeBill> noticeBills = noticeBillDao.selectList(new QueryWrapper<NoticeBill>().select("id,bill_no,sale_plan_id").in("bill_no", noticeNoSet));
             if (CollUtil.isEmpty(noticeBills) || noticeNoSet.size() > noticeBills.size()) {
@@ -377,7 +402,7 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
                 } else {
                     noticeBillGoodsList.forEach(item -> item.setSizeList(noticeBillSizeList.stream().filter(f -> f.getBillGoodsId().equals(item.getId())).collect(Collectors.toList())));
                     // 根据单据ID+货品ID+价格分组
-                    noticeGoodsMap = noticeBillGoodsList.stream().collect(Collectors.toMap(v -> v.getSameGoodsDiffPriceKey(), Function.identity()));
+                    noticeGoodsMap = noticeBillGoodsList.stream().collect(Collectors.groupingBy(NoticeBillGoods::getBillId, Collectors.collectingAndThen(Collectors.toMap(NoticeBillGoods::getSameGoodsDiffPriceKey, Function.identity()), Collections::unmodifiableMap)));
                 }
             }
         }
@@ -414,6 +439,10 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
                 // 设置指令单ID
                 item.setNoticeId(OptionalUtil.ofNullable(noticeNoMap.get(item.getNoticeNo()), NoticeBill::getId));
                 item.setSalePlanId(OptionalUtil.ofNullable(noticeNoMap.get(item.getNoticeNo()), NoticeBill::getSalePlanId));
+
+                if (StrUtil.isNotBlank(item.getSalePlanNo())) {
+                    item.setSalePlanId(salePlanBillNoIdMap.get(item.getSalePlanNo()));
+                }
             }
         }
         if (CollUtil.isNotEmpty(messageList)) {
@@ -439,11 +468,30 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
             return;
         }
         // 存在指令单，根据单据ID+货品+结算价匹配,获取指令单货品ID和欠数，不存在或超出欠数报错，更新指令单欠数
-        Map<String, NoticeBillGoods> finalNoticeGoodsMap = noticeGoodsMap;
+
         atomicInteger.set(0);
         // 根据货品+价格分组，支持同款多价
         Map<String, Long> finalPriceTypeMap = priceTypeMap;
-        param.getGoodsDetailData().stream().collect(Collectors.groupingBy(v -> v.getSameGoodsDiffPriceKey())).forEach((key, sizes) -> {
+        Map<String, NoticeBill> finalNoticeNoMap = noticeNoMap;
+        Map<Long, Map<String, NoticeBillGoods>> finalNoticeGoodsMap = noticeGoodsMap;
+        Map<Long, Map<String, SalePlanBillGoodsFinal>> finalSalePlanBillGoodsFinalsMap = salePlanBillGoodsFinalsMap;
+        Map<String, Long> finalSalePlanBillNoIdMap = salePlanBillNoIdMap;
+        param.getGoodsDetailData().stream().collect(Collectors.groupingBy(GoodsDetailIdentifier::getSameGoodsDiffPriceKey)).forEach((key, sizes) -> {
+
+
+            Map<String, NoticeBillGoods> noticeBillGoodsMap = Collections.emptyMap();
+            Map<String, SalePlanBillGoodsFinal> salePlanBillGoodsFinalMap = Collections.emptyMap();
+            if (CollUtil.isNotEmpty(sizes)){
+                if (StrUtil.isNotBlank(sizes.get(0).getNoticeNo())){
+                    noticeBillGoodsMap = finalNoticeGoodsMap.get(finalNoticeNoMap.get(sizes.get(0).getNoticeNo()).getId());
+                }
+
+                if (StrUtil.isNotBlank(sizes.get(0).getSalePlanNo())){
+                    salePlanBillGoodsFinalMap = finalSalePlanBillGoodsFinalsMap.get(finalSalePlanBillNoIdMap.get(sizes.get(0).getSalePlanNo()));
+                }
+
+            }
+
             atomicInteger.getAndIncrement();
             SendBillGoods billGoods = SendBillGoods.build();
             billGoodsList.add(billGoods);
@@ -467,43 +515,51 @@ public class SendBillServiceBean extends ServiceImpl<SendBillDao, SendBill> impl
                 billGoods.setCustomFieldMap(customFieldMap);
             }
             // 指令单货品
-            NoticeBillGoods noticeBillGoods = finalNoticeGoodsMap.get(key);
+            NoticeBillGoods noticeBillGoods = noticeBillGoodsMap.get(key);
+
             Map<String, NoticeBillSize> sizeFinalMap = new HashMap<>();
             // 引用指令单
             if (null != detailData.getNoticeId() && null == noticeBillGoods) {
                 messageList.add(getMessageByParams("notReferencedBillGoods", new Object[]{sizes.get(0).getGoodsCode()}));
-            } else {
-                if (null != detailData.getNoticeId()) {
-                    billGoods.setNoticeId(noticeBillGoods.getBillId());
-                    billGoods.setNoticeGoodsId(noticeBillGoods.getId());
-                    billGoods.setSalePlanGoodsId(noticeBillGoods.getSalePlanGoodsId());
-                    billGoods.setSalePlanId(detailData.getSalePlanId());
+                return;
+            }
+            if (null != detailData.getNoticeId()) {
+                billGoods.setNoticeId(noticeBillGoods.getBillId());
+                billGoods.setNoticeGoodsId(noticeBillGoods.getId());
+                billGoods.setSalePlanGoodsId(noticeBillGoods.getSalePlanGoodsId());
+                billGoods.setSalePlanId(detailData.getSalePlanId());
 
-                    sizeFinalMap = noticeBillGoods.getSizeList().stream().collect(Collectors.toMap(NoticeBillSize::getSingleCode, Function.identity()));
-                }
-                // 尺码明细
-                for (SendBillGoodsDetailData item : sizes) {
-                    SendBillSize billSize = sendBillSizeMap.get(item.getColumnId());
-                    // 引用指令单
-                    if (StringUtil.isNotEmpty(item.getNoticeNo())) {
-                        NoticeBillSize sizeFinal = sizeFinalMap.get(billSize.getSingleCode());
-                        if (null == sizeFinal) {
-                            messageList.add(getMessageByParams("notReferencedBillSize", new Object[]{item.getGoodsCode() + StrUtil.COLON + item.getSize()}));
+                sizeFinalMap = noticeBillGoods.getSizeList().stream().collect(Collectors.toMap(NoticeBillSize::getSingleCode, Function.identity()));
+            }
+
+            if (StrUtil.isNotBlank(detailData.getSalePlanNo()) && CollUtil.isNotEmpty(salePlanBillGoodsFinalMap)) {
+                SalePlanBillGoodsFinal salePlanBillGoodsFinal = salePlanBillGoodsFinalMap.get(key);
+                billGoods.setSalePlanId(salePlanBillGoodsFinal.getBillId());
+                billGoods.setSalePlanGoodsId(salePlanBillGoodsFinal.getId());
+            }
+
+            // 尺码明细
+            for (SendBillGoodsDetailData item : sizes) {
+                SendBillSize billSize = sendBillSizeMap.get(item.getColumnId());
+                // 引用指令单
+                if (StringUtil.isNotEmpty(item.getNoticeNo())) {
+                    NoticeBillSize sizeFinal = sizeFinalMap.get(billSize.getSingleCode());
+                    if (null == sizeFinal) {
+                        messageList.add(getMessageByParams("notReferencedBillSize", new Object[]{item.getGoodsCode() + StrUtil.COLON + item.getSize()}));
+                        continue;
+                    } else {
+                        // 校验指令单欠数
+                        BigDecimal oweQuantity = sizeFinal.getOweQuantity().add(billSize.getQuantity().negate());
+                        sizeFinal.setOweQuantity(oweQuantity);
+                        if (oweQuantity.compareTo(BigDecimal.ZERO) < 0) {
+                            messageList.add(getMessageByParams("billGoodsGtOweQuantity", new Object[]{item.getGoodsCode() + StrUtil.COLON + item.getSize()}));
                             continue;
-                        } else {
-                            // 校验指令单欠数
-                            BigDecimal oweQuantity = sizeFinal.getOweQuantity().add(billSize.getQuantity().negate());
-                            sizeFinal.setOweQuantity(oweQuantity);
-                            if (oweQuantity.compareTo(BigDecimal.ZERO) < 0) {
-                                messageList.add(getMessageByParams("billGoodsGtOweQuantity", new Object[]{item.getGoodsCode() + StrUtil.COLON + item.getSize()}));
-                                continue;
-                            }
-                            updateSizeList.add(sizeFinal);
                         }
+                        updateSizeList.add(sizeFinal);
                     }
-                    billSizeList.add(billSize);
-                    billSize.setBillGoodsId(billGoods.getId());
                 }
+                billSizeList.add(billSize);
+                billSize.setBillGoodsId(billGoods.getId());
             }
         });
 
