@@ -79,5 +79,4 @@
         <appender-ref ref="FILE-ROLLING"/>
     </root>
 
-    <logger name="com.regent.rbp.task.yumei.config.yumei.api" level="DEBUG"/>
 </configuration>
