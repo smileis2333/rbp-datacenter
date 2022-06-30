@@ -5,21 +5,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.task.yumei.config.yumei.api.TokenResource;
 import feign.FeignException;
-import feign.Request;
 import feign.RequestInterceptor;
 import feign.Response;
 import feign.Util;
 import feign.codec.DecodeException;
 import feign.codec.Decoder;
 import feign.codec.ErrorDecoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 
 import static java.lang.String.format;
 
@@ -32,6 +33,8 @@ import static java.lang.String.format;
 public class YumeiResouceClientConfiguration {
     public final static String LOG_REQUEST_TIME = "X-LOG-TIME";
 
+    @Autowired(required = false)
+    private JavaMailSender mailSender;
     @Autowired
     private ObjectMapper mapper;
     @Autowired
@@ -40,6 +43,10 @@ public class YumeiResouceClientConfiguration {
     private TokenResource tokenResource;
     @Autowired
     private BaseDbDao baseDbDao;
+    @Value("${yumei.notify.email:''}")
+    private String notifyMail;
+    @Value("${spring.mail.username:''}")
+    private String fromMail;
 
     @Bean
     public RequestInterceptor requestInterceptor(YumeiTokenManager tokenManager) {
@@ -51,7 +58,12 @@ public class YumeiResouceClientConfiguration {
 
     @Bean
     public Decoder feignDecoder() {
-        return new YumeiResponseDecoder(mapper, baseDbDao);
+        YumeiResponseDecoder decoder = new YumeiResponseDecoder(mapper);
+        decoder.setBaseDbDao(baseDbDao);
+        decoder.setMailSender(mailSender);
+        decoder.setFromMail(fromMail);
+        decoder.setNotifyMail(notifyMail);
+        return decoder;
     }
 
 
@@ -63,20 +75,24 @@ public class YumeiResouceClientConfiguration {
 
     @Bean
     public ErrorDecoder errorDecoder() {
-        return new YumeiErrorDecoder(mapper, baseDbDao);
+        YumeiErrorDecoder errorDecoder = new YumeiErrorDecoder();
+        errorDecoder.setBaseDbDao(baseDbDao);
+        errorDecoder.setMailSender(mailSender);
+        errorDecoder.setFromMail(fromMail);
+        errorDecoder.setNotifyMail(notifyMail);
+        return errorDecoder;
     }
 
 }
 
 
-class YumeiResponseDecoder implements Decoder {
+@Slf4j
+class YumeiResponseDecoder extends YumeiDecoder implements Decoder {
 
     private ObjectMapper mapper;
-    private BaseDbDao baseDbDao;
 
-    public YumeiResponseDecoder(ObjectMapper mapper, BaseDbDao baseDbDao) {
+    public YumeiResponseDecoder(ObjectMapper mapper) {
         this.mapper = mapper;
-        this.baseDbDao = baseDbDao;
     }
 
     @Override
@@ -107,25 +123,5 @@ class YumeiResponseDecoder implements Decoder {
                 format("%s is not a type supported by this decoder.", type));
     }
 
-    private void log(Response response, String body) {
-        Request request = response.request();
-        Request.HttpMethod httpMethod = request.httpMethod();
-        String provider = "yumei";
-        Request.Body param = request.requestBody();
-        String url = request.url();
-        String startTime = request.headers().get(YumeiResouceClientConfiguration.LOG_REQUEST_TIME).stream().findFirst().orElse(null);
-        String endTime = LocalDateTime.now().toString();
-        HashMap<String, Object> item = new HashMap<>();
-        item.put("method", httpMethod.name());
-        item.put("provider", provider);
-        if (httpMethod == Request.HttpMethod.POST) {
-            item.put("param", new String(param.asBytes()));
-        }
-        item.put("response", body);
-        item.put("url", url);
-        item.put("request_time", startTime);
-        item.put("response_time", endTime);
-        baseDbDao.insertMap("rbp_third_party_invoke_log", item);
-    }
 }
 
