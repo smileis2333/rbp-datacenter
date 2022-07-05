@@ -47,9 +47,15 @@ public class StockAdjustPushJob {
                 dbDao.insert(insertStatement);
                 XxlJobHelper.log(String.format("billId: %s, billNo: %s push yumei success", billId, billNo));
             } catch (FeignException e) {
-                XxlJobHelper.log(String.format("billId: %s, billNo: %s push yumei fail, please see `rbp_third_party_invoke_log` table", billId, billNo));
+                String msg = String.format("billId: %s, billNo: %s push yumei fail, please see `rbp_third_party_invoke_log` table", billId, billNo);
+                log.error(msg);
+                e.printStackTrace();
+                XxlJobHelper.log(msg);
             } catch (Exception e) {
-                XxlJobHelper.log(String.format("billId: %s, billNo: %s push yumei fail, msg %s", billId, billNo, e.getMessage()));
+                String msg = String.format("billId: %s, billNo: %s push yumei fail, msg %s", billId, billNo, e.getMessage());
+                log.error(msg);
+                e.printStackTrace();
+                XxlJobHelper.log(msg);
             }
 
         }

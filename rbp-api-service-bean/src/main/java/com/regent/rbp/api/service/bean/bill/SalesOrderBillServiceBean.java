@@ -13,7 +13,6 @@ import com.regent.rbp.api.core.base.Barcode;
 import com.regent.rbp.api.core.base.Color;
 import com.regent.rbp.api.core.base.LongInfo;
 import com.regent.rbp.api.core.base.PosClass;
-import com.regent.rbp.api.core.base.SizeClass;
 import com.regent.rbp.api.core.base.SizeDetail;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.coupon.RetailPayType;
@@ -26,7 +25,14 @@ import com.regent.rbp.api.core.salesOrder.SalesOrderBillGoods;
 import com.regent.rbp.api.core.salesOrder.SalesOrderBillPayment;
 import com.regent.rbp.api.core.salesOrder.SalesOrderBillSize;
 import com.regent.rbp.api.core.user.UserProfile;
-import com.regent.rbp.api.dao.base.*;
+import com.regent.rbp.api.dao.base.BarcodeDao;
+import com.regent.rbp.api.dao.base.BaseDbDao;
+import com.regent.rbp.api.dao.base.ColorDao;
+import com.regent.rbp.api.dao.base.LongDao;
+import com.regent.rbp.api.dao.base.PosClassDao;
+import com.regent.rbp.api.dao.base.RetailPayTypeDao;
+import com.regent.rbp.api.dao.base.SizeClassDao;
+import com.regent.rbp.api.dao.base.SizeDetailDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.goods.GoodsDao;
 import com.regent.rbp.api.dao.member.MemberCardDao;
@@ -430,8 +436,8 @@ public class SalesOrderBillServiceBean implements SalesOrderBillService {
                             goodsQueryResult.setColorCode(colorMap.get(billSize.getColorId()));
                         }
                         // 内长
-                        if (billSize.getLongId() != null && longMap.containsKey(billSize.getLabelId())) {
-                            goodsQueryResult.setLongId(billSize.getLabelId());
+                        if (billSize.getLongId() != null && longMap.containsKey(billSize.getLongId())) {
+                            goodsQueryResult.setLongId(billSize.getLongId());
                             goodsQueryResult.setLongName(longMap.get(billSize.getLongId()));
                         }
                         // 尺码
