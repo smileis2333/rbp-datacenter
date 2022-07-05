@@ -79,6 +79,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             if (uploadingDate != null) {
                 queryWrapper.ge("updated_time", uploadingDate);
             }
+            queryWrapper.eq("business_man_flag", 1);
             queryWrapper.orderByAsc("updated_time");
             List<User> employeeList = userDao.selectList(queryWrapper);
             if (CollUtil.isNotEmpty(employeeList)) {

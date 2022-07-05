@@ -10,6 +10,7 @@ import com.regent.rbp.task.inno.model.resp.EmployeeRespDto;
  * @Date 2021/9/23
  **/
 public interface EmployeeService{
+
     OnlinePlatform getOnlinePlatform(String onlinePlatformCode);
 
     void uploadingEmployee(OnlinePlatform onlinePlatform);
