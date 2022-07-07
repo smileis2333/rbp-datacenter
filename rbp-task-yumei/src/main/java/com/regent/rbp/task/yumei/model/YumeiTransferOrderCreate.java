@@ -35,21 +35,8 @@ public class YumeiTransferOrderCreate {
     private String applyUser;
 
     public BigDecimal getApplyQty() {
-        return orderDetails.stream().map(OrderDetail::getQty).reduce(BigDecimal.ZERO, BigDecimal::add);
+        return orderDetails.stream().map(SimpleOrderDetail::getQty).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
-
-    public BigDecimal getTotalCost() {
-        return orderDetails.stream().map(OrderDetail::getCostAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    @NotNull
-    private BigDecimal stockInQty = BigDecimal.ZERO;
-
-    private BigDecimal stockInAmount = BigDecimal.ZERO;
-
-    private BigDecimal stockOutQty = BigDecimal.ZERO;
-
-    private BigDecimal stockOutAmount = BigDecimal.ZERO;
 
     @NotBlank
     private String logistics;
@@ -62,9 +49,11 @@ public class YumeiTransferOrderCreate {
 
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @NotNull
     private Date createTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @NotNull
     private Date deliveryTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -72,5 +61,5 @@ public class YumeiTransferOrderCreate {
 
     @NotEmpty
     @Valid
-    private List<OrderDetail> orderDetails;
+    private List<SimpleOrderDetail> orderDetails;
 }

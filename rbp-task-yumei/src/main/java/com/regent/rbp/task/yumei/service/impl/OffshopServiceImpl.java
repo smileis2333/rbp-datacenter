@@ -27,12 +27,14 @@ import com.regent.rbp.task.yumei.model.AuditData;
 import com.regent.rbp.task.yumei.model.CreateOtherStockOrder;
 import com.regent.rbp.task.yumei.model.CreateOtherStockPayload;
 import com.regent.rbp.task.yumei.model.OrderDetail;
+import com.regent.rbp.task.yumei.model.SimpleOrderDetail;
 import com.regent.rbp.task.yumei.model.YumeiReturnOrder;
 import com.regent.rbp.task.yumei.model.YumeiReturnOrderCreatePayload;
 import com.regent.rbp.task.yumei.model.YumeiReturnOrderValidatedPayload;
 import com.regent.rbp.task.yumei.model.YumeiTransferOrderCreate;
 import com.regent.rbp.task.yumei.model.YumeiTransferOrderCreatePayload;
 import com.regent.rbp.task.yumei.service.OffshopService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +45,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class OffshopServiceImpl implements OffshopService {
     @Autowired
     private SendBillService sendBillService;
@@ -58,6 +61,8 @@ public class OffshopServiceImpl implements OffshopService {
     private DbDao dbDao;
     @Autowired
     private StockAdjustBillService stockAdjustBillService;
+    @Autowired
+    private YumeiPushService yumeiPushService;
 
     @Override
     public void createReturnOrder(String billNo, AuditData auditData) {
@@ -141,13 +146,13 @@ public class OffshopServiceImpl implements OffshopService {
         SendBillQueryResult bill = query.getData().get(0);
 
         YumeiTransferOrderCreatePayload payload = new YumeiTransferOrderCreatePayload();
-        payload.setTransferType("out");
+        payload.setTransferType(2);
         List<YumeiTransferOrderCreate> orders = new ArrayList<>();
         YumeiTransferOrderCreate order = new YumeiTransferOrderCreate();
-        order.setTransferOrderNo(null);//todo 上级单据 send_bill_goods
+        order.setTransferOrderNo(bill.getGoodsDetailData().get(0).getNoticeNo());
         order.setOutOrderNo(billNo);
         order.setBasicInOffshopCode(bill.getToChannelCode());
-        order.setBasicInOffshopName(bill.getChannelName());
+        order.setBasicInOffshopName(bill.getToChannelName());
         order.setBasicOutOffshopCode(bill.getChannelCode());
         order.setBasicOutOffshopName(bill.getChannelName());
         order.setApplyUser(bill.getCheckByName());
@@ -155,20 +160,16 @@ public class OffshopServiceImpl implements OffshopService {
         order.setLogisticsCode(bill.getLogisticsCompanyCode());
         order.setLogisticsNo(bill.getLogisticsBillCode());
         order.setCreateTime(bill.getCreatedTime());
-        order.setDeliveryTime(null); //todo
-        order.setReceiveTime(null); //todo
+        order.setDeliveryTime(bill.getCheckTime());
 
-        List<OrderDetail> orderItems = bill.getGoodsDetailData().stream().map(e -> {
-            OrderDetail item = new OrderDetail();
+        List<SimpleOrderDetail> orderItems = bill.getGoodsDetailData().stream().map(e -> {
+            SimpleOrderDetail item = new SimpleOrderDetail();
             item.setGoodsName(e.getGoodsName());
             item.setGoodsNo(e.getGoodsCode());
             item.setSkuCode(e.getBarcode());
             item.setQty(e.getQuantity());
-            item.setCostPrice(e.getBalancePrice());
             return item;
         }).collect(Collectors.toList());
-        order.setStockOutQty(order.getApplyQty());
-        order.setStockOutAmount(order.getTotalCost());
         order.setOrderDetails(orderItems);
 
         orders.add(order);
@@ -187,17 +188,23 @@ public class OffshopServiceImpl implements OffshopService {
 
         ReceiveBillQueryResult bill = query.getData().get(0);
 
+        if (!yumeiPushService.ifPush(bill.getSendNo())) {
+            String msg = String.format("skip push %s channel tune in, because of tune out wait to push first", billNo);
+            log.info(msg);
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, msg);
+        }
+
         SendBillQueryParam sendBillQueryParam = new SendBillQueryParam();
-        sendBillQueryParam.setBillNo(billNo);
+        sendBillQueryParam.setBillNo(bill.getSendNo());
         SendBillQueryResult sendBill = sendBillService.query(sendBillQueryParam).getData().get(0);
         YumeiTransferOrderCreatePayload payload = new YumeiTransferOrderCreatePayload();
-        payload.setTransferType("in");
+        payload.setTransferType(1);
         List<YumeiTransferOrderCreate> orders = new ArrayList<>();
         YumeiTransferOrderCreate order = new YumeiTransferOrderCreate();
         order.setTransferOrderNo(bill.getSendNo());
         order.setOutOrderNo(billNo);
         order.setBasicInOffshopCode(bill.getToChannelCode());
-        order.setBasicInOffshopName(bill.getChannelName());
+        order.setBasicInOffshopName(bill.getToChannelName());
         order.setBasicOutOffshopCode(bill.getChannelCode());
         order.setBasicOutOffshopName(bill.getChannelName());
         order.setApplyUser(bill.getCheckByName());
@@ -205,20 +212,17 @@ public class OffshopServiceImpl implements OffshopService {
         order.setLogisticsCode(sendBill.getLogisticsCompanyCode());
         order.setLogisticsNo(sendBill.getLogisticsBillCode());
         order.setCreateTime(bill.getCreatedTime());
-        order.setDeliveryTime(null); //todo
-        order.setReceiveTime(null); //todo
+        order.setDeliveryTime(sendBill.getCheckTime());
+        order.setReceiveTime(bill.getCheckTime());
 
-        List<OrderDetail> orderItems = bill.getGoodsDetailData().stream().map(e -> {
-            OrderDetail item = new OrderDetail();
+        List<SimpleOrderDetail> orderItems = bill.getGoodsDetailData().stream().map(e -> {
+            SimpleOrderDetail item = new SimpleOrderDetail();
             item.setGoodsName(e.getGoodsName());
             item.setGoodsNo(e.getGoodsCode());
             item.setSkuCode(e.getBarcode());
             item.setQty(e.getQuantity());
-            item.setCostPrice(e.getBalancePrice());
             return item;
         }).collect(Collectors.toList());
-        order.setStockInQty(order.getApplyQty());
-        order.setStockInAmount(order.getTotalCost());
         order.setOrderDetails(orderItems);
 
         orders.add(order);

@@ -144,7 +144,6 @@ public class StockAdjustBillServiceBean implements StockAdjustBillService {
                 StockAdjustBillGoodsDetailData detailData = new StockAdjustBillGoodsDetailData();
                 // 货品自定义字段，格式化单选类型字段
                 detailData.setGoodsCustomizeData(baseDbService.getAfterFillCustomizeDataList(moduleColumnDtoList, goodsCustomMap.get(bgs.getId())));
-                goodsQueryResultList.add(detailData);
                 detailData.setRemark(bgs.getRemark());
                 detailData.setQuantity(size.getQuantity());
                 detailData.setLongName(longIdNameMap.get(size.getLongId()));

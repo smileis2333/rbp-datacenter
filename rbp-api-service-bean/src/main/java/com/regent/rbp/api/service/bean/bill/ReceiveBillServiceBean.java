@@ -34,6 +34,7 @@ import com.regent.rbp.api.core.receiveBill.StockBalanceBill;
 import com.regent.rbp.api.core.sendBill.SendBill;
 import com.regent.rbp.api.core.sendBill.SendBillGoods;
 import com.regent.rbp.api.core.sendBill.SendBillSize;
+import com.regent.rbp.api.core.user.UserProfile;
 import com.regent.rbp.api.dao.base.BarcodeDao;
 import com.regent.rbp.api.dao.base.BaseDbDao;
 import com.regent.rbp.api.dao.base.ColorDao;
@@ -55,6 +56,7 @@ import com.regent.rbp.api.dao.receiveBill.StockBalanceBillDao;
 import com.regent.rbp.api.dao.sendBill.SendBillDao;
 import com.regent.rbp.api.dao.sendBill.SendBillGoodsDao;
 import com.regent.rbp.api.dao.sendBill.SendBillSizeDao;
+import com.regent.rbp.api.dao.warehouse.user.UserProfileDao;
 import com.regent.rbp.api.dto.base.CustomizeColumnDto;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
@@ -175,6 +177,8 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
     private UsableStockDetailService usableStockDetailService;
     @Autowired
     private ForwayStockDetailService forwayStockDetailService;
+    @Autowired
+    private UserProfileDao userProfileDao;
 
     @Override
     public PageDataResponse<ReceiveBillQueryResult> query(ReceiveBillQueryParam param) {
@@ -259,6 +263,13 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
         Map<Long, List<CustomizeDataDto>> billCustomMap = baseDbService.getCustomizeColumnMap(TableConstants.RECEIVE_BILL, billIdList);
         // 货品自定义字段
         Map<Long, List<CustomizeDataDto>> goodsCustomMap = baseDbService.getCustomizeColumnMap(TableConstants.RECEIVE_BILL_REAL_GOODS, CollUtil.map(receiveBillRealGoods, ReceiveBillRealGoods::getId, true));
+        ArrayList<Long> checkUserIds = CollUtil.distinct(CollUtil.map(list, ReceiveBill::getCheckBy, true));
+        Map<Long, String> userIdNameMap = Collections.emptyMap();
+        if (CollUtil.isNotEmpty(checkUserIds)) {
+            userIdNameMap = userProfileDao.selectBatchIds(checkUserIds).stream().collect(Collectors.toMap(UserProfile::getId, UserProfile::getName));
+        }
+
+
         // 填充
         for (ReceiveBill bill : list) {
             ReceiveBillQueryResult queryResult = new ReceiveBillQueryResult();
@@ -277,6 +288,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             queryResult.setNotes(bill.getNotes());
             queryResult.setBillDate(bill.getBillDate());
             queryResult.setCheckTime(bill.getCheckTime());
+            queryResult.setCheckByName(userIdNameMap.get(bill.getCheckBy()));
             queryResult.setCreatedTime(bill.getCreatedTime());
             queryResult.setUpdatedTime(bill.getUpdatedTime());
             queryResult.setNoticeNo(noticeNoMap.get(bill.getNoticeId()));
@@ -430,7 +442,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
         handleReceiveBillDiff(context.getBill().getId());
         baseDbService.saveOrUpdateCustomFieldData(param.getModuleId(), TableConstants.RECEIVE_BILL, context.getBill().getId(), context.getBillCustomizeDataDtos());
         baseDbService.batchSaveOrUpdateCustomFieldData(param.getModuleId(), TableConstants.RECEIVE_BILL_REAL_GOODS, context.getReceiveGoodsCustomizeData());
-        if (param.getStatus()== StatusEnum.CHECK.getStatus().intValue()){
+        if (param.getStatus() == StatusEnum.CHECK.getStatus().intValue()) {
             checkModifyStock(context.getBill().getId());
         }
 
@@ -440,7 +452,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
     public boolean isAllowNegativeInventory(Long channelId) {
         String keyCode = ChannelSettingEnum.ALLOW_NEGATIVE_INVENTORY.getCode(); //允许负库存
         boolean value = Boolean.parseBoolean(ChannelSettingEnum.ALLOW_NEGATIVE_INVENTORY.getDefaultValue());
-        ChannelSettingValue  channelSettingValue = channelSettingValueDao.selectOne(new QueryWrapper<com.regent.rbp.api.core.channel.ChannelSettingValue>().eq("key_code", keyCode).eq("channel_id", channelId));
+        ChannelSettingValue channelSettingValue = channelSettingValueDao.selectOne(new QueryWrapper<com.regent.rbp.api.core.channel.ChannelSettingValue>().eq("key_code", keyCode).eq("channel_id", channelId));
         if (null != channelSettingValue) {
             value = Boolean.parseBoolean(channelSettingValue.getValue());
         }
@@ -602,7 +614,7 @@ public class ReceiveBillServiceBean implements ReceiveBillService {
             messageList.add(getNotExistMessage("sendNoNotExist"));
             return;
         } else {
-            if (!receiveBillDao.selectObjs(Wrappers.lambdaQuery(ReceiveBill.class).eq(ReceiveBill::getSendId,sendBill.getId())).isEmpty()) {
+            if (!receiveBillDao.selectObjs(Wrappers.lambdaQuery(ReceiveBill.class).eq(ReceiveBill::getSendId, sendBill.getId())).isEmpty()) {
                 messageList.add(LanguageUtil.getMessage(LanguageUtil.ZH, "sendNoAlreadyOccupy", null));
             }
             context.getBill().setSendId(sendBill.getId());
