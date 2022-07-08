@@ -17,7 +17,6 @@ import java.util.List;
 @Data
 public class YumeiPurchaseReceiveOrderPayload {
     @NotBlank
-    @Length(max = 50)
     private String storeNo;
 
     private final Integer orderSource = 4;

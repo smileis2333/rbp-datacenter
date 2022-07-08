@@ -11,7 +11,6 @@ import java.util.List;
 
 @Data
 public class YumeiReturnOrderCreatePayload {
-    @Length(max = 50)
     @NotBlank
     private String storeNo;
 

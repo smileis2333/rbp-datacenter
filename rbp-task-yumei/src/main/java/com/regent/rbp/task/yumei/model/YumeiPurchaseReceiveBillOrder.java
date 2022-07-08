@@ -2,7 +2,6 @@ package com.regent.rbp.task.yumei.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import org.hibernate.validator.constraints.Length;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -19,11 +18,9 @@ import java.util.List;
  */
 @Data
 public class YumeiPurchaseReceiveBillOrder {
-    @Length(max = 40)
     @NotBlank
     private String outOrderNo;
 
-    @Length(max = 40)
     @NotBlank
     private String deliveryOrderNo;
 
@@ -31,11 +28,9 @@ public class YumeiPurchaseReceiveBillOrder {
 
     private final String busType = "STORE_STOCKIN";
 
-    @Length(max = 32)
     @NotBlank
     private String basicOffshopCode;
 
-    @Length(max = 100)
     @NotBlank
     private String basicOffshopName;
 
@@ -44,7 +39,6 @@ public class YumeiPurchaseReceiveBillOrder {
         return Math.toIntExact(orderDetails.stream().map(YumeiPurchaseReceiveBillOrderItem::getGoodsNo).distinct().count());
     }
 
-    @Length(max = 40)
     private String batchNo;
 
     public BigDecimal getPlanInQty() {

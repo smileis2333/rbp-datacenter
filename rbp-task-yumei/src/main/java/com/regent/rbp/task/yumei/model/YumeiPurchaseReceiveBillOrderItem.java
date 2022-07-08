@@ -14,15 +14,12 @@ import java.math.BigDecimal;
  */
 @Data
 public class YumeiPurchaseReceiveBillOrderItem {
-    @Length(max = 20)
     @NotBlank
     private String goodsName;
 
-    @Length(max = 20)
     @NotBlank
     private String goodsNo;
 
-    @Length(max = 20)
     @NotBlank
     private String skuCode;
 

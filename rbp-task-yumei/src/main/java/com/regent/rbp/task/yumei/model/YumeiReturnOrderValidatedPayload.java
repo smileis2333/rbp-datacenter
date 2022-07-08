@@ -8,7 +8,6 @@ import javax.validation.constraints.NotBlank;
 
 @Data
 public class YumeiReturnOrderValidatedPayload {
-    @Length(max = 50)
     @NotBlank
     private String storeNo;
 

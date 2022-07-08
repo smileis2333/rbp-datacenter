@@ -13,7 +13,6 @@ import java.util.List;
 
 @Data
 public class CreateOtherStockOrder {
-    @Length(max = 40)
     @NotBlank
     private String outOrderNo;
 
