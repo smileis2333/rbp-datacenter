@@ -51,4 +51,13 @@
         </foreach>
     </insert>
 
+    <insert id="batchInsertSalePlanBillSizeList">
+        INSERT INTO ${tableName}
+        (id, owe_quantity)
+        VALUES
+        <foreach item="item" index="index" collection="billSizeList" separator=",">
+            (#{item.id},#{item.oweQuantity})
+        </foreach>
+    </insert>
+
 </mapper>

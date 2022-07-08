@@ -241,6 +241,7 @@ public class OffshopServiceImpl implements OffshopService {
         }
 
         StockAdjustBillQueryResult bill = query.getData().get(0);
+        bill.setGoodsDetailData(bill.getGoodsDetailData().stream().filter(e->e.getQuantity().compareTo(BigDecimal.ZERO)!=0).collect(Collectors.toList()));
 
         CreateOtherStockPayload payload = new CreateOtherStockPayload();
         CreateOtherStockOrder order = new CreateOtherStockOrder();

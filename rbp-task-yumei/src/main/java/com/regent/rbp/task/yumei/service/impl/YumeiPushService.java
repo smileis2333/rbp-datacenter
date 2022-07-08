@@ -90,11 +90,13 @@ public class YumeiPushService {
             log.error(msg);
             e.printStackTrace();
             XxlJobHelper.log(msg);
+            XxlJobHelper.handleFail();
         } catch (Exception e) {
             String msg = String.format("billId: %s, billNo: %s push yumei fail, msg %s", billId, billNo, e.getMessage());
             log.error(msg);
             e.printStackTrace();
             XxlJobHelper.log(msg);
+            XxlJobHelper.handleFail();
         }
     }
 }

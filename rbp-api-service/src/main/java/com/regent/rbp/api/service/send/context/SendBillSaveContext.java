@@ -2,6 +2,7 @@ package com.regent.rbp.api.service.send.context;
 
 
 import com.regent.rbp.api.core.noticeBill.NoticeBillSize;
+import com.regent.rbp.api.core.salePlan.SalePlanBillSizeFinal;
 import com.regent.rbp.api.core.sendBill.SendBill;
 import com.regent.rbp.api.core.sendBill.SendBillGoods;
 import com.regent.rbp.api.core.sendBill.SendBillLogistics;
@@ -34,5 +35,8 @@ public class SendBillSaveContext {
 
     @ApiModelProperty(notes = "更新指令单据尺码明细欠数")
     private List<NoticeBillSize> updateNoticeBillSizeList;
+
+    @ApiModelProperty(notes = "更新计划据尺码明细欠数")
+    private List<SalePlanBillSizeFinal> updateSalePlanBillSizeFinals;
 
 }

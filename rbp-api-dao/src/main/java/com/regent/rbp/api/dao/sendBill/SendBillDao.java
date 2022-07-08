@@ -2,6 +2,7 @@ package com.regent.rbp.api.dao.sendBill;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.regent.rbp.api.core.noticeBill.NoticeBillSize;
+import com.regent.rbp.api.core.salePlan.SalePlanBillSizeFinal;
 import com.regent.rbp.api.core.sendBill.SendBill;
 import com.regent.rbp.api.core.sendBill.SendBillGoods;
 import com.regent.rbp.api.core.sendBill.SendBillSize;
@@ -41,4 +42,6 @@ public interface SendBillDao extends BaseMapper<SendBill> {
      * @return
      */
     Integer batchInsertNoticeBillSizeList(@Param("tableName") String tableName, @Param("billSizeList") List<NoticeBillSize> billSizeList);
+
+    Integer batchInsertSalePlanBillSizeList(@Param("tableName") String tableName, @Param("billSizeList") List<SalePlanBillSizeFinal> billSizeList);
 }
