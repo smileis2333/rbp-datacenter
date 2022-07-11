@@ -46,6 +46,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -75,6 +77,11 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     @Value("${yumei.url:}")
     private String url;
 
+    @Value("${yumei.notify.email:''}")
+    private String notifyMail;
+
+    @Value("${spring.mail.username:''}")
+    private String fromMail;
     @Autowired
     private YumeiCredential credential;
 
@@ -97,6 +104,8 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     private BarcodeDao barcodeDao;
     @Autowired
     private SalesOrderBillPushLogDao salesOrderBillPushLogDao;
+    @Autowired(required = false)
+    private JavaMailSender mailSender;
 
     @Override
     public void confirmReceive(String storeNo, String orderSource, String outOrderNo) {
@@ -239,6 +248,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                 retailOrderPushLog.setSucess(0);
                 log.error("调用玉美订单推送接口失败" + billNo);
                 errorMsg = (String) returnData.get("msg");
+                send(url + YumeiApiUrl.SALE_ORDER_PUSH,jsonBody,returnJson);
             } else {
                 retailOrderPushLog.setSucess(1);
                 log.info("调用玉美订单推送接口成功" + billNo);
@@ -287,6 +297,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                 retailOrderPushLog.setSucess(0);
                 log.error("调用玉美订单退货接口失败" + outOrderNo);
                 success = false;
+                send(url + YumeiApiUrl.SALE_ORDER_REFUND,jsonBody,returnJson);
             } else {
                 retailOrderPushLog.setSucess(1);
                 log.info("调用玉美订单退货接口成功" + outOrderNo);
@@ -339,6 +350,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                 retailOrderPushLog.setSucess(0);
                 log.error("调用玉美订单推送接口失败" + outOrderNo);
                 errorMsg = (String) returnData.get("msg");
+                send(url + YumeiApiUrl.SALE_ORDER_CONFIRM_RECEIPT,jsonBody,returnJson);
             } else {
                 retailOrderPushLog.setSucess(1);
                 log.info("调用玉美订单推送接口成功" + outOrderNo);
@@ -408,6 +420,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                 throw new BusinessException(ResponseCode.PARAMS_ERROR, "dataNotExist", new Object[]{"返回结果"});
             }
             if (!resultMap.get("code").equals("00000")) {
+                send(url + YumeiApiUrl.SALE_ORDER_QUERY,jsonBody,returnJson);
                 throw new BusinessException(ResponseCode.PARAMS_ERROR, "paramVerifyError", new Object[]{String.format("requestId:%s, msg:%s", resultMap.get("requestId"), resultMap.get("msg"))});
             }
             LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>) resultMap.get("data");
@@ -451,6 +464,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             Map<String, Object> returnData = (Map<String, Object>) objectMapper.readValue(returnJson, Map.class);
             if (!(Boolean) returnData.getOrDefault("success", false)) {
                 retailOrderPushLog.setSucess(0);
+                send(url + YumeiApiUrl.SALE_ORDER_CANCEL,jsonBody,returnJson);
                 log.error("调用玉美销售订单_取消接口失败" + outOrderNo);
                 success = false;
             } else {
@@ -517,6 +531,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             if (!(Boolean) returnData.getOrDefault("success", false)) {
                 retailOrderPushLog.setSucess(0);
                 log.error("调用玉美销售订单_退货物流上传接口失败" + outOrderNo);
+                send(url + YumeiApiUrl.SALE_ORDER_PUSH_REFUND,jsonBody,returnJson);
                 errorMsg = (String) returnData.get("msg");
             } else {
                 retailOrderPushLog.setSucess(1);
@@ -577,5 +592,21 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         orders.add(order);
         payload.setOrders(orders);
         saleOrderResource.createOfflineSaleOrder(payload);
+    }
+
+    private void send(String url, String request, String repsonse) {
+        if (StrUtil.isNotBlank(notifyMail) && mailSender != null) {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromMail);
+            message.setTo(notifyMail);
+            message.setSubject(String.format("玉美接口调用失败--%s", url));
+            message.setText(String.format("%s\r\n%s", request, repsonse));
+            try {
+                mailSender.send(message);
+                log.info(String.format("调用失败，邮件已发送, %s-%s-%s", url, request, repsonse));
+            } catch (Exception e) {
+                log.error(String.format("调用失败，邮件发送失败, %s-%s-%s,msg:%s", url, request, repsonse, e.getMessage()));
+            }
+        }
     }
 }

@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import javax.validation.Valid;
-
 @Validated
 @FeignClient(value = "offShopResource", url = "${yumei.url:undefined}",configuration = YumeiResouceClientConfiguration.class)
 public interface OffShopResource {
@@ -22,7 +20,7 @@ public interface OffShopResource {
      * @return
      */
     @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/returnOrderCreate")
-    Void returnOrderCreate(@RequestBody @Valid YumeiReturnOrderCreatePayload payload);
+    Void returnOrderCreate(@RequestBody YumeiReturnOrderCreatePayload payload);
 
     /**
      * 退仓订单_取消
@@ -30,7 +28,7 @@ public interface OffShopResource {
      * @return
      */
     @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/returnOrderValidated")
-    Void returnOrderValidated(@RequestBody @Valid YumeiReturnOrderValidatedPayload payload);
+    Void returnOrderValidated(@RequestBody YumeiReturnOrderValidatedPayload payload);
 
     /**
      * 调拨出入库单
@@ -38,7 +36,7 @@ public interface OffShopResource {
      * @return
      */
     @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/transferOrderCreate")
-    Void transferOrderCreate(@RequestBody @Valid YumeiTransferOrderCreatePayload payload);
+    Void transferOrderCreate(@RequestBody YumeiTransferOrderCreatePayload payload);
 
     /**
      * 线下门店其他出入库单创建(推送)接口
@@ -46,5 +44,5 @@ public interface OffShopResource {
      * @return
      */
     @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/createOtherStock")
-    Void createOtherStock(@RequestBody @Valid CreateOtherStockPayload payload);
+    Void createOtherStock(@RequestBody CreateOtherStockPayload payload);
 }

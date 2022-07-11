@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import javax.validation.Valid;
-
 /**
  * @author huangjie
  * @date : 2022/04/29
@@ -25,5 +23,5 @@ public interface SaleOrderResource {
     YumeiOrderQueryPageResp orderQuery(@RequestBody YumeiOrderQueryReq param);
 
     @RequestMapping(method = RequestMethod.POST, value = "/api/offshop/tradeCreate")
-    Void createOfflineSaleOrder(@RequestBody @Valid YumeiOfflineSaleOrderPayload payload);
+    Void createOfflineSaleOrder(@RequestBody YumeiOfflineSaleOrderPayload payload);
 }
