@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.regent.rbp.api.core.base.Category;
@@ -44,10 +45,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -86,6 +89,7 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
         QueryWrapper queryWrapper = this.processQueryWrapper(context);
         queryWrapper.orderByDesc("updated_time");
         IPage<UserProfile> salesPageData = userProfileDao.selectPage(pageModel, queryWrapper);
+
         List<UserQueryResult> list = convertQueryResult(salesPageData.getRecords());
 
         result.setTotalCount(salesPageData.getTotal());
@@ -135,6 +139,7 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
         if (CollUtil.isNotEmpty(cashierLowerDiscountList)) {
             userProfileDao.batchInsertUserCashierLowerDiscountList(cashierLowerDiscountList);
         }
+        param.setId(user.getId());
 
         return ModelDataResponse.Success(user.getId());
     }
@@ -151,7 +156,7 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
     private void convertSaveContext(Boolean createFlag, UserProfile user, UserSaveContext context, UserSaveParam param, List<String> messageList) {
         /****************   主体    ******************/
 
-        BeanUtil.copyProperties(param, user);
+        BeanUtil.copyProperties(param, user, "id", "code");
         // 密码加密
 //        if (StringUtil.isNotEmpty(user.getPassword())) {
         user.setPassword(EncryptUtil.encryptByAES(user.getPassword()));
@@ -258,6 +263,13 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
      */
     private void convertQueryContext(UserQueryParam param, UserQueryContext context) {
         BeanUtil.copyProperties(param, context);
+        ArrayList<String> channelCodes = CollUtil.distinct(param.getChannelCode());
+        if (CollUtil.isNotEmpty(channelCodes)) {
+            List<Channel> channels = channelDao.selectList(Wrappers.lambdaQuery(Channel.class).in(Channel::getCode, channelCodes));
+            if (CollUtil.isNotEmpty(channels)) {
+                context.setChannelIds(channels.stream().map(Channel::getId).collect(Collectors.toList()));
+            }
+        }
     }
 
 
@@ -270,21 +282,21 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
     private QueryWrapper processQueryWrapper(UserQueryContext context) {
         QueryWrapper queryWrapper = new QueryWrapper<UserProfile>();
 
-        queryWrapper.eq(StringUtil.isNotEmpty(context.getCode()), "code", context.getCode());
+        queryWrapper.in(CollUtil.isNotEmpty(context.getCode()), "code", context.getCode());
         queryWrapper.eq(StringUtil.isNotEmpty(context.getName()), "name", context.getName());
         queryWrapper.eq(StringUtil.isNotEmpty(context.getNotes()), "notes", context.getNotes());
-        queryWrapper.eq(StringUtil.isNotEmpty(context.getDepartment()), "department", context.getDepartment());
+        queryWrapper.in(CollUtil.isNotEmpty(context.getDepartment()), "department", context.getDepartment());
         queryWrapper.eq(StringUtil.isNotEmpty(context.getPosition()), "position", context.getPosition());
-        queryWrapper.eq(StringUtil.isNotEmpty(context.getMobile()), "mobile", context.getMobile());
-        queryWrapper.eq(StringUtil.isNotEmpty(context.getEmail()), "email", context.getEmail());
-        queryWrapper.eq(StringUtil.isNotEmpty(context.getIdCard()), "idCard", context.getIdCard());
-        queryWrapper.eq(StringUtil.isNotEmpty(context.getWeixin()), "weixin", context.getWeixin());
-        queryWrapper.eq(StringUtil.isNotEmpty(context.getQyweixin()), "qyweixin", context.getQyweixin());
+        queryWrapper.in(CollUtil.isNotEmpty(context.getMobile()), "mobile", context.getMobile());
+        queryWrapper.in(CollUtil.isNotEmpty(context.getEmail()), "email", context.getEmail());
+        queryWrapper.in(CollUtil.isNotEmpty(context.getIdCard()), "id_card", context.getIdCard());
+        queryWrapper.in(CollUtil.isNotEmpty(context.getWeixin()), "weixin", context.getWeixin());
+        queryWrapper.in(CollUtil.isNotEmpty(context.getQyweixin()), "qyweixin", context.getQyweixin());
 
-        queryWrapper.in(null != context.getStatus() && context.getStatus().length > 0, "status", context.getStatus());
-        queryWrapper.in(null != context.getType() && context.getType().length > 0, "type", context.getType());
-        queryWrapper.in(null != context.getSex() && context.getSex().length > 0, "sex", context.getSex());
-        queryWrapper.in(null != context.getCashierFlag() && context.getCashierFlag().length > 0, "cashier_flag", context.getCashierFlag());
+        queryWrapper.in(CollUtil.isNotEmpty(context.getStatus()), "status", context.getStatus());
+        queryWrapper.in(CollUtil.isNotEmpty(context.getType()), "type", context.getType());
+        queryWrapper.in(CollUtil.isNotEmpty(context.getSex()), "sex", context.getSex());
+        queryWrapper.in(CollUtil.isNotEmpty(context.getCashierFlag()), "cashier_flag", context.getCashierFlag());
 
 
         queryWrapper.eq(null != context.getBirthdayDate(), "birthday_date", context.getBirthdayDate());
@@ -293,6 +305,10 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
         queryWrapper.le(null != context.getCreatedDateEnd(), "created_time", context.getCreatedDateEnd());
         queryWrapper.ge(null != context.getUpdatedDateStart(), "updated_time", context.getUpdatedDateStart());
         queryWrapper.le(null != context.getUpdatedDateEnd(), "updated_time", context.getUpdatedDateEnd());
+
+        queryWrapper.in(CollUtil.isNotEmpty(context.getBusinessManFlag()), "businessManFlag", context.getBusinessManFlag());
+        queryWrapper.in(CollUtil.isNotEmpty(context.getChannelIds()), "channel_id", context.getChannelIds());
+        queryWrapper.in(CollUtil.isNotEmpty(context.getWorkStatus()), "work_status", context.getWorkStatus());
 
         return queryWrapper;
     }
@@ -342,6 +358,13 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
                 cashierDiscountListMap.put(userId, dtoList);
             });
         }
+
+        ArrayList<Long> channelIds = CollUtil.distinct(CollUtil.map(list, UserProfile::getChannelId, true));
+        Map<Long, Channel> channelMap = Collections.emptyMap();
+        if (CollUtil.isNotEmpty(channelIds)) {
+            channelMap = channelDao.selectBatchIds(channelIds).stream().collect(Collectors.toMap(Channel::getId, Function.identity()));
+        }
+
         // 遍历
         for (UserProfile user : list) {
             UserQueryResult queryResult = new UserQueryResult();
@@ -351,7 +374,14 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
             queryResult.setCashierChannels(cashierChannelListMap.get(user.getId()));
             // 最低折扣
             queryResult.setCashierDiscount(cashierDiscountListMap.get(user.getId()));
+            if (user.getChannelId() != null && channelMap.containsKey(user.getChannelId())) {
+                Channel channel = channelMap.get(user.getChannelId());
+                queryResult.setChannelCode(channel.getCode());
+                queryResult.setChannelName(channel.getName());
+                queryResult.setChannelFullName(channel.getFullName());
+            }
         }
+
         return queryResults;
     }
 

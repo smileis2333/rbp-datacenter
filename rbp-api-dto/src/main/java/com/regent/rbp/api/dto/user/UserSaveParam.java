@@ -1,6 +1,7 @@
 package com.regent.rbp.api.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.regent.rbp.api.dto.validate.DiscreteRange;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -20,6 +21,9 @@ import java.util.List;
  */
 @Data
 public class UserSaveParam {
+
+    @JsonIgnore
+    private Long id;
 
     @NotBlank
     @ApiModelProperty(notes = "用户编号")
@@ -64,6 +68,14 @@ public class UserSaveParam {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date workDate;
 
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private Integer workStatus;
+
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private Long channelId;
+
     @Email
     @ApiModelProperty(notes = "邮件")
     private String email;
@@ -80,6 +92,10 @@ public class UserSaveParam {
     @DiscreteRange(ranges = {0, 1}, message = "入参非法，合法输入0-否1-是")
     @ApiModelProperty(value = "是否收银员0-否1-是")
     private Integer cashierFlag;
+
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private Boolean businessManFlag;
 
     @ApiModelProperty(value = "最低折扣")
     private BigDecimal discount;

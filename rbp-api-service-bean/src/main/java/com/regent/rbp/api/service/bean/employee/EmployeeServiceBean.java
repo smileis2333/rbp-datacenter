@@ -1,11 +1,9 @@
 package com.regent.rbp.api.service.bean.employee;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.regent.rbp.api.core.base.Position;
 import com.regent.rbp.api.core.base.Sex;
 import com.regent.rbp.api.core.channel.Channel;
@@ -13,7 +11,6 @@ import com.regent.rbp.api.core.employee.Employee;
 import com.regent.rbp.api.dao.base.PositionDao;
 import com.regent.rbp.api.dao.base.SexDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
-import com.regent.rbp.api.dao.employee.EmployeeDao;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
 import com.regent.rbp.api.dto.core.DataResponse;
 import com.regent.rbp.api.dto.core.ModelDataResponse;
@@ -21,18 +18,22 @@ import com.regent.rbp.api.dto.core.PageDataResponse;
 import com.regent.rbp.api.dto.employee.EmployeeQueryParam;
 import com.regent.rbp.api.dto.employee.EmployeeQueryResult;
 import com.regent.rbp.api.dto.employee.EmployeeSaveParam;
+import com.regent.rbp.api.dto.user.UserQueryParam;
+import com.regent.rbp.api.dto.user.UserQueryResult;
+import com.regent.rbp.api.dto.user.UserSaveParam;
 import com.regent.rbp.api.service.base.BaseDbService;
 import com.regent.rbp.api.service.constants.TableConstants;
 import com.regent.rbp.api.service.employee.EmployeeService;
 import com.regent.rbp.api.service.employee.context.EmployeeQueryContext;
-import com.regent.rbp.api.service.employee.context.EmployeeSaveContext;
-import com.regent.rbp.common.constants.InformationConstants;
-import com.regent.rbp.infrastructure.util.DateUtil;
+import com.regent.rbp.api.service.user.UserService;
 import com.regent.rbp.infrastructure.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -42,8 +43,9 @@ import java.util.stream.Collectors;
  **/
 @Service
 public class EmployeeServiceBean implements EmployeeService {
+
     @Autowired
-    EmployeeDao employeeDao;
+    private UserService userService;
     @Autowired
     ChannelDao channelDao;
     @Autowired
@@ -55,26 +57,23 @@ public class EmployeeServiceBean implements EmployeeService {
 
     @Override
     public PageDataResponse<EmployeeQueryResult> query(EmployeeQueryParam param) {
-        EmployeeQueryContext context = new EmployeeQueryContext();
-        //将入参转换成查询的上下文对象
-        convertEmployeeQueryContext(param, context);
-        //查询数据
-        PageDataResponse<EmployeeQueryResult> response = searchPage(context);
-        return response;
+        UserQueryParam userQueryParam = BeanUtil.copyProperties(param, UserQueryParam.class);
+        PageDataResponse<UserQueryResult> query = userService.query(userQueryParam);
+        List<EmployeeQueryResult> employeeQueryResults = converEmployeeQueryResult2(query.getData());
+        return new PageDataResponse<>(query.getTotalCount(), employeeQueryResults);
     }
 
-    private PageDataResponse<EmployeeQueryResult> searchPage(EmployeeQueryContext context) {
-        PageDataResponse<EmployeeQueryResult> result = new PageDataResponse<>();
-
-        Page<Employee> pageModel = new Page<>(context.getPageNo(), context.getPageSize());
-        QueryWrapper queryWrapper = this.processQueryWrapper(context);
-
-        IPage<Employee> employeePageData = employeeDao.selectPage(pageModel, queryWrapper);
-        List<EmployeeQueryResult> list = converEmployeeQueryResult(employeePageData.getRecords());
-        result.setTotalCount(employeePageData.getTotal());
-        result.setData(list);
-        return result;
+    private List<EmployeeQueryResult> converEmployeeQueryResult2(List<UserQueryResult> employeeList) {
+        List<EmployeeQueryResult> collect = employeeList.stream().map(
+                e -> {
+                    EmployeeQueryResult cookItem = BeanUtil.copyProperties(e, EmployeeQueryResult.class);
+                    cookItem.setSexName(e.getSex() == null ? null : e.getSex() == 0 ? "男" : "女");
+                    return cookItem;
+                }
+        ).collect(Collectors.toList());
+        return collect;
     }
+
 
     private QueryWrapper processQueryWrapper(EmployeeQueryContext context) {
         QueryWrapper<Employee> queryWrapper = new QueryWrapper<>();
@@ -141,17 +140,17 @@ public class EmployeeServiceBean implements EmployeeService {
             Sex sex = sexDao.selectById(employee.getSexId());
             employeeQueryResult.setSexName(sex != null ? sex.getName() : null);
             employeeQueryResult.setMobile(employee.getMobile());
-            employeeQueryResult.setAddress(employee.getAddress());
+//            employeeQueryResult.setAddress(employee.getAddress());
             employeeQueryResult.setIdCard(employee.getIdCard());
-            employeeQueryResult.setBirthdayDate(DateUtil.getDateStr(employee.getBirthdayDate()));
-            employeeQueryResult.setEntryDate(DateUtil.getDateStr(employee.getEntryDate()));
-            employeeQueryResult.setLeaveDate(DateUtil.getDateStr(employee.getLeaveDate()));
-            employeeQueryResult.setJobNumber(employee.getJobNumber());
-            employeeQueryResult.setNotes(employee.getNotes());
+//            employeeQueryResult.setBirthdayDate(DateUtil.getDateStr(employee.getBirthdayDate()));
+//            employeeQueryResult.setEntryDate(DateUtil.getDateStr(employee.getEntryDate()));
+//            employeeQueryResult.setLeaveDate(DateUtil.getDateStr(employee.getLeaveDate()));
+//            employeeQueryResult.setJobNumber(employee.getJobNumber());
+//            employeeQueryResult.setNotes(employee.getNotes());
             Position position = positionDao.selectById(employee.getPositionId());
             if (position != null) {
-                employeeQueryResult.setPositionCode(position.getCode());
-                employeeQueryResult.setPositionName(position.getName());
+//                employeeQueryResult.setPositionCode(position.getCode());
+//                employeeQueryResult.setPositionName(position.getName());
             }
             employeeQueryResult.setWorkStatus(employee.getWorkStatus());
             Channel channel = channelDao.selectById(employee.getChannelId());
@@ -159,137 +158,86 @@ public class EmployeeServiceBean implements EmployeeService {
                 employeeQueryResult.setChannelCode(channel.getCode());
             }
             if (customizeColumnMap.containsKey(employee.getId())) {
-                employeeQueryResult.setCustomizeData(customizeColumnMap.get(employee.getId()));
+//                employeeQueryResult.setCustomizeData(customizeColumnMap.get(employee.getId()));
             }
-            employeeQueryResult.setBirthdayDate(DateUtil.getDateStr(employee.getCreatedTime()));
-            employeeQueryResult.setUpdatedTime(DateUtil.getDateStr(employee.getUpdatedTime()));
-            employeeQueryResult.setCheckTime(DateUtil.getDateStr(employee.getCheckTime()));
+//            employeeQueryResult.setBirthdayDate(DateUtil.getDateStr(employee.getCreatedTime()));
+//            employeeQueryResult.setUpdatedTime(DateUtil.getDateStr(employee.getUpdatedTime()));
+//            employeeQueryResult.setCheckTime(DateUtil.getDateStr(employee.getCheckTime()));
             resultArrayList.add(employeeQueryResult);
         }
         return resultArrayList;
     }
 
     private void convertEmployeeQueryContext(EmployeeQueryParam param, EmployeeQueryContext context) {
-        context.setPageNo(param.getPageNo());
-        context.setPageSize(param.getPageSize());
-        context.setCode(param.getCode());
-        context.setName(param.getName());
-        // 性别
-        if (param.getSexName() != null && param.getSexName().length > 0) {
-            List<Sex> list = sexDao.selectList(new QueryWrapper<Sex>().in("name", param.getSexName()));
-            if (list != null && list.size() > 0) {
-                long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
-                context.setSex(ids);
-            }
-        }
-        context.setMobile(param.getMobile());
-        // 渠道
-        if (param.getChannelCode() != null && param.getChannelCode().length > 0) {
-            List<Channel> list = channelDao.selectList(new QueryWrapper<Channel>().in("code", param.getChannelCode()));
-            if (list != null && list.size() > 0) {
-                long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
-                List<String> codeList = list.stream().filter(x -> StringUtil.isNotEmpty(x.getCode())).map(Channel::getCode).collect(Collectors.toList());
-                String[] codes = codeList.toArray(new String[codeList.size()]);
-                context.setChannelCode(codes);
-                context.setChannelId(ids);
-            }
-        }
-        context.setEntryDate(param.getEntryDate());
-        context.setJobNumber(param.getJobNumber());
-        //职位名称
-        if (StringUtil.isNotEmpty(param.getPositionName())) {
-            context.setPositionName(param.getPositionName());
-            List<Position> positions = positionDao.selectList(new LambdaQueryWrapper<Position>().in(Position::getName, param.getPositionName()));
-            long[] ids = positions.stream().mapToLong(map -> map.getId()).toArray();
-            context.setPositionId(ids);
-        }
-        context.setWorkStatus(param.getWorkStatus());
-        context.setFields(param.getFields());
-        if (StringUtil.isNotBlank(param.getCreatedDateStart())) {
-            Date createdDateStart = DateUtil.getDate(param.getCreatedDateStart(), DateUtil.FULL_DATE_FORMAT);
-            context.setCreatedDateStart(createdDateStart);
-        }
-        if (StringUtil.isNotBlank(param.getCreatedDateEnd())) {
-            Date createdDateEnd = DateUtil.getDate(param.getCreatedDateEnd(), DateUtil.FULL_DATE_FORMAT);
-            context.setCreatedDateEnd(createdDateEnd);
-        }
-        if (StringUtil.isNotBlank(param.getUpdatedDateStart())) {
-            Date updatedDateStart = DateUtil.getDate(param.getUpdatedDateStart(), DateUtil.FULL_DATE_FORMAT);
-            context.setUpdatedDateStart(updatedDateStart);
-        }
-        if (StringUtil.isNotBlank(param.getUpdatedDateEnd())) {
-            Date updatedDateEnd = DateUtil.getDate(param.getUpdatedDateEnd(), DateUtil.FULL_DATE_FORMAT);
-            context.setUpdatedDateEnd(updatedDateEnd);
-        }
-        if (StringUtil.isNotBlank(param.getCheckDateStart())) {
-            Date checkDateStart = DateUtil.getDate(param.getCheckDateStart(), DateUtil.FULL_DATE_FORMAT);
-            context.setCheckDateStart(checkDateStart);
-        }
-        if (StringUtil.isNotBlank(param.getCheckDateEnd())) {
-            Date checkDateEnd = DateUtil.getDate(param.getCheckDateEnd(), DateUtil.FULL_DATE_FORMAT);
-            context.setCheckDateEnd(checkDateEnd);
-        }
+//        context.setPageNo(param.getPageNo());
+//        context.setPageSize(param.getPageSize());
+//        context.setCode(param.getCode());
+//        context.setName(param.getName());
+//        // 性别
+//        if (param.getSexName() != null && param.getSexName().length > 0) {
+//            List<Sex> list = sexDao.selectList(new QueryWrapper<Sex>().in("name", param.getSexName()));
+//            if (list != null && list.size() > 0) {
+//                long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
+//                context.setSex(ids);
+//            }
+//        }
+//        context.setMobile(param.getMobile());
+//        // 渠道
+//        if (param.getChannelCode() != null && param.getChannelCode().length > 0) {
+//            List<Channel> list = channelDao.selectList(new QueryWrapper<Channel>().in("code", param.getChannelCode()));
+//            if (list != null && list.size() > 0) {
+//                long[] ids = list.stream().mapToLong(map -> map.getId()).toArray();
+//                List<String> codeList = list.stream().filter(x -> StringUtil.isNotEmpty(x.getCode())).map(Channel::getCode).collect(Collectors.toList());
+//                String[] codes = codeList.toArray(new String[codeList.size()]);
+//                context.setChannelCode(codes);
+//                context.setChannelId(ids);
+//            }
+//        }
+//        context.setEntryDate(param.getEntryDate());
+//        context.setJobNumber(param.getJobNumber());
+//        //职位名称
+//        if (StringUtil.isNotEmpty(param.getPositionName())) {
+//            context.setPositionName(param.getPositionName());
+//            List<Position> positions = positionDao.selectList(new LambdaQueryWrapper<Position>().in(Position::getName, param.getPositionName()));
+//            long[] ids = positions.stream().mapToLong(map -> map.getId()).toArray();
+//            context.setPositionId(ids);
+//        }
+//        context.setWorkStatus(param.getWorkStatus());
+//        context.setFields(param.getFields());
+//        if (StringUtil.isNotBlank(param.getCreatedDateStart())) {
+//            Date createdDateStart = DateUtil.getDate(param.getCreatedDateStart(), DateUtil.FULL_DATE_FORMAT);
+//            context.setCreatedDateStart(createdDateStart);
+//        }
+//        if (StringUtil.isNotBlank(param.getCreatedDateEnd())) {
+//            Date createdDateEnd = DateUtil.getDate(param.getCreatedDateEnd(), DateUtil.FULL_DATE_FORMAT);
+//            context.setCreatedDateEnd(createdDateEnd);
+//        }
+//        if (StringUtil.isNotBlank(param.getUpdatedDateStart())) {
+//            Date updatedDateStart = DateUtil.getDate(param.getUpdatedDateStart(), DateUtil.FULL_DATE_FORMAT);
+//            context.setUpdatedDateStart(updatedDateStart);
+//        }
+//        if (StringUtil.isNotBlank(param.getUpdatedDateEnd())) {
+//            Date updatedDateEnd = DateUtil.getDate(param.getUpdatedDateEnd(), DateUtil.FULL_DATE_FORMAT);
+//            context.setUpdatedDateEnd(updatedDateEnd);
+//        }
+//        if (StringUtil.isNotBlank(param.getCheckDateStart())) {
+//            Date checkDateStart = DateUtil.getDate(param.getCheckDateStart(), DateUtil.FULL_DATE_FORMAT);
+//            context.setCheckDateStart(checkDateStart);
+//        }
+//        if (StringUtil.isNotBlank(param.getCheckDateEnd())) {
+//            Date checkDateEnd = DateUtil.getDate(param.getCheckDateEnd(), DateUtil.FULL_DATE_FORMAT);
+//            context.setCheckDateEnd(checkDateEnd);
+//        }
     }
 
     @Override
     public DataResponse save(EmployeeSaveParam param) {
-        boolean createFlag = true;
-        EmployeeSaveContext context = new EmployeeSaveContext(param);
-        //判断是新增还是更新
-        Employee item = employeeDao.selectOne(new QueryWrapper<Employee>().eq("code", param.getCode()));
-        if (item != null) {
-            context.getEmployee().setId(item.getId());
-            createFlag = false;
-        }
-        //验证数据有效性
-        List<String> errorMsgList = verificationProperty(param, context);
-        if (errorMsgList.size() > 0) {
-            String message = StringUtil.join(errorMsgList, ",");
-            return DataResponse.errorParameter(message);
-        }
-        saveEmployee(createFlag, context.getEmployee());
-        baseDbService.saveOrUpdateCustomFieldData(InformationConstants.ModuleConstants.EMPLOYEE_INFO, TableConstants.EMPLOYEE, context.getEmployee().getId(), param.getCustomizeData());
-        return ModelDataResponse.Success(context.getEmployee().getId());
+        UserSaveParam userParam = BeanUtil.copyProperties(param, UserSaveParam.class);
+        Channel channel = channelDao.selectOne(Wrappers.lambdaQuery(Channel.class).eq(Channel::getCode, param.getChannelCode()));
+        userParam.setBusinessManFlag(param.getBusinessManFlag() == 1);
+        userParam.setChannelId(channel.getId());
+        userService.save(userParam);
+        return ModelDataResponse.Success(userParam.getId());
     }
 
-    private List<String> verificationProperty(EmployeeSaveParam param, EmployeeSaveContext context) {
-        Employee employee = context.getEmployee();
-        List<String> errorMsgList = new ArrayList<>();
-
-        if (StringUtil.isNotEmpty(param.getSexName())) {
-            List<Sex> sexList = sexDao.selectList(new LambdaQueryWrapper<Sex>().eq(Sex::getName, param.getSexName()));
-            if (CollUtil.isEmpty(sexList)) {
-                errorMsgList.add("性别名称(sexName)错误");
-            } else {
-                context.getEmployee().setSexId(sexList.get(0).getId());
-            }
-        }
-
-        Channel channel = channelDao.selectOne(new LambdaQueryWrapper<Channel>().eq(Channel::getCode, param.getChannelCode()));
-        employee.setChannelId(channel.getId());
-
-        if (StrUtil.isNotEmpty(param.getPositionName())) {
-            Position position = positionDao.selectOne(new QueryWrapper<Position>().eq("name", param.getPositionName()));
-            if (position == null) {
-                errorMsgList.add("职位(positionName)不存在");
-            } else {
-                context.getEmployee().setPositionId(position.getId());
-            }
-        }
-        return errorMsgList;
-    }
-
-    /**
-     * 写入员工档案
-     *
-     * @param createFlag
-     * @param employee
-     */
-    private void saveEmployee(Boolean createFlag, Employee employee) {
-        if (createFlag) {
-            employeeDao.insert(employee);
-        } else {
-            employeeDao.updateById(employee);
-        }
-    }
 }

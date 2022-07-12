@@ -34,14 +34,10 @@ public class EmployeeSaveContext {
         this.employee.setCode(param.getCode());
         this.employee.setName(param.getName());
         this.employee.setMobile(param.getMobile());
-        this.employee.setAddress(param.getAddress());
         this.employee.setIdCard(param.getIdCard());
-        this.employee.setJobNumber(param.getJobNumber());
         this.employee.setNotes(param.getNotes());
         this.employee.setWorkStatus(param.getWorkStatus());
         this.employee.setBirthdayDate(param.getBirthdayDate());
-        this.employee.setEntryDate(param.getEntryDate());
-        this.employee.setLeaveDate(param.getLeaveDate());
     }
 
 }

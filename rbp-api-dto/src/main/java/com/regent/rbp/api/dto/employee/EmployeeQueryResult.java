@@ -1,10 +1,9 @@
 package com.regent.rbp.api.dto.employee;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.regent.rbp.api.dto.base.CustomizeDataDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
-import java.util.List;
+import java.util.Date;
 
 /**
  * @Description 员工档案查询返回值
@@ -13,28 +12,26 @@ import java.util.List;
  **/
 @Data
 public class EmployeeQueryResult {
-    @JsonIgnore
     private String code;
     private String name;
+    private Integer status;
+    private Integer type;
     private String sexName;
+    private String department;
+    private String position;
     private String mobile;
-    private String address;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date birthdayDate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date workDate;
     private String idCard;
-    private String birthdayDate;
-    private String entryDate;
-    private String leaveDate;
-    private String jobNumber;
-    private String notes;
-    private String positionCode;
-    private String positionName;
+    private String weixin;
+    private String qyweixin;
+    private Integer businessManFlag;
     private Integer workStatus;
     private String channelCode;
-    private String createdTime;
-    private String updatedTime;
-    private String checkTime;
-//    private Integer code;
-//    private String message;
-//    private Integer totalCount;
-//    private List<EmployeeDto> employeeData;
-    private List<CustomizeDataDto> customizeData;
+    private String channelName;
+    private String channelFullName;
+    private String notes;
+
 }

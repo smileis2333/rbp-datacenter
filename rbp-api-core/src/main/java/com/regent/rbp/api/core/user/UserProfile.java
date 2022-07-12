@@ -64,6 +64,8 @@ public class UserProfile {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date workDate;
 
+    private Integer workStatus;
+
     @ApiModelProperty(notes = "邮件")
     private String email;
 
@@ -78,6 +80,8 @@ public class UserProfile {
 
     @ApiModelProperty(value = "是否收银员0-否1-是")
     private Integer cashierFlag;
+
+    private Integer businessManFlag;
 
     @ApiModelProperty(value = "最低折扣")
     private BigDecimal discount;
@@ -95,6 +99,8 @@ public class UserProfile {
     @ApiModelProperty(notes = "更新时间")
     @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     private Date updatedTime;
+
+    private Long channelId;
 
     public static UserProfile build() {
         UserProfile user = new UserProfile();

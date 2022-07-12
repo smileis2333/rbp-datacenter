@@ -1,6 +1,7 @@
 package com.regent.rbp.api.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -72,10 +73,23 @@ public class UserQueryResult {
     @ApiModelProperty(value = "最低折扣")
     private BigDecimal discount;
 
+    private String channelCode;
+
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private String channelName;
+
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private String channelFullName;
+
     @ApiModelProperty(value = "收银员渠道范围")
     private List<UserCashierChannelDto> cashierChannels;
 
     @ApiModelProperty(value = "收银员最低折扣")
     private List<UserCashierDiscountDto> cashierDiscount;
 
+    private Integer workStatus;
+
+    private Integer businessManFlag;
 }
