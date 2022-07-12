@@ -65,6 +65,8 @@ public class SystemConstants {
 
     public static final String AUTO_DELETE_TEMP_TABLE = "autoDeleteTempTable";
 
+    public static final String AUTO_DELETE_STOCK_LOG = "autoDeleteStockLog";
+
     public static final String UPDATE_BATCH_MANAGEMENT_STATUS = "updateBatchManagementStatus";
 
     public static final String AUTO_MEMBER_GROUPING = "autoMemberGrouping";

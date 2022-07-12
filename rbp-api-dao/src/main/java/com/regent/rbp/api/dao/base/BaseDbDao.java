@@ -3,8 +3,6 @@ package com.regent.rbp.api.dao.base;
 import cn.hutool.core.collection.CollUtil;
 import com.regent.rbp.api.core.base.ModuleBusinessType;
 import com.regent.rbp.api.core.base.SizeDetail;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import org.apache.ibatis.annotations.CacheNamespace;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Collections;
@@ -40,9 +38,9 @@ public interface BaseDbDao {
 
     Integer insertSql(@Param("sql") String sql);
 
-    void deleteSql(@Param("sql") String sql);
+    Integer deleteSql(@Param("sql") String sql);
 
-    void updateSql(@Param("sql") String sql);
+    Integer updateSql(@Param("sql") String sql);
 
     Integer isExistField(@Param("tableName") String tableName, @Param("fieldName") String fieldName);
 

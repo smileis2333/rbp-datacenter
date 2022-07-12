@@ -61,9 +61,9 @@
         ${sql}
     </delete>
 
-    <insert id="updateSql" parameterType="java.lang.String">
+    <update id="updateSql" parameterType="java.lang.String">
         ${sql}
-    </insert>
+    </update>
 
     <select id="isExistField" resultType="java.lang.Integer">
         select count(*) from information_schema.columns where `table_schema` =database() and `table_name` = #{tableName} and `column_name` = #{fieldName}
