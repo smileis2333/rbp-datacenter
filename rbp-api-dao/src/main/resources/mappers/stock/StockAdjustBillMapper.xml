@@ -10,6 +10,7 @@
             rsab.bill_no ,
             rsab.bill_date ,
             rbt.name businessType,
+            rbt.base_business_type_id,
             rsab.manual_id ,
             rc.code channelCode,
             rsab.notes ,

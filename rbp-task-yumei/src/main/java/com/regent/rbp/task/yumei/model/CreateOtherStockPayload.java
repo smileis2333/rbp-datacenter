@@ -20,7 +20,7 @@ public class CreateOtherStockPayload {
     @NotBlank
     private String reason;
 
-    private final Integer bizType = 1;
+    private Integer bizType;
 
     @NotEmpty
     @Valid

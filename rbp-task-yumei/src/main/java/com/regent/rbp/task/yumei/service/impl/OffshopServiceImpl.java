@@ -1,8 +1,10 @@
 package com.regent.rbp.task.yumei.service.impl;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import com.regent.rbp.api.core.constants.BusinessTypeConstants;
 import com.regent.rbp.api.core.eum.OnlinePlatformTypeEnum;
 import com.regent.rbp.api.core.retail.LogisticsCompanyPlatformMapping;
 import com.regent.rbp.api.dao.warehouse.user.UserProfileDao;
@@ -241,18 +243,25 @@ public class OffshopServiceImpl implements OffshopService {
         }
 
         StockAdjustBillQueryResult bill = query.getData().get(0);
-        bill.setGoodsDetailData(bill.getGoodsDetailData().stream().filter(e->e.getQuantity().compareTo(BigDecimal.ZERO)!=0).collect(Collectors.toList()));
+        bill.setGoodsDetailData(bill.getGoodsDetailData().stream().filter(e -> e.getQuantity().compareTo(BigDecimal.ZERO) != 0).collect(Collectors.toList()));
 
-        CreateOtherStockPayload payload = new CreateOtherStockPayload();
         CreateOtherStockOrder order = new CreateOtherStockOrder();
-
-        payload.setStoreNo(bill.getChannelCode());
-        payload.setReason(bill.getBusinessType());
 
         order.setOutOrderNo(billNo);
 
-        List<OrderDetail> orderDetails = new ArrayList<>();
-        order.setOrderDetails(orderDetails);
+        CreateOtherStockOrder order1 = BeanUtil.copyProperties(order, CreateOtherStockOrder.class);
+        CreateOtherStockOrder order2 = BeanUtil.copyProperties(order, CreateOtherStockOrder.class);
+        List<OrderDetail> orderDetails1 = new ArrayList<>();
+        List<OrderDetail> orderDetails2 = new ArrayList<>();
+        order1.setOrderDetails(orderDetails1);
+        order2.setOrderDetails(orderDetails2);
+
+        Integer bizType = null;
+        if (BusinessTypeConstants.INVENTORY_ADJUST.equals(bill.getBaseBusinessTypeId())) {
+            bizType = 1;
+        } else {
+            bizType = 2;
+        }
 
         for (StockAdjustBillGoodsDetailData goodsDetail : bill.getGoodsDetailData()) {
             OrderDetail orderDetail = new OrderDetail();
@@ -261,11 +270,37 @@ public class OffshopServiceImpl implements OffshopService {
             orderDetail.setSkuCode(goodsDetail.getBarcode());
             orderDetail.setQty(goodsDetail.getQuantity());
             orderDetail.setCostPrice(BigDecimal.ZERO);
-            orderDetails.add(orderDetail);
+
+            if (goodsDetail.getQuantity().compareTo(BigDecimal.ZERO) == 1) {
+                orderDetails1.add(orderDetail);
+            } else {
+                orderDetails2.add(orderDetail);
+            }
         }
 
-        payload.setOrders(CollUtil.newArrayList(order));
-        offShopResource.createOtherStock(payload);
+        if (CollUtil.isEmpty(orderDetails1) && CollUtil.isEmpty(orderDetails2)) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, String.format("billNo: %s 订单明细异常", billNo));
+        }
+
+        if (CollUtil.isNotEmpty(orderDetails1)) {
+            CreateOtherStockPayload payload = new CreateOtherStockPayload();
+            payload.setStoreNo(bill.getChannelCode());
+            payload.setReason(bill.getBusinessType());
+            payload.setOrders(CollUtil.newArrayList(order1));
+            payload.setBizType(bizType);
+            order1.setOutOrderNo(String.format("%s-1", order1.getOutOrderNo()));
+            offShopResource.createOtherStock(payload);
+        }
+
+        if (CollUtil.isNotEmpty(orderDetails2)) {
+            CreateOtherStockPayload payload = new CreateOtherStockPayload();
+            payload.setStoreNo(bill.getChannelCode());
+            payload.setReason(bill.getBusinessType());
+            payload.setOrders(CollUtil.newArrayList(order2));
+            payload.setBizType(bizType);
+            order2.setOutOrderNo(String.format("%s-2", order2.getOutOrderNo()));
+            offShopResource.createOtherStock(payload);
+        }
 
     }
 }

@@ -20,9 +20,7 @@ public class StockAdjustPushJob {
 
     @XxlJob("yumei.stockAdjustPushHandler")
     public void stockAdjustPushHandler() {
-        // constant query, filter business type
-        String hookSql = "and business_type_id  = (select id  from rbp_business_type rbt where base_business_type_id  = 1100000000000032)";
-        List<Map<String, Object>> params = yumeiPushService.getWaitPushBill("rbp_stock_adjust_bill", "701022", hookSql);
+        List<Map<String, Object>> params = yumeiPushService.getWaitPushBill("rbp_stock_adjust_bill", "701022");
         for (Map<String, Object> param : params) {
             String billNo = (String) param.get("bill_no");
             Long billId = ((Long) param.get("id"));

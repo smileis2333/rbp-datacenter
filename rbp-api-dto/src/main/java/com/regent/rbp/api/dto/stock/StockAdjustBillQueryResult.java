@@ -3,6 +3,7 @@ package com.regent.rbp.api.dto.stock;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.regent.rbp.api.dto.base.CustomizeDataDto;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -22,6 +23,7 @@ public class StockAdjustBillQueryResult {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date billDate;
     private String businessType;
+
     private String manualId;
     private String channelCode;
     private String notes;
@@ -36,4 +38,8 @@ public class StockAdjustBillQueryResult {
     private List<CustomizeDataDto> customizeData;
 
     private List<StockAdjustBillGoodsDetailData> goodsDetailData;
+
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private Long baseBusinessTypeId;
 }
