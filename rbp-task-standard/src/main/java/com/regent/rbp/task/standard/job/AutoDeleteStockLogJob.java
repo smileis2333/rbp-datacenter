@@ -45,22 +45,16 @@ public class AutoDeleteStockLogJob {
             XxlJobHelper.log("开始删除{}之前库存日志", dateStr);
             //  批量删除
             int index = 0;
-            int total = 0;
+            Map<String, Integer> totalMap = new HashMap<>();
             while (true) {
-                int count = 0;
-                if (index == 0 && (count += this.executeSql("rbp_stock_detail_operator_log", dateStr)) == 0) {
-                    total += count;
-                    XxlJobHelper.log("成功删除实际库存日志记录：{} 条", total);
+                if (index == 0 && this.executeSql("rbp_stock_detail_operator_log", dateStr, totalMap) == 0) {
+                    XxlJobHelper.log("成功删除实际库存日志记录：{} 条", totalMap.get("rbp_stock_detail_operator_log"));
                     index++;
-                    total = 0;
-                } else if (index == 1 && (count += this.executeSql("rbp_usable_stock_detail_operator_log", dateStr)) == 0) {
-                    total += count;
-                    XxlJobHelper.log("成功删除可用库存日志记录：{} 条", total);
+                } else if (index == 1 && this.executeSql("rbp_usable_stock_detail_operator_log", dateStr, totalMap) == 0) {
+                    XxlJobHelper.log("成功删除可用库存日志记录：{} 条", totalMap.get("rbp_usable_stock_detail_operator_log"));
                     index++;
-                    total = 0;
-                } else if (index == 2 && (count += this.executeSql("rbp_forway_stock_detail_operator_log", dateStr)) == 0) {
-                    total += count;
-                    XxlJobHelper.log("成功删除在途库存日志记录：{} 条", total);
+                } else if (index == 2 && this.executeSql("rbp_forway_stock_detail_operator_log", dateStr, totalMap) == 0) {
+                    XxlJobHelper.log("成功删除在途库存日志记录：{} 条", totalMap.get("rbp_forway_stock_detail_operator_log"));
                     break;
                 }
             }
@@ -71,8 +65,14 @@ public class AutoDeleteStockLogJob {
         }
     }
 
-    private Integer executeSql(String tableName, String dateStr) {
-        return baseDbDao.deleteSql(String.format("delete from %s where operate_time <= '%s' order by operate_time asc limit 1000 ", tableName, dateStr));
+    private Integer executeSql(String tableName, String dateStr, Map<String, Integer> totalMap) {
+        Integer count = baseDbDao.deleteSql(String.format("delete from %s where operate_time <= '%s' order by operate_time asc limit 1000 ", tableName, dateStr));
+        if (null == totalMap.get(tableName)) {
+            totalMap.put(tableName, count);
+        } else {
+            totalMap.put(tableName, totalMap.get(tableName) + count);
+        }
+        return count;
     }
 
     /**
