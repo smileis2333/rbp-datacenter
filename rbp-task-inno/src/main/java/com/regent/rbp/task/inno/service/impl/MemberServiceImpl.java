@@ -1,7 +1,7 @@
 package com.regent.rbp.task.inno.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.http.HttpUtil;
-import com.alibaba.excel.util.DateUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -149,6 +149,7 @@ public class MemberServiceImpl implements MemberService {
 
     /**
      * 推送会员打包
+     *
      * @param memberCardList
      * @return
      */
@@ -215,6 +216,7 @@ public class MemberServiceImpl implements MemberService {
 
     /**
      * 推送会员
+     *
      * @param onlinePlatform
      * @param innoMemberDtoList
      * @return
@@ -253,7 +255,8 @@ public class MemberServiceImpl implements MemberService {
             SimpleDateFormat sdf = new SimpleDateFormat(SystemConstants.FULL_DATE_FORMAT);
 
             // 设置结束时间
-            dto.setEndTime(DateUtil.getNowDateString(SystemConstants.FULL_DATE_FORMAT));
+            Date now = new Date();
+            dto.setEndTime(DateUtil.getDateStr(now, SystemConstants.FULL_DATE_FORMAT));
             if (null == uploadingDate) {
                 dto.setBeginTime(sdf.format(DateUtil.getDate("2021-10-01", DateUtil.SHORT_DATE_FORMAT)));
             } else {
@@ -268,7 +271,10 @@ public class MemberServiceImpl implements MemberService {
             }
             dto.setPageIndex(1);
             this.pullMember(onlinePlatform, dto, null);
-            onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatformId, key, DateUtils.parseDate(dto.getEndTime()));
+            // 指定会员、手机号时，忽略更新同步日志
+            if (CollUtil.isEmpty(param.getMobileList()) && CollUtil.isEmpty(param.getCardnumList())) {
+                onlinePlatformSyncCacheService.saveOnlinePlatformSyncCache(onlinePlatformId, key, now);
+            }
             XxlJobHelper.handleSuccess();
         } catch (Exception e) {
             XxlJobHelper.handleFail(e.getMessage());
@@ -278,6 +284,7 @@ public class MemberServiceImpl implements MemberService {
 
     /**
      * 拉取会员
+     *
      * @param onlinePlatform
      * @param dto
      * @param map
@@ -313,6 +320,7 @@ public class MemberServiceImpl implements MemberService {
 
     /**
      * 写入会员
+     *
      * @param onlinePlatformId
      * @param page
      * @param map
@@ -327,7 +335,7 @@ public class MemberServiceImpl implements MemberService {
         // 区号
         saveParam.setAreaCode("");
         saveParam.setPhone(page.getMobile_no());
-        saveParam.setSex(page.getSex() == "男" ? 0:1);
+        saveParam.setSex(page.getSex() == "男" ? 0 : 1);
         saveParam.setOriginType(1);
         saveParam.setOrigin(2);
         saveParam.setBeginDate(page.getCreate_date());
@@ -378,7 +386,7 @@ public class MemberServiceImpl implements MemberService {
 
         MemberCardSaveParam saveParam = new MemberCardSaveParam();
         List<String> errorMsgList = this.verificationProperty(dto, saveParam, createFlag);
-        if(errorMsgList.size() > 0 ) {
+        if (errorMsgList.size() > 0) {
             String message = StringUtil.join(errorMsgList, ",");
             response.put("Flag", "-1");
             response.put("Message", message);
@@ -386,7 +394,7 @@ public class MemberServiceImpl implements MemberService {
             return response;
         }
         DataResponse saveResp = memberCardService.save(saveParam);
-        if (saveResp.getCode() != ResponseCode.OK){
+        if (saveResp.getCode() != ResponseCode.OK) {
             response.put("Flag", "-1");
             response.put("Message", saveResp.getMessage());
             response.put("data", dto.getVIP());
@@ -404,6 +412,7 @@ public class MemberServiceImpl implements MemberService {
 
     /**
      * 数据校验
+     *
      * @param dto
      * @return
      */
@@ -424,8 +433,8 @@ public class MemberServiceImpl implements MemberService {
             if (memberCardService.checkExistMemberCard(dto.getVIP())) {
                 errorMsgList.add("Vip卡号(VIP)已存在！");
             }
-            if(StringUtil.isNotEmpty(dto.getMobileTel())) {
-                if(memberCardService.checkExistMobile(dto.getMobileTel())) {
+            if (StringUtil.isNotEmpty(dto.getMobileTel())) {
+                if (memberCardService.checkExistMobile(dto.getMobileTel())) {
                     errorMsgList.add("手机号(MobileTel)已存在！");
                 }
             }
