@@ -9,11 +9,13 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.regent.rbp.api.core.base.Category;
+import com.regent.rbp.api.core.base.Position;
 import com.regent.rbp.api.core.base.Year;
 import com.regent.rbp.api.core.channel.Channel;
 import com.regent.rbp.api.core.user.UserCashierChannel;
 import com.regent.rbp.api.core.user.UserCashierLowerDiscount;
 import com.regent.rbp.api.core.user.UserProfile;
+import com.regent.rbp.api.dao.base.PositionDao;
 import com.regent.rbp.api.dao.channel.ChannelDao;
 import com.regent.rbp.api.dao.warehouse.user.UserCashierChannelDao;
 import com.regent.rbp.api.dao.warehouse.user.UserCashierLowerDiscountDao;
@@ -71,6 +73,8 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
     private ChannelDao channelDao;
     @Autowired
     private DbService dbService;
+    @Autowired
+    private PositionDao positionDao;
 
     /**
      * 分页查询
@@ -158,23 +162,9 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
 
         BeanUtil.copyProperties(param, user, "id", "code");
         // 密码加密
-//        if (StringUtil.isNotEmpty(user.getPassword())) {
         user.setPassword(EncryptUtil.encryptByAES(user.getPassword()));
-//        }
         context.setUser(user);
         // 主体校验
-//        if (StringUtil.isEmpty(user.getCode())) {
-//            messageList.add(getNotNullMessage("userCode"));
-//        }
-//        if (StringUtil.isEmpty(user.getName())) {
-//            messageList.add(getNotNullMessage("userName"));
-//        }
-//        if (null == user.getStatus()) {
-//            messageList.add(getNotNullMessage("status"));
-//        }
-//        if (StringUtil.isEmpty(user.getPassword())) {
-//            messageList.add(getNotNullMessage("password"));
-//        }
         // 判断用户编号是否重复
         if (createFlag && messageList.size() == 0) {
             Integer count = userProfileDao.selectCount(new QueryWrapper<UserProfile>().eq("code", user.getCode()));
@@ -182,10 +172,11 @@ public class UserServiceBean extends ServiceImpl<UserProfileDao, UserProfile> im
                 messageList.add(getMessageByParams("dataRepeated", new String[]{LanguageUtil.getMessage("userCode")}));
             }
         }
-        // 判断是否为收银员
-//        if (null != param.getCashierTag() && param.getCashierTag().equals(1) && null == param.getDiscount()) {
-//            messageList.add(getMessageByParams("dataNotNull", new String[]{LanguageUtil.getMessage("discount")}));
-//        }
+        if (StrUtil.isNotBlank(param.getPosition())) {
+            Position position = positionDao.selectOne(Wrappers.lambdaQuery(Position.class).eq(Position::getName, param.getPosition()));
+            user.setPositionId(position.getId());
+        }
+
         if (CollUtil.isNotEmpty(messageList)) {
             return;
         }

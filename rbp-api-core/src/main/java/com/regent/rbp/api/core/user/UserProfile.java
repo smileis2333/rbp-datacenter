@@ -53,6 +53,8 @@ public class UserProfile {
     @ApiModelProperty(notes = "职位")
     private String position;
 
+    private Long positionId;
+
     @ApiModelProperty(notes = "手机")
     private String mobile;
 

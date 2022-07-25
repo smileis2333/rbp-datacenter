@@ -2,6 +2,7 @@ package com.regent.rbp.api.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.regent.rbp.api.dto.validate.Dictionary;
 import com.regent.rbp.api.dto.validate.DiscreteRange;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -55,6 +56,7 @@ public class UserSaveParam {
     private String department;
 
     @ApiModelProperty(notes = "职位")
+    @Dictionary(targetTable = "rbp_position", targetField = "name")
     private String position;
 
     @ApiModelProperty(notes = "手机")

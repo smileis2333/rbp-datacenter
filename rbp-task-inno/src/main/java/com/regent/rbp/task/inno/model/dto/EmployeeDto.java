@@ -45,6 +45,8 @@ public class EmployeeDto {
      */
     private Integer Status;
 
+    private Integer staff_type;
+
     public EmployeeDto(String staff_code, String staff_name, String store_code, String staff_mobile, String openid, String last_time, String isEnabled, Integer status) {
         this.staff_code = staff_code;
         this.staff_name = staff_name;

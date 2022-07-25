@@ -93,6 +93,14 @@ public class EmployeeServiceImpl implements EmployeeService {
                     String openId = StrUtil.EMPTY;
                     Integer status = employee.getWorkStatus() != 2 ? 1 : 0;
                     EmployeeDto employeeDto = new EmployeeDto(employee.getCode(),employee.getName(),channelCode,employee.getMobile(),openId,updateTimeStr,isEnabled,status);
+
+                    if (employee.getPositionId() != null) {
+                        if (employee.getPositionId() == 1150000000000001l) {
+                            employeeDto.setStaff_type(1);
+                        } else if (employee.getPositionId() == 1150000000000002l) {
+                            employeeDto.setStaff_type(0);
+                        }
+                    }
                     reqList.add(employeeDto);
 
                     EmployeeReqDto employeeReqDto = new EmployeeReqDto();
