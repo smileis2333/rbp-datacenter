@@ -2,7 +2,9 @@ package com.regent.rbp.api.dto.employee;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.regent.rbp.api.dto.validate.ChannelCodeCheck;
+import com.regent.rbp.api.dto.validate.Dictionary;
 import com.regent.rbp.api.dto.validate.DiscreteRange;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -67,5 +69,9 @@ public class EmployeeSaveParam {
     @NotBlank
     @ChannelCodeCheck
     private String channelCode;
+
+    @ApiModelProperty(notes = "职位")
+    @Dictionary(targetTable = "rbp_position", targetField = "name")
+    private String position;
 
 }
